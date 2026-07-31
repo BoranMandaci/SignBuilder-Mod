@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "signbuilder:block/harf_p"
+    },
+    "facing=south": {
+      "model": "signbuilder:block/harf_p",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "signbuilder:block/harf_p",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "signbuilder:block/harf_p",
+      "y": 90
+    }
+  }
+}
