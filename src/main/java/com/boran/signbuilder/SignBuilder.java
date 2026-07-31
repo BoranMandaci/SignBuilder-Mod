@@ -1,6 +1,7 @@
 package com.boran.signbuilder;
 
 import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,9 +19,9 @@ public class SignBuilder {
     public SignBuilder() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Kendi kayıt sınıflarımızı ana sisteme bağlıyoruz
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModCreativeModeTabs.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
