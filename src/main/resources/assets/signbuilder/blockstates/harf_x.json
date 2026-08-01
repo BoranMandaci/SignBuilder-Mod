@@ -1,19 +1,18 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "signbuilder:block/harf_x"
-    },
-    "facing=south": {
-      "model": "signbuilder:block/harf_x",
-      "y": 180
-    },
-    "facing=west": {
-      "model": "signbuilder:block/harf_x",
-      "y": 270
-    },
-    "facing=east": {
-      "model": "signbuilder:block/harf_x",
-      "y": 90
-    }
+    "face=floor,facing=north": { "model": "signbuilder:block/harf_x" },
+    "face=floor,facing=east":  { "model": "signbuilder:block/harf_x", "y": 90 },
+    "face=floor,facing=south": { "model": "signbuilder:block/harf_x", "y": 180 },
+    "face=floor,facing=west":  { "model": "signbuilder:block/harf_x", "y": 270 },
+
+    "face=wall,facing=north": { "model": "signbuilder:block/harf_x_wall", "y": 90 },
+    "face=wall,facing=east":  { "model": "signbuilder:block/harf_x_wall", "y": 180 },
+    "face=wall,facing=south": { "model": "signbuilder:block/harf_x_wall", "y": 270 },
+    "face=wall,facing=west":  { "model": "signbuilder:block/harf_x_wall" },
+
+    "face=ceiling,facing=north": { "model": "signbuilder:block/harf_x" },
+    "face=ceiling,facing=east":  { "model": "signbuilder:block/harf_x", "y": 90 },
+    "face=ceiling,facing=south": { "model": "signbuilder:block/harf_x", "y": 180 },
+    "face=ceiling,facing=west":  { "model": "signbuilder:block/harf_x", "y": 270 }
   }
 }
