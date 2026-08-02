@@ -22,7 +22,7 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "signbuilder");
     public static final net.minecraft.world.level.block.state.properties.IntegerProperty COLOR = net.minecraft.world.level.block.state.properties.IntegerProperty.create("color", 0, 15);
 
-    public static final RegistryObject<Block> HARF_A = BLOCKS.register("harf_a",
+    public static final RegistryObject<Block> LETTER_A = BLOCKS.register("letter_a",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -78,7 +78,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_B = BLOCKS.register("harf_b",
+    public static final RegistryObject<Block> LETTER_B = BLOCKS.register("letter_b",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -134,7 +134,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_C = BLOCKS.register("harf_c",
+    public static final RegistryObject<Block> LETTER_C = BLOCKS.register("letter_c",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -190,7 +190,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_D = BLOCKS.register("harf_d",
+    public static final RegistryObject<Block> LETTER_D = BLOCKS.register("letter_d",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -246,7 +246,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_E = BLOCKS.register("harf_e",
+    public static final RegistryObject<Block> LETTER_E = BLOCKS.register("letter_e",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -302,7 +302,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_F = BLOCKS.register("harf_f",
+    public static final RegistryObject<Block> LETTER_F = BLOCKS.register("letter_f",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -358,7 +358,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_G = BLOCKS.register("harf_g",
+    public static final RegistryObject<Block> LETTER_G = BLOCKS.register("letter_g",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -414,7 +414,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_H = BLOCKS.register("harf_h",
+    public static final RegistryObject<Block> LETTER_H = BLOCKS.register("letter_h",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -470,7 +470,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_I = BLOCKS.register("harf_i",
+    public static final RegistryObject<Block> LETTER_I = BLOCKS.register("letter_i",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
@@ -526,7 +526,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_J = BLOCKS.register("harf_j",
+    public static final RegistryObject<Block> LETTER_J = BLOCKS.register("letter_j",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -582,7 +582,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_K = BLOCKS.register("harf_k",
+    public static final RegistryObject<Block> LETTER_K = BLOCKS.register("letter_k",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -638,7 +638,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_L = BLOCKS.register("harf_l",
+    public static final RegistryObject<Block> LETTER_L = BLOCKS.register("letter_l",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -694,7 +694,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_M = BLOCKS.register("harf_m",
+    public static final RegistryObject<Block> LETTER_M = BLOCKS.register("letter_m",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -750,7 +750,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_N = BLOCKS.register("harf_n",
+    public static final RegistryObject<Block> LETTER_N = BLOCKS.register("letter_n",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -806,7 +806,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_O = BLOCKS.register("harf_o",
+    public static final RegistryObject<Block> LETTER_O = BLOCKS.register("letter_o",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -862,7 +862,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_P = BLOCKS.register("harf_p",
+    public static final RegistryObject<Block> LETTER_P = BLOCKS.register("letter_p",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -918,7 +918,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_R = BLOCKS.register("harf_r",
+    public static final RegistryObject<Block> LETTER_R = BLOCKS.register("letter_r",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -974,7 +974,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_S = BLOCKS.register("harf_s",
+    public static final RegistryObject<Block> LETTER_S = BLOCKS.register("letter_s",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1030,7 +1030,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_T = BLOCKS.register("harf_t",
+    public static final RegistryObject<Block> LETTER_T = BLOCKS.register("letter_t",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1086,7 +1086,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_U = BLOCKS.register("harf_u",
+    public static final RegistryObject<Block> LETTER_U = BLOCKS.register("letter_u",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1142,7 +1142,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_V = BLOCKS.register("harf_v",
+    public static final RegistryObject<Block> LETTER_V = BLOCKS.register("letter_v",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1198,7 +1198,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_W = BLOCKS.register("harf_w",
+    public static final RegistryObject<Block> LETTER_W = BLOCKS.register("letter_w",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1254,7 +1254,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_X = BLOCKS.register("harf_x",
+    public static final RegistryObject<Block> LETTER_X = BLOCKS.register("letter_x",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1310,7 +1310,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_Y = BLOCKS.register("harf_y",
+    public static final RegistryObject<Block> LETTER_Y = BLOCKS.register("letter_y",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -1366,7 +1366,7 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> HARF_Z = BLOCKS.register("harf_z",
+    public static final RegistryObject<Block> LETTER_Z = BLOCKS.register("letter_z",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);

@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Style;
 public class PaintBrushScreen extends Screen {
 
     public PaintBrushScreen() {
-        super(Component.literal("Select Brush Color"));
+        super(Component.translatable("gui.signbuilder.title"));
     }
 
     @Override
@@ -19,10 +19,10 @@ public class PaintBrushScreen extends Screen {
         super.init();
 
         String[] colorNames = {
-                "White", "Orange", "Magenta", "Light Blue",
-                "Yellow", "Lime", "Pink", "Gray",
-                "Light Gray", "Cyan", "Purple", "Blue",
-                "Brown", "Green", "Red", "Black"
+                "color.signbuilder.white", "color.signbuilder.orange", "color.signbuilder.magenta", "color.signbuilder.light_blue",
+                "color.signbuilder.yellow", "color.signbuilder.lime", "color.signbuilder.pink", "color.signbuilder.gray",
+                "color.signbuilder.light_gray", "color.signbuilder.cyan", "color.signbuilder.purple", "color.signbuilder.blue",
+                "color.signbuilder.brown", "color.signbuilder.green", "color.signbuilder.red", "color.signbuilder.black"
         };
 
         int[] colorCodes = {
@@ -65,11 +65,13 @@ public class PaintBrushScreen extends Screen {
         private final int colorIndex;
 
         public ColorButton(int x, int y, int width, int height, String colorName, int colorHex, int colorIndex) {
-            super(x, y, width, height, Component.literal(colorName));
+            // BURASI GÜNCELLENDİ: Component.literal yerine Component.translatable kullanıldı.
+            super(x, y, width, height, Component.translatable(colorName));
             this.colorHex = colorHex;
             this.colorIndex = colorIndex;
 
-            this.setTooltip(Tooltip.create(Component.literal(colorName).withStyle(Style.EMPTY.withColor(colorHex))));
+            // BURASI GÜNCELLENDİ: Tooltip (mouse ile üzerine gelince çıkan yazı) için de translatable kullanıldı.
+            this.setTooltip(Tooltip.create(Component.translatable(colorName).withStyle(Style.EMPTY.withColor(colorHex))));
         }
 
         @Override
@@ -88,7 +90,7 @@ public class PaintBrushScreen extends Screen {
                     new com.boran.signbuilder.network.BrushColorPacket(this.colorIndex));
 
             net.minecraft.client.Minecraft.getInstance().player.displayClientMessage(
-                    Component.literal(this.getMessage().getString() + " color selected!")
+                    Component.translatable("message.signbuilder.color_selected", this.getMessage())
                             .withStyle(Style.EMPTY.withColor(this.colorHex)), true);
 
             net.minecraft.client.Minecraft.getInstance().setScreen(null);
