@@ -18,6 +18,7 @@ public class ModCreativeModeTabs {
                     .icon(() -> new ItemStack(ModItems.HARF_A_ITEM.get()))
                     .title(Component.translatable("creativetab.signbuilder_tab"))
                     .displayItems((pParameters, pOutput) -> {
+                        pOutput.accept(ModItems.PAINT_BRUSH.get());
                         pOutput.accept(ModItems.HARF_A_ITEM.get());
                         pOutput.accept(ModItems.HARF_B_ITEM.get());
                         pOutput.accept(ModItems.HARF_C_ITEM.get());

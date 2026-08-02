@@ -2,6 +2,7 @@ package com.boran.signbuilder.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +20,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "signbuilder");
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty COLOR = net.minecraft.world.level.block.state.properties.IntegerProperty.create("color", 0, 15);
 
     public static final RegistryObject<Block> HARF_A = BLOCKS.register("harf_a",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE).noOcclusion()) {
@@ -34,7 +36,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -90,7 +92,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -146,7 +148,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -202,7 +204,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -258,7 +260,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -314,7 +316,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -370,7 +372,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -426,7 +428,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -474,7 +476,7 @@ public class ModBlocks {
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
                 private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.0, 0.0, 8.0, 10.0, 14.0, 11.0);
                 private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.0, 0.0, 5.0, 10.0, 14.0, 8.0);
-                
+
                 private static final VoxelShape SHAPE_WALL_NORTH = Block.box(6.0, 1.0, 13.0, 10.0, 15.0, 16.0);
                 private static final VoxelShape SHAPE_WALL_SOUTH = Block.box(6.0, 1.0, 0.0, 10.0, 15.0, 3.0);
                 private static final VoxelShape SHAPE_WALL_EAST  = Block.box(0.0, 1.0, 6.0, 3.0, 15.0, 10.0);
@@ -482,7 +484,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -538,7 +540,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -594,7 +596,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -650,7 +652,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -706,7 +708,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -762,7 +764,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -818,7 +820,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -874,7 +876,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -930,7 +932,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -986,7 +988,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1042,7 +1044,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1098,7 +1100,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1154,7 +1156,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1210,7 +1212,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1266,7 +1268,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1322,7 +1324,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override
@@ -1378,7 +1380,7 @@ public class ModBlocks {
 
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
+                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR);
                 }
 
                 @Override

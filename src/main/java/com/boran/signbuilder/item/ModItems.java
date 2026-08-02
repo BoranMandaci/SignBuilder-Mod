@@ -10,8 +10,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class ModItems {
+
+
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, "signbuilder");
+
+    public static final RegistryObject<Item> PAINT_BRUSH = ITEMS.register("paint_brush",
+            () -> new PaintBrushItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> HARF_A_ITEM = ITEMS.register("harf_a",
             () -> new BlockItem(ModBlocks.HARF_A.get(), new Item.Properties()));
