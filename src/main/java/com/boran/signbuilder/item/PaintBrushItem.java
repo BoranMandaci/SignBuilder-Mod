@@ -54,7 +54,7 @@ public class PaintBrushItem extends Item {
 
                     level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.2F);
                 } else {
-                    player.displayClientMessage(Component.literal("Lütfen önce havaya sağ tıklayarak bir renk seçin!"), true);
+                    player.displayClientMessage(Component.translatable("message.signbuilder.select_color"), true);
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
