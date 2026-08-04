@@ -1,6 +1,6 @@
 # Sign Builder Mod 🎨
 
-Sign Builder is a Minecraft Forge mod that allows players to seamlessly build, color, and illuminate custom 3D signs. Whether you are decorating a casino, setting up a shop, or just organizing your base, this mod provides highly detailed letters, a dynamic painting system, and glowing neon mechanics.
+Sign Builder is a Minecraft Forge mod that allows players to seamlessly build, color, and illuminate custom 3D signs. Whether you are decorating a city, setting up a shop, or just organizing your base, this mod provides highly detailed letters, a dynamic painting system, and glowing neon mechanics.
 
 ## ✨ Features
 * **3D Letters (A-Z):** Highly detailed, custom-modeled letters that sit perfectly flat against the wall or floor.
