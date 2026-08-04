@@ -93,6 +93,9 @@ public class ModItems {
     public static final RegistryObject<Item> LETTER_X_ITEM = ITEMS.register("letter_x",
             () -> new BlockItem(ModBlocks.LETTER_X.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench",
+            () -> new WrenchItem(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

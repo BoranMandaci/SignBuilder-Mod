@@ -65,12 +65,10 @@ public class PaintBrushScreen extends Screen {
         private final int colorIndex;
 
         public ColorButton(int x, int y, int width, int height, String colorName, int colorHex, int colorIndex) {
-            // BURASI GÜNCELLENDİ: Component.literal yerine Component.translatable kullanıldı.
             super(x, y, width, height, Component.translatable(colorName));
             this.colorHex = colorHex;
             this.colorIndex = colorIndex;
 
-            // BURASI GÜNCELLENDİ: Tooltip (mouse ile üzerine gelince çıkan yazı) için de translatable kullanıldı.
             this.setTooltip(Tooltip.create(Component.translatable(colorName).withStyle(Style.EMPTY.withColor(colorHex))));
         }
 

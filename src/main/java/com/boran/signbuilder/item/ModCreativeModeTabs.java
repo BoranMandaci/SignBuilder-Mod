@@ -1,4 +1,4 @@
-package com.boran.signbuilder.item; // Kendi paket adınla aynı olduğuna emin ol
+package com.boran.signbuilder.item;
 
 import com.boran.signbuilder.block.ModBlocks;
 import net.minecraft.core.registries.Registries;
@@ -19,6 +19,7 @@ public class ModCreativeModeTabs {
                     .title(Component.translatable("creativetab.signbuilder_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.PAINT_BRUSH.get());
+                        pOutput.accept(ModItems.WRENCH.get());
                         pOutput.accept(ModItems.LETTER_A_ITEM.get());
                         pOutput.accept(ModItems.LETTER_B_ITEM.get());
                         pOutput.accept(ModItems.LETTER_C_ITEM.get());
