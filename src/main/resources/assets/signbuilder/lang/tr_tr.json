@@ -44,5 +44,6 @@
   "color.signbuilder.green": "Yeşil",
   "color.signbuilder.red": "Kırmızı",
   "color.signbuilder.black": "Siyah",
-  "message.signbuilder.color_selected": "%s seçildi!"
+  "message.signbuilder.color_selected": "%s seçildi!",
+  "item.signbuilder.wrench": "İngiliz Anahtarı"
 }

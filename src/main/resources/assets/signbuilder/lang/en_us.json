@@ -44,5 +44,6 @@
   "color.signbuilder.green": "Green",
   "color.signbuilder.red": "Red",
   "color.signbuilder.black": "Black",
-  "message.signbuilder.color_selected": "%s selected!"
+  "message.signbuilder.color_selected": "%s selected!",
+  "item.signbuilder.wrench": "Wrench"
 }
