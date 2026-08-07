@@ -1,11 +1,14 @@
 package com.boran.signbuilder;
 
 import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.block.entity.LetterBlockEntity;
+import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,6 +29,9 @@ public class SignBuilder {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+
+        ModBlockEntities.register(modEventBus);
+
         ModCreativeModeTabs.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
@@ -44,6 +50,12 @@ public class SignBuilder {
     private void registerBlockColors(RegisterColorHandlersEvent.Block event) {
         for (RegistryObject<Block> block : ModBlocks.BLOCKS.getEntries()) {
             event.register((state, level, pos, tintIndex) -> {
+                if (level != null && pos != null) {
+                    BlockEntity blockEntity = level.getBlockEntity(pos);
+                    if (blockEntity instanceof LetterBlockEntity letterEntity) {
+                        return letterEntity.getRgbColor();
+                    }
+                }
                 if (state.hasProperty(ModBlocks.COLOR)) {
                     int colorIndex = state.getValue(ModBlocks.COLOR);
                     return getColorHex(colorIndex);

@@ -96,6 +96,36 @@ public class ModItems {
     public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench",
             () -> new WrenchItem(new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Item> NUMBER_0_ITEM = ITEMS.register("number_0",
+            () -> new BlockItem(ModBlocks.NUMBER_0.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_1_ITEM = ITEMS.register("number_1",
+            () -> new BlockItem(ModBlocks.NUMBER_1.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_2_ITEM = ITEMS.register("number_2",
+            () -> new BlockItem(ModBlocks.NUMBER_2.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_3_ITEM = ITEMS.register("number_3",
+            () -> new BlockItem(ModBlocks.NUMBER_3.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_4_ITEM = ITEMS.register("number_4",
+            () -> new BlockItem(ModBlocks.NUMBER_4.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_5_ITEM = ITEMS.register("number_5",
+            () -> new BlockItem(ModBlocks.NUMBER_5.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_6_ITEM = ITEMS.register("number_6",
+            () -> new BlockItem(ModBlocks.NUMBER_6.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_7_ITEM = ITEMS.register("number_7",
+            () -> new BlockItem(ModBlocks.NUMBER_7.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_8_ITEM = ITEMS.register("number_8",
+            () -> new BlockItem(ModBlocks.NUMBER_8.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> NUMBER_9_ITEM = ITEMS.register("number_9",
+            () -> new BlockItem(ModBlocks.NUMBER_9.get(), new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -20,6 +20,7 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.PAINT_BRUSH.get());
                         pOutput.accept(ModItems.WRENCH.get());
+
                         pOutput.accept(ModItems.LETTER_A_ITEM.get());
                         pOutput.accept(ModItems.LETTER_B_ITEM.get());
                         pOutput.accept(ModItems.LETTER_C_ITEM.get());
@@ -45,6 +46,17 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.LETTER_X_ITEM.get());
                         pOutput.accept(ModItems.LETTER_Y_ITEM.get());
                         pOutput.accept(ModItems.LETTER_Z_ITEM.get());
+
+                        pOutput.accept(ModItems.NUMBER_0_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_1_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_2_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_3_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_4_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_5_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_6_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_7_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_8_ITEM.get());
+                        pOutput.accept(ModItems.NUMBER_9_ITEM.get());
                     })
                     .build());
 
