@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Specification-Title: signbuilder
-Specification-Vendor: boran
-Specification-Version: 1
-Implementation-Title: MCmod
-Implementation-Version: 1.0.5
-Implementation-Vendor: boran
-Implementation-Timestamp: 2026-08-07T12:35:07+0300
-
