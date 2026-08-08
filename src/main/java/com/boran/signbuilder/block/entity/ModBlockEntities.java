@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SignBuilder.MODID); // MODID olarak düzeltildi
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SignBuilder.MODID);
 
     public static final RegistryObject<BlockEntityType<LetterBlockEntity>> LETTER_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("letter_block_entity", () ->

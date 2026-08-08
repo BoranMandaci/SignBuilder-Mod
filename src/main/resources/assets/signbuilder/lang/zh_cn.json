@@ -49,8 +49,8 @@
   "gui.signbuilder.color_picker.title": "调色板",
   "gui.signbuilder.color_picker.done": "完成",
   "gui.signbuilder.color_picker.cancel": "取消",
-  "gui.signbuilder.color_picker.add_color": "添加颜色",
-  "message.signbuilder.custom_color_selected": "已选择自定义颜色: %s",
+  "gui.signbuilder.color_picker.add_color": "添加自定义颜色",
+  "message.signbuilder.custom_color_selected": "已选择自定义颜色！",
   "gui.signbuilder.press_esc": "按 ESC 键关闭",
   "block.signbuilder.number_0": "数字 0",
   "block.signbuilder.number_1": "数字 1",
@@ -61,5 +61,9 @@
   "block.signbuilder.number_6": "数字 6",
   "block.signbuilder.number_7": "数字 7",
   "block.signbuilder.number_8": "数字 8",
-  "block.signbuilder.number_9": "数字 9"
+  "block.signbuilder.number_9": "数字 9",
+  "gui.signbuilder.color_picker.selected_color": "已选颜色",
+  "gui.signbuilder.color_picker.palette": "调色板",
+  "gui.signbuilder.right_click_to_delete": "右键点击删除",
+  "tooltip.signbuilder.selected_color": "已选颜色："
 }

@@ -49,8 +49,8 @@
   "gui.signbuilder.color_picker.title": "Palette de Couleurs",
   "gui.signbuilder.color_picker.done": "Terminé",
   "gui.signbuilder.color_picker.cancel": "Annuler",
-  "gui.signbuilder.color_picker.add_color": "Ajouter une couleur",
-  "message.signbuilder.custom_color_selected": "Couleur personnalisée sélectionnée : %s",
+  "gui.signbuilder.color_picker.add_color": "Ajouter une Couleur Personnalisée",
+  "message.signbuilder.custom_color_selected": "Couleur personnalisée sélectionnée !",
   "gui.signbuilder.press_esc": "Appuyez sur ESC pour fermer",
   "block.signbuilder.number_0": "Numéro 0",
   "block.signbuilder.number_1": "Numéro 1",
@@ -61,5 +61,9 @@
   "block.signbuilder.number_6": "Numéro 6",
   "block.signbuilder.number_7": "Numéro 7",
   "block.signbuilder.number_8": "Numéro 8",
-  "block.signbuilder.number_9": "Numéro 9"
+  "block.signbuilder.number_9": "Numéro 9",
+  "gui.signbuilder.color_picker.selected_color": "Couleur sélectionnée",
+  "gui.signbuilder.color_picker.palette": "Palette de couleurs",
+  "gui.signbuilder.right_click_to_delete": "Clic droit pour supprimer",
+  "tooltip.signbuilder.selected_color": "Couleur sélectionnée :"
 }

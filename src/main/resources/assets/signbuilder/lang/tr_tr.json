@@ -49,8 +49,8 @@
   "gui.signbuilder.color_picker.title": "Renk Paleti",
   "gui.signbuilder.color_picker.done": "Bitti",
   "gui.signbuilder.color_picker.cancel": "İptal",
-  "gui.signbuilder.color_picker.add_color": "Renk Ekle",
-  "message.signbuilder.custom_color_selected": "Özel Renk Seçildi: %s",
+  "gui.signbuilder.color_picker.add_color": "Özel Renk Ekle",
+  "message.signbuilder.custom_color_selected": "Özel renk seçildi!",
   "gui.signbuilder.press_esc": "Kapatmak için ESC'ye basın",
   "block.signbuilder.number_0": "0 Sayısı",
   "block.signbuilder.number_1": "1 Sayısı",
@@ -61,5 +61,9 @@
   "block.signbuilder.number_6": "6 Sayısı",
   "block.signbuilder.number_7": "7 Sayısı",
   "block.signbuilder.number_8": "8 Sayısı",
-  "block.signbuilder.number_9": "9 Sayısı"
+  "block.signbuilder.number_9": "9 Sayısı",
+  "gui.signbuilder.color_picker.selected_color": "Seçilen Renk",
+  "gui.signbuilder.color_picker.palette": "Renk Paleti",
+  "gui.signbuilder.right_click_to_delete": "Silmek için sağ tıklayın",
+  "tooltip.signbuilder.selected_color": "Seçili Renk:"
 }

@@ -246,7 +246,14 @@ public class ColorPickerScreen extends Screen {
         int centerY = this.height / 2;
 
         guiGraphics.fill(centerX - 100, centerY - 80, centerX + 100, centerY + 110, 0xFF202023);
-        guiGraphics.fill(centerX - 90, centerY - 70, centerX + 90, centerY - 58, 0xFF000000 | selectedColorHex);
+
+        Component selectedColorText = Component.translatable("gui.signbuilder.color_picker.selected_color");
+        guiGraphics.drawString(this.font, selectedColorText, centerX - (this.font.width(selectedColorText) / 2), centerY - 76, 0xFFAAAAAA, false);
+
+        guiGraphics.fill(centerX - 90, centerY - 65, centerX + 90, centerY - 53, 0xFF000000 | selectedColorHex);
+
+        Component paletteText = Component.translatable("gui.signbuilder.color_picker.palette");
+        guiGraphics.drawString(this.font, paletteText, centerX - 90, centerY - 42, 0xFFAAAAAA, false);
 
         int boxX = centerX - 90;
         int boxY = centerY - 30;

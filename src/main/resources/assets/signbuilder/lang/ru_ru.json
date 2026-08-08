@@ -49,8 +49,8 @@
   "gui.signbuilder.color_picker.title": "Палитра цветов",
   "gui.signbuilder.color_picker.done": "Готово",
   "gui.signbuilder.color_picker.cancel": "Отмена",
-  "gui.signbuilder.color_picker.add_color": "Добавить цвет",
-  "message.signbuilder.custom_color_selected": "Выбран пользовательский цвет: %s",
+  "gui.signbuilder.color_picker.add_color": "Добавить особый цвет",
+  "message.signbuilder.custom_color_selected": "Выбран пользовательский цвет!",
   "gui.signbuilder.press_esc": "Нажмите ESC, чтобы закрыть",
   "block.signbuilder.number_0": "Цифра 0",
   "block.signbuilder.number_1": "Цифра 1",
@@ -61,5 +61,9 @@
   "block.signbuilder.number_6": "Цифра 6",
   "block.signbuilder.number_7": "Цифра 7",
   "block.signbuilder.number_8": "Цифра 8",
-  "block.signbuilder.number_9": "Цифра 9"
+  "block.signbuilder.number_9": "Цифра 9",
+  "gui.signbuilder.color_picker.selected_color": "Выбранный цвет",
+  "gui.signbuilder.color_picker.palette": "Палитра цветов",
+  "gui.signbuilder.right_click_to_delete": "ПКМ для удаления",
+  "tooltip.signbuilder.selected_color": "Выбранный цвет:"
 }

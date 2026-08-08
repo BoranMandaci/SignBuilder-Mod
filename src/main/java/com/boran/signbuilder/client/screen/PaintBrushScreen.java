@@ -1,14 +1,19 @@
 package com.boran.signbuilder.client.screen;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaintBrushScreen extends Screen {
 
@@ -37,7 +42,7 @@ public class PaintBrushScreen extends Screen {
                 0xFFFFFF, 0xD87F33, 0xB24CD8, 0x6699D8,
                 0xE5E533, 0x7FCC19, 0xF27FA5, 0x4C4C4C,
                 0x999999, 0x4C7F99, 0x7F3FB2, 0x334CB2,
-                0x664C33, 0x667F33, 0x993333, 0x191919
+                0x664C33, 0x667F33, 0xCF2323, 0x191919
         };
 
         int buttonSize = 26;
@@ -74,7 +79,7 @@ public class PaintBrushScreen extends Screen {
             int x = startX + (col * (buttonSize + spacing));
             int y = startY + (row * (buttonSize + spacing));
 
-            this.addRenderableWidget(new CustomColorButton(x, y, buttonSize, buttonSize, customColors[i]));
+            this.addRenderableWidget(new CustomColorButton(x, y, buttonSize, buttonSize, customColors[i], this));
         }
 
         int plusRow = 4 + (plusIndex / 4);
@@ -87,6 +92,11 @@ public class PaintBrushScreen extends Screen {
             ItemStack currentBrush = this.minecraft.player.getMainHandItem();
             this.minecraft.setScreen(new ColorPickerScreen(currentBrush, this));
         }).bounds(plusX, plusY, buttonSize, buttonSize).build());
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -146,11 +156,24 @@ public class PaintBrushScreen extends Screen {
 
     private static class CustomColorButton extends AbstractButton {
         private final int colorHex;
+        private final PaintBrushScreen parentScreen;
 
-        public CustomColorButton(int x, int y, int width, int height, int colorHex) {
+        public CustomColorButton(int x, int y, int width, int height, int colorHex, PaintBrushScreen parentScreen) {
             super(x, y, width, height, Component.literal(""));
             this.colorHex = colorHex;
-            this.setTooltip(Tooltip.create(Component.literal("#" + String.format("%06X", colorHex).toUpperCase()).withStyle(Style.EMPTY.withColor(colorHex))));
+            this.parentScreen = parentScreen;
+
+            Component hexComponent = Component.literal("#" + String.format("%06X", colorHex).toUpperCase())
+                    .withStyle(Style.EMPTY.withColor(colorHex));
+            Component deleteHintComponent = Component.translatable("gui.signbuilder.right_click_to_delete")
+                    .withStyle(Style.EMPTY.withColor(0xAAAAAA));
+
+            Component combinedTooltip = Component.empty()
+                    .append(hexComponent)
+                    .append("\n")
+                    .append(deleteHintComponent);
+
+            this.setTooltip(Tooltip.create(combinedTooltip));
         }
 
         @Override
@@ -164,10 +187,48 @@ public class PaintBrushScreen extends Screen {
                     new com.boran.signbuilder.network.BrushColorPacket(this.colorHex, false));
 
             net.minecraft.client.Minecraft.getInstance().player.displayClientMessage(
-                    Component.translatable("message.signbuilder.custom_color_selected", "#" + String.format("%06X", colorHex).toUpperCase())
+                    Component.translatable("message.signbuilder.custom_color_selected")
                             .withStyle(Style.EMPTY.withColor(this.colorHex)), true);
 
             net.minecraft.client.Minecraft.getInstance().setScreen(null);
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (this.active && this.visible && this.isHovered) {
+                if (button == 1) {
+                    removeThisColor();
+                    return true;
+                }
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        private void removeThisColor() {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null) return;
+
+            ItemStack brush = mc.player.getMainHandItem();
+            if (brush.hasTag() && brush.getTag().contains("CustomColors")) {
+                int[] oldColors = brush.getTag().getIntArray("CustomColors");
+                List<Integer> newColors = new ArrayList<>();
+
+                boolean removed = false;
+                for (int c : oldColors) {
+                    if (!removed && c == this.colorHex) {
+                        removed = true;
+                        continue;
+                    }
+                    newColors.add(c);
+                }
+
+                brush.getTag().putIntArray("CustomColors", newColors.stream().mapToInt(i -> i).toArray());
+
+                com.boran.signbuilder.network.ModMessages.sendToServer(
+                        new com.boran.signbuilder.network.BrushColorPacket(this.colorHex, false, true));
+
+                parentScreen.rebuildWidgets();
+            }
         }
 
         @Override

@@ -16,7 +16,6 @@ public class LetterBlockEntity extends BlockEntity {
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        // Blok yeni koyulduğunda veya Neon açıldığında eski rengini hemen yükler
         if (state.hasProperty(com.boran.signbuilder.block.ModBlocks.COLOR)) {
             this.rgbColor = getActualHexColor(state.getValue(com.boran.signbuilder.block.ModBlocks.COLOR));
         }
@@ -65,7 +64,6 @@ public class LetterBlockEntity extends BlockEntity {
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         super.onDataPacket(net, pkt);
         if (level != null && level.isClientSide) {
-            // Veri gelince harfi tekrar çiz (Neon siyahlaşma sorununu çözer)
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
