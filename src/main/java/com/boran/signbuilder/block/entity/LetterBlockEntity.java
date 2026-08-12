@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class LetterBlockEntity extends BlockEntity {
     private int rgbColor = 0xFFFFFF;
+    private boolean isRainbow = false;
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -23,6 +24,7 @@ public class LetterBlockEntity extends BlockEntity {
 
     public void setRgbColor(int color) {
         this.rgbColor = color;
+        this.isRainbow = false;
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -33,10 +35,23 @@ public class LetterBlockEntity extends BlockEntity {
         return rgbColor;
     }
 
+    public void setRainbow(boolean rainbow) {
+        this.isRainbow = rainbow;
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public boolean isRainbow() {
+        return isRainbow;
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("RGBColor", this.rgbColor);
+        tag.putBoolean("IsRainbow", this.isRainbow);
     }
 
     @Override
@@ -44,6 +59,9 @@ public class LetterBlockEntity extends BlockEntity {
         super.load(tag);
         if (tag.contains("RGBColor")) {
             this.rgbColor = tag.getInt("RGBColor");
+        }
+        if (tag.contains("IsRainbow")) {
+            this.isRainbow = tag.getBoolean("IsRainbow");
         }
     }
 
@@ -77,5 +95,16 @@ public class LetterBlockEntity extends BlockEntity {
             case 12 -> 0x664C33; case 13 -> 0x667F33; case 14 -> 0x993333; case 15 -> 0x191919;
             default -> 0xFFFFFF;
         };
+    }
+
+    public static void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
+        if (level.isClientSide && entity.isRainbow()) {
+            float hue = (level.getGameTime() % 120) / 120f;
+            entity.rgbColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+
+            if (level.getGameTime() % 5 == 0) {
+                level.sendBlockUpdated(pos, state, state, 3);
+            }
+        }
     }
 }

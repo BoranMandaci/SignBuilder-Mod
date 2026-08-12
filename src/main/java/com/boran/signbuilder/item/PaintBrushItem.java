@@ -51,24 +51,54 @@ public class PaintBrushItem extends Item {
         BlockEntity blockEntity = level.getBlockEntity(pos);
 
         if (blockEntity instanceof LetterBlockEntity letterEntity) {
+
+            if (player != null && player.isShiftKeyDown()) {
+                if (!level.isClientSide) {
+                    int copiedColor = letterEntity.isRainbow() ? -1 : letterEntity.getRgbColor();
+
+                    CompoundTag tag = stack.getOrCreateTag();
+                    tag.putInt("SelectedColor", copiedColor);
+
+                    if (copiedColor == -1) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.color_copied")
+                                .append(Component.literal(" [Rainbow]"))
+                                .withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
+                    } else {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.color_copied")
+                                .append(Component.literal(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]"))
+                                .withStyle(Style.EMPTY.withColor(copiedColor)), true);
+                    }
+                }
+
+                if (player != null) {
+                    level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
+                }
+
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+
             if (!level.isClientSide) {
                 CompoundTag tag = stack.getOrCreateTag();
                 if (tag.contains("SelectedColor")) {
                     int selectedColor = tag.getInt("SelectedColor");
-                    int hexColor = getActualHexColor(selectedColor);
 
-                    letterEntity.setRgbColor(hexColor);
-
-                    if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
-                        level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
+                    if (selectedColor == -1) {
+                        letterEntity.setRainbow(true);
                     } else {
-                        level.sendBlockUpdated(pos, state, state, 3);
+                        int hexColor = getActualHexColor(selectedColor);
+                        letterEntity.setRgbColor(hexColor);
+
+                        if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
+                            level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
+                        } else {
+                            level.sendBlockUpdated(pos, state, state, 3);
+                        }
                     }
                 }
             }
 
             if (player != null) {
-                level.playSound(player, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 
                 if (!player.isCreative()) {
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
@@ -97,7 +127,10 @@ public class PaintBrushItem extends Item {
         Component label = Component.translatable("tooltip.signbuilder.selected_color");
         Component valueComponent;
 
-        if (selectedColor <= 15) {
+        if (selectedColor == -1) {
+            valueComponent = Component.translatable("color.signbuilder.rainbow")
+                    .withStyle(Style.EMPTY.withColor(0xFF55FF));
+        } else if (selectedColor <= 15) {
             String colorNameKey = getColorNameKey(selectedColor);
             int hexColor = getActualHexColor(selectedColor);
             valueComponent = Component.translatable(colorNameKey)
@@ -110,27 +143,22 @@ public class PaintBrushItem extends Item {
 
         tooltipComponents.add(Component.empty().append(label).append(" ").append(valueComponent));
 
+        tooltipComponents.add(Component.translatable("tooltip.signbuilder.eyedropper_hint")
+                .withStyle(Style.EMPTY.withColor(0xAAAAAA).withItalic(true)));
+
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
     }
 
     private static String getColorNameKey(int index) {
         return switch (index) {
-            case 0 -> "color.signbuilder.white";
-            case 1 -> "color.signbuilder.orange";
-            case 2 -> "color.signbuilder.magenta";
-            case 3 -> "color.signbuilder.light_blue";
-            case 4 -> "color.signbuilder.yellow";
-            case 5 -> "color.signbuilder.lime";
-            case 6 -> "color.signbuilder.pink";
-            case 7 -> "color.signbuilder.gray";
-            case 8 -> "color.signbuilder.light_gray";
-            case 9 -> "color.signbuilder.cyan";
-            case 10 -> "color.signbuilder.purple";
-            case 11 -> "color.signbuilder.blue";
-            case 12 -> "color.signbuilder.brown";
-            case 13 -> "color.signbuilder.green";
-            case 14 -> "color.signbuilder.red";
-            case 15 -> "color.signbuilder.black";
+            case 0 -> "color.signbuilder.white"; case 1 -> "color.signbuilder.orange";
+            case 2 -> "color.signbuilder.magenta"; case 3 -> "color.signbuilder.light_blue";
+            case 4 -> "color.signbuilder.yellow"; case 5 -> "color.signbuilder.lime";
+            case 6 -> "color.signbuilder.pink"; case 7 -> "color.signbuilder.gray";
+            case 8 -> "color.signbuilder.light_gray"; case 9 -> "color.signbuilder.cyan";
+            case 10 -> "color.signbuilder.purple"; case 11 -> "color.signbuilder.blue";
+            case 12 -> "color.signbuilder.brown"; case 13 -> "color.signbuilder.green";
+            case 14 -> "color.signbuilder.red"; case 15 -> "color.signbuilder.black";
             default -> "color.signbuilder.white";
         };
     }

@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Flecha hacia la derecha",
   "block.signbuilder.symbol_plus": "Símbolo Más",
   "block.signbuilder.symbol_minus": "Símbolo Menos",
-  "block.signbuilder.symbol_dot": "Símbolo de Punto",
-  "block.signbuilder.symbol_heart": "Símbolo de Corazón"
+  "block.signbuilder.symbol_dot_left": "Punto Izquierdo",
+  "block.signbuilder.symbol_dot_center": "Punto Central",
+  "block.signbuilder.symbol_dot_right": "Punto Derecho",
+  "block.signbuilder.symbol_heart": "Símbolo de Corazón",
+  "message.signbuilder.color_copied": "¡Color copiado al pincel!",
+  "tooltip.signbuilder.eyedropper_hint": "Mayús + Clic derecho en un bloque para copiar su color",
+  "color.signbuilder.rainbow": "Modo Arcoíris"
 }

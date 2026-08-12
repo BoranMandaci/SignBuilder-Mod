@@ -26,6 +26,11 @@ public class PaintBrushScreen extends Screen {
     }
 
     @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
     protected void init() {
         super.init();
 
@@ -49,10 +54,9 @@ public class PaintBrushScreen extends Screen {
             customColors = brush.getTag().getIntArray("CustomColors");
         }
 
-        int plusIndex = customColors.length;
-        int totalRows = 4 + (plusIndex / 4) + 1;
+        int totalElements = 16 + 1 + customColors.length + 1;
+        int totalRows = (totalElements - 1) / 4 + 1;
 
-        // Hotbar'a ve üst kenara değmemesi için güvenlik marjını artırdık (80 yerine 110)
         int maxAvailableHeight = this.height - 110;
         int maxAvailableWidth = this.width - 40;
 
@@ -80,33 +84,42 @@ public class PaintBrushScreen extends Screen {
         startX = (this.width - totalWidth) / 2;
         startY = (this.height - totalHeight) / 2;
 
+        int currentIndex = 0;
+
         for (int i = 0; i < 16; i++) {
-            int row = i / 4;
-            int col = i % 4;
+            int row = currentIndex / 4;
+            int col = currentIndex % 4;
             int x = startX + (col * (buttonSize + spacing));
             int y = startY + (row * (buttonSize + spacing));
 
             this.addRenderableWidget(new ColorButton(x, y, buttonSize, buttonSize, colorNames[i], colorCodes[i], i));
+            currentIndex++;
         }
+
+        int rRow = currentIndex / 4;
+        int rCol = currentIndex % 4;
+        int rX = startX + (rCol * (buttonSize + spacing));
+        int rY = startY + (rRow * (buttonSize + spacing));
+
+        this.addRenderableWidget(new RainbowButton(rX, rY, buttonSize, buttonSize));
+        currentIndex++;
 
         for (int i = 0; i < customColors.length; i++) {
-            int row = 4 + (i / 4);
-            int col = i % 4;
+            int cRow = currentIndex / 4;
+            int cCol = currentIndex % 4;
+            int cX = startX + (cCol * (buttonSize + spacing));
+            int cY = startY + (cRow * (buttonSize + spacing));
 
-            int x = startX + (col * (buttonSize + spacing));
-            int y = startY + (row * (buttonSize + spacing));
-
-            this.addRenderableWidget(new CustomColorButton(x, y, buttonSize, buttonSize, customColors[i], this));
+            this.addRenderableWidget(new CustomColorButton(cX, cY, buttonSize, buttonSize, customColors[i], this));
+            currentIndex++;
         }
 
-        int plusRow = 4 + (plusIndex / 4);
-        int plusCol = plusIndex % 4;
+        int pRow = currentIndex / 4;
+        int pCol = currentIndex % 4;
+        int pX = startX + (pCol * (buttonSize + spacing));
+        int pY = startY + (pRow * (buttonSize + spacing));
 
-        int plusX = startX + (plusCol * (buttonSize + spacing));
-        int plusY = startY + (plusRow * (buttonSize + spacing));
-
-        // Klasik Vanilla Butonu yerine özel estetik AddColorButton'u kullandık
-        this.addRenderableWidget(new AddColorButton(plusX, plusY, buttonSize, buttonSize, this));
+        this.addRenderableWidget(new AddColorButton(pX, pY, buttonSize, buttonSize, this));
     }
 
     @Override
@@ -129,12 +142,10 @@ public class PaintBrushScreen extends Screen {
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
-        // Başlığın ekran dışına çıkmasını engelle
         int titleY = Math.max(10, panelTop - (dynamicPadding > 10 ? 24 : 16));
         pGuiGraphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
         pGuiGraphics.fill((this.width / 2) - 40, titleY + 12, (this.width / 2) + 40, titleY + 13, 0x40FFFFFF);
 
-        // ESC yazısının hotbar'ın (envanter kutularının) altına inmesini engelle
         int escY = Math.min(this.height - 35, panelBottom + (dynamicPadding > 10 ? 10 : 4));
         pGuiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, escY, 0x666666);
     }
@@ -163,6 +174,40 @@ public class PaintBrushScreen extends Screen {
             net.minecraft.client.Minecraft.getInstance().player.displayClientMessage(
                     Component.translatable("message.signbuilder.color_selected", this.getMessage())
                             .withStyle(Style.EMPTY.withColor(this.colorHex)), true);
+
+            net.minecraft.client.Minecraft.getInstance().setScreen(null);
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            this.defaultButtonNarrationText(output);
+        }
+    }
+
+    private static class RainbowButton extends AbstractButton {
+        public RainbowButton(int x, int y, int width, int height) {
+            super(x, y, width, height, Component.translatable("color.signbuilder.rainbow"));
+            this.setTooltip(Tooltip.create(Component.translatable("color.signbuilder.rainbow").withStyle(Style.EMPTY.withColor(0xFF55FF))));
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            float hue = (Minecraft.getInstance().level.getGameTime() % 120) / 120f;
+            int dynamicColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+
+            renderColorButton(graphics, this.getX(), this.getY(), this.width, this.height, dynamicColor, this.isHoveredOrFocused());
+
+            graphics.drawCenteredString(Minecraft.getInstance().font, "R", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+        }
+
+        @Override
+        public void onPress() {
+            com.boran.signbuilder.network.ModMessages.sendToServer(
+                    new com.boran.signbuilder.network.BrushColorPacket(-1, false));
+
+            net.minecraft.client.Minecraft.getInstance().player.displayClientMessage(
+                    Component.translatable("message.signbuilder.color_selected", this.getMessage())
+                            .withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
 
             net.minecraft.client.Minecraft.getInstance().setScreen(null);
         }

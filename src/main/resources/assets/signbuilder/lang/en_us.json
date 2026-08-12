@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Right Arrow",
   "block.signbuilder.symbol_plus": "Plus Symbol",
   "block.signbuilder.symbol_minus": "Minus Symbol",
-  "block.signbuilder.symbol_dot": "Dot Symbol",
-  "block.signbuilder.symbol_heart": "Heart Symbol"
+  "block.signbuilder.symbol_heart": "Heart Symbol",
+  "block.signbuilder.symbol_dot_left": "Left Dot",
+  "block.signbuilder.symbol_dot_center": "Center Dot",
+  "block.signbuilder.symbol_dot_right": "Right Dot",
+  "message.signbuilder.color_copied": "Color copied to brush!",
+  "tooltip.signbuilder.eyedropper_hint": "Shift + Right Click a block to copy its color",
+  "color.signbuilder.rainbow": "Rainbow Mode"
 }

@@ -82,7 +82,7 @@ public class BrushColorPacket {
 
                         colorList.add(0, color);
 
-                        while (colorList.size() > 11) {
+                        while (colorList.size() > 14) {
                             colorList.remove(colorList.size() - 1);
                         }
 

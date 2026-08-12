@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Sağ Ok",
   "block.signbuilder.symbol_plus": "Artı İşareti",
   "block.signbuilder.symbol_minus": "Eksi İşareti",
-  "block.signbuilder.symbol_dot": "Nokta İşareti",
-  "block.signbuilder.symbol_heart": "Kalp İşareti"
+  "block.signbuilder.symbol_dot_left": "Sola Dayalı Nokta",
+  "block.signbuilder.symbol_dot_center": "Ortalı Nokta",
+  "block.signbuilder.symbol_dot_right": "Sağa Dayalı Nokta",
+  "block.signbuilder.symbol_heart": "Kalp İşareti",
+  "message.signbuilder.color_copied": "Renk fırçaya kopyalandı!",
+  "tooltip.signbuilder.eyedropper_hint": "Rengi kopyalamak için bloğa Shift + Sağ Tık yapın",
+  "color.signbuilder.rainbow": "Gökkuşağı Modu"
 }

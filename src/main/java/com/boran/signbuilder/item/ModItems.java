@@ -143,8 +143,14 @@ import net.minecraftforge.registries.RegistryObject;
         public static final RegistryObject<Item> SYMBOL_MINUS = ITEMS.register("symbol_minus",
                 () -> new BlockItem(ModBlocks.SYMBOL_MINUS.get(), new Item.Properties()));
 
-        public static final RegistryObject<Item> SYMBOL_DOT = ITEMS.register("symbol_dot",
-                () -> new BlockItem(ModBlocks.SYMBOL_DOT.get(), new Item.Properties()));
+        public static final RegistryObject<Item> SYMBOL_DOT_LEFT = ITEMS.register("symbol_dot_left",
+                () -> new BlockItem(ModBlocks.SYMBOL_DOT_LEFT.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_DOT_CENTER = ITEMS.register("symbol_dot_center",
+                () -> new BlockItem(ModBlocks.SYMBOL_DOT_CENTER.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_DOT_RIGHT = ITEMS.register("symbol_dot_right",
+                () -> new BlockItem(ModBlocks.SYMBOL_DOT_RIGHT.get(), new Item.Properties()));
 
         public static final RegistryObject<Item> SYMBOL_HEART = ITEMS.register("symbol_heart",
                 () -> new BlockItem(ModBlocks.SYMBOL_HEART.get(), new Item.Properties()));

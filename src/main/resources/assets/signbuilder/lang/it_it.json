@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Freccia verso destra",
   "block.signbuilder.symbol_plus": "Simbolo Più",
   "block.signbuilder.symbol_minus": "Simbolo Meno",
-  "block.signbuilder.symbol_dot": "Simbolo Punto",
-  "block.signbuilder.symbol_heart": "Simbolo Cuore"
+  "block.signbuilder.symbol_dot_left": "Punto a Sinistra",
+  "block.signbuilder.symbol_dot_center": "Punto Centrale",
+  "block.signbuilder.symbol_dot_right": "Punto a Destra",
+  "block.signbuilder.symbol_heart": "Simbolo Cuore",
+  "message.signbuilder.color_copied": "Colore copiato sul pennello!",
+  "tooltip.signbuilder.eyedropper_hint": "Maiusc + Clic destro su un blocco per copiarne il colore",
+  "color.signbuilder.rainbow": "Modalità Arcobaleno"
 }

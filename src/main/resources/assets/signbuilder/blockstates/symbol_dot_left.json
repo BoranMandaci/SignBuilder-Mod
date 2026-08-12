@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "face=floor,facing=north": { "model": "signbuilder:block/symbol_dot_left" },
+    "face=floor,facing=east":  { "model": "signbuilder:block/symbol_dot_left", "y": 90 },
+    "face=floor,facing=south": { "model": "signbuilder:block/symbol_dot_left", "y": 180 },
+    "face=floor,facing=west":  { "model": "signbuilder:block/symbol_dot_left", "y": 270 },
+
+    "face=wall,facing=north": { "model": "signbuilder:block/symbol_dot_left_wall", "y": 90 },
+    "face=wall,facing=east":  { "model": "signbuilder:block/symbol_dot_left_wall", "y": 180 },
+    "face=wall,facing=south": { "model": "signbuilder:block/symbol_dot_left_wall", "y": 270 },
+    "face=wall,facing=west":  { "model": "signbuilder:block/symbol_dot_left_wall" },
+
+    "face=ceiling,facing=north": { "model": "signbuilder:block/symbol_dot_left" },
+    "face=ceiling,facing=east":  { "model": "signbuilder:block/symbol_dot_left", "y": 90 },
+    "face=ceiling,facing=south": { "model": "signbuilder:block/symbol_dot_left", "y": 180 },
+    "face=ceiling,facing=west":  { "model": "signbuilder:block/symbol_dot_left", "y": 270 }
+  }
+}

@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "向右箭头",
   "block.signbuilder.symbol_plus": "加号",
   "block.signbuilder.symbol_minus": "减号",
-  "block.signbuilder.symbol_dot": "点号",
-  "block.signbuilder.symbol_heart": "心形符号"
+  "block.signbuilder.symbol_dot_left": "左侧点",
+  "block.signbuilder.symbol_dot_center": "居中点",
+  "block.signbuilder.symbol_dot_right": "右侧点",
+  "block.signbuilder.symbol_heart": "心形符号",
+  "message.signbuilder.color_copied": "颜色已复制到画笔！",
+  "tooltip.signbuilder.eyedropper_hint": "Shift + 右键点击方块以复制其颜色",
+  "color.signbuilder.rainbow": "彩虹模式"
 }

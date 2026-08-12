@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Стрелка вправо",
   "block.signbuilder.symbol_plus": "Знак плюса",
   "block.signbuilder.symbol_minus": "Знак минуса",
-  "block.signbuilder.symbol_dot": "Знак точки",
-  "block.signbuilder.symbol_heart": "Знак сердца"
+  "block.signbuilder.symbol_dot_left": "Левая точка",
+  "block.signbuilder.symbol_dot_center": "Центральная точка",
+  "block.signbuilder.symbol_dot_right": "Правая точка",
+  "block.signbuilder.symbol_heart": "Знак сердца",
+  "message.signbuilder.color_copied": "Цвет скопирован на кисть!",
+  "tooltip.signbuilder.eyedropper_hint": "Shift + ПКМ по блоку, чтобы скопировать его цвет",
+  "color.signbuilder.rainbow": "Радужный режим"
 }

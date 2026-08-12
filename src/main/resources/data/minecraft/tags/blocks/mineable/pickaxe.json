@@ -42,7 +42,9 @@
     "signbuilder:arrow_right",
     "signbuilder:symbol_plus",
     "signbuilder:symbol_minus",
-    "signbuilder:symbol_dot",
+    "signbuilder:symbol_dot_left",
+    "signbuilder:symbol_dot_center",
+    "signbuilder:symbol_dot_right",
     "signbuilder:symbol_heart"
   ]
 }

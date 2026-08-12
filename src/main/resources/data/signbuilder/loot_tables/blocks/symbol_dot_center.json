@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "signbuilder:symbol_dot"
+          "name": "signbuilder:symbol_dot_center"
         }
       ],
       "conditions": [

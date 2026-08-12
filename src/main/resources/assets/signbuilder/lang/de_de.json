@@ -72,6 +72,11 @@
   "block.signbuilder.arrow_right": "Pfeil nach rechts",
   "block.signbuilder.symbol_plus": "Pluszeichen",
   "block.signbuilder.symbol_minus": "Minuszeichen",
-  "block.signbuilder.symbol_dot": "Punktsymbol",
-  "block.signbuilder.symbol_heart": "Herzsymbol"
+  "block.signbuilder.symbol_dot_left": "Punkt Links",
+  "block.signbuilder.symbol_dot_center": "Punkt Mitte",
+  "block.signbuilder.symbol_dot_right": "Punkt Rechts",
+  "block.signbuilder.symbol_heart": "Herzsymbol",
+  "message.signbuilder.color_copied": "Farbe auf Pinsel kopiert!",
+  "tooltip.signbuilder.eyedropper_hint": "Umschalt + Rechtsklick auf einen Block, um seine Farbe zu kopieren",
+  "color.signbuilder.rainbow": "Regenbogen-Modus"
 }

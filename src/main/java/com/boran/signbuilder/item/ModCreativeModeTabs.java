@@ -65,7 +65,9 @@ public class ModCreativeModeTabs {
 
                         pOutput.accept(ModItems.SYMBOL_PLUS.get());
                         pOutput.accept(ModItems.SYMBOL_MINUS.get());
-                        pOutput.accept(ModItems.SYMBOL_DOT.get());
+                        pOutput.accept(ModItems.SYMBOL_DOT_LEFT.get());
+                        pOutput.accept(ModItems.SYMBOL_DOT_CENTER.get());
+                        pOutput.accept(ModItems.SYMBOL_DOT_RIGHT.get());
                         pOutput.accept(ModItems.SYMBOL_HEART.get());
                     })
                     .build());
