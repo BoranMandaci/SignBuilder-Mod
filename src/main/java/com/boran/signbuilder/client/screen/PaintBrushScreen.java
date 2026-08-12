@@ -3,11 +3,9 @@ package com.boran.signbuilder.client.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
@@ -21,7 +19,7 @@ public class PaintBrushScreen extends Screen {
     private int startY;
     private int totalWidth;
     private int totalHeight;
-    private final int PADDING = 18;
+    private int dynamicPadding = 18;
 
     public PaintBrushScreen() {
         super(Component.translatable("gui.signbuilder.title"));
@@ -45,9 +43,6 @@ public class PaintBrushScreen extends Screen {
                 0x664C33, 0x667F33, 0xCF2323, 0x191919
         };
 
-        int buttonSize = 26;
-        int spacing = 10;
-
         ItemStack brush = this.minecraft.player.getMainHandItem();
         int[] customColors = new int[0];
         if (brush.hasTag() && brush.getTag().contains("CustomColors")) {
@@ -56,6 +51,28 @@ public class PaintBrushScreen extends Screen {
 
         int plusIndex = customColors.length;
         int totalRows = 4 + (plusIndex / 4) + 1;
+
+        // Hotbar'a ve üst kenara değmemesi için güvenlik marjını artırdık (80 yerine 110)
+        int maxAvailableHeight = this.height - 110;
+        int maxAvailableWidth = this.width - 40;
+
+        int buttonSize = 26;
+        int spacing = 10;
+        this.dynamicPadding = 18;
+
+        while (buttonSize > 8) {
+            totalWidth = (buttonSize * 4) + (spacing * 3);
+            totalHeight = (buttonSize * totalRows) + (spacing * (totalRows - 1));
+
+            if (totalWidth <= maxAvailableWidth && totalHeight <= maxAvailableHeight) {
+                break;
+            }
+
+            buttonSize--;
+            spacing = Math.max(2, buttonSize / 3);
+        }
+
+        this.dynamicPadding = Math.min(18, buttonSize);
 
         totalWidth = (buttonSize * 4) + (spacing * 3);
         totalHeight = (buttonSize * totalRows) + (spacing * (totalRows - 1));
@@ -88,10 +105,8 @@ public class PaintBrushScreen extends Screen {
         int plusX = startX + (plusCol * (buttonSize + spacing));
         int plusY = startY + (plusRow * (buttonSize + spacing));
 
-        this.addRenderableWidget(Button.builder(Component.literal("+"), button -> {
-            ItemStack currentBrush = this.minecraft.player.getMainHandItem();
-            this.minecraft.setScreen(new ColorPickerScreen(currentBrush, this));
-        }).bounds(plusX, plusY, buttonSize, buttonSize).build());
+        // Klasik Vanilla Butonu yerine özel estetik AddColorButton'u kullandık
+        this.addRenderableWidget(new AddColorButton(plusX, plusY, buttonSize, buttonSize, this));
     }
 
     @Override
@@ -103,10 +118,10 @@ public class PaintBrushScreen extends Screen {
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         this.renderBackground(pGuiGraphics);
 
-        int panelLeft = startX - PADDING;
-        int panelTop = startY - PADDING;
-        int panelRight = startX + totalWidth + PADDING;
-        int panelBottom = startY + totalHeight + PADDING;
+        int panelLeft = startX - dynamicPadding;
+        int panelTop = startY - dynamicPadding;
+        int panelRight = startX + totalWidth + dynamicPadding;
+        int panelBottom = startY + totalHeight + dynamicPadding;
 
         pGuiGraphics.fillGradient(panelLeft, panelTop, panelRight, panelBottom, 0xEE101010, 0xFA050505);
         pGuiGraphics.renderOutline(panelLeft - 1, panelTop - 1, (panelRight - panelLeft) + 2, (panelBottom - panelTop) + 2, 0x50FFFFFF);
@@ -114,10 +129,14 @@ public class PaintBrushScreen extends Screen {
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
-        int titleY = panelTop - 24;
+        // Başlığın ekran dışına çıkmasını engelle
+        int titleY = Math.max(10, panelTop - (dynamicPadding > 10 ? 24 : 16));
         pGuiGraphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
         pGuiGraphics.fill((this.width / 2) - 40, titleY + 12, (this.width / 2) + 40, titleY + 13, 0x40FFFFFF);
-        pGuiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, panelBottom + 10, 0x666666);
+
+        // ESC yazısının hotbar'ın (envanter kutularının) altına inmesini engelle
+        int escY = Math.min(this.height - 35, panelBottom + (dynamicPadding > 10 ? 10 : 4));
+        pGuiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, escY, 0x666666);
     }
 
     private static class ColorButton extends AbstractButton {
@@ -229,6 +248,46 @@ public class PaintBrushScreen extends Screen {
 
                 parentScreen.rebuildWidgets();
             }
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            this.defaultButtonNarrationText(output);
+        }
+    }
+
+    private static class AddColorButton extends AbstractButton {
+        private final PaintBrushScreen parentScreen;
+
+        public AddColorButton(int x, int y, int width, int height, PaintBrushScreen parentScreen) {
+            super(x, y, width, height, Component.literal("+"));
+            this.parentScreen = parentScreen;
+            this.setTooltip(Tooltip.create(Component.translatable("gui.signbuilder.color_picker.add_color")));
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            graphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + 1, 0xFF373737);
+            graphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + 1, this.getY() + this.height + 1, 0xFF373737);
+            graphics.fill(this.getX() - 1, this.getY() + this.height, this.getX() + this.width + 1, this.getY() + this.height + 1, 0xFFFFFFFF);
+            graphics.fill(this.getX() + this.width, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, 0xFFFFFFFF);
+
+            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF000000);
+
+            graphics.fill(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1, 0xFF555555);
+
+            if (this.isHoveredOrFocused()) {
+                graphics.fillGradient(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1, 0x60FFFFFF, 0x10FFFFFF);
+                graphics.renderOutline(this.getX() - 2, this.getY() - 2, this.width + 4, this.height + 4, 0xCCFFFFFF);
+            }
+
+            graphics.drawCenteredString(Minecraft.getInstance().font, "+", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+        }
+
+        @Override
+        public void onPress() {
+            ItemStack currentBrush = Minecraft.getInstance().player.getMainHandItem();
+            Minecraft.getInstance().setScreen(new ColorPickerScreen(currentBrush, parentScreen));
         }
 
         @Override

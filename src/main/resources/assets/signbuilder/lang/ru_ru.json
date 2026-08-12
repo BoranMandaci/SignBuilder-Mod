@@ -65,5 +65,13 @@
   "gui.signbuilder.color_picker.selected_color": "Выбранный цвет",
   "gui.signbuilder.color_picker.palette": "Палитра цветов",
   "gui.signbuilder.right_click_to_delete": "ПКМ для удаления",
-  "tooltip.signbuilder.selected_color": "Выбранный цвет:"
+  "tooltip.signbuilder.selected_color": "Выбранный цвет:",
+  "block.signbuilder.arrow_up": "Стрелка вверх",
+  "block.signbuilder.arrow_down": "Стрелка вниз",
+  "block.signbuilder.arrow_left": "Стрелка влево",
+  "block.signbuilder.arrow_right": "Стрелка вправо",
+  "block.signbuilder.symbol_plus": "Знак плюса",
+  "block.signbuilder.symbol_minus": "Знак минуса",
+  "block.signbuilder.symbol_dot": "Знак точки",
+  "block.signbuilder.symbol_heart": "Знак сердца"
 }

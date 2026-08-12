@@ -65,5 +65,13 @@
   "gui.signbuilder.color_picker.selected_color": "Seçilen Renk",
   "gui.signbuilder.color_picker.palette": "Renk Paleti",
   "gui.signbuilder.right_click_to_delete": "Silmek için sağ tıklayın",
-  "tooltip.signbuilder.selected_color": "Seçili Renk:"
+  "tooltip.signbuilder.selected_color": "Seçili Renk:",
+  "block.signbuilder.arrow_up": "Yukarı Ok",
+  "block.signbuilder.arrow_down": "Aşağı Ok",
+  "block.signbuilder.arrow_left": "Sol Ok",
+  "block.signbuilder.arrow_right": "Sağ Ok",
+  "block.signbuilder.symbol_plus": "Artı İşareti",
+  "block.signbuilder.symbol_minus": "Eksi İşareti",
+  "block.signbuilder.symbol_dot": "Nokta İşareti",
+  "block.signbuilder.symbol_heart": "Kalp İşareti"
 }

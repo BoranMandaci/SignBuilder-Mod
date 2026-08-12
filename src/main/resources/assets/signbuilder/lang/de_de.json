@@ -65,5 +65,13 @@
   "gui.signbuilder.color_picker.selected_color": "Ausgewählte Farbe",
   "gui.signbuilder.color_picker.palette": "Farbpalette",
   "gui.signbuilder.right_click_to_delete": "Rechtsklick zum löschen",
-  "tooltip.signbuilder.selected_color": "Ausgewählte Farbe:"
+  "tooltip.signbuilder.selected_color": "Ausgewählte Farbe:",
+  "block.signbuilder.arrow_up": "Pfeil nach oben",
+  "block.signbuilder.arrow_down": "Pfeil nach unten",
+  "block.signbuilder.arrow_left": "Pfeil nach links",
+  "block.signbuilder.arrow_right": "Pfeil nach rechts",
+  "block.signbuilder.symbol_plus": "Pluszeichen",
+  "block.signbuilder.symbol_minus": "Minuszeichen",
+  "block.signbuilder.symbol_dot": "Punktsymbol",
+  "block.signbuilder.symbol_heart": "Herzsymbol"
 }

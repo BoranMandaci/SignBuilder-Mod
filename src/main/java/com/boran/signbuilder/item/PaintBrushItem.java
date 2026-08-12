@@ -69,6 +69,10 @@ public class PaintBrushItem extends Item {
 
             if (player != null) {
                 level.playSound(player, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+
+                if (!player.isCreative()) {
+                    stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
+                }
             }
 
             return InteractionResult.sidedSuccess(level.isClientSide);

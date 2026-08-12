@@ -176,7 +176,7 @@ public class ColorPickerScreen extends Screen {
 
         colorList.add(0, this.selectedColorHex);
 
-        while (colorList.size() > 8) {
+        while (colorList.size() > 11) {
             colorList.remove(colorList.size() - 1);
         }
 

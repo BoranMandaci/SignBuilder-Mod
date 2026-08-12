@@ -65,5 +65,13 @@
   "gui.signbuilder.color_picker.selected_color": "Color seleccionado",
   "gui.signbuilder.color_picker.palette": "Paleta de colores",
   "gui.signbuilder.right_click_to_delete": "Clic derecho para eliminar",
-  "tooltip.signbuilder.selected_color": "Color seleccionado:"
+  "tooltip.signbuilder.selected_color": "Color seleccionado:",
+  "block.signbuilder.arrow_up": "Flecha hacia arriba",
+  "block.signbuilder.arrow_down": "Flecha hacia abajo",
+  "block.signbuilder.arrow_left": "Flecha hacia la izquierda",
+  "block.signbuilder.arrow_right": "Flecha hacia la derecha",
+  "block.signbuilder.symbol_plus": "Símbolo Más",
+  "block.signbuilder.symbol_minus": "Símbolo Menos",
+  "block.signbuilder.symbol_dot": "Símbolo de Punto",
+  "block.signbuilder.symbol_heart": "Símbolo de Corazón"
 }

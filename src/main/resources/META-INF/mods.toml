@@ -4,10 +4,10 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="signbuilder"
-version="1.0.6"
+version="1.0.7"
 displayName="SignBuilder"
-authors="BorKing0 & destan"
-description='''Mode for creating 3D letters and custom logos'''
+authors="BoranMandaci & destan"
+description='''Mode for creating 3D letters, numbers and symbols'''
 
 [[dependencies.signbuilder]]
 modId="forge"
