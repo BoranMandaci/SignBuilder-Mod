@@ -9,7 +9,7 @@ You can download the official and latest versions of the Sign Builder mod from t
 
 ## ✨ Features
 
-*   **3D Letters, Numbers & Symbols:** Highly detailed, custom-modeled letters (A-Z), numbers (0-9), and a brand-new set of symbols (Arrows, Plus, Minus, Heart, and Left/Center/Right alignment Dots)! All blocks feature smart hitboxes and adjust seamlessly whether placed on the floor or mounted on a wall.
+*   **3D Letters, Numbers & Symbols:** Highly detailed, custom-modeled letters (A-Z), numbers (0-9), and an extensive set of symbols (Straight & Diagonal Arrows, Slash (/), Plus, Minus, Heart, and Left/Center/Right alignment Dots)! All blocks feature smart hitboxes and adjust seamlessly whether placed on the floor or mounted on a wall.
 *   **The Paint Brush Tool & Custom Palette:** A dedicated custom item to paint your blocks dynamically. Go beyond the vanilla palette by mixing your own RGB/Hex codes and save up to 14 custom colors in your personal palette!
 *   **Rainbow Mode:** Paint your blocks with the new "Rainbow" mode to apply a dynamic, continuously cycling color animation based on in-game time.
 *   **Eyedropper Mechanic:** Sneak (Shift) and right-click on any painted block in the world to instantly copy its exact color directly to your Paint Brush.
