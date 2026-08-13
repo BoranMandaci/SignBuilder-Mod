@@ -29,7 +29,7 @@ public class WrenchItem extends Item {
         if (clickedBlock.hasProperty(ModBlocks.GLOWING)) {
             if (!level.isClientSide()) {
                 boolean isGlowing = clickedBlock.getValue(ModBlocks.GLOWING);
-                level.setBlock(pos, clickedBlock.setValue(ModBlocks.GLOWING, !isGlowing), 3);
+                level.setBlock(pos, clickedBlock.setValue(ModBlocks.GLOWING, !isGlowing), 2);
                 level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
             }
 

@@ -62,6 +62,10 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.ARROW_DOWN.get());
                         pOutput.accept(ModItems.ARROW_LEFT.get());
                         pOutput.accept(ModItems.ARROW_RIGHT.get());
+                        pOutput.accept(ModItems.ARROW_RIGHT_DOWN.get());
+                        pOutput.accept(ModItems.ARROW_RIGHT_UP.get());
+                        pOutput.accept(ModItems.ARROW_LEFT_DOWN.get());
+                        pOutput.accept(ModItems.ARROW_LEFT_UP.get());
 
                         pOutput.accept(ModItems.SYMBOL_PLUS.get());
                         pOutput.accept(ModItems.SYMBOL_MINUS.get());
@@ -69,6 +73,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.SYMBOL_DOT_CENTER.get());
                         pOutput.accept(ModItems.SYMBOL_DOT_RIGHT.get());
                         pOutput.accept(ModItems.SYMBOL_HEART.get());
+                        pOutput.accept(ModItems.SYMBOL_SLASH.get());
                     })
                     .build());
 

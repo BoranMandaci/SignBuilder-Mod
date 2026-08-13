@@ -40,11 +40,16 @@
     "signbuilder:arrow_down",
     "signbuilder:arrow_left",
     "signbuilder:arrow_right",
+    "signbuilder:arrow_right_down",
+    "signbuilder:arrow_right_up",
+    "signbuilder:arrow_left_down",
+    "signbuilder:arrow_left_up",
     "signbuilder:symbol_plus",
     "signbuilder:symbol_minus",
     "signbuilder:symbol_dot_left",
     "signbuilder:symbol_dot_center",
     "signbuilder:symbol_dot_right",
-    "signbuilder:symbol_heart"
+    "signbuilder:symbol_heart",
+    "signbuilder:symbol_slash"
   ]
 }

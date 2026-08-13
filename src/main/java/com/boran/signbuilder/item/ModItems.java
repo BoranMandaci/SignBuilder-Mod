@@ -137,6 +137,18 @@ import net.minecraftforge.registries.RegistryObject;
         public static final RegistryObject<Item> ARROW_RIGHT = ITEMS.register("arrow_right",
                 () -> new BlockItem(ModBlocks.ARROW_RIGHT.get(), new Item.Properties()));
 
+        public static final RegistryObject<Item> ARROW_RIGHT_DOWN = ITEMS.register("arrow_right_down",
+                () -> new BlockItem(ModBlocks.ARROW_RIGHT_DOWN.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> ARROW_RIGHT_UP = ITEMS.register("arrow_right_up",
+                () -> new BlockItem(ModBlocks.ARROW_RIGHT_UP.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> ARROW_LEFT_DOWN = ITEMS.register("arrow_left_down",
+                () -> new BlockItem(ModBlocks.ARROW_LEFT_DOWN.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> ARROW_LEFT_UP = ITEMS.register("arrow_left_up",
+                () -> new BlockItem(ModBlocks.ARROW_LEFT_UP.get(), new Item.Properties()));
+
         public static final RegistryObject<Item> SYMBOL_PLUS = ITEMS.register("symbol_plus",
                 () -> new BlockItem(ModBlocks.SYMBOL_PLUS.get(), new Item.Properties()));
 
@@ -154,6 +166,9 @@ import net.minecraftforge.registries.RegistryObject;
 
         public static final RegistryObject<Item> SYMBOL_HEART = ITEMS.register("symbol_heart",
                 () -> new BlockItem(ModBlocks.SYMBOL_HEART.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_SLASH = ITEMS.register("symbol_slash",
+                () -> new BlockItem(ModBlocks.SYMBOL_SLASH.get(), new Item.Properties()));
 
         public static void register(IEventBus eventBus) {
             ITEMS.register(eventBus);
