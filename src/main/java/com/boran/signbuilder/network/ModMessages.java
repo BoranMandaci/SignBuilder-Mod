@@ -28,6 +28,12 @@ public class ModMessages {
                 .encoder((packet, buf) -> packet.toBytes(buf))
                 .consumerMainThread((packet, contextSupplier) -> packet.handle(contextSupplier))
                 .add();
+
+        net.messageBuilder(WrenchModeC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(WrenchModeC2SPacket::new)
+                .encoder(WrenchModeC2SPacket::toBytes)
+                .consumerMainThread(WrenchModeC2SPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {

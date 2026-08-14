@@ -21,13 +21,25 @@ public class LetterBlock extends Block implements EntityBlock {
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
         if (!pLevel.isClientSide) {
-            boolean hasSignal = pLevel.hasNeighborSignal(pPos);
 
-            if (pState.hasProperty(ModBlocks.GLOWING)) {
-                boolean isGlowing = pState.getValue(ModBlocks.GLOWING);
+            BlockEntity be = pLevel.getBlockEntity(pPos);
+            boolean ignoreRedstone = false;
 
-                if (hasSignal != isGlowing) {
-                    pLevel.setBlock(pPos, pState.setValue(ModBlocks.GLOWING, hasSignal), 3);
+            if (be instanceof LetterBlockEntity letterEntity) {
+                if (letterEntity.isActive() || letterEntity.getWrenchMode() != 0) {
+                    ignoreRedstone = true;
+                }
+            }
+
+            if (!ignoreRedstone) {
+                boolean hasSignal = pLevel.hasNeighborSignal(pPos);
+
+                if (pState.hasProperty(ModBlocks.GLOWING)) {
+                    boolean isGlowing = pState.getValue(ModBlocks.GLOWING);
+
+                    if (hasSignal != isGlowing) {
+                        pLevel.setBlock(pPos, pState.setValue(ModBlocks.GLOWING, hasSignal), 3);
+                    }
                 }
             }
         }
@@ -44,7 +56,7 @@ public class LetterBlock extends Block implements EntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (type == ModBlockEntities.LETTER_BLOCK_ENTITY.get()) {
-            return (l, p, s, be) -> LetterBlockEntity.tick(l, p, s, (LetterBlockEntity) be);
+            return (l, p, s, entity) -> LetterBlockEntity.tick(l, p, s, (LetterBlockEntity) entity);
         }
         return null;
     }

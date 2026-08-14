@@ -3,6 +3,7 @@ package com.boran.signbuilder.item;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.screen.PaintBrushScreen;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -21,9 +22,15 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class PaintBrushItem extends Item {
 
@@ -32,10 +39,74 @@ public class PaintBrushItem extends Item {
     }
 
     @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        CompoundTag tag = stack.getTag();
+
+        int selectedColor = 0;
+        boolean isSmartFill = false;
+
+        if (tag != null) {
+            if (tag.contains("SelectedColor")) selectedColor = tag.getInt("SelectedColor");
+            if (tag.contains("IsSmartFill")) isSmartFill = tag.getBoolean("IsSmartFill");
+        }
+
+        Component label = Component.translatable("tooltip.signbuilder.selected_color");
+        Component valueComponent;
+
+        if (selectedColor == -1) {
+            valueComponent = Component.translatable("color.signbuilder.rainbow")
+                    .withStyle(Style.EMPTY.withColor(0xFF55FF));
+        } else if (selectedColor <= 15) {
+            String colorNameKey = getColorNameKey(selectedColor);
+            int hexColor = getActualHexColor(selectedColor);
+            valueComponent = Component.translatable(colorNameKey)
+                    .withStyle(Style.EMPTY.withColor(hexColor));
+        } else {
+            String hexString = "#" + String.format("%06X", selectedColor).toUpperCase();
+            valueComponent = Component.literal(hexString)
+                    .withStyle(Style.EMPTY.withColor(selectedColor));
+        }
+
+        tooltipComponents.add(Component.empty().append(label).append(" ").append(valueComponent));
+
+        tooltipComponents.add(Component.translatable("tooltip.signbuilder.brush.smart_fill")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(": "))
+                .append(Component.translatable(isSmartFill ? "gui.signbuilder.wrench.state_on" : "gui.signbuilder.wrench.state_off")
+                        .withStyle(isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)));
+
+        tooltipComponents.add(Component.translatable("tooltip.signbuilder.eyedropper_hint")
+                .withStyle(Style.EMPTY.withColor(0xAAAAAA).withItalic(true)));
+
+        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+
+        if (player.isShiftKeyDown()) {
+            if (!level.isClientSide) {
+                boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
+                stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
+
+                player.displayClientMessage(
+                        Component.translatable("message.signbuilder.brush.smart_fill_toggle")
+                                .withStyle(ChatFormatting.YELLOW)
+                                .append(Component.translatable(!isSmartFill ? "gui.signbuilder.wrench.state_on" : "gui.signbuilder.wrench.state_off")
+                                        .withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)),
+                        true
+                );
+
+                level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
+            }
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        }
+
         if (level.isClientSide) {
-            Minecraft.getInstance().setScreen(new PaintBrushScreen());
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                Minecraft.getInstance().setScreen(new PaintBrushScreen());
+            });
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
@@ -81,17 +152,28 @@ public class PaintBrushItem extends Item {
                 CompoundTag tag = stack.getOrCreateTag();
                 if (tag.contains("SelectedColor")) {
                     int selectedColor = tag.getInt("SelectedColor");
+                    boolean isSmartFill = tag.getBoolean("IsSmartFill");
 
-                    if (selectedColor == -1) {
-                        letterEntity.setRainbow(true);
+                    if (isSmartFill) {
+                        applyColorToConnected(level, pos, selectedColor);
+                        if (player != null) {
+                            player.displayClientMessage(
+                                    Component.translatable("message.signbuilder.brush.smart_fill_success")
+                                            .withStyle(ChatFormatting.GREEN), true
+                            );
+                        }
                     } else {
-                        int hexColor = getActualHexColor(selectedColor);
-                        letterEntity.setRgbColor(hexColor);
-
-                        if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
-                            level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
+                        if (selectedColor == -1) {
+                            letterEntity.setRainbow(true);
                         } else {
-                            level.sendBlockUpdated(pos, state, state, 3);
+                            int hexColor = getActualHexColor(selectedColor);
+                            letterEntity.setRgbColor(hexColor);
+
+                            if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
+                                level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
+                            } else {
+                                level.sendBlockUpdated(pos, state, state, 3);
+                            }
                         }
                     }
                 }
@@ -108,45 +190,51 @@ public class PaintBrushItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        if (level.isClientSide && player != null) {
-            Minecraft.getInstance().setScreen(new PaintBrushScreen());
+        if (level.isClientSide && player != null && !player.isShiftKeyDown()) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                Minecraft.getInstance().setScreen(new PaintBrushScreen());
+            });
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        CompoundTag tag = stack.getTag();
+    private void applyColorToConnected(Level level, BlockPos startPos, int selectedColor) {
+        Set<BlockPos> visited = new HashSet<>();
+        Queue<BlockPos> queue = new LinkedList<>();
 
-        int selectedColor = 0;
-        if (tag != null && tag.contains("SelectedColor")) {
-            selectedColor = tag.getInt("SelectedColor");
+        queue.add(startPos);
+        visited.add(startPos);
+
+        while (!queue.isEmpty() && visited.size() < 256) {
+            BlockPos current = queue.poll();
+            BlockEntity be = level.getBlockEntity(current);
+
+            if (be instanceof LetterBlockEntity letter) {
+                BlockState currentState = level.getBlockState(current);
+
+                if (selectedColor == -1) {
+                    letter.setRainbow(true);
+                } else {
+                    int hexColor = getActualHexColor(selectedColor);
+                    letter.setRgbColor(hexColor);
+
+                    if (selectedColor <= 15 && currentState.hasProperty(ModBlocks.COLOR)) {
+                        level.setBlock(current, currentState.setValue(ModBlocks.COLOR, selectedColor), 3);
+                    } else {
+                        level.sendBlockUpdated(current, currentState, currentState, 3);
+                    }
+                }
+
+                for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                    BlockPos neighbor = current.relative(dir);
+                    if (!visited.contains(neighbor) && level.getBlockEntity(neighbor) instanceof LetterBlockEntity) {
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+            }
         }
-
-        Component label = Component.translatable("tooltip.signbuilder.selected_color");
-        Component valueComponent;
-
-        if (selectedColor == -1) {
-            valueComponent = Component.translatable("color.signbuilder.rainbow")
-                    .withStyle(Style.EMPTY.withColor(0xFF55FF));
-        } else if (selectedColor <= 15) {
-            String colorNameKey = getColorNameKey(selectedColor);
-            int hexColor = getActualHexColor(selectedColor);
-            valueComponent = Component.translatable(colorNameKey)
-                    .withStyle(Style.EMPTY.withColor(hexColor));
-        } else {
-            String hexString = "#" + String.format("%06X", selectedColor).toUpperCase();
-            valueComponent = Component.literal(hexString)
-                    .withStyle(Style.EMPTY.withColor(selectedColor));
-        }
-
-        tooltipComponents.add(Component.empty().append(label).append(" ").append(valueComponent));
-
-        tooltipComponents.add(Component.translatable("tooltip.signbuilder.eyedropper_hint")
-                .withStyle(Style.EMPTY.withColor(0xAAAAAA).withItalic(true)));
-
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
     }
 
     private static String getColorNameKey(int index) {

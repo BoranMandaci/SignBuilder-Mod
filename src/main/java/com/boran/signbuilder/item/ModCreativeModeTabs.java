@@ -13,10 +13,10 @@ public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "signbuilder");
 
-    public static final RegistryObject<CreativeModeTab> SIGNBUILDER_TAB = CREATIVE_MODE_TABS.register("signbuilder_tab",
+    public static final RegistryObject<CreativeModeTab> LETTERS_TAB = CREATIVE_MODE_TABS.register("letters_tab",
             () -> CreativeModeTab.builder()
                     .icon(() -> new ItemStack(ModItems.LETTER_A_ITEM.get()))
-                    .title(Component.translatable("creativetab.signbuilder_tab"))
+                    .title(Component.translatable("creativetab.signbuilder_letters"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.PAINT_BRUSH.get());
                         pOutput.accept(ModItems.WRENCH.get());
@@ -46,6 +46,14 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.LETTER_X_ITEM.get());
                         pOutput.accept(ModItems.LETTER_Y_ITEM.get());
                         pOutput.accept(ModItems.LETTER_Z_ITEM.get());
+                    })
+                    .build());
+
+    public static final RegistryObject<CreativeModeTab> NUMBERS_TAB = CREATIVE_MODE_TABS.register("numbers_tab",
+            () -> CreativeModeTab.builder()
+                    .icon(() -> new ItemStack(ModItems.NUMBER_1_ITEM.get()))
+                    .title(Component.translatable("creativetab.signbuilder_numbers"))
+                    .displayItems((pParameters, pOutput) -> {
 
                         pOutput.accept(ModItems.NUMBER_0_ITEM.get());
                         pOutput.accept(ModItems.NUMBER_1_ITEM.get());
@@ -57,6 +65,14 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.NUMBER_7_ITEM.get());
                         pOutput.accept(ModItems.NUMBER_8_ITEM.get());
                         pOutput.accept(ModItems.NUMBER_9_ITEM.get());
+                    })
+                    .build());
+
+    public static final RegistryObject<CreativeModeTab> SYMBOLS_TAB = CREATIVE_MODE_TABS.register("symbols_tab",
+            () -> CreativeModeTab.builder()
+                    .icon(() -> new ItemStack(ModItems.SYMBOL_PLUS.get()))
+                    .title(Component.translatable("creativetab.signbuilder_symbols"))
+                    .displayItems((pParameters, pOutput) -> {
 
                         pOutput.accept(ModItems.ARROW_UP.get());
                         pOutput.accept(ModItems.ARROW_DOWN.get());
