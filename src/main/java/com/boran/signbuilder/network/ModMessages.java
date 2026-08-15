@@ -34,6 +34,12 @@ public class ModMessages {
                 .encoder(WrenchModeC2SPacket::toBytes)
                 .consumerMainThread(WrenchModeC2SPacket::handle)
                 .add();
+
+        net.messageBuilder(BlueprintTextC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(BlueprintTextC2SPacket::new)
+                .encoder(BlueprintTextC2SPacket::toBytes)
+                .consumerMainThread(BlueprintTextC2SPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {

@@ -50,6 +50,10 @@
     "signbuilder:symbol_dot_center",
     "signbuilder:symbol_dot_right",
     "signbuilder:symbol_heart",
-    "signbuilder:symbol_slash"
+    "signbuilder:symbol_hashtag",
+    "signbuilder:symbol_slash",
+    "signbuilder:symbol_bracket_double",
+    "signbuilder:symbol_bracket_left",
+    "signbuilder:symbol_bracket_right"
   ]
 }

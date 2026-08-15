@@ -20,6 +20,7 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.PAINT_BRUSH.get());
                         pOutput.accept(ModItems.WRENCH.get());
+                        pOutput.accept(ModItems.SIGN_BLUEPRINT.get());
 
                         pOutput.accept(ModItems.LETTER_A_ITEM.get());
                         pOutput.accept(ModItems.LETTER_B_ITEM.get());
@@ -89,7 +90,11 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.SYMBOL_DOT_CENTER.get());
                         pOutput.accept(ModItems.SYMBOL_DOT_RIGHT.get());
                         pOutput.accept(ModItems.SYMBOL_HEART.get());
+                        pOutput.accept(ModItems.SYMBOL_HASHTAG.get());
                         pOutput.accept(ModItems.SYMBOL_SLASH.get());
+                        pOutput.accept(ModItems.SYMBOL_BRACKET_LEFT.get());
+                        pOutput.accept(ModItems.SYMBOL_BRACKET_RIGHT.get());
+                        pOutput.accept(ModItems.SYMBOL_BRACKET_DOUBLE.get());
                     })
                     .build());
 

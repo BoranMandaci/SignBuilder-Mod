@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="signbuilder"
-version="1.0.9"
+version="1.1.0"
 displayName="SignBuilder"
 authors="BoranMandaci & destan"
 description='''Mode for creating 3D letters, numbers and symbols'''

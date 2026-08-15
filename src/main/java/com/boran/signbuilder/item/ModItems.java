@@ -17,6 +17,9 @@ import net.minecraftforge.registries.RegistryObject;
         public static final RegistryObject<Item> PAINT_BRUSH = ITEMS.register("paint_brush",
                 () -> new PaintBrushItem(new Item.Properties().defaultDurability(256)));
 
+        public static final RegistryObject<Item> SIGN_BLUEPRINT = ITEMS.register("sign_blueprint",
+                () -> new SignBlueprintItem(new Item.Properties().stacksTo(1)));
+
         public static final RegistryObject<Item> LETTER_A_ITEM = ITEMS.register("letter_a",
                 () -> new BlockItem(ModBlocks.LETTER_A.get(), new Item.Properties()));
 
@@ -167,8 +170,20 @@ import net.minecraftforge.registries.RegistryObject;
         public static final RegistryObject<Item> SYMBOL_HEART = ITEMS.register("symbol_heart",
                 () -> new BlockItem(ModBlocks.SYMBOL_HEART.get(), new Item.Properties()));
 
+        public static final RegistryObject<Item> SYMBOL_HASHTAG = ITEMS.register("symbol_hashtag",
+                () -> new BlockItem(ModBlocks.SYMBOL_HASHTAG.get(), new Item.Properties()));
+
         public static final RegistryObject<Item> SYMBOL_SLASH = ITEMS.register("symbol_slash",
                 () -> new BlockItem(ModBlocks.SYMBOL_SLASH.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_BRACKET_DOUBLE = ITEMS.register("symbol_bracket_double",
+                () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_DOUBLE.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_BRACKET_LEFT = ITEMS.register("symbol_bracket_left",
+                () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_LEFT.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_BRACKET_RIGHT = ITEMS.register("symbol_bracket_right",
+                () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_RIGHT.get(), new Item.Properties()));
 
         public static void register(IEventBus eventBus) {
             ITEMS.register(eventBus);
