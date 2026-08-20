@@ -31,9 +31,9 @@ public class BlueprintScreen extends Screen {
         this.addRenderableWidget(this.textField);
         this.setInitialFocus(this.textField);
 
-        String[] insertChars = {"«", "•", "»", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "|", "♥"};
+        String[] insertChars = {"«", "•", "»", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "|", "♥", "€", "$", "₺"};
 
-        String[] displayChars = {"•  ", "•", "  •", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", ")(", "♥"};
+        String[] displayChars = {"•  ", "•", "  •", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", ")(", "♥", "€", "$", "₺"};
 
         String[] tooltipKeys = {
                 "tooltip.signbuilder.blueprint.dot_left",
@@ -41,7 +41,10 @@ public class BlueprintScreen extends Screen {
                 "tooltip.signbuilder.blueprint.dot_right",
                 null, null, null, null, null, null, null, null,
                 "tooltip.signbuilder.blueprint.bracket_double",
-                "tooltip.signbuilder.blueprint.heart" // Kalp Tooltip Key'i
+                "tooltip.signbuilder.blueprint.heart",
+                "tooltip.signbuilder.blueprint.euro",
+                "tooltip.signbuilder.blueprint.dollar",
+                "tooltip.signbuilder.blueprint.tl"
         };
 
         int btnWidth = 18;

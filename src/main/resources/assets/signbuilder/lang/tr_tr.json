@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Sağ Parantez",
   "block.signbuilder.symbol_bracket_double": "Çift Parantez",
   "block.signbuilder.symbol_hashtag": "Hashtag",
-  "tooltip.signbuilder.blueprint.heart": "Kalp"
+  "tooltip.signbuilder.blueprint.heart": "Kalp",
+  "block.signbuilder.symbol_euro": "Euro İşareti",
+  "block.signbuilder.symbol_dollar": "Dolar İşareti",
+  "block.signbuilder.symbol_tl": "Türk Lirası İşareti",
+  "tooltip.signbuilder.blueprint.euro": "Euro",
+  "tooltip.signbuilder.blueprint.dollar": "Dolar",
+  "tooltip.signbuilder.blueprint.tl": "Türk Lirası",
+  "tooltip.signbuilder.smart_fill_desc": "Akıllı Doldurma Modunu açıp kapatmak\niçin Shift + Sağ Tık yapın.",
+  "gui.signbuilder.smart_fill": "Akıllı Doldurma",
+  "gui.signbuilder.on": "AÇIK",
+  "gui.signbuilder.off": "KAPALI",
+  "block.signbuilder.sign_press": "Tabela Pres Makinesi",
+  "message.signbuilder.blueprint.missing_materials": "Eksik Malzeme",
+  "message.signbuilder.wrench.no_glowstone": "Yeterli Işıktaşı Tozu yok!"
 }

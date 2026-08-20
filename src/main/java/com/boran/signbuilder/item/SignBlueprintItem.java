@@ -24,12 +24,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SignBlueprintItem extends Item {
 
     public SignBlueprintItem(Properties pProperties) {
-        super(pProperties);
+        super(pProperties.durability(32));
     }
 
     @Override
@@ -96,6 +98,50 @@ public class SignBlueprintItem extends Item {
             return InteractionResult.FAIL;
         }
 
+        if (!player.isCreative()) {
+            Map<Item, Integer> requiredItems = new HashMap<>();
+
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == ' ') continue;
+
+                Block blockForChar = getBlockForChar(c);
+                if (blockForChar != null) {
+                    Item itemForChar = blockForChar.asItem();
+                    requiredItems.put(itemForChar, requiredItems.getOrDefault(itemForChar, 0) + 1);
+                }
+            }
+
+            boolean hasAllItems = true;
+            StringBuilder missingItemsText = new StringBuilder();
+
+            for (Map.Entry<Item, Integer> entry : requiredItems.entrySet()) {
+                Item requiredItem = entry.getKey();
+                int requiredAmount = entry.getValue();
+                int playerAmount = countItemInInventory(player, requiredItem);
+
+                if (playerAmount < requiredAmount) {
+                    hasAllItems = false;
+                    int missing = requiredAmount - playerAmount;
+                    missingItemsText.append(requiredItem.getDescription().getString()).append(" (x").append(missing).append("), ");
+                }
+            }
+
+            if (!hasAllItems) {
+                String missingStr = missingItemsText.substring(0, missingItemsText.length() - 2);
+
+                player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED)
+                        .append(Component.literal(": " + missingStr).withStyle(ChatFormatting.YELLOW)), true);
+
+                player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
+                return InteractionResult.FAIL;
+            }
+
+            for (Map.Entry<Item, Integer> entry : requiredItems.entrySet()) {
+                consumeItemFromInventory(player, entry.getKey(), entry.getValue());
+            }
+        }
+
         Direction clickedFace = pContext.getClickedFace();
         BlockPos startPos = pContext.getClickedPos().relative(clickedFace);
 
@@ -107,16 +153,12 @@ public class SignBlueprintItem extends Item {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
 
-            if (c == ' ') {
-                continue;
-            }
+            if (c == ' ') continue;
 
             BlockPos currentPos = startPos.relative(rightDir, i);
-
             BlockState existingState = level.getBlockState(currentPos);
-            if (!existingState.canBeReplaced()) {
-                break;
-            }
+
+            if (!existingState.canBeReplaced()) break;
 
             Block blockToPlace = getBlockForChar(c);
 
@@ -128,10 +170,7 @@ public class SignBlueprintItem extends Item {
                         new net.minecraft.world.item.context.BlockPlaceContext(level, player, pContext.getHand(), stack, hitResult);
 
                 BlockState stateToPlace = blockToPlace.getStateForPlacement(placeContext);
-
-                if (stateToPlace == null) {
-                    stateToPlace = blockToPlace.defaultBlockState();
-                }
+                if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();
 
                 level.setBlock(currentPos, stateToPlace, 3);
                 blocksPlaced++;
@@ -146,6 +185,31 @@ public class SignBlueprintItem extends Item {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    private int countItemInInventory(Player player, Item item) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) count += stack.getCount();
+        }
+        return count;
+    }
+
+    private void consumeItemFromInventory(Player player, Item item, int amount) {
+        int amountLeftToRemove = amount;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) {
+                if (stack.getCount() >= amountLeftToRemove) {
+                    stack.shrink(amountLeftToRemove);
+                    break;
+                } else {
+                    amountLeftToRemove -= stack.getCount();
+                    stack.setCount(0);
+                }
+            }
+        }
     }
 
     private Block getBlockForChar(char c) {
@@ -175,7 +239,6 @@ public class SignBlueprintItem extends Item {
             case 'X' -> ModBlocks.LETTER_X.get();
             case 'Y' -> ModBlocks.LETTER_Y.get();
             case 'Z' -> ModBlocks.LETTER_Z.get();
-
             case '0' -> ModBlocks.NUMBER_0.get();
             case '1' -> ModBlocks.NUMBER_1.get();
             case '2' -> ModBlocks.NUMBER_2.get();
@@ -186,31 +249,28 @@ public class SignBlueprintItem extends Item {
             case '7' -> ModBlocks.NUMBER_7.get();
             case '8' -> ModBlocks.NUMBER_8.get();
             case '9' -> ModBlocks.NUMBER_9.get();
-
             case '+' -> ModBlocks.SYMBOL_PLUS.get();
             case '-' -> ModBlocks.SYMBOL_MINUS.get();
             case '/' -> ModBlocks.SYMBOL_SLASH.get();
             case '#' -> ModBlocks.SYMBOL_HASHTAG.get();
             case '♥' -> ModBlocks.SYMBOL_HEART.get();
-
+            case '€' -> ModBlocks.SYMBOL_EURO.get();
+            case '$' -> ModBlocks.SYMBOL_DOLLAR.get();
+            case '₺' -> ModBlocks.SYMBOL_TL.get();
             case '«' -> ModBlocks.SYMBOL_DOT_LEFT.get();
             case '•' -> ModBlocks.SYMBOL_DOT_CENTER.get();
             case '»' -> ModBlocks.SYMBOL_DOT_RIGHT.get();
-
             case '(' -> ModBlocks.SYMBOL_BRACKET_LEFT.get();
             case ')' -> ModBlocks.SYMBOL_BRACKET_RIGHT.get();
             case '|' -> ModBlocks.SYMBOL_BRACKET_DOUBLE.get();
-
             case '↑' -> ModBlocks.ARROW_UP.get();
             case '↓' -> ModBlocks.ARROW_DOWN.get();
             case '←' -> ModBlocks.ARROW_LEFT.get();
             case '→' -> ModBlocks.ARROW_RIGHT.get();
-
             case '↖' -> ModBlocks.ARROW_LEFT_UP.get();
             case '↗' -> ModBlocks.ARROW_RIGHT_UP.get();
             case '↙' -> ModBlocks.ARROW_LEFT_DOWN.get();
             case '↘' -> ModBlocks.ARROW_RIGHT_DOWN.get();
-
             default -> null;
         };
     }

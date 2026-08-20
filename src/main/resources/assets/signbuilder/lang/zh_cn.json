@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "右括号",
   "block.signbuilder.symbol_bracket_double": "双括号",
   "block.signbuilder.symbol_hashtag": "井号",
-  "tooltip.signbuilder.blueprint.heart": "心形"
+  "tooltip.signbuilder.blueprint.heart": "心形",
+  "block.signbuilder.symbol_euro": "欧元符号",
+  "block.signbuilder.symbol_dollar": "美元符号",
+  "block.signbuilder.symbol_tl": "土耳其里拉符号",
+  "tooltip.signbuilder.blueprint.euro": "欧元",
+  "tooltip.signbuilder.blueprint.dollar": "美元",
+  "tooltip.signbuilder.blueprint.tl": "土耳其里拉",
+  "tooltip.signbuilder.smart_fill_desc": "在半空中潜行 (Shift) + 右键点击\n以切换智能填充模式。",
+  "gui.signbuilder.smart_fill": "智能填充",
+  "gui.signbuilder.on": "开",
+  "gui.signbuilder.off": "关",
+  "block.signbuilder.sign_press": "招牌压制机",
+  "message.signbuilder.blueprint.missing_materials": "缺少材料",
+  "message.signbuilder.wrench.no_glowstone": "萤石粉不足！"
 }

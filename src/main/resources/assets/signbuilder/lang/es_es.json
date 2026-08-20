@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Paréntesis Derecho",
   "block.signbuilder.symbol_bracket_double": "Doble Paréntesis",
   "block.signbuilder.symbol_hashtag": "Hashtag",
-  "tooltip.signbuilder.blueprint.heart": "Corazón"
+  "tooltip.signbuilder.blueprint.heart": "Corazón",
+  "block.signbuilder.symbol_euro": "Símbolo de Euro",
+  "block.signbuilder.symbol_dollar": "Símbolo de Dólar",
+  "block.signbuilder.symbol_tl": "Símbolo de Lira Turca",
+  "tooltip.signbuilder.blueprint.euro": "Euro",
+  "tooltip.signbuilder.blueprint.dollar": "Dólar",
+  "tooltip.signbuilder.blueprint.tl": "Lira Turca",
+  "tooltip.signbuilder.smart_fill_desc": "Agacharse (Shift) + Clic derecho en el aire\npara alternar el modo de Relleno Inteligente.",
+  "gui.signbuilder.smart_fill": "Relleno Inteligente",
+  "gui.signbuilder.on": "ENCENDIDO",
+  "gui.signbuilder.off": "APAGADO",
+  "block.signbuilder.sign_press": "Prensa de Letreros",
+  "message.signbuilder.blueprint.missing_materials": "Materiales faltantes",
+  "message.signbuilder.wrench.no_glowstone": "¡No hay suficiente polvo de piedra luminosa!"
 }

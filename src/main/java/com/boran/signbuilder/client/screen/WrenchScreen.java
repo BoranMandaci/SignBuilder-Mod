@@ -5,6 +5,7 @@ import com.boran.signbuilder.network.WrenchModeC2SPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.Util;
 
 public class WrenchScreen extends Screen {
@@ -12,6 +13,8 @@ public class WrenchScreen extends Screen {
     private final int currentMode;
     private boolean detectsMonsters;
     private boolean detectsAnimals;
+    private boolean isSmartFillEnabled;
+
     private final String[] MOD_KEYS = {
             "gui.signbuilder.wrench.mode.normal",
             "gui.signbuilder.wrench.mode.blink",
@@ -36,6 +39,14 @@ public class WrenchScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+
+        if (this.minecraft != null && this.minecraft.player != null) {
+            ItemStack mainItem = this.minecraft.player.getMainHandItem();
+            ItemStack offItem = this.minecraft.player.getOffhandItem();
+
+            this.isSmartFillEnabled = (mainItem.hasTag() && mainItem.getTag().getBoolean("IsSmartFill")) ||
+                    (offItem.hasTag() && offItem.getTag().getBoolean("IsSmartFill"));
+        }
     }
 
     @Override
@@ -55,14 +66,34 @@ public class WrenchScreen extends Screen {
         guiGraphics.fill(startX - 1, startY, startX, startY + panelHeight, borderColor);
         guiGraphics.fill(startX + panelWidth, startY, startX + panelWidth + 1, startY + panelHeight, borderColor);
 
+        Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
+        Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off");
+        Component sfText = sfPrefix.copy().append(": ").append(sfState);
+
+        int sfWidth = this.font.width(sfText) + 6;
+        int sfHeight = 11;
+        int sfX = startX + panelWidth - sfWidth - 2;
+        int sfY = startY + 2;
+
+        int sfBgColor = this.isSmartFillEnabled ? 0xFF114411 : 0xFF441111;
+        int sfTextColor = this.isSmartFillEnabled ? 0x55FF55 : 0xFF5555;
+
+        guiGraphics.fill(sfX, sfY, sfX + sfWidth, sfY + sfHeight, sfBgColor);
+        guiGraphics.renderOutline(sfX, sfY, sfWidth, sfHeight, 0xFF777777);
+        guiGraphics.drawCenteredString(this.font, sfText, sfX + (sfWidth / 2), sfY + 2, sfTextColor);
+
         long time = Util.getMillis();
         Component tooltipToRender = null;
+
+        if (mouseX >= sfX && mouseX <= sfX + sfWidth && mouseY >= sfY && mouseY <= sfY + sfHeight) {
+            tooltipToRender = Component.translatable("tooltip.signbuilder.smart_fill_desc");
+        }
 
         for (int i = 0; i < MOD_KEYS.length; i++) {
             int rowY = startY + 5 + (i * rowHeight);
             boolean isHovered = mouseX >= startX && mouseX <= startX + panelWidth && mouseY >= rowY && mouseY < rowY + rowHeight;
 
-            if (isHovered) {
+            if (isHovered && tooltipToRender == null) {
                 guiGraphics.fill(startX, rowY, startX + panelWidth, rowY + rowHeight, 0x44FFFFFF);
                 tooltipToRender = Component.translatable(MOD_KEYS[i] + ".desc");
             }
@@ -78,12 +109,12 @@ public class WrenchScreen extends Screen {
 
                 int animalBg = this.detectsAnimals ? 0xFF22AA22 : 0xFFAA2222;
                 guiGraphics.fill(animalToggleX, toggleY, animalToggleX + toggleSize, toggleY + toggleSize, animalBg);
-                guiGraphics.fill(animalToggleX + 2, toggleY + 2, animalToggleX + 14, toggleY + 14, 0xFFFFAAEE); // Pembe Kafa
-                guiGraphics.fill(animalToggleX + 3, toggleY + 5, animalToggleX + 5, toggleY + 7, 0xFF111111);   // Sol Göz
-                guiGraphics.fill(animalToggleX + 11, toggleY + 5, animalToggleX + 13, toggleY + 7, 0xFF111111); // Sağ Göz
-                guiGraphics.fill(animalToggleX + 5, toggleY + 8, animalToggleX + 11, toggleY + 12, 0xFFE585A6); // Burun (Koyu Pembe)
-                guiGraphics.fill(animalToggleX + 6, toggleY + 9, animalToggleX + 7, toggleY + 11, 0xFF994466);  // Sol Burun Deliği
-                guiGraphics.fill(animalToggleX + 9, toggleY + 9, animalToggleX + 10, toggleY + 11, 0xFF994466); // Sağ Burun Deliği
+                guiGraphics.fill(animalToggleX + 2, toggleY + 2, animalToggleX + 14, toggleY + 14, 0xFFFFAAEE);
+                guiGraphics.fill(animalToggleX + 3, toggleY + 5, animalToggleX + 5, toggleY + 7, 0xFF111111);
+                guiGraphics.fill(animalToggleX + 11, toggleY + 5, animalToggleX + 13, toggleY + 7, 0xFF111111);
+                guiGraphics.fill(animalToggleX + 5, toggleY + 8, animalToggleX + 11, toggleY + 12, 0xFFE585A6);
+                guiGraphics.fill(animalToggleX + 6, toggleY + 9, animalToggleX + 7, toggleY + 11, 0xFF994466);
+                guiGraphics.fill(animalToggleX + 9, toggleY + 9, animalToggleX + 10, toggleY + 11, 0xFF994466);
 
                 int monsterBg = this.detectsMonsters ? 0xFF22AA22 : 0xFFAA2222;
                 guiGraphics.fill(monsterToggleX, toggleY, monsterToggleX + toggleSize, toggleY + toggleSize, monsterBg);
@@ -96,10 +127,8 @@ public class WrenchScreen extends Screen {
 
                 if (isHoveredMonster) {
                     tooltipToRender = Component.translatable(this.detectsMonsters ? "gui.signbuilder.wrench.monster_toggle_on" : "gui.signbuilder.wrench.monster_toggle_off");
-                    isHovered = false;
                 } else if (isHoveredAnimal) {
                     tooltipToRender = Component.translatable(this.detectsAnimals ? "gui.signbuilder.wrench.animal_toggle_on" : "gui.signbuilder.wrench.animal_toggle_off");
-                    isHovered = false;
                 }
             }
 
@@ -124,7 +153,7 @@ public class WrenchScreen extends Screen {
 
         int turnOffY = startY + 5 + (MOD_KEYS.length * rowHeight);
         boolean isTurnOffHovered = mouseX >= startX && mouseX <= startX + panelWidth && mouseY >= turnOffY && mouseY < turnOffY + rowHeight;
-        if (isTurnOffHovered) {
+        if (isTurnOffHovered && tooltipToRender == null) {
             guiGraphics.fill(startX, turnOffY, startX + panelWidth, turnOffY + rowHeight, 0x44FF0000);
         }
         drawLedCircle(guiGraphics, startX + 16, turnOffY + (rowHeight / 2), 0xFF333333);
@@ -148,6 +177,15 @@ public class WrenchScreen extends Screen {
         if (button == 0) {
             int startX = (this.width - panelWidth) / 2;
             int startY = (this.height - panelHeight) / 2;
+
+            Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
+            Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off");
+            int sfWidth = this.font.width(sfPrefix.copy().append(": ").append(sfState)) + 6;
+            int sfX = startX + panelWidth - sfWidth - 2;
+            int sfY = startY + 2;
+            if (mouseX >= sfX && mouseX <= sfX + sfWidth && mouseY >= sfY && mouseY <= sfY + 11) {
+                return true;
+            }
 
             for (int i = 0; i < MOD_KEYS.length; i++) {
                 int rowY = startY + 5 + (i * rowHeight);

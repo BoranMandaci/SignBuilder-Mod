@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLL",
+    "LPL",
+    "LLL"
+  ],
+  "key": {
+    "L": [
+      {
+        "item": "minecraft:lapis_lazuli"
+      },
+      {
+        "item": "minecraft:blue_dye"
+      }
+    ],
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "item": "signbuilder:sign_blueprint",
+    "count": 1
+  }
+}

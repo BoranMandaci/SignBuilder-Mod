@@ -20,6 +20,7 @@ public class PaintBrushScreen extends Screen {
     private int totalWidth;
     private int totalHeight;
     private int dynamicPadding = 18;
+    private boolean isSmartFillEnabled;
 
     public PaintBrushScreen() {
         super(Component.translatable("gui.signbuilder.title"));
@@ -33,6 +34,14 @@ public class PaintBrushScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+
+        if (this.minecraft != null && this.minecraft.player != null) {
+            ItemStack mainItem = this.minecraft.player.getMainHandItem();
+            ItemStack offItem = this.minecraft.player.getOffhandItem();
+
+            this.isSmartFillEnabled = (mainItem.hasTag() && mainItem.getTag().getBoolean("IsSmartFill")) ||
+                    (offItem.hasTag() && offItem.getTag().getBoolean("IsSmartFill"));
+        }
 
         String[] colorNames = {
                 "color.signbuilder.white", "color.signbuilder.orange", "color.signbuilder.magenta", "color.signbuilder.light_blue",
@@ -142,9 +151,28 @@ public class PaintBrushScreen extends Screen {
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
-        int titleY = Math.max(10, panelTop - (dynamicPadding > 10 ? 24 : 16));
+        int titleY = Math.max(10, panelTop - (dynamicPadding > 10 ? 28 : 22));
         pGuiGraphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
-        pGuiGraphics.fill((this.width / 2) - 40, titleY + 12, (this.width / 2) + 40, titleY + 13, 0x40FFFFFF);
+
+        Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
+        Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off");
+        Component sfText = sfPrefix.copy().append(": ").append(sfState);
+
+        int sfWidth = this.font.width(sfText) + 8;
+        int sfHeight = 12;
+        int sfX = (this.width - sfWidth) / 2;
+        int sfY = titleY + 12; 
+
+        int sfBgColor = this.isSmartFillEnabled ? 0xFF114411 : 0xFF441111;
+        int sfTextColor = this.isSmartFillEnabled ? 0x55FF55 : 0xFF5555;
+
+        pGuiGraphics.fill(sfX, sfY, sfX + sfWidth, sfY + sfHeight, sfBgColor);
+        pGuiGraphics.renderOutline(sfX, sfY, sfWidth, sfHeight, 0xFF777777);
+        pGuiGraphics.drawCenteredString(this.font, sfText, this.width / 2, sfY + 2, sfTextColor);
+
+        if (pMouseX >= sfX && pMouseX <= sfX + sfWidth && pMouseY >= sfY && pMouseY <= sfY + sfHeight) {
+            pGuiGraphics.renderTooltip(this.font, Component.translatable("tooltip.signbuilder.smart_fill_desc"), pMouseX, pMouseY);
+        }
 
         int escY = Math.min(this.height - 35, panelBottom + (dynamicPadding > 10 ? 10 : 4));
         pGuiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, escY, 0x666666);

@@ -170,6 +170,15 @@ import net.minecraftforge.registries.RegistryObject;
         public static final RegistryObject<Item> SYMBOL_HEART = ITEMS.register("symbol_heart",
                 () -> new BlockItem(ModBlocks.SYMBOL_HEART.get(), new Item.Properties()));
 
+        public static final RegistryObject<Item> SYMBOL_DOLLAR = ITEMS.register("symbol_dollar",
+                () -> new BlockItem(ModBlocks.SYMBOL_DOLLAR.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_EURO = ITEMS.register("symbol_euro",
+                () -> new BlockItem(ModBlocks.SYMBOL_EURO.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SYMBOL_TL = ITEMS.register("symbol_tl",
+                () -> new BlockItem(ModBlocks.SYMBOL_TL.get(), new Item.Properties()));
+
         public static final RegistryObject<Item> SYMBOL_HASHTAG = ITEMS.register("symbol_hashtag",
                 () -> new BlockItem(ModBlocks.SYMBOL_HASHTAG.get(), new Item.Properties()));
 
@@ -184,6 +193,9 @@ import net.minecraftforge.registries.RegistryObject;
 
         public static final RegistryObject<Item> SYMBOL_BRACKET_RIGHT = ITEMS.register("symbol_bracket_right",
                 () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_RIGHT.get(), new Item.Properties()));
+
+        public static final RegistryObject<Item> SIGN_PRESS = ITEMS.register("sign_press",
+                () -> new BlockItem(ModBlocks.SIGN_PRESS.get(), new Item.Properties()));
 
         public static void register(IEventBus eventBus) {
             ITEMS.register(eventBus);

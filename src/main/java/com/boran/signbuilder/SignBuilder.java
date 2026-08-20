@@ -5,6 +5,7 @@ import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
+import com.boran.signbuilder.menu.ModMenuTypes;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.block.Block;
@@ -32,10 +33,11 @@ public class SignBuilder {
 
         ModBlockEntities.register(modEventBus);
 
+        ModMenuTypes.register(modEventBus);
+
         ModCreativeModeTabs.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
-
         modEventBus.addListener(this::registerBlockColors);
 
         MinecraftForge.EVENT_BUS.register(this);

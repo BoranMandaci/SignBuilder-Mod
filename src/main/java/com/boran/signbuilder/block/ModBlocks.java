@@ -254,6 +254,9 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> SYMBOL_HASHTAG = createHashtagBlock("symbol_hashtag");
 
+    public static final RegistryObject<Block> SYMBOL_EURO = createPlusBlock("symbol_euro");
+    public static final RegistryObject<Block> SYMBOL_DOLLAR = createLetterBlock("symbol_dollar");
+    public static final RegistryObject<Block> SYMBOL_TL = createTLBlock("symbol_tl");
 
 
     private static RegistryObject<Block> createLetterBlock(String name) {
@@ -1131,6 +1134,67 @@ public class ModBlocks {
             }
         });
     }
+
+    private static RegistryObject<Block> createTLBlock(String name) {
+        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 14.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 14.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 14.0);
+
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
+
+            @Override
+            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
+            }
+
+            @Override
+            public BlockState getStateForPlacement(BlockPlaceContext context) {
+                Direction clickedFace = context.getClickedFace();
+                BlockState state = this.defaultBlockState();
+                if (clickedFace.getAxis() == Direction.Axis.Y) {
+                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
+                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
+                } else {
+                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
+                }
+            }
+
+            @Override
+            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
+                    switch (direction) {
+                        case EAST:  return SHAPE_WALL_EAST;
+                        case WEST:  return SHAPE_WALL_WEST;
+                        case SOUTH: return SHAPE_WALL_SOUTH;
+                        case NORTH: default: return SHAPE_WALL_NORTH;
+                    }
+                } else {
+                    switch (direction) {
+                        case EAST:  return SHAPE_FLOOR_EAST;
+                        case WEST:  return SHAPE_FLOOR_WEST;
+                        case SOUTH: return SHAPE_FLOOR_SOUTH;
+                        case NORTH: default: return SHAPE_FLOOR_NORTH;
+                    }
+                }
+            }
+        });
+    }
+
+    public static final RegistryObject<Block> SIGN_PRESS = BLOCKS.register("sign_press",
+            () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .strength(5.0f, 6.0f)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

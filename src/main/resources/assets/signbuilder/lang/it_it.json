@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Parentesi Destra",
   "block.signbuilder.symbol_bracket_double": "Doppia Parentesi",
   "block.signbuilder.symbol_hashtag": "Hashtag",
-  "tooltip.signbuilder.blueprint.heart": "Cuore"
+  "tooltip.signbuilder.blueprint.heart": "Cuore",
+  "block.signbuilder.symbol_euro": "Simbolo Euro",
+  "block.signbuilder.symbol_dollar": "Simbolo Dollaro",
+  "block.signbuilder.symbol_tl": "Simbolo Lira Turca",
+  "tooltip.signbuilder.blueprint.euro": "Euro",
+  "tooltip.signbuilder.blueprint.dollar": "Dollaro",
+  "tooltip.signbuilder.blueprint.tl": "Lira Turca",
+  "tooltip.signbuilder.smart_fill_desc": "Furtività (Shift) + Clic destro a vuoto\nper attivare/disattivare il Riempimento Intelligente.",
+  "gui.signbuilder.smart_fill": "Riempimento Intelligente",
+  "gui.signbuilder.on": "ON",
+  "gui.signbuilder.off": "OFF",
+  "block.signbuilder.sign_press": "Pressa per Insegne",
+  "message.signbuilder.blueprint.missing_materials": "Materiali mancanti",
+  "message.signbuilder.wrench.no_glowstone": "Polvere di luminite insufficiente!"
 }

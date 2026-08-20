@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  D",
+    " S ",
+    "T  "
+  ],
+  "key": {
+    "D": {
+      "tag": "forge:dyes"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "T": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "signbuilder:paint_brush",
+    "count": 1
+  }
+}

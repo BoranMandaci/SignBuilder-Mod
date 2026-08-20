@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -88,7 +89,6 @@ public class WrenchItem extends Item {
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.wrench.usage")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.wrench.copy_usage")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
 
@@ -170,7 +170,6 @@ public class WrenchItem extends Item {
                                                 Component.translatable(MOD_KEYS[copiedMode]).withStyle(ChatFormatting.AQUA)),
                                 true
                         );
-
                         level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
                     }
                 }
@@ -193,22 +192,36 @@ public class WrenchItem extends Item {
 
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof LetterBlockEntity letterEntity) {
+                    boolean wasActive = letterEntity.isActive();
+                    boolean targetActive = wasActive;
 
-                    boolean targetActive = letterEntity.isActive();
                     if (mode != -1) {
-                        if (letterEntity.getWrenchMode() == mode) targetActive = !targetActive;
+                        if (letterEntity.getWrenchMode() == mode) targetActive = !wasActive;
                         else targetActive = true;
+                    } else {
+                        targetActive = false; 
                     }
 
                     if (isSmartFill) {
-                        applyModeToConnected(level, pos, mode, targetActive, detectsMonsters, detectsAnimals);
-                        if (player != null) {
-                            player.displayClientMessage(
-                                    Component.translatable("message.signbuilder.wrench.smart_fill_success")
-                                            .withStyle(ChatFormatting.GREEN), true
-                            );
-                        }
+                        applyModeToConnected(level, pos, player, mode, targetActive, detectsMonsters, detectsAnimals);
                     } else {
+                        if (player != null && !player.isCreative()) {
+                            if (!wasActive && targetActive) {
+                                if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= 1) {
+                                    consumeItemFromInventory(player, Items.GLOWSTONE_DUST, 1);
+                                } else {
+                                    player.displayClientMessage(Component.translatable("message.signbuilder.wrench.no_glowstone").withStyle(ChatFormatting.RED), true);
+                                    player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
+                                    return InteractionResult.FAIL;
+                                }
+                            } else if (wasActive && !targetActive) {
+                                ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, 1);
+                                if (!player.getInventory().add(returnDust)) {
+                                    player.drop(returnDust, false);
+                                }
+                            }
+                        }
+
                         if (mode == -1) {
                             letterEntity.setWrenchMode(0);
                             letterEntity.setActive(false);
@@ -229,7 +242,6 @@ public class WrenchItem extends Item {
                         }
                     }
                 }
-
                 level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
             }
 
@@ -239,16 +251,17 @@ public class WrenchItem extends Item {
 
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
-
         return InteractionResult.PASS;
     }
 
-    private void applyModeToConnected(Level level, BlockPos startPos, int mode, boolean targetActive, boolean detectsMonsters, boolean detectsAnimals) {
+    private void applyModeToConnected(Level level, BlockPos startPos, Player player, int mode, boolean targetActive, boolean detectsMonsters, boolean detectsAnimals) {
         Set<BlockPos> visited = new HashSet<>();
         Queue<BlockPos> queue = new LinkedList<>();
 
         queue.add(startPos);
         visited.add(startPos);
+
+        boolean ranOutOfDust = false;
 
         while (!queue.isEmpty() && visited.size() < 256) {
             BlockPos current = queue.poll();
@@ -257,21 +270,40 @@ public class WrenchItem extends Item {
             if (be instanceof LetterBlockEntity letter) {
                 BlockState currentState = level.getBlockState(current);
 
+                boolean wasActive = letter.isActive();
+                boolean willBeActive = (mode != -1) && targetActive;
+
+                if (player != null && !player.isCreative()) {
+                    if (!wasActive && willBeActive) {
+                        if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= 1) {
+                            consumeItemFromInventory(player, Items.GLOWSTONE_DUST, 1);
+                        } else {
+                            ranOutOfDust = true;
+                            break;
+                        }
+                    } else if (wasActive && !willBeActive) {
+                        ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, 1);
+                        if (!player.getInventory().add(returnDust)) {
+                            player.drop(returnDust, false);
+                        }
+                    }
+                }
+
                 if (mode == -1) {
                     letter.setWrenchMode(0);
                     letter.setActive(false);
                     level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, false), 2);
                 } else {
                     letter.setWrenchMode(mode);
-                    letter.setActive(targetActive);
+                    letter.setActive(willBeActive);
                     if (mode == 5) {
                         letter.setDetectsMonsters(detectsMonsters);
                         letter.setDetectsAnimals(detectsAnimals);
                     }
 
                     if (mode == 0) {
-                        level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, targetActive), 2);
-                    } else if (!targetActive) {
+                        level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, willBeActive), 2);
+                    } else if (!willBeActive) {
                         level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, false), 2);
                     }
                 }
@@ -282,6 +314,42 @@ public class WrenchItem extends Item {
                         visited.add(neighbor);
                         queue.add(neighbor);
                     }
+                }
+            }
+        }
+
+        if (player != null) {
+            if (ranOutOfDust) {
+                player.displayClientMessage(Component.translatable("message.signbuilder.wrench.no_glowstone").withStyle(ChatFormatting.RED), true);
+                player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
+            } else {
+                player.displayClientMessage(
+                        Component.translatable("message.signbuilder.wrench.smart_fill_success").withStyle(ChatFormatting.GREEN), true
+                );
+            }
+        }
+    }
+
+    private int countItemInInventory(Player player, Item item) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) count += stack.getCount();
+        }
+        return count;
+    }
+
+    private void consumeItemFromInventory(Player player, Item item, int amount) {
+        int amountLeftToRemove = amount;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) {
+                if (stack.getCount() >= amountLeftToRemove) {
+                    stack.shrink(amountLeftToRemove);
+                    break;
+                } else {
+                    amountLeftToRemove -= stack.getCount();
+                    stack.setCount(0);
                 }
             }
         }

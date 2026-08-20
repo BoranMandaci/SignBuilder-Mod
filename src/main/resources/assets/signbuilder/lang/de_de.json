@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Rechte Klammer",
   "block.signbuilder.symbol_bracket_double": "Doppelklammer",
   "block.signbuilder.symbol_hashtag": "Hashtag",
-  "tooltip.signbuilder.blueprint.heart": "Herz"
+  "tooltip.signbuilder.blueprint.heart": "Herz",
+  "block.signbuilder.symbol_euro": "Euro-Zeichen",
+  "block.signbuilder.symbol_dollar": "Dollarzeichen",
+  "block.signbuilder.symbol_tl": "Türkische Lira-Zeichen",
+  "tooltip.signbuilder.blueprint.euro": "Euro",
+  "tooltip.signbuilder.blueprint.dollar": "Dollar",
+  "tooltip.signbuilder.blueprint.tl": "Türkische Lira",
+  "tooltip.signbuilder.smart_fill_desc": "Schleichen (Shift) + Rechtsklick in die Luft,\num den Smart-Fill-Modus umzuschalten.",
+  "gui.signbuilder.smart_fill": "Smart-Fill",
+  "gui.signbuilder.on": "EIN",
+  "gui.signbuilder.off": "AUS",
+  "block.signbuilder.sign_press": "Schilderpresse",
+  "message.signbuilder.blueprint.missing_materials": "Fehlende Materialien",
+  "message.signbuilder.wrench.no_glowstone": "Nicht genug Glowstone-Staub!"
 }

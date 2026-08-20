@@ -23,4 +23,8 @@ public class ModBlockEntities {
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }
+
+    public static final RegistryObject<BlockEntityType<SignPressBlockEntity>> SIGN_PRESS_BE =
+            BLOCK_ENTITIES.register("sign_press_be", () ->
+                    BlockEntityType.Builder.of(SignPressBlockEntity::new, ModBlocks.SIGN_PRESS.get()).build(null));
 }

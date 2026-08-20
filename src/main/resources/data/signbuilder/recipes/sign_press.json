@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    " I ",
+    "BRB"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "signbuilder:sign_press",
+    "count": 1
+  }
+}

@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Правая скобка",
   "block.signbuilder.symbol_bracket_double": "Двойная скобка",
   "block.signbuilder.symbol_hashtag": "Хештег",
-  "tooltip.signbuilder.blueprint.heart": "Сердце"
+  "tooltip.signbuilder.blueprint.heart": "Сердце",
+  "block.signbuilder.symbol_euro": "Символ евро",
+  "block.signbuilder.symbol_dollar": "Символ доллара",
+  "block.signbuilder.symbol_tl": "Символ турецкой лиры",
+  "tooltip.signbuilder.blueprint.euro": "Евро",
+  "tooltip.signbuilder.blueprint.dollar": "Доллар",
+  "tooltip.signbuilder.blueprint.tl": "Турецкая лира",
+  "tooltip.signbuilder.smart_fill_desc": "Нажмите Shift + Правая кнопка мыши в воздухе,\nчтобы переключить режим Умной заливки.",
+  "gui.signbuilder.smart_fill": "Умная заливка",
+  "gui.signbuilder.on": "ВКЛ",
+  "gui.signbuilder.off": "ВЫКЛ",
+  "block.signbuilder.sign_press": "Пресс для вывесок",
+  "message.signbuilder.blueprint.missing_materials": "Недостающие материалы",
+  "message.signbuilder.wrench.no_glowstone": "Недостаточно светокаменной пыли!"
 }

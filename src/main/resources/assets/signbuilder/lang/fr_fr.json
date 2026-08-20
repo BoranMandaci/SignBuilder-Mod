@@ -136,5 +136,18 @@
   "block.signbuilder.symbol_bracket_right": "Parenthèse Droite",
   "block.signbuilder.symbol_bracket_double": "Double Parenthèse",
   "block.signbuilder.symbol_hashtag": "Hashtag",
-  "tooltip.signbuilder.blueprint.heart": "Cœur"
+  "tooltip.signbuilder.blueprint.heart": "Cœur",
+  "block.signbuilder.symbol_euro": "Symbole Euro",
+  "block.signbuilder.symbol_dollar": "Symbole Dollar",
+  "block.signbuilder.symbol_tl": "Symbole Livre Turque",
+  "tooltip.signbuilder.blueprint.euro": "Euro",
+  "tooltip.signbuilder.blueprint.dollar": "Dollar",
+  "tooltip.signbuilder.blueprint.tl": "Livre Turque",
+  "tooltip.signbuilder.smart_fill_desc": "S'accroupir (Shift) + Clic droit dans le vide\npour basculer le mode Remplissage Intelligent.",
+  "gui.signbuilder.smart_fill": "Remplissage Intelligent",
+  "gui.signbuilder.on": "ON",
+  "gui.signbuilder.off": "OFF",
+  "block.signbuilder.sign_press": "Presse à Enseignes",
+  "message.signbuilder.blueprint.missing_materials": "Matériaux manquants",
+  "message.signbuilder.wrench.no_glowstone": "Pas assez de poudre de pierre lumineuse !"
 }
