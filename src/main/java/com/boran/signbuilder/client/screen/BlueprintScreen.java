@@ -1,6 +1,7 @@
 package com.boran.signbuilder.client.screen;
 
-import  com.boran.signbuilder.network.BlueprintTextC2SPacket;
+import com.boran.signbuilder.network.BlueprintTextC2SPacket;
+import com.boran.signbuilder.network.BlueprintUndoC2SPacket;
 import com.boran.signbuilder.network.ModMessages;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -64,8 +65,13 @@ public class BlueprintScreen extends Screen {
             this.addRenderableWidget(btnBuilder.build());
         }
 
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.signbuilder.blueprint.undo").withStyle(net.minecraft.ChatFormatting.RED), button -> {
+            ModMessages.sendToServer(new BlueprintUndoC2SPacket());
+            this.onClose();
+        }).bounds(centerX - 100, centerY + 35, 70, 20).build());
+
         this.addRenderableWidget(Button.builder(Component.translatable("gui.signbuilder.blueprint.save"), button -> this.onClose())
-                .bounds(centerX - 50, centerY + 35, 100, 20).build());
+                .bounds(centerX - 25, centerY + 35, 125, 20).build());
     }
 
     @Override

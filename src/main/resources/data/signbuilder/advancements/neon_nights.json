@@ -1,0 +1,32 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:wrench"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.neon_nights.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.neon_nights.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_wrench": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:wrench"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

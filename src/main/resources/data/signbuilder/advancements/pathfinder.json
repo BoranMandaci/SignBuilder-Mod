@@ -1,0 +1,39 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:arrow_up"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.pathfinder.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.pathfinder.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_arrow": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:arrow_up",
+              "signbuilder:arrow_down",
+              "signbuilder:arrow_left",
+              "signbuilder:arrow_right",
+              "signbuilder:arrow_left_up",
+              "signbuilder:arrow_right_up",
+              "signbuilder:arrow_left_down",
+              "signbuilder:arrow_right_down"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

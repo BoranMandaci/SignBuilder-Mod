@@ -149,6 +149,7 @@ public class SignBlueprintItem extends Item {
         Direction rightDir = playerFacing.getClockWise();
 
         int blocksPlaced = 0;
+        java.util.List<Long> placedPositions = new java.util.ArrayList<>();
 
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -174,11 +175,16 @@ public class SignBlueprintItem extends Item {
 
                 level.setBlock(currentPos, stateToPlace, 3);
                 blocksPlaced++;
+                placedPositions.add(currentPos.asLong());
             }
         }
 
         if (blocksPlaced > 0) {
             level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+
+            long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
+            stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
+
             if (!player.isCreative()) {
                 stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
             }

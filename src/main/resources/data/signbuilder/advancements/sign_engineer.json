@@ -1,0 +1,35 @@
+{
+  "parent": "signbuilder:heavy_industry",
+  "display": {
+    "icon": {
+      "item": "signbuilder:letter_s"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.sign_engineer.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.sign_engineer.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_any_block": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:letter_a", "signbuilder:letter_b", "signbuilder:letter_c", "signbuilder:letter_d", "signbuilder:letter_e", "signbuilder:letter_f", "signbuilder:letter_g", "signbuilder:letter_h", "signbuilder:letter_i", "signbuilder:letter_j", "signbuilder:letter_k", "signbuilder:letter_l", "signbuilder:letter_m", "signbuilder:letter_n", "signbuilder:letter_o", "signbuilder:letter_p", "signbuilder:letter_r", "signbuilder:letter_s", "signbuilder:letter_t", "signbuilder:letter_u", "signbuilder:letter_v", "signbuilder:letter_w", "signbuilder:letter_x", "signbuilder:letter_y", "signbuilder:letter_z",
+              "signbuilder:number_0", "signbuilder:number_1", "signbuilder:number_2", "signbuilder:number_3", "signbuilder:number_4", "signbuilder:number_5", "signbuilder:number_6", "signbuilder:number_7", "signbuilder:number_8", "signbuilder:number_9",
+              "signbuilder:arrow_up", "signbuilder:arrow_down", "signbuilder:arrow_left", "signbuilder:arrow_right", "signbuilder:arrow_left_up", "signbuilder:arrow_right_up", "signbuilder:arrow_left_down", "signbuilder:arrow_right_down",
+              "signbuilder:symbol_plus", "signbuilder:symbol_minus", "signbuilder:symbol_heart", "signbuilder:symbol_dot_left", "signbuilder:symbol_dot_center", "signbuilder:symbol_dot_right", "signbuilder:symbol_slash", "signbuilder:symbol_bracket_left", "signbuilder:symbol_bracket_right", "signbuilder:symbol_bracket_double", "signbuilder:symbol_hashtag", "signbuilder:symbol_euro", "signbuilder:symbol_dollar", "signbuilder:symbol_tl"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

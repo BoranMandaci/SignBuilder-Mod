@@ -54,8 +54,11 @@ public class PaintBrushItem extends Item {
         Component valueComponent;
 
         if (selectedColor == -1) {
+            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
+            int dynamicColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f);
+
             valueComponent = Component.translatable("color.signbuilder.rainbow")
-                    .withStyle(Style.EMPTY.withColor(0xFF55FF));
+                    .withStyle(Style.EMPTY.withColor(dynamicColor));
         } else if (selectedColor <= 15) {
             String colorNameKey = getColorNameKey(selectedColor);
             int hexColor = getActualHexColor(selectedColor);

@@ -46,6 +46,12 @@ public class ModMessages {
                 .encoder(SignPressCraftC2SPacket::toBytes)
                 .consumerMainThread(SignPressCraftC2SPacket::handle)
                 .add();
+
+        net.messageBuilder(BlueprintUndoC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(BlueprintUndoC2SPacket::new)
+                .encoder(BlueprintUndoC2SPacket::toBytes)
+                .consumerMainThread(BlueprintUndoC2SPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {

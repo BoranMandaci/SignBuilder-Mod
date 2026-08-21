@@ -199,7 +199,7 @@ public class WrenchItem extends Item {
                         if (letterEntity.getWrenchMode() == mode) targetActive = !wasActive;
                         else targetActive = true;
                     } else {
-                        targetActive = false; 
+                        targetActive = false;
                     }
 
                     if (isSmartFill) {

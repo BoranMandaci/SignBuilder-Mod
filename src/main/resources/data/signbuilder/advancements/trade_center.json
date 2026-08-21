@@ -1,0 +1,34 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:symbol_euro"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.trade_center.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.trade_center.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_currency": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:symbol_euro",
+              "signbuilder:symbol_dollar",
+              "signbuilder:symbol_tl"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

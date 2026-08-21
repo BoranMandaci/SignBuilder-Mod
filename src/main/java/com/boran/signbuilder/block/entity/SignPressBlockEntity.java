@@ -9,6 +9,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -28,7 +29,8 @@ public class SignPressBlockEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    private LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.empty();
+    private LazyOptional<IItemHandler> lazyInputHandler = LazyOptional.empty();
+    private LazyOptional<IItemHandler> lazyOutputHandler = LazyOptional.empty();
 
     public SignPressBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SIGN_PRESS_BE.get(), pos, state);
@@ -48,7 +50,12 @@ public class SignPressBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return lazyItemHandler.cast();
+            if (side == Direction.DOWN) {
+                return lazyOutputHandler.cast();
+            }
+            else {
+                return lazyInputHandler.cast();
+            }
         }
         return super.getCapability(cap, side);
     }
@@ -56,13 +63,39 @@ public class SignPressBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public void onLoad() {
         super.onLoad();
-        lazyItemHandler = LazyOptional.of(() -> itemHandler);
+
+        lazyInputHandler = LazyOptional.of(() -> new IItemHandler() {
+            @Override public int getSlots() { return 1; }
+            @Override public @NotNull ItemStack getStackInSlot(int slot) { return itemHandler.getStackInSlot(0); }
+            @Override public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+                return itemHandler.insertItem(0, stack, simulate);
+            }
+            @Override public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+                return itemHandler.extractItem(0, amount, simulate);
+            }
+            @Override public int getSlotLimit(int slot) { return itemHandler.getSlotLimit(0); }
+            @Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return itemHandler.isItemValid(0, stack); }
+        });
+
+        lazyOutputHandler = LazyOptional.of(() -> new IItemHandler() {
+            @Override public int getSlots() { return 1; }
+            @Override public @NotNull ItemStack getStackInSlot(int slot) { return itemHandler.getStackInSlot(1); }
+            @Override public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+                return stack;
+            }
+            @Override public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+                return itemHandler.extractItem(1, amount, simulate);
+            }
+            @Override public int getSlotLimit(int slot) { return itemHandler.getSlotLimit(1); }
+            @Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return false; }
+        });
     }
 
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
-        lazyItemHandler.invalidate();
+        lazyInputHandler.invalidate();
+        lazyOutputHandler.invalidate();
     }
 
     @Override

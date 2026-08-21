@@ -1,0 +1,26 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:sign_press"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.heavy_industry.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.heavy_industry.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_press": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "signbuilder:sign_press"
+      }
+    }
+  }
+}

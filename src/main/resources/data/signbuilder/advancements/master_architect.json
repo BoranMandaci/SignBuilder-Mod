@@ -1,0 +1,32 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:sign_blueprint"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.master_architect.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.master_architect.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "used_blueprint": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:sign_blueprint"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

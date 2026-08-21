@@ -1,0 +1,32 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:paint_brush"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.street_artist.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.street_artist.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_brush": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "signbuilder:paint_brush"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
