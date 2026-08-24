@@ -1,7 +1,11 @@
 package com.boran.signbuilder.block;
 
+import com.boran.signbuilder.SignBuilder;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -14,13 +18,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "signbuilder");
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create("signbuilder", Registries.BLOCK);
     public static final IntegerProperty COLOR = IntegerProperty.create("color", 0, 15);
     public static final BooleanProperty GLOWING = BooleanProperty.create("glowing");
 
@@ -32,7 +32,7 @@ public class ModBlocks {
                 .emissiveRendering((state, level, pos) -> state.getValue(GLOWING));
     }
 
-    public static final RegistryObject<Block> LETTER_A = BLOCKS.register("letter_a",
+    public static final RegistrySupplier<Block> LETTER_A = BLOCKS.register("letter_a",
             () -> new LetterBlock(createLetterProperties()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -85,15 +85,15 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> LETTER_B = createLetterBlock("letter_b");
-    public static final RegistryObject<Block> LETTER_C = createLetterBlock("letter_c");
-    public static final RegistryObject<Block> LETTER_D = createLetterBlock("letter_d");
-    public static final RegistryObject<Block> LETTER_E = createLetterBlock("letter_e");
-    public static final RegistryObject<Block> LETTER_F = createLetterBlock("letter_f");
-    public static final RegistryObject<Block> LETTER_G = createLetterBlock("letter_g");
-    public static final RegistryObject<Block> LETTER_H = createLetterBlock("letter_h");
+    public static final RegistrySupplier<Block> LETTER_B = createLetterBlock("letter_b");
+    public static final RegistrySupplier<Block> LETTER_C = createLetterBlock("letter_c");
+    public static final RegistrySupplier<Block> LETTER_D = createLetterBlock("letter_d");
+    public static final RegistrySupplier<Block> LETTER_E = createLetterBlock("letter_e");
+    public static final RegistrySupplier<Block> LETTER_F = createLetterBlock("letter_f");
+    public static final RegistrySupplier<Block> LETTER_G = createLetterBlock("letter_g");
+    public static final RegistrySupplier<Block> LETTER_H = createLetterBlock("letter_h");
 
-    public static final RegistryObject<Block> LETTER_I = BLOCKS.register("letter_i",
+    public static final RegistrySupplier<Block> LETTER_I = BLOCKS.register("letter_i",
             () -> new LetterBlock(createLetterProperties()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
@@ -146,26 +146,26 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> LETTER_J = createLetterBlock("letter_j");
-    public static final RegistryObject<Block> LETTER_K = createLetterBlock("letter_k");
-    public static final RegistryObject<Block> LETTER_L = createLetterBlock("letter_l");
-    public static final RegistryObject<Block> LETTER_M = createMBlock("letter_m");
-    public static final RegistryObject<Block> LETTER_N = createLetterBlock("letter_n");
-    public static final RegistryObject<Block> LETTER_O = createLetterBlock("letter_o");
-    public static final RegistryObject<Block> LETTER_P = createLetterBlock("letter_p");
-    public static final RegistryObject<Block> LETTER_R = createLetterBlock("letter_r");
-    public static final RegistryObject<Block> LETTER_S = createLetterBlock("letter_s");
-    public static final RegistryObject<Block> LETTER_T = createLetterBlock("letter_t");
-    public static final RegistryObject<Block> LETTER_U = createLetterBlock("letter_u");
-    public static final RegistryObject<Block> LETTER_V = createLetterBlock("letter_v");
-    public static final RegistryObject<Block> LETTER_W = createWBlock("letter_w");
-    public static final RegistryObject<Block> LETTER_X = createLetterBlock("letter_x");
-    public static final RegistryObject<Block> LETTER_Y = createLetterBlock("letter_y");
-    public static final RegistryObject<Block> LETTER_Z = createLetterBlock("letter_z");
+    public static final RegistrySupplier<Block> LETTER_J = createLetterBlock("letter_j");
+    public static final RegistrySupplier<Block> LETTER_K = createLetterBlock("letter_k");
+    public static final RegistrySupplier<Block> LETTER_L = createLetterBlock("letter_l");
+    public static final RegistrySupplier<Block> LETTER_M = createMBlock("letter_m");
+    public static final RegistrySupplier<Block> LETTER_N = createLetterBlock("letter_n");
+    public static final RegistrySupplier<Block> LETTER_O = createLetterBlock("letter_o");
+    public static final RegistrySupplier<Block> LETTER_P = createLetterBlock("letter_p");
+    public static final RegistrySupplier<Block> LETTER_R = createLetterBlock("letter_r");
+    public static final RegistrySupplier<Block> LETTER_S = createLetterBlock("letter_s");
+    public static final RegistrySupplier<Block> LETTER_T = createLetterBlock("letter_t");
+    public static final RegistrySupplier<Block> LETTER_U = createLetterBlock("letter_u");
+    public static final RegistrySupplier<Block> LETTER_V = createLetterBlock("letter_v");
+    public static final RegistrySupplier<Block> LETTER_W = createWBlock("letter_w");
+    public static final RegistrySupplier<Block> LETTER_X = createLetterBlock("letter_x");
+    public static final RegistrySupplier<Block> LETTER_Y = createLetterBlock("letter_y");
+    public static final RegistrySupplier<Block> LETTER_Z = createLetterBlock("letter_z");
 
-    public static final RegistryObject<Block> NUMBER_0 = createLetterBlock("number_0");
+    public static final RegistrySupplier<Block> NUMBER_0 = createLetterBlock("number_0");
 
-    public static final RegistryObject<Block> NUMBER_1 = BLOCKS.register("number_1",
+    public static final RegistrySupplier<Block> NUMBER_1 = BLOCKS.register("number_1",
             () -> new LetterBlock(createLetterProperties()) {
                 private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
                 private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
@@ -218,48 +218,48 @@ public class ModBlocks {
                 }
             });
 
-    public static final RegistryObject<Block> NUMBER_2 = createLetterBlock("number_2");
-    public static final RegistryObject<Block> NUMBER_3 = createLetterBlock("number_3");
-    public static final RegistryObject<Block> NUMBER_4 = createLetterBlock("number_4");
-    public static final RegistryObject<Block> NUMBER_5 = createLetterBlock("number_5");
-    public static final RegistryObject<Block> NUMBER_6 = createLetterBlock("number_6");
-    public static final RegistryObject<Block> NUMBER_7 = createLetterBlock("number_7");
-    public static final RegistryObject<Block> NUMBER_8 = createLetterBlock("number_8");
-    public static final RegistryObject<Block> NUMBER_9 = createLetterBlock("number_9");
+    public static final RegistrySupplier<Block> NUMBER_2 = createLetterBlock("number_2");
+    public static final RegistrySupplier<Block> NUMBER_3 = createLetterBlock("number_3");
+    public static final RegistrySupplier<Block> NUMBER_4 = createLetterBlock("number_4");
+    public static final RegistrySupplier<Block> NUMBER_5 = createLetterBlock("number_5");
+    public static final RegistrySupplier<Block> NUMBER_6 = createLetterBlock("number_6");
+    public static final RegistrySupplier<Block> NUMBER_7 = createLetterBlock("number_7");
+    public static final RegistrySupplier<Block> NUMBER_8 = createLetterBlock("number_8");
+    public static final RegistrySupplier<Block> NUMBER_9 = createLetterBlock("number_9");
 
-    public static final RegistryObject<Block> ARROW_UP = createLetterBlock("arrow_up");
-    public static final RegistryObject<Block> ARROW_DOWN = createLetterBlock("arrow_down");
+    public static final RegistrySupplier<Block> ARROW_UP = createLetterBlock("arrow_up");
+    public static final RegistrySupplier<Block> ARROW_DOWN = createLetterBlock("arrow_down");
 
-    public static final RegistryObject<Block> ARROW_LEFT = createHorizontalArrowBlock("arrow_left");
-    public static final RegistryObject<Block> ARROW_RIGHT = createHorizontalArrowBlock("arrow_right");
+    public static final RegistrySupplier<Block> ARROW_LEFT = createHorizontalArrowBlock("arrow_left");
+    public static final RegistrySupplier<Block> ARROW_RIGHT = createHorizontalArrowBlock("arrow_right");
 
-    public static final RegistryObject<Block> SYMBOL_PLUS = createPlusBlock("symbol_plus");
-    public static final RegistryObject<Block> SYMBOL_MINUS = createMinusBlock("symbol_minus");
-    public static final RegistryObject<Block> SYMBOL_HEART = createHeartBlock("symbol_heart");
+    public static final RegistrySupplier<Block> SYMBOL_PLUS = createPlusBlock("symbol_plus");
+    public static final RegistrySupplier<Block> SYMBOL_MINUS = createMinusBlock("symbol_minus");
+    public static final RegistrySupplier<Block> SYMBOL_HEART = createHeartBlock("symbol_heart");
 
-    public static final RegistryObject<Block> SYMBOL_DOT_LEFT = createLeftDotBlock("symbol_dot_left");
-    public static final RegistryObject<Block> SYMBOL_DOT_CENTER = createCenterDotBlock("symbol_dot_center");
-    public static final RegistryObject<Block> SYMBOL_DOT_RIGHT = createRightDotBlock("symbol_dot_right");
+    public static final RegistrySupplier<Block> SYMBOL_DOT_LEFT = createLeftDotBlock("symbol_dot_left");
+    public static final RegistrySupplier<Block> SYMBOL_DOT_CENTER = createCenterDotBlock("symbol_dot_center");
+    public static final RegistrySupplier<Block> SYMBOL_DOT_RIGHT = createRightDotBlock("symbol_dot_right");
 
-    public static final RegistryObject<Block> SYMBOL_SLASH = createSlashBlock("symbol_slash");
+    public static final RegistrySupplier<Block> SYMBOL_SLASH = createSlashBlock("symbol_slash");
 
-    public static final RegistryObject<Block> ARROW_LEFT_UP = createDiagonalArrowBlock("arrow_left_up");
-    public static final RegistryObject<Block> ARROW_RIGHT_UP = createDiagonalArrowBlock("arrow_right_up");
-    public static final RegistryObject<Block> ARROW_LEFT_DOWN = createDiagonalArrowBlock("arrow_left_down");
-    public static final RegistryObject<Block> ARROW_RIGHT_DOWN = createDiagonalArrowBlock("arrow_right_down");
+    public static final RegistrySupplier<Block> ARROW_LEFT_UP = createDiagonalArrowBlock("arrow_left_up");
+    public static final RegistrySupplier<Block> ARROW_RIGHT_UP = createDiagonalArrowBlock("arrow_right_up");
+    public static final RegistrySupplier<Block> ARROW_LEFT_DOWN = createDiagonalArrowBlock("arrow_left_down");
+    public static final RegistrySupplier<Block> ARROW_RIGHT_DOWN = createDiagonalArrowBlock("arrow_right_down");
 
-    public static final RegistryObject<Block> SYMBOL_BRACKET_LEFT = createLeftBracketBlock("symbol_bracket_left");
-    public static final RegistryObject<Block> SYMBOL_BRACKET_RIGHT = createRightBracketBlock("symbol_bracket_right");
-    public static final RegistryObject<Block> SYMBOL_BRACKET_DOUBLE = createDoubleBracketBlock("symbol_bracket_double");
+    public static final RegistrySupplier<Block> SYMBOL_BRACKET_LEFT = createLeftBracketBlock("symbol_bracket_left");
+    public static final RegistrySupplier<Block> SYMBOL_BRACKET_RIGHT = createRightBracketBlock("symbol_bracket_right");
+    public static final RegistrySupplier<Block> SYMBOL_BRACKET_DOUBLE = createDoubleBracketBlock("symbol_bracket_double");
 
-    public static final RegistryObject<Block> SYMBOL_HASHTAG = createHashtagBlock("symbol_hashtag");
+    public static final RegistrySupplier<Block> SYMBOL_HASHTAG = createHashtagBlock("symbol_hashtag");
 
-    public static final RegistryObject<Block> SYMBOL_EURO = createPlusBlock("symbol_euro");
-    public static final RegistryObject<Block> SYMBOL_DOLLAR = createLetterBlock("symbol_dollar");
-    public static final RegistryObject<Block> SYMBOL_TL = createTLBlock("symbol_tl");
+    public static final RegistrySupplier<Block> SYMBOL_EURO = createPlusBlock("symbol_euro");
+    public static final RegistrySupplier<Block> SYMBOL_DOLLAR = createLetterBlock("symbol_dollar");
+    public static final RegistrySupplier<Block> SYMBOL_TL = createTLBlock("symbol_tl");
 
 
-    private static RegistryObject<Block> createLetterBlock(String name) {
+    private static RegistrySupplier<Block> createLetterBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
@@ -313,7 +313,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createMBlock(String name) {
+    private static RegistrySupplier<Block> createMBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
@@ -367,7 +367,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createWBlock(String name) {
+    private static RegistrySupplier<Block> createWBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.5, 11.0, 14.0, 14.5);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.5, 8.0, 14.0, 14.5);
@@ -421,7 +421,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createSlashBlock(String name) {
+    private static RegistrySupplier<Block> createSlashBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 15.0, 13.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 13.0);
@@ -475,7 +475,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createHorizontalArrowBlock(String name) {
+    private static RegistrySupplier<Block> createHorizontalArrowBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 12.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 12.0, 15.0);
@@ -530,7 +530,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createPlusBlock(String name) {
+    private static RegistrySupplier<Block> createPlusBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
@@ -585,7 +585,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createDiagonalArrowBlock(String name) {
+    private static RegistrySupplier<Block> createDiagonalArrowBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
@@ -640,7 +640,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createHeartBlock(String name) {
+    private static RegistrySupplier<Block> createHeartBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
@@ -695,7 +695,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createMinusBlock(String name) {
+    private static RegistrySupplier<Block> createMinusBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 9.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 9.0, 15.0);
@@ -750,7 +750,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createLeftDotBlock(String name) {
+    private static RegistrySupplier<Block> createLeftDotBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 3.0, 6.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 3.0, 13.0);
@@ -805,7 +805,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createCenterDotBlock(String name) {
+    private static RegistrySupplier<Block> createCenterDotBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.5, 11.0, 3.0, 9.5);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.5, 8.0, 3.0, 9.5);
@@ -860,7 +860,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createRightDotBlock(String name) {
+    private static RegistrySupplier<Block> createRightDotBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 3.0, 13.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 3.0, 6.0);
@@ -915,7 +915,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createLeftBracketBlock(String name) {
+    private static RegistrySupplier<Block> createLeftBracketBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 6.0);
@@ -970,7 +970,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createRightBracketBlock(String name) {
+    private static RegistrySupplier<Block> createRightBracketBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 6.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 14.0, 15.0);
@@ -1025,7 +1025,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createDoubleBracketBlock(String name) {
+    private static RegistrySupplier<Block> createDoubleBracketBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
@@ -1080,7 +1080,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createHashtagBlock(String name) {
+    private static RegistrySupplier<Block> createHashtagBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
@@ -1135,7 +1135,7 @@ public class ModBlocks {
         });
     }
 
-    private static RegistryObject<Block> createTLBlock(String name) {
+    private static RegistrySupplier<Block> createTLBlock(String name) {
         return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 14.0);
@@ -1190,13 +1190,13 @@ public class ModBlocks {
         });
     }
 
-    public static final RegistryObject<Block> SIGN_PRESS = BLOCKS.register("sign_press",
+    public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
             () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .strength(5.0f, 6.0f)
                     .requiresCorrectToolForDrops()
                     .noOcclusion()));
 
-    public static void register(IEventBus eventBus) {
-        BLOCKS.register(eventBus);
+    public static void register() {
+        BLOCKS.register();
     }
 }
