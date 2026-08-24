@@ -1,25 +1,19 @@
 package com.boran.signbuilder.menu;
 
-import com.boran.signbuilder.SignBuilder;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import dev.architectury.registry.menu.MenuRegistry;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.network.IContainerFactory;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public class ModMenuTypes {
-    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, SignBuilder.MODID);
+    public static final DeferredRegister<MenuType<?>> MENUS =
+            DeferredRegister.create("signbuilder", Registries.MENU);
 
-    public static final RegistryObject<MenuType<SignPressMenu>> SIGN_PRESS_MENU = registerMenuType(SignPressMenu::new, "sign_press_menu");
+    public static final RegistrySupplier<MenuType<SignPressMenu>> SIGN_PRESS_MENU =
+            MENUS.register("sign_press_menu", () -> MenuRegistry.ofExtended(SignPressMenu::new));
 
-    private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> registerMenuType(IContainerFactory<T> factory, String name) {
-        return MENUS.register(name, () -> IForgeMenuType.create(factory));
-    }
-
-    public static void register(IEventBus eventBus) {
-        MENUS.register(eventBus);
+    public static void register() {
+        MENUS.register();
     }
 }

@@ -1,8 +1,8 @@
 package com.boran.signbuilder.network;
 
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import java.util.function.Supplier;
+import net.minecraft.server.level.ServerPlayer;
 
 public class WrenchModeC2SPacket {
     private final int mode;
@@ -27,19 +27,15 @@ public class WrenchModeC2SPacket {
         buf.writeBoolean(detectsAnimals);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            var player = context.getSender();
-            if (player != null) {
-                var stack = player.getMainHandItem();
-                if (stack.getItem() instanceof com.boran.signbuilder.item.WrenchItem) {
-                    stack.getOrCreateTag().putInt("WrenchMode", mode);
-                    stack.getOrCreateTag().putBoolean("DetectsMonsters", detectsMonsters);
-                    stack.getOrCreateTag().putBoolean("DetectsAnimals", detectsAnimals);
-                }
+    public void handle(NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        if (player != null) {
+            var stack = player.getMainHandItem();
+            if (stack.getItem() instanceof com.boran.signbuilder.item.WrenchItem) {
+                stack.getOrCreateTag().putInt("WrenchMode", mode);
+                stack.getOrCreateTag().putBoolean("DetectsMonsters", detectsMonsters);
+                stack.getOrCreateTag().putBoolean("DetectsAnimals", detectsAnimals);
             }
-        });
-        return true;
+        }
     }
 }

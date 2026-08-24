@@ -1,19 +1,17 @@
 package com.boran.signbuilder.item;
 
-import com.boran.signbuilder.block.ModBlocks;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "signbuilder");
+            DeferredRegister.create("signbuilder", Registries.CREATIVE_MODE_TAB);
 
-    public static final RegistryObject<CreativeModeTab> LETTERS_TAB = CREATIVE_MODE_TABS.register("letters_tab",
+    public static final RegistrySupplier<CreativeModeTab> LETTERS_TAB = CREATIVE_MODE_TABS.register("letters_tab",
             () -> CreativeModeTab.builder()
                     .icon(() -> new ItemStack(ModItems.LETTER_A_ITEM.get()))
                     .title(Component.translatable("creativetab.signbuilder_letters"))
@@ -51,7 +49,7 @@ public class ModCreativeModeTabs {
                     })
                     .build());
 
-    public static final RegistryObject<CreativeModeTab> NUMBERS_TAB = CREATIVE_MODE_TABS.register("numbers_tab",
+    public static final RegistrySupplier<CreativeModeTab> NUMBERS_TAB = CREATIVE_MODE_TABS.register("numbers_tab",
             () -> CreativeModeTab.builder()
                     .icon(() -> new ItemStack(ModItems.NUMBER_1_ITEM.get()))
                     .title(Component.translatable("creativetab.signbuilder_numbers"))
@@ -70,7 +68,7 @@ public class ModCreativeModeTabs {
                     })
                     .build());
 
-    public static final RegistryObject<CreativeModeTab> SYMBOLS_TAB = CREATIVE_MODE_TABS.register("symbols_tab",
+    public static final RegistrySupplier<CreativeModeTab> SYMBOLS_TAB = CREATIVE_MODE_TABS.register("symbols_tab",
             () -> CreativeModeTab.builder()
                     .icon(() -> new ItemStack(ModItems.SYMBOL_PLUS.get()))
                     .title(Component.translatable("creativetab.signbuilder_symbols"))
@@ -102,7 +100,7 @@ public class ModCreativeModeTabs {
                     })
                     .build());
 
-    public static void register(IEventBus eventBus) {
-        CREATIVE_MODE_TABS.register(eventBus);
+    public static void register() {
+        CREATIVE_MODE_TABS.register();
     }
 }

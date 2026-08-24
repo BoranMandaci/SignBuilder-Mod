@@ -1,11 +1,9 @@
 package com.boran.signbuilder.network;
 
 import com.boran.signbuilder.menu.SignPressMenu;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class SignPressCraftC2SPacket {
     private final String blockName;
@@ -26,14 +24,10 @@ public class SignPressCraftC2SPacket {
         buf.writeBoolean(this.isShiftDown);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            ServerPlayer player = context.getSender();
-            if (player != null && player.containerMenu instanceof SignPressMenu menu) {
-                menu.setSelectedBlock(blockName, isShiftDown);
-            }
-        });
-        return true;
+    public void handle(NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        if (player != null && player.containerMenu instanceof SignPressMenu menu) {
+            menu.setSelectedBlock(blockName, isShiftDown);
+        }
     }
 }

@@ -1,8 +1,8 @@
 package com.boran.signbuilder.network;
 
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import java.util.function.Supplier;
+import net.minecraft.server.level.ServerPlayer;
 
 public class BlueprintTextC2SPacket {
     private final String text;
@@ -19,17 +19,13 @@ public class BlueprintTextC2SPacket {
         buf.writeUtf(text, 256);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            var player = context.getSender();
-            if (player != null) {
-                var stack = player.getMainHandItem();
-                if (stack.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
-                    stack.getOrCreateTag().putString("BlueprintText", text);
-                }
+    public void handle(NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        if (player != null) {
+            var stack = player.getMainHandItem();
+            if (stack.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
+                stack.getOrCreateTag().putString("BlueprintText", text);
             }
-        });
-        return true;
+        }
     }
 }
