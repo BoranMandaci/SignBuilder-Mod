@@ -2,6 +2,7 @@ package com.boran.signbuilder.menu;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.SignPressBlockEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -15,9 +16,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.SlotItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SignPressMenu extends AbstractContainerMenu {
     public final SignPressBlockEntity blockEntity;
@@ -37,14 +35,12 @@ public class SignPressMenu extends AbstractContainerMenu {
         blockEntity = (SignPressBlockEntity) entity;
         this.levelAccess = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
 
-        this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            this.addSlot(new SlotItemHandler(handler, 0, 26, 35) {
-                @Override
-                public void setChanged() {
-                    super.setChanged();
-                    setupResultSlot();
-                }
-            });
+        this.addSlot(new Slot(blockEntity, 0, 26, 35) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                setupResultSlot();
+            }
         });
 
         this.addSlot(new Slot(resultContainer, 0, 143, 34) {
@@ -56,10 +52,8 @@ public class SignPressMenu extends AbstractContainerMenu {
             @Override
             public void onTake(Player player, ItemStack stack) {
                 if (!isQuickCrafting) {
-                    blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-                        ItemStack input = handler.getStackInSlot(0);
-                        input.shrink(stack.getCount() * 4);
-                    });
+                    ItemStack input = blockEntity.getItem(0);
+                    input.shrink(stack.getCount() * 4);
                     setupResultSlot();
                 }
 
@@ -80,27 +74,25 @@ public class SignPressMenu extends AbstractContainerMenu {
     }
 
     public void setupResultSlot() {
-        this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            ItemStack input = handler.getStackInSlot(0);
+        ItemStack input = blockEntity.getItem(0);
 
-            if (!this.selectedBlock.isEmpty() && input.getItem() == Items.WHITE_CONCRETE && input.getCount() >= 4) {
-                Item resultItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation("signbuilder", this.selectedBlock));
-                if (resultItem != null && resultItem != Items.AIR) {
+        if (!this.selectedBlock.isEmpty() && input.getItem() == Items.WHITE_CONCRETE && input.getCount() >= 4) {
+            Item resultItem = BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", this.selectedBlock));
+            if (resultItem != null && resultItem != Items.AIR) {
 
-                    int amountToCraft = 1;
-                    if (this.craftMax) {
-                        amountToCraft = input.getCount() / 4;
-                        amountToCraft = Math.min(amountToCraft, resultItem.getMaxStackSize());
-                    }
-
-                    this.resultContainer.setItem(0, new ItemStack(resultItem, amountToCraft));
-                    this.broadcastChanges();
-                    return;
+                int amountToCraft = 1;
+                if (this.craftMax) {
+                    amountToCraft = input.getCount() / 4;
+                    amountToCraft = Math.min(amountToCraft, resultItem.getMaxStackSize());
                 }
+
+                this.resultContainer.setItem(0, new ItemStack(resultItem, amountToCraft));
+                this.broadcastChanges();
+                return;
             }
-            this.resultContainer.setItem(0, ItemStack.EMPTY);
-            this.broadcastChanges();
-        });
+        }
+        this.resultContainer.setItem(0, ItemStack.EMPTY);
+        this.broadcastChanges();
     }
 
     @Override
@@ -143,10 +135,8 @@ public class SignPressMenu extends AbstractContainerMenu {
 
                 int taken = originalCount - slotStack.getCount();
                 if (taken > 0) {
-                    blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-                        ItemStack input = handler.getStackInSlot(0);
-                        input.shrink(taken * 4);
-                    });
+                    ItemStack input = blockEntity.getItem(0);
+                    input.shrink(taken * 4);
                     setupResultSlot();
                 }
                 slot.onQuickCraft(slotStack, itemstack);

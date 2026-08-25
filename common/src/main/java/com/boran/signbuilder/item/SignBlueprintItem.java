@@ -2,10 +2,13 @@ package com.boran.signbuilder.item;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.client.screen.BlueprintScreen;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,12 +19,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -35,10 +39,12 @@ public class SignBlueprintItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         String currentText = "";
-        if (pStack.hasTag() && pStack.getTag().contains("BlueprintText")) {
-            currentText = pStack.getTag().getString("BlueprintText");
+
+        CompoundTag tag = pStack.getTag();
+        if (tag != null && tag.contains("BlueprintText")) {
+            currentText = tag.getString("BlueprintText");
         }
 
         if (!currentText.isEmpty()) {
@@ -58,28 +64,28 @@ public class SignBlueprintItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
 
         if (pLevel.isClientSide()) {
             pPlayer.playSound(net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
 
             String currentText = "";
-            if (stack.hasTag() && stack.getTag().contains("BlueprintText")) {
-                currentText = stack.getTag().getString("BlueprintText");
+            CompoundTag tag = stack.getTag();
+            if (tag != null && tag.contains("BlueprintText")) {
+                currentText = tag.getString("BlueprintText");
             }
 
             String finalCurrentText = currentText;
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                Minecraft.getInstance().setScreen(new BlueprintScreen(finalCurrentText));
-            });
+
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new BlueprintScreen(finalCurrentText)));
         }
 
         return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(@NotNull UseOnContext pContext) {
         Level level = pContext.getLevel();
         Player player = pContext.getPlayer();
         ItemStack stack = pContext.getItemInHand();
@@ -89,8 +95,9 @@ public class SignBlueprintItem extends Item {
         }
 
         String text = "";
-        if (stack.hasTag() && stack.getTag().contains("BlueprintText")) {
-            text = stack.getTag().getString("BlueprintText");
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.contains("BlueprintText")) {
+            text = tag.getString("BlueprintText");
         }
 
         if (text.isEmpty()) {
@@ -164,11 +171,11 @@ public class SignBlueprintItem extends Item {
             Block blockToPlace = getBlockForChar(c);
 
             if (blockToPlace != null) {
-                net.minecraft.world.phys.BlockHitResult hitResult = new net.minecraft.world.phys.BlockHitResult(
+                BlockHitResult hitResult = new BlockHitResult(
                         pContext.getClickLocation(), clickedFace, currentPos, pContext.isInside());
 
-                net.minecraft.world.item.context.BlockPlaceContext placeContext =
-                        new net.minecraft.world.item.context.BlockPlaceContext(level, player, pContext.getHand(), stack, hitResult);
+                UseOnContext offsetContext = new UseOnContext(player, pContext.getHand(), hitResult);
+                BlockPlaceContext placeContext = new BlockPlaceContext(offsetContext);
 
                 BlockState stateToPlace = blockToPlace.getStateForPlacement(placeContext);
                 if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();

@@ -1,32 +1,23 @@
 package com.boran.signbuilder.block;
 
-import com.boran.signbuilder.SignBuilder;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.screen.SignPressScreen;
 import com.boran.signbuilder.menu.ModMenuTypes;
-import net.minecraft.client.gui.screens.MenuScreens;
+import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
+import dev.architectury.registry.menu.MenuRegistry;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.RegistryObject;
 
-@Mod.EventBusSubscriber(modid = SignBuilder.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClientModEvents {
 
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            MenuScreens.register(ModMenuTypes.SIGN_PRESS_MENU.get(), SignPressScreen::new);
-        });
-    }
+    public static void init() {
+        MenuRegistry.registerScreenFactory(ModMenuTypes.SIGN_PRESS_MENU.get(), SignPressScreen::new);
 
-    @SubscribeEvent
-    public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
-        event.register((state, level, pos, tintIndex) -> {
+        ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
             if (level != null && pos != null) {
                 BlockEntity blockEntity = level.getBlockEntity(pos);
                 if (blockEntity instanceof LetterBlockEntity letterEntity) {
@@ -38,6 +29,14 @@ public class ClientModEvents {
                 return LetterBlockEntity.getActualHexColor(state.getValue(ModBlocks.COLOR));
             }
             return 0xFFFFFF;
-        }, ModBlocks.BLOCKS.getEntries().stream().map(RegistryObject::get).toArray(Block[]::new));
+        }, getValidBlocks());
+    }
+
+    private static Block[] getValidBlocks() {
+        List<Block> blocks = new ArrayList<>();
+        for (RegistrySupplier<Block> blockSupplier : ModBlocks.BLOCKS) {
+            blocks.add(blockSupplier.get());
+        }
+        return blocks.toArray(new Block[0]);
     }
 }

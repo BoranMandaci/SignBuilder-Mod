@@ -6,12 +6,12 @@ import com.boran.signbuilder.network.SignPressCraftC2SPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -130,7 +130,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {
                     String blockName = allBlocks.get(blockIndex);
-                    ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation("signbuilder", blockName)));
+                    ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
                     guiGraphics.renderTooltip(this.font, itemStack, mouseX, mouseY);
                 }
             }
@@ -169,7 +169,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                     guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF141517);
                 }
 
-                ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation("signbuilder", blockName)));
+                ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
                 guiGraphics.renderItem(itemStack, slotX + 1, slotY + 1);
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {

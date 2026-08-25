@@ -3,9 +3,12 @@ package com.boran.signbuilder.item;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.screen.PaintBrushScreen;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -22,8 +25,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -39,7 +41,7 @@ public class PaintBrushItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
         CompoundTag tag = stack.getTag();
 
         int selectedColor = 0;
@@ -85,11 +87,11 @@ public class PaintBrushItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         if (player.isShiftKeyDown()) {
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
                 stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
 
@@ -101,21 +103,19 @@ public class PaintBrushItem extends Item {
                         true
                 );
 
-                level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
+                level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
         }
 
-        if (level.isClientSide) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                Minecraft.getInstance().setScreen(new PaintBrushScreen());
-            });
+        if (level.isClientSide()) {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new PaintBrushScreen()));
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
+    public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         Player player = context.getPlayer();
@@ -127,7 +127,7 @@ public class PaintBrushItem extends Item {
         if (blockEntity instanceof LetterBlockEntity letterEntity) {
 
             if (player != null && player.isShiftKeyDown()) {
-                if (!level.isClientSide) {
+                if (!level.isClientSide()) {
                     int copiedColor = letterEntity.isRainbow() ? -1 : letterEntity.getRgbColor();
 
                     CompoundTag tag = stack.getOrCreateTag();
@@ -148,10 +148,10 @@ public class PaintBrushItem extends Item {
                     level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
                 }
 
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.sidedSuccess(level.isClientSide());
             }
 
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 CompoundTag tag = stack.getOrCreateTag();
                 if (tag.contains("SelectedColor")) {
                     int selectedColor = tag.getInt("SelectedColor");
@@ -190,16 +190,14 @@ public class PaintBrushItem extends Item {
                 }
             }
 
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        if (level.isClientSide && player != null && !player.isShiftKeyDown()) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                Minecraft.getInstance().setScreen(new PaintBrushScreen());
-            });
+        if (level.isClientSide() && player != null && !player.isShiftKeyDown()) {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new PaintBrushScreen()));
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     private void applyColorToConnected(Level level, BlockPos startPos, int selectedColor) {
@@ -229,7 +227,7 @@ public class PaintBrushItem extends Item {
                     }
                 }
 
-                for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                for (Direction dir : Direction.values()) {
                     BlockPos neighbor = current.relative(dir);
                     if (!visited.contains(neighbor) && level.getBlockEntity(neighbor) instanceof LetterBlockEntity) {
                         visited.add(neighbor);

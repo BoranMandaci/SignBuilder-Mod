@@ -3,9 +3,12 @@ package com.boran.signbuilder.item;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.screen.WrenchScreen;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -22,8 +25,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -49,17 +51,18 @@ public class WrenchItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         int currentMode = 0;
         boolean isSmartFill = false;
         boolean detectsMonsters = true;
         boolean detectsAnimals = false;
 
-        if (pStack.hasTag()) {
-            if (pStack.getTag().contains("WrenchMode")) currentMode = pStack.getTag().getInt("WrenchMode");
-            if (pStack.getTag().contains("IsSmartFill")) isSmartFill = pStack.getTag().getBoolean("IsSmartFill");
-            if (pStack.getTag().contains("DetectsMonsters")) detectsMonsters = pStack.getTag().getBoolean("DetectsMonsters");
-            if (pStack.getTag().contains("DetectsAnimals")) detectsAnimals = pStack.getTag().getBoolean("DetectsAnimals");
+        CompoundTag tag = pStack.getTag();
+        if (tag != null) {
+            if (tag.contains("WrenchMode")) currentMode = tag.getInt("WrenchMode");
+            if (tag.contains("IsSmartFill")) isSmartFill = tag.getBoolean("IsSmartFill");
+            if (tag.contains("DetectsMonsters")) detectsMonsters = tag.getBoolean("DetectsMonsters");
+            if (tag.contains("DetectsAnimals")) detectsAnimals = tag.getBoolean("DetectsAnimals");
         }
 
         if (currentMode >= 0 && currentMode < MOD_KEYS.length) {
@@ -96,7 +99,7 @@ public class WrenchItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
 
         if (pPlayer.isShiftKeyDown()) {
@@ -112,7 +115,7 @@ public class WrenchItem extends Item {
                         true
                 );
 
-                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
+                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
             return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
         }
@@ -122,27 +125,27 @@ public class WrenchItem extends Item {
             boolean detectsMonsters = true;
             boolean detectsAnimals = false;
 
-            if (stack.hasTag()) {
-                if (stack.getTag().contains("WrenchMode")) currentMode = stack.getTag().getInt("WrenchMode");
-                if (stack.getTag().contains("DetectsMonsters")) detectsMonsters = stack.getTag().getBoolean("DetectsMonsters");
-                if (stack.getTag().contains("DetectsAnimals")) detectsAnimals = stack.getTag().getBoolean("DetectsAnimals");
+            CompoundTag tag = stack.getTag();
+            if (tag != null) {
+                if (tag.contains("WrenchMode")) currentMode = tag.getInt("WrenchMode");
+                if (tag.contains("DetectsMonsters")) detectsMonsters = tag.getBoolean("DetectsMonsters");
+                if (tag.contains("DetectsAnimals")) detectsAnimals = tag.getBoolean("DetectsAnimals");
             }
 
-            pPlayer.playSound(SoundEvents.UI_BUTTON_CLICK.get(), 0.5F, 1.2F);
+            pPlayer.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5F, 1.2F);
 
             int finalCurrentMode = currentMode;
             boolean finalDetectsMonsters = detectsMonsters;
             boolean finalDetectsAnimals = detectsAnimals;
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                Minecraft.getInstance().setScreen(new WrenchScreen(finalCurrentMode, finalDetectsMonsters, finalDetectsAnimals));
-            });
+
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new WrenchScreen(finalCurrentMode, finalDetectsMonsters, finalDetectsAnimals)));
         }
 
         return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(@NotNull UseOnContext pContext) {
         Level level = pContext.getLevel();
         BlockPos pos = pContext.getClickedPos();
         BlockState clickedBlock = level.getBlockState(pos);
@@ -193,7 +196,7 @@ public class WrenchItem extends Item {
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof LetterBlockEntity letterEntity) {
                     boolean wasActive = letterEntity.isActive();
-                    boolean targetActive = wasActive;
+                    boolean targetActive;
 
                     if (mode != -1) {
                         if (letterEntity.getWrenchMode() == mode) targetActive = !wasActive;
@@ -308,7 +311,7 @@ public class WrenchItem extends Item {
                     }
                 }
 
-                for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                for (Direction dir : Direction.values()) {
                     BlockPos neighbor = current.relative(dir);
                     if (!visited.contains(neighbor) && level.getBlockEntity(neighbor) instanceof LetterBlockEntity) {
                         visited.add(neighbor);
@@ -330,6 +333,7 @@ public class WrenchItem extends Item {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private int countItemInInventory(Player player, Item item) {
         int count = 0;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
@@ -339,6 +343,7 @@ public class WrenchItem extends Item {
         return count;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void consumeItemFromInventory(Player player, Item item, int amount) {
         int amountLeftToRemove = amount;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.Util;
 
 public class WrenchScreen extends Screen {
@@ -44,8 +45,11 @@ public class WrenchScreen extends Screen {
             ItemStack mainItem = this.minecraft.player.getMainHandItem();
             ItemStack offItem = this.minecraft.player.getOffhandItem();
 
-            this.isSmartFillEnabled = (mainItem.hasTag() && mainItem.getTag().getBoolean("IsSmartFill")) ||
-                    (offItem.hasTag() && offItem.getTag().getBoolean("IsSmartFill"));
+            CompoundTag mainTag = mainItem.getTag();
+            CompoundTag offTag = offItem.getTag();
+
+            this.isSmartFillEnabled = (mainTag != null && mainTag.getBoolean("IsSmartFill")) ||
+                    (offTag != null && offTag.getBoolean("IsSmartFill"));
         }
     }
 
@@ -132,14 +136,14 @@ public class WrenchScreen extends Screen {
                 }
             }
 
-            int alpha = 255;
+            int alpha;
             if (i == 0) alpha = 255;
             else if (i == 1) alpha = ((time / 250L) % 2 == 0) ? 255 : 40;
             else if (i == 2) alpha = (Math.random() > 0.7) ? 255 : 40;
             else if (i == 3) alpha = (int)(((Math.sin(time / 200.0) + 1.0) / 2.0) * 200) + 55;
             else if (i == 4) alpha = (int)(((Math.sin(time / 600.0) + 1.0) / 2.0) * 200) + 55;
             else if (i == 5) alpha = (time % 1500L < 200) ? 255 : 40;
-            else if (i == 6) alpha = ((time / 2000L) % 2 == 0) ? 255 : 40;
+            else alpha = ((time / 2000L) % 2 == 0) ? 255 : 40;
 
             int color = (alpha << 24) | 0x00FFFF;
             drawLedCircle(guiGraphics, startX + 16, rowY + (rowHeight / 2), color);
@@ -199,7 +203,7 @@ public class WrenchScreen extends Screen {
                     if (mouseX >= animalToggleX && mouseX <= animalToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize) {
                         this.detectsAnimals = !this.detectsAnimals;
                         if (this.minecraft != null && this.minecraft.player != null) {
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), 0.8F, this.detectsAnimals ? 1.2F : 0.8F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.8F, this.detectsAnimals ? 1.2F : 0.8F);
                         }
                         ModMessages.sendToServer(new WrenchModeC2SPacket(currentMode, this.detectsMonsters, this.detectsAnimals));
                         return true;
@@ -208,7 +212,7 @@ public class WrenchScreen extends Screen {
                     if (mouseX >= monsterToggleX && mouseX <= monsterToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize) {
                         this.detectsMonsters = !this.detectsMonsters;
                         if (this.minecraft != null && this.minecraft.player != null) {
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), 0.8F, this.detectsMonsters ? 1.2F : 0.8F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.8F, this.detectsMonsters ? 1.2F : 0.8F);
                         }
                         ModMessages.sendToServer(new WrenchModeC2SPacket(currentMode, this.detectsMonsters, this.detectsAnimals));
                         return true;
@@ -224,9 +228,12 @@ public class WrenchScreen extends Screen {
                                         .append(Component.translatable(MOD_KEYS[i]).withStyle(net.minecraft.ChatFormatting.AQUA)),
                                 true
                         );
-                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), 0.6F, 1.5F);
+                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
                     }
-                    this.minecraft.setScreen(null);
+
+                    if (this.minecraft != null) {
+                        this.minecraft.setScreen(null);
+                    }
                     return true;
                 }
             }
@@ -238,9 +245,12 @@ public class WrenchScreen extends Screen {
                     this.minecraft.player.displayClientMessage(
                             Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(net.minecraft.ChatFormatting.RED), true
                     );
-                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), 0.6F, 1.5F);
+                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
                 }
-                this.minecraft.setScreen(null);
+
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(null);
+                }
                 return true;
             }
         }

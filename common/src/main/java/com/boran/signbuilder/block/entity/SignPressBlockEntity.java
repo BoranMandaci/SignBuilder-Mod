@@ -2,9 +2,11 @@ package com.boran.signbuilder.block.entity;
 
 import com.boran.signbuilder.menu.SignPressMenu;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,25 +14,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SignPressBlockEntity extends BlockEntity implements MenuProvider {
+public class SignPressBlockEntity extends BlockEntity implements MenuProvider, Container {
 
-    private final ItemStackHandler itemHandler = new ItemStackHandler(2) {
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
-    };
-
-    private LazyOptional<IItemHandler> lazyInputHandler = LazyOptional.empty();
-    private LazyOptional<IItemHandler> lazyOutputHandler = LazyOptional.empty();
+    private final NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);
 
     public SignPressBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SIGN_PRESS_BE.get(), pos, state);
@@ -43,74 +31,70 @@ public class SignPressBlockEntity extends BlockEntity implements MenuProvider {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new SignPressMenu(id, inventory, this);
+    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new SignPressMenu(id, inv, this);
     }
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            if (side == Direction.DOWN) {
-                return lazyOutputHandler.cast();
-            }
-            else {
-                return lazyInputHandler.cast();
-            }
+    public int getContainerSize() {
+        return this.inventory.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        for (ItemStack itemstack : this.inventory) {
+            if (!itemstack.isEmpty()) return false;
         }
-        return super.getCapability(cap, side);
+        return true;
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-
-        lazyInputHandler = LazyOptional.of(() -> new IItemHandler() {
-            @Override public int getSlots() { return 1; }
-            @Override public @NotNull ItemStack getStackInSlot(int slot) { return itemHandler.getStackInSlot(0); }
-            @Override public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                return itemHandler.insertItem(0, stack, simulate);
-            }
-            @Override public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                return itemHandler.extractItem(0, amount, simulate);
-            }
-            @Override public int getSlotLimit(int slot) { return itemHandler.getSlotLimit(0); }
-            @Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return itemHandler.isItemValid(0, stack); }
-        });
-
-        lazyOutputHandler = LazyOptional.of(() -> new IItemHandler() {
-            @Override public int getSlots() { return 1; }
-            @Override public @NotNull ItemStack getStackInSlot(int slot) { return itemHandler.getStackInSlot(1); }
-            @Override public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                return stack;
-            }
-            @Override public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                return itemHandler.extractItem(1, amount, simulate);
-            }
-            @Override public int getSlotLimit(int slot) { return itemHandler.getSlotLimit(1); }
-            @Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return false; }
-        });
+    public ItemStack getItem(int slot) {
+        return this.inventory.get(slot);
     }
 
     @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        lazyInputHandler.invalidate();
-        lazyOutputHandler.invalidate();
+    public ItemStack removeItem(int slot, int amount) {
+        ItemStack result = ContainerHelper.removeItem(this.inventory, slot, amount);
+        if (!result.isEmpty()) this.setChanged();
+        return result;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        return ContainerHelper.takeItem(this.inventory, slot);
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        this.inventory.set(slot, stack);
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize());
+        }
+        this.setChanged();
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        if (this.level.getBlockEntity(this.worldPosition) != this) return false;
+        return player.distanceToSqr((double)this.worldPosition.getX() + 0.5D, (double)this.worldPosition.getY() + 0.5D, (double)this.worldPosition.getZ() + 0.5D) <= 64.0D;
+    }
+
+    @Override
+    public void clearContent() {
+        this.inventory.clear();
     }
 
     @Override
     protected void saveAdditional(CompoundTag nbt) {
-        nbt.put("inventory", itemHandler.serializeNBT());
         super.saveAdditional(nbt);
+        ContainerHelper.saveAllItems(nbt, this.inventory);
     }
 
     @Override
     public void load(CompoundTag nbt) {
         super.load(nbt);
-        itemHandler.deserializeNBT(nbt.getCompound("inventory"));
-    }
-
-    public ItemStackHandler getItemHandler() {
-        return this.itemHandler;
+        this.inventory.clear();
+        ContainerHelper.loadAllItems(nbt, this.inventory);
     }
 }
