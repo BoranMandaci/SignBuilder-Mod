@@ -15,17 +15,16 @@ public class SignBuilder {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static void init() {
-
-        ModItems.register();
         ModBlocks.register();
+        ModItems.register();
 
         ModBlockEntities.register();
         ModMenuTypes.register();
         ModCreativeModeTabs.register();
 
         ModMessages.register();
+        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientModEvents.init());
     }
-
     public static int getColorHex(int index) {
         return switch (index) {
             case 0 -> 0xFFFFFF; case 1 -> 0xD87F33; case 2 -> 0xB24CD8; case 3 -> 0x6699D8;

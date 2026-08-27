@@ -7,7 +7,7 @@
   ],
   "key": {
     "D": {
-      "tag": "forge:dyes"
+      "tag": "c:dyes"
     },
     "S": {
       "item": "minecraft:string"

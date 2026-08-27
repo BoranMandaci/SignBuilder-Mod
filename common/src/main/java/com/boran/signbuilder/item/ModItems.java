@@ -10,7 +10,7 @@ import net.minecraft.world.item.Item;
 
 public class ModItems {
 
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create("signbuilder", Registries.ITEM);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(SignBuilder.MODID, Registries.ITEM);
 
     public static final RegistrySupplier<Item> PAINT_BRUSH = ITEMS.register("paint_brush",
             () -> new PaintBrushItem(new Item.Properties().defaultDurability(256)));

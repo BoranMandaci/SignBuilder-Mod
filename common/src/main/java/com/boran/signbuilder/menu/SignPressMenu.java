@@ -126,20 +126,28 @@ public class SignPressMenu extends AbstractContainerMenu {
             if (index == 1) {
                 this.isQuickCrafting = true;
 
-                int originalCount = slotStack.getCount();
+                while (slot.hasItem()) {
+                    ItemStack currentStack = slot.getItem().copy();
+                    int originalCount = currentStack.getCount();
 
-                if (!this.moveItemStackTo(slotStack, 2, 38, false)) {
-                    this.isQuickCrafting = false;
-                    return ItemStack.EMPTY;
+                    if (!this.moveItemStackTo(currentStack, 2, 38, true)) {
+                        break;
+                    }
+
+                    int taken = originalCount - currentStack.getCount();
+                    if (taken > 0) {
+                        ItemStack input = blockEntity.getItem(0);
+                        input.shrink(taken * 4);
+
+                        slot.onTake(player, currentStack);
+                        setupResultSlot();
+                    } else {
+                        break;
+                    }
                 }
 
-                int taken = originalCount - slotStack.getCount();
-                if (taken > 0) {
-                    ItemStack input = blockEntity.getItem(0);
-                    input.shrink(taken * 4);
-                    setupResultSlot();
-                }
-                slot.onQuickCraft(slotStack, itemstack);
+                this.isQuickCrafting = false;
+                return ItemStack.EMPTY;
 
             } else if (index == 0) {
                 if (!this.moveItemStackTo(slotStack, 2, 38, false)) {
@@ -166,12 +174,9 @@ public class SignPressMenu extends AbstractContainerMenu {
             }
 
             if (slotStack.getCount() == itemstack.getCount()) {
-                this.isQuickCrafting = false;
                 return ItemStack.EMPTY;
             }
-
             slot.onTake(player, slotStack);
-            this.isQuickCrafting = false;
         }
         return itemstack;
     }

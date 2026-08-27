@@ -3,7 +3,6 @@ package com.boran.signbuilder.block;
 import com.boran.signbuilder.block.entity.SignPressBlockEntity;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -52,11 +51,9 @@ public class SignPressBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof MenuProvider menuProvider) {
-                MenuRegistry.openExtendedMenu((ServerPlayer) player, menuProvider, buf -> buf.writeBlockPos(pos));
-            } else {
-                throw new IllegalStateException("Container provider eksik!");
+                MenuRegistry.openExtendedMenu((net.minecraft.server.level.ServerPlayer) player, menuProvider, buf -> buf.writeBlockPos(pos));
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 }

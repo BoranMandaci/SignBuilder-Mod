@@ -43,7 +43,6 @@ public class PaintBrushItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
         CompoundTag tag = stack.getTag();
-
         int selectedColor = 0;
         boolean isSmartFill = false;
 
@@ -148,56 +147,64 @@ public class PaintBrushItem extends Item {
                     level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
                 }
 
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
 
-            if (!level.isClientSide()) {
-                CompoundTag tag = stack.getOrCreateTag();
-                if (tag.contains("SelectedColor")) {
-                    int selectedColor = tag.getInt("SelectedColor");
-                    boolean isSmartFill = tag.getBoolean("IsSmartFill");
+            CompoundTag tag = stack.getOrCreateTag();
+            int selectedColor = tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
+            boolean isSmartFill = tag.getBoolean("IsSmartFill");
 
-                    if (isSmartFill) {
-                        applyColorToConnected(level, pos, selectedColor);
-                        if (player != null) {
-                            player.displayClientMessage(
-                                    Component.translatable("message.signbuilder.brush.smart_fill_success")
-                                            .withStyle(ChatFormatting.GREEN), true
-                            );
-                        }
-                    } else {
-                        if (selectedColor == -1) {
-                            letterEntity.setRainbow(true);
+            if (isSmartFill) {
+                applyColorToConnected(level, pos, selectedColor);
+                if (player != null && !level.isClientSide()) {
+                    player.displayClientMessage(
+                            Component.translatable("message.signbuilder.brush.smart_fill_success")
+                                    .withStyle(ChatFormatting.GREEN), true
+                    );
+                }
+            } else {
+                if (selectedColor == -1) {
+                    letterEntity.setRainbow(true);
+                } else {
+                    int hexColor = getActualHexColor(selectedColor);
+                    letterEntity.setRainbow(false);
+                    letterEntity.setRgbColor(hexColor);
+
+                    if (!level.isClientSide()) {
+                        if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
+                            level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
                         } else {
-                            int hexColor = getActualHexColor(selectedColor);
-                            letterEntity.setRgbColor(hexColor);
-
-                            if (selectedColor <= 15 && state.hasProperty(ModBlocks.COLOR)) {
-                                level.setBlock(pos, state.setValue(ModBlocks.COLOR, selectedColor), 3);
-                            } else {
-                                level.sendBlockUpdated(pos, state, state, 3);
-                            }
+                            level.sendBlockUpdated(pos, state, state, 3);
                         }
                     }
+                }
+
+                if (level.isClientSide()) {
+                    EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                        Minecraft.getInstance().levelRenderer.setBlocksDirty(
+                                pos.getX(), pos.getY(), pos.getZ(),
+                                pos.getX(), pos.getY(), pos.getZ()
+                        );
+                    });
                 }
             }
 
             if (player != null) {
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-                if (!player.isCreative()) {
+                if (!player.isCreative() && !level.isClientSide()) {
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
                 }
             }
 
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (level.isClientSide() && player != null && !player.isShiftKeyDown()) {
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new PaintBrushScreen()));
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     private void applyColorToConnected(Level level, BlockPos startPos, int selectedColor) {
@@ -218,13 +225,25 @@ public class PaintBrushItem extends Item {
                     letter.setRainbow(true);
                 } else {
                     int hexColor = getActualHexColor(selectedColor);
+                    letter.setRainbow(false);
                     letter.setRgbColor(hexColor);
 
-                    if (selectedColor <= 15 && currentState.hasProperty(ModBlocks.COLOR)) {
-                        level.setBlock(current, currentState.setValue(ModBlocks.COLOR, selectedColor), 3);
-                    } else {
-                        level.sendBlockUpdated(current, currentState, currentState, 3);
+                    if (!level.isClientSide()) {
+                        if (selectedColor <= 15 && currentState.hasProperty(ModBlocks.COLOR)) {
+                            level.setBlock(current, currentState.setValue(ModBlocks.COLOR, selectedColor), 3);
+                        } else {
+                            level.sendBlockUpdated(current, currentState, currentState, 3);
+                        }
                     }
+                }
+
+                if (level.isClientSide()) {
+                    EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                        Minecraft.getInstance().levelRenderer.setBlocksDirty(
+                                current.getX(), current.getY(), current.getZ(),
+                                current.getX(), current.getY(), current.getZ()
+                        );
+                    });
                 }
 
                 for (Direction dir : Direction.values()) {

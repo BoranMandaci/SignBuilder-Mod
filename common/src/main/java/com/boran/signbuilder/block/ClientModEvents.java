@@ -1,11 +1,12 @@
-package com.boran.signbuilder.block;
+package com.boran.signbuilder.client;
 
+import com.boran.signbuilder.block.LetterBlock;
+import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.screen.SignPressScreen;
 import com.boran.signbuilder.menu.ModMenuTypes;
 import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
 import dev.architectury.registry.menu.MenuRegistry;
-import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -19,24 +20,23 @@ public class ClientModEvents {
 
         ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
             if (level != null && pos != null) {
-                BlockEntity blockEntity = level.getBlockEntity(pos);
-                if (blockEntity instanceof LetterBlockEntity letterEntity) {
-                    return letterEntity.getRgbColor();
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof LetterBlockEntity letter) {
+                    return letter.getRgbColor();
                 }
             }
-
-            if (state != null && state.hasProperty(ModBlocks.COLOR)) {
-                return LetterBlockEntity.getActualHexColor(state.getValue(ModBlocks.COLOR));
-            }
             return 0xFFFFFF;
-        }, getValidBlocks());
+        }, getLetterBlocks());
     }
 
-    private static Block[] getValidBlocks() {
-        List<Block> blocks = new ArrayList<>();
-        for (RegistrySupplier<Block> blockSupplier : ModBlocks.BLOCKS) {
-            blocks.add(blockSupplier.get());
+    private static Block[] getLetterBlocks() {
+        List<Block> letters = new ArrayList<>();
+        for (var blockSupplier : ModBlocks.BLOCKS) {
+            Block block = blockSupplier.get();
+            if (block instanceof LetterBlock) {
+                letters.add(block);
+            }
         }
-        return blocks.toArray(new Block[0]);
+        return letters.toArray(new Block[0]);
     }
 }
