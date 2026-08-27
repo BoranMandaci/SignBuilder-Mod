@@ -1,40 +1,60 @@
-# Sign Builder Mod 🎨
+<div align="center">
+  <b>🇬🇧 English</b> • <a href="README.tr.md">🇹🇷 Türkçe</a>
+</div>
 
-Sign Builder is a Minecraft Forge mod that allows players to seamlessly build, color, and illuminate custom 3D signs. Whether you are decorating a city, setting up a shop, or just organizing your base, this mod provides highly detailed characters, special symbols, a dynamic painting system, and glowing neon mechanics.
+---
 
-## 📥 Download
-You can download the official and latest versions of the Sign Builder mod from the links below:
-* **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)**
-* **[Modrinth](https://modrinth.com/mod/sign-builder)**
+# 🪧 Sign Builder
 
-## ✨ Features
+A full-featured, cross-platform Minecraft mod to seamlessly build, color, and illuminate custom 3D signs. Decorate your cities, organize your storage, and build glowing neon shop fronts with a highly detailed, dynamic building system.
 
-*   **3D Letters, Numbers & Symbols:** Highly detailed, custom-modeled letters (A-Z), numbers (0-9), and an extensive set of symbols (Straight & Diagonal Arrows, Slash (/), Plus, Minus, Heart, and Left/Center/Right alignment Dots)! All blocks feature smart hitboxes and adjust seamlessly whether placed on the floor or mounted on a wall.
-*   **The Paint Brush Tool & Custom Palette:** A dedicated custom item to paint your blocks dynamically. Go beyond the vanilla palette by mixing your own RGB/Hex codes and save up to 14 custom colors in your personal palette!
-*   **Rainbow Mode:** Paint your blocks with the new "Rainbow" mode to apply a dynamic, continuously cycling color animation based on in-game time.
-*   **Eyedropper Mechanic:** Sneak (Shift) and right-click on any painted block in the world to instantly copy its exact color directly to your Paint Brush.
-*   **Fully Responsive Color GUI:** Right-click in the air with the Paint Brush to open a smooth, visually appealing color selection menu that scales perfectly on any screen size. It seamlessly runs in the background without pausing your singleplayer games so animations keep playing!
-*   **Smart Block Tinting:** Change the color of your signs instantly with a simple right-click using the Paint Brush, without breaking the block or resetting its facing direction.
-*   **The Wrench Tool & Neon Mechanics:** Right-click any character with the Wrench to toggle its internal lighting on or off, instantly turning it into a glowing neon sign!
-*   **Redstone Integration:** Automate your neon signs! Letter and symbol blocks now dynamically react to redstone signals to toggle their glowing state on and off.
-*   **Fully Survival Ready:** Perfectly balanced for Survival mode! Both the Paint Brush and the Wrench use durability mechanics upon successful use. Plus, all blocks feature proper loot tables and require a pickaxe to mine correctly.
-*   **Immersive Feedback:** Custom vanilla-style dye and mechanical sounds for an intuitive and satisfying user experience.
-*   **🌍 Global Localization:** Fully translated and supported in English, Turkish, Russian, Spanish, Simplified Chinese, German, French, and Italian!
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
-## 🛠️ How to Use
+## 📖 Introduction
 
-### 🎨 Painting & Custom Colors:
-1.  Grab a **Paint Brush** from the Creative Menu or craft one.
-2.  Right-click in the air with the brush in your hand to open the Color Selection Menu.
-3.  Choose a preset color, select **Rainbow Mode**, or click the **"+"** button to mix and save your own custom hex colors.
-4.  Right-click on any placed SignBuilder block in the world to instantly apply the color!
-5.  *Tip:* **Sneak (Shift) + Right-click** on an already painted block to easily copy its color to your brush.
+Sign Builder is a cross-platform Minecraft mod built from the ground up for both Fabric and Forge using the Architectury API. It introduces a comprehensive workflow for creating highly detailed 3D text in your world. Rather than relying on simple vanilla signs, this mod provides physical blocks for letters, numbers, and symbols, coupled with custom tools to stamp, paint, and illuminate them dynamically.
 
-### 🔧 Illuminating & Redstone:
-1.  Grab the **Wrench**.
-2.  Right-click on any placed SignBuilder block to toggle its internal lighting to create glowing signs.
-3.  *Alternatively:* Connect your blocks to a **redstone signal** to automate the glowing effect!
+## ✨ Key Features
 
-## 👨‍💻 Author
-Boran Mandacı  
-*Created with Java, Forge, and Blockbench.*
+*   🏗️ **3D Letters, Numbers & Symbols** — Highly detailed, custom-modeled letters (A-Z), numbers (0-9), and an extensive set of symbols (Arrows, Slash, Plus, Minus, Heart, Currency Symbols like $, €, ₺). Features smart hitboxes adapting to wall and floor placements.
+*   🗜️ **The Sign Press** — A dedicated survival crafting station. Stamp your raw concrete into specific letters and symbols cleanly and efficiently, with full shift-click stacking support.
+*   🗺️ **The Sign Blueprint** — Type your desired word into the Blueprint GUI (featuring case-insensitivity and full Turkish character support). Right-click a block to automatically construct the entire word in the world.
+*   🎨 **The Paint Brush & Custom Palette** — Right-click in the air to open a responsive GUI. Mix your own RGB/Hex codes and save up to 14 custom colors in your personal palette.
+*   🌈 **Rainbow Mode & Smart Fill** — Apply a dynamic, continuously cycling color animation. Sneak + Right-click in the air to toggle "Smart Fill", instantly painting entire connected words at once.
+*   💧 **Eyedropper Mechanic** — Sneak + Right-click on any painted block in the world to copy its exact hex color directly to your Paint Brush.
+*   🔧 **Neon Mechanics & Redstone** — Right-click any character with the Wrench to toggle its internal lighting. Automate your neon signs by connecting them directly to redstone signals!
+*   🌍 **Global Localization** — Fully translated into English, Turkish, Russian, Spanish, Simplified Chinese, German, French, and Italian.
+
+## 🛠️ Tech Stack
+
+**Modding API & Languages**
+*   ☕ **Java** — Core logic and backend.
+*   🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge and Fabric development.
+*   🦊 **Fabric** / 🔨 **Forge** — Mod loaders.
+
+**Tools**
+*   🧊 **Blockbench** — Custom 3D modeling and texturing for all character and tool blocks.
+*   🐘 **Gradle** — Build automation and dependency management.
+
+## 🚀 Getting Started
+
+### Prerequisites
+*   Minecraft `1.20.1`
+*   **Fabric** or **Forge** Mod Loader
+*   [Architectury API](https://modrinth.com/mod/architectury-api) (Required Dependency)
+
+### Installation
+1.  Download the latest version of the mod from **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** or **[Modrinth](https://modrinth.com/mod/sign-builder)**.
+2.  Download the required version of the Architectury API.
+3.  Drop both `.jar` files into your Minecraft `mods` folder.
+4.  Launch the game!
+
+## 🤝 Contributing
+This is primarily a personal portfolio project, but issues, suggestions, and pull requests are welcome. Please open an issue first for anything non-trivial so we can discuss the approach.
+
+## ⚖️ Disclaimer & Legal Notice
+*   This project is strictly a fan-made, open-source modification for Minecraft.
+*   "Minecraft" is a trademark of Mojang Synergies AB. This project is not affiliated with, endorsed by, or connected to Mojang or Microsoft in any way.
+*   All custom 3D models and code implementations are original works created by the author.
+
+Built with by **Boran Mandacı**
