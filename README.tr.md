@@ -8,17 +8,21 @@
 
 Özel 3D tabelalar inşa etmenizi, boyamanızı ve ışıklandırmanızı sağlayan tam kapsamlı, çok platformlu bir Minecraft modu. Son derece detaylı ve dinamik bir inşa sistemiyle şehirlerinizi dekore edin, depolarınızı düzenleyin ve parlayan neon dükkan tabelaları yaratın.
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Destekli-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Destekli-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![Lisans](https://img.shields.io/badge/lisans-MIT-blue?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Destekli-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Destekli-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![Lisans](https://img.shields.io/badge/lisans-GPLv3-blue?style=flat-square)
 
 ## 📖 Giriş
 
 Sign Builder, Architectury API kullanılarak Fabric ve Forge için sıfırdan geliştirilmiş, çapraz platform destekli bir Minecraft modudur. Klasik Minecraft tabelalarına bağlı kalmak yerine; harfler, sayılar ve semboller için fiziksel 3D bloklar sunar. Bu blokları basmak, boyamak ve aydınlatmak için özel mekanik araçlar içerir.
 
+> 🖼️ **Ekran Görüntüsü / Demo**
+>
+> *Buraya neon tabelaların ve boyama mekaniklerinin bir ekran görüntüsü veya GIF'i eklenecek.*
+
 ## ✨ Temel Özellikler
 
 *   🏗️ **3D Harfler, Sayılar ve Semboller** — Özel modellenmiş harfler (A-Z), sayılar (0-9) ve genişletilmiş sembol seti (Oklar, Eğik Çizgi, Artı, Eksi, Kalp, $, €, ₺ gibi para birimleri). Duvar ve zemin yerleşimlerine anında uyum sağlayan akıllı vuruş kutuları (hitbox).
-*   🗜️ **Tabela Presi (Sign Press)** — Hayatta kalma moduna özel üretim istasyonu. Beyaz betonlarınızı pürüzsüz ve verimli bir şekilde istediğiniz harf ve sembollere dönüştürün. Shift ile toplu üretim (stack) desteği eklendi.
-*   🗺️ **Tabela Planı (Sign Blueprint)** — Plan menüsüne istediğiniz kelimeyi yazın (Büyük/küçük harf duyarsızlığı ve tam Türkçe karakter desteği ile). Ardından dünyadaki bir bloğa sağ tıklayarak tüm kelimeyi otomatik olarak inşa edin.
+*   🗜️ **Tabela Presi (Sign Press)** — Hayatta kalma moduna özel üretim istasyonu. Beyaz betonlarınızı pürüzsüz ve verimli bir şekilde istediğiniz harf ve sembollere dönüştürün.
+*   🗺️ **Tabela Planı (Sign Blueprint)** — Plan menüsüne istediğiniz kelimeyi yazın. Ardından dünyadaki bir bloğa sağ tıklayarak tüm kelimeyi otomatik olarak inşa edin.
 *   🎨 **Boya Fırçası ve Özel Palet** — Havaya sağ tıklayarak duyarlı renk menüsünü açın. Kendi RGB/Hex kodlarınızı karıştırın ve kişisel paletinize 14 adede kadar özel renk kaydedin.
 *   🌈 **Gökkuşağı Modu ve Akıllı Doldurma** — Oyun içi zamana bağlı olarak sürekli değişen dinamik renk animasyonunu uygulayın. Eğilip (Shift) havaya sağ tıklayarak "Akıllı Doldurma" modunu açın ve bitişik kelimelerin tamamını tek tıkla boyayın.
 *   💧 **Damlalık (Eyedropper) Mekaniği** — Dünyadaki boyanmış herhangi bir bloğa eğilerek sağ tıklayın ve o bloğun hex rengini anında fırçanıza kopyalayın.
@@ -52,4 +56,9 @@ Sign Builder, Architectury API kullanılarak Fabric ve Forge için sıfırdan ge
 ## 🤝 Katkıda Bulunma
 Bu öncelikli olarak kişisel bir portföy projesidir, ancak hata bildirimleri, öneriler ve çekme istekleri (pull request) memnuniyetle karşılanır. Büyük yapısal değişiklikler için lütfen önce bir "issue" (sorun) açarak tartışmaya katılın.
 
-🎨 ile **Boran Mandacı** tarafından geliştirildi.
+## ⚖️ Yasal Uyarı
+*   Bu proje **GNU Genel Kamu Lisansı v3.0 (GPLv3)** ile lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakabilirsiniz.
+*   Bu proje, Minecraft için hayran yapımı, açık kaynaklı bir modifikasyondur.
+*   Tüm özel 3D modeller ve kod uygulamaları yazar tarafından oluşturulan orijinal çalışmalardır.
+
+**Boran Mandacı** tarafından geliştirildi.
