@@ -23,8 +23,14 @@ public class SignBuilder {
         ModCreativeModeTabs.register();
 
         ModMessages.register();
-        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientModEvents.init());
+
+        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
+            dev.architectury.event.events.client.ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
+                com.boran.signbuilder.client.ClientModEvents.init();
+            });
+        });
     }
+
     public static int getColorHex(int index) {
         return switch (index) {
             case 0 -> 0xFFFFFF; case 1 -> 0xD87F33; case 2 -> 0xB24CD8; case 3 -> 0x6699D8;

@@ -4,30 +4,30 @@ loaderVersion = "[47,)"
 license = "Insert License Here"
 
 [[mods]]
-modId = "examplemod"
+modId = "signbuilder"
 version = "${version}"
-displayName = "Example Mod"
-authors = "Me!"
+displayName = "Sign Builder"
+authors = "BoranMandaci"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+A Minecraft mod for building custom signs.
 '''
 #logoFile = ""
 
-[[dependencies.examplemod]]
+[[dependencies.signbuilder]]
 modId = "forge"
 mandatory = true
 versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.examplemod]]
+[[dependencies.signbuilder]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.20.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.examplemod]]
+[[dependencies.signbuilder]]
 modId = "architectury"
 mandatory = true
 versionRange = "[9.1.12,)"
