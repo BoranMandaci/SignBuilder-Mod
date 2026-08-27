@@ -8,7 +8,7 @@
 
 A full-featured, cross-platform Minecraft mod to seamlessly build, color, and illuminate custom 3D signs. Decorate your cities, organize your storage, and build glowing neon shop fronts with a highly detailed, dynamic building system.
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Introduction
 
@@ -17,8 +17,8 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 ## ✨ Key Features
 
 *   🏗️ **3D Letters, Numbers & Symbols** — Highly detailed, custom-modeled letters (A-Z), numbers (0-9), and an extensive set of symbols (Arrows, Slash, Plus, Minus, Heart, Currency Symbols like $, €, ₺). Features smart hitboxes adapting to wall and floor placements.
-*   🗜️ **The Sign Press** — A dedicated survival crafting station. Stamp your raw concrete into specific letters and symbols cleanly and efficiently, with full shift-click stacking support.
-*   🗺️ **The Sign Blueprint** — Type your desired word into the Blueprint GUI (featuring case-insensitivity and full Turkish character support). Right-click a block to automatically construct the entire word in the world.
+*   🗜️ **The Sign Press** — A dedicated survival crafting station. Stamp your white concrete into specific letters and symbols cleanly and efficiently.
+*   🗺️ **The Sign Blueprint** — Type your desired word into the Blueprint GUI. Right-click a block to automatically construct the entire word in the world.
 *   🎨 **The Paint Brush & Custom Palette** — Right-click in the air to open a responsive GUI. Mix your own RGB/Hex codes and save up to 14 custom colors in your personal palette.
 *   🌈 **Rainbow Mode & Smart Fill** — Apply a dynamic, continuously cycling color animation. Sneak + Right-click in the air to toggle "Smart Fill", instantly painting entire connected words at once.
 *   💧 **Eyedropper Mechanic** — Sneak + Right-click on any painted block in the world to copy its exact hex color directly to your Paint Brush.
@@ -52,4 +52,9 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 ## 🤝 Contributing
 This is primarily a personal portfolio project, but issues, suggestions, and pull requests are welcome. Please open an issue first for anything non-trivial so we can discuss the approach.
 
-Built with by **Boran Mandacı**
+## ⚖️ Disclaimer & Legal Notice
+*   This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the `LICENSE` file for more details.
+*   This project is strictly a fan-made, open-source modification for Minecraft.
+*   All custom 3D models and code implementations are original works created by the author.
+
+Built with 🎨 by **Boran Mandacı**
