@@ -52,9 +52,4 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 ## 🤝 Contributing
 This is primarily a personal portfolio project, but issues, suggestions, and pull requests are welcome. Please open an issue first for anything non-trivial so we can discuss the approach.
 
-## ⚖️ Disclaimer & Legal Notice
-*   This project is strictly a fan-made, open-source modification for Minecraft.
-*   "Minecraft" is a trademark of Mojang Synergies AB. This project is not affiliated with, endorsed by, or connected to Mojang or Microsoft in any way.
-*   All custom 3D models and code implementations are original works created by the author.
-
 Built with by **Boran Mandacı**
