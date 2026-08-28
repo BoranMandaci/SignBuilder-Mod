@@ -97,12 +97,18 @@ public class ModCreativeModeTabs {
             output.accept(ModItems.SYMBOL_DOT_RIGHT.get());
             output.accept(ModItems.SYMBOL_HEART.get());
             output.accept(ModItems.SYMBOL_HASHTAG.get());
+            output.accept(ModItems.SYMBOL_STAR.get());
             output.accept(ModItems.SYMBOL_SLASH.get());
+            output.accept(ModItems.SYMBOL_BACKSLASH.get());
             output.accept(ModItems.SYMBOL_BRACKET_LEFT.get());
             output.accept(ModItems.SYMBOL_BRACKET_RIGHT.get());
             output.accept(ModItems.SYMBOL_BRACKET_DOUBLE.get());
+            output.accept(ModItems.SYMBOL_SQUARE_BRACKET_LEFT.get());
+            output.accept(ModItems.SYMBOL_SQUARE_BRACKET_RIGHT.get());
+            output.accept(ModItems.SYMBOL_SQUARE_BRACKET_DOUBLE.get());
             output.accept(ModItems.SYMBOL_DOLLAR.get());
             output.accept(ModItems.SYMBOL_EURO.get());
+            output.accept(ModItems.SYMBOL_POUND.get());
             output.accept(ModItems.SYMBOL_TL.get());
         });
     }

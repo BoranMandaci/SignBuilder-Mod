@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Benutze den Pinsel 1000 Mal.",
   "gui.signbuilder.blueprint.undo": "Rückgängig",
   "message.signbuilder.blueprint.undo_success": "Zuletzt platzierter Text rückgängig gemacht und Items zurückgegeben!",
-  "message.signbuilder.blueprint.undo_fail": "Nichts zum Rückgängigmachen gefunden oder Blöcke wurden bereits abgebaut."
+  "message.signbuilder.blueprint.undo_fail": "Nichts zum Rückgängigmachen gefunden oder Blöcke wurden bereits abgebaut.",
+  "block.signbuilder.symbol_square_bracket_left": "Linke eckige Klammer",
+  "block.signbuilder.symbol_square_bracket_right": "Rechte eckige Klammer",
+  "block.signbuilder.symbol_square_bracket_double": "Doppelte eckige Klammer",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Doppelte eckige Klammer",
+  "block.signbuilder.symbol_backslash": "Backslash",
+  "block.signbuilder.symbol_star": "Stern",
+  "block.signbuilder.symbol_pound": "Pfund-Zeichen",
+  "tooltip.signbuilder.blueprint.star": "Stern",
+  "tooltip.signbuilder.blueprint.pound": "Pfund-Zeichen"
 }

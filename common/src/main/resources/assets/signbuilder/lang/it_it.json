@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Usa il pennello 1000 volte.",
   "gui.signbuilder.blueprint.undo": "Annulla",
   "message.signbuilder.blueprint.undo_success": "Ultimo testo posizionato annullato e oggetti restituiti!",
-  "message.signbuilder.blueprint.undo_fail": "Nulla da annullare o i blocchi erano già stati rotti."
+  "message.signbuilder.blueprint.undo_fail": "Nulla da annullare o i blocchi erano già stati rotti.",
+  "block.signbuilder.symbol_square_bracket_left": "Parentesi Quadra Sinistra",
+  "block.signbuilder.symbol_square_bracket_right": "Parentesi Quadra Destra",
+  "block.signbuilder.symbol_square_bracket_double": "Doppia Parentesi Quadra",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Doppia Parentesi Quadra",
+  "block.signbuilder.symbol_backslash": "Barra Rovesciata",
+  "block.signbuilder.symbol_star": "Stella",
+  "block.signbuilder.symbol_pound": "Simbolo della Sterlina",
+  "tooltip.signbuilder.blueprint.star": "Stella",
+  "tooltip.signbuilder.blueprint.pound": "Simbolo della Sterlina"
 }

@@ -32,9 +32,9 @@ public class BlueprintScreen extends Screen {
         this.addRenderableWidget(this.textField);
         this.setInitialFocus(this.textField);
 
-        String[] insertChars = {"«", "•", "»", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "|", "♥", "€", "$", "₺"};
+        String[] insertChars = {"«", "•", "»", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "|", "¦", "*", "♥", "€", "$", "£", "₺"};
 
-        String[] displayChars = {"•  ", "•", "  •", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", ")(", "♥", "€", "$", "₺"};
+        String[] displayChars = {"•  ", "•", "  •", "↑", "↓", "←", "→", "↖", "↗", "↙", "↘", ")(", "][", "★", "♥", "€", "$", "£", "₺"};
 
         String[] tooltipKeys = {
                 "tooltip.signbuilder.blueprint.dot_left",
@@ -42,9 +42,12 @@ public class BlueprintScreen extends Screen {
                 "tooltip.signbuilder.blueprint.dot_right",
                 null, null, null, null, null, null, null, null,
                 "tooltip.signbuilder.blueprint.bracket_double",
+                "tooltip.signbuilder.blueprint.square_bracket_double",
+                "tooltip.signbuilder.blueprint.star",
                 "tooltip.signbuilder.blueprint.heart",
                 "tooltip.signbuilder.blueprint.euro",
                 "tooltip.signbuilder.blueprint.dollar",
+                "tooltip.signbuilder.blueprint.pound",
                 "tooltip.signbuilder.blueprint.tl"
         };
 

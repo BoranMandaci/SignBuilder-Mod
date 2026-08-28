@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Use the paint brush 1000 times.",
   "gui.signbuilder.blueprint.undo": "Undo",
   "message.signbuilder.blueprint.undo_success": "Last placed text undone and items returned!",
-  "message.signbuilder.blueprint.undo_fail": "Nothing to undo or blocks were already broken."
+  "message.signbuilder.blueprint.undo_fail": "Nothing to undo or blocks were already broken.",
+  "block.signbuilder.symbol_square_bracket_left": "Left Square Bracket",
+  "block.signbuilder.symbol_square_bracket_right": "Right Square Bracket",
+  "block.signbuilder.symbol_square_bracket_double": "Double Square Bracket",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Double Square Bracket",
+  "block.signbuilder.symbol_backslash": "Backslash",
+  "block.signbuilder.symbol_star": "Star",
+  "block.signbuilder.symbol_pound": "Pound Symbol",
+  "tooltip.signbuilder.blueprint.star": "Star",
+  "tooltip.signbuilder.blueprint.pound": "Pound Symbol"
 }

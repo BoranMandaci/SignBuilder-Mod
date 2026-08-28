@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Utilisez le pinceau 1000 fois.",
   "gui.signbuilder.blueprint.undo": "Annuler",
   "message.signbuilder.blueprint.undo_success": "Dernier texte placé annulé et objets retournés !",
-  "message.signbuilder.blueprint.undo_fail": "Rien à annuler ou les blocs étaient déjà cassés."
+  "message.signbuilder.blueprint.undo_fail": "Rien à annuler ou les blocs étaient déjà cassés.",
+  "block.signbuilder.symbol_square_bracket_left": "Crochet Gauche",
+  "block.signbuilder.symbol_square_bracket_right": "Crochet Droit",
+  "block.signbuilder.symbol_square_bracket_double": "Double Crochet",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Double Crochet",
+  "block.signbuilder.symbol_backslash": "Antislash",
+  "block.signbuilder.symbol_star": "Étoile",
+  "block.signbuilder.symbol_pound": "Symbole Livre",
+  "tooltip.signbuilder.blueprint.star": "Étoile",
+  "tooltip.signbuilder.blueprint.pound": "Symbole Livre"
 }

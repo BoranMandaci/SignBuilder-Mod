@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Boya fırçasını 1000 kez kullan.",
   "gui.signbuilder.blueprint.undo": "Geri Al",
   "message.signbuilder.blueprint.undo_success": "Son yazılan kelime geri alındı ve eşyalar iade edildi!",
-  "message.signbuilder.blueprint.undo_fail": "Geri alınacak bir şey bulunamadı veya bloklar zaten kırılmış."
+  "message.signbuilder.blueprint.undo_fail": "Geri alınacak bir şey bulunamadı veya bloklar zaten kırılmış.",
+  "block.signbuilder.symbol_square_bracket_left": "Sol Köşeli Parantez",
+  "block.signbuilder.symbol_square_bracket_right": "Sağ Köşeli Parantez",
+  "block.signbuilder.symbol_square_bracket_double": "Çift Köşeli Parantez",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Çift Köşeli Parantez",
+  "block.signbuilder.symbol_backslash": "Ters Eğik Çizgi",
+  "block.signbuilder.symbol_star": "Yıldız",
+  "block.signbuilder.symbol_pound": "Sterlin Sembolü",
+  "tooltip.signbuilder.blueprint.star": "Yıldız",
+  "tooltip.signbuilder.blueprint.pound": "Sterlin Sembolü"
 }

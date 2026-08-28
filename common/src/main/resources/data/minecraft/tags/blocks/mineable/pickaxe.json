@@ -51,13 +51,19 @@
     "signbuilder:symbol_dot_right",
     "signbuilder:symbol_heart",
     "signbuilder:symbol_hashtag",
+    "signbuilder:symbol_star",
     "signbuilder:symbol_dollar",
     "signbuilder:symbol_euro",
+    "signbuilder:symbol_pound",
     "signbuilder:symbol_tl",
     "signbuilder:symbol_slash",
+    "signbuilder:symbol_backslash",
     "signbuilder:symbol_bracket_double",
     "signbuilder:symbol_bracket_left",
     "signbuilder:symbol_bracket_right",
+    "signbuilder:symbol_square_bracket_double",
+    "signbuilder:symbol_square_bracket_left",
+    "signbuilder:symbol_square_bracket_right",
     "signbuilder:sign_press"
   ]
 }

@@ -5,13 +5,13 @@
   "name": "Sign Builder",
   "description": "Sign Builder mod featuring custom 3D models and tools.",
   "authors": [
-    "BoranMandaci"
+    "Boran Mandacı"
   ],
   "contact": {
     "homepage": "",
     "sources": ""
   },
-  "license": "All Rights Reserved",
+  "license": "GPL-3.0",
   "icon": "assets/signbuilder/icon.png",
   "environment": "*",
   "entrypoints": {

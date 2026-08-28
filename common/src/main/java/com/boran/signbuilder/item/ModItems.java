@@ -174,14 +174,23 @@ public class ModItems {
     public static final RegistrySupplier<Item> SYMBOL_EURO = ITEMS.register("symbol_euro",
             () -> new BlockItem(ModBlocks.SYMBOL_EURO.get(), new Item.Properties()));
 
+    public static final RegistrySupplier<Item> SYMBOL_POUND = ITEMS.register("symbol_pound",
+            () -> new BlockItem(ModBlocks.SYMBOL_POUND.get(), new Item.Properties()));
+
     public static final RegistrySupplier<Item> SYMBOL_TL = ITEMS.register("symbol_tl",
             () -> new BlockItem(ModBlocks.SYMBOL_TL.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Item> SYMBOL_HASHTAG = ITEMS.register("symbol_hashtag",
             () -> new BlockItem(ModBlocks.SYMBOL_HASHTAG.get(), new Item.Properties()));
 
+    public static final RegistrySupplier<Item> SYMBOL_STAR = ITEMS.register("symbol_star",
+            () -> new BlockItem(ModBlocks.SYMBOL_STAR.get(), new Item.Properties()));
+
     public static final RegistrySupplier<Item> SYMBOL_SLASH = ITEMS.register("symbol_slash",
             () -> new BlockItem(ModBlocks.SYMBOL_SLASH.get(), new Item.Properties()));
+
+    public static final RegistrySupplier<Item> SYMBOL_BACKSLASH = ITEMS.register("symbol_backslash",
+            () -> new BlockItem(ModBlocks.SYMBOL_BACKSLASH.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Item> SYMBOL_BRACKET_DOUBLE = ITEMS.register("symbol_bracket_double",
             () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_DOUBLE.get(), new Item.Properties()));
@@ -191,6 +200,15 @@ public class ModItems {
 
     public static final RegistrySupplier<Item> SYMBOL_BRACKET_RIGHT = ITEMS.register("symbol_bracket_right",
             () -> new BlockItem(ModBlocks.SYMBOL_BRACKET_RIGHT.get(), new Item.Properties()));
+
+    public static final RegistrySupplier<Item> SYMBOL_SQUARE_BRACKET_DOUBLE = ITEMS.register("symbol_square_bracket_double",
+            () -> new BlockItem(ModBlocks.SYMBOL_SQUARE_BRACKET_DOUBLE.get(), new Item.Properties()));
+
+    public static final RegistrySupplier<Item> SYMBOL_SQUARE_BRACKET_LEFT = ITEMS.register("symbol_square_bracket_left",
+            () -> new BlockItem(ModBlocks.SYMBOL_SQUARE_BRACKET_LEFT.get(), new Item.Properties()));
+
+    public static final RegistrySupplier<Item> SYMBOL_SQUARE_BRACKET_RIGHT = ITEMS.register("symbol_square_bracket_right",
+            () -> new BlockItem(ModBlocks.SYMBOL_SQUARE_BRACKET_RIGHT.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Item> SIGN_PRESS = ITEMS.register("sign_press",
             () -> new BlockItem(ModBlocks.SIGN_PRESS.get(), new Item.Properties()));

@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Benutze den Pinsel 1000 Mal.",
   "gui.signbuilder.blueprint.undo": "Deshacer",
   "message.signbuilder.blueprint.undo_success": "¡Último texto colocado deshecho y objetos devueltos!",
-  "message.signbuilder.blueprint.undo_fail": "Nada que deshacer o los bloques ya estaban rotos."
+  "message.signbuilder.blueprint.undo_fail": "Nada que deshacer o los bloques ya estaban rotos.",
+  "block.signbuilder.symbol_square_bracket_left": "Corchete Izquierdo",
+  "block.signbuilder.symbol_square_bracket_right": "Corchete Derecho",
+  "block.signbuilder.symbol_square_bracket_double": "Corchete Doble",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Corchete Doble",
+  "block.signbuilder.symbol_backslash": "Barra Invertida",
+  "block.signbuilder.symbol_star": "Estrella",
+  "block.signbuilder.symbol_pound": "Símbolo de Libra",
+  "tooltip.signbuilder.blueprint.star": "Estrella",
+  "tooltip.signbuilder.blueprint.pound": "Símbolo de Libra"
 }

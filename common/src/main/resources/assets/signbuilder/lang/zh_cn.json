@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "使用画笔1000次。",
   "gui.signbuilder.blueprint.undo": "撤销",
   "message.signbuilder.blueprint.undo_success": "最近放置的文本已撤销，物品已退回！",
-  "message.signbuilder.blueprint.undo_fail": "没有可撤销的内容或方块已被破坏。"
+  "message.signbuilder.blueprint.undo_fail": "没有可撤销的内容或方块已被破坏。",
+  "block.signbuilder.symbol_square_bracket_left": "左中括号",
+  "block.signbuilder.symbol_square_bracket_right": "右中括号",
+  "block.signbuilder.symbol_square_bracket_double": "双中括号",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "双中括号",
+  "block.signbuilder.symbol_backslash": "反斜杠",
+  "block.signbuilder.symbol_star": "星号",
+  "block.signbuilder.symbol_pound": "英镑符号",
+  "tooltip.signbuilder.blueprint.star": "星号",
+  "tooltip.signbuilder.blueprint.pound": "英镑符号"
 }

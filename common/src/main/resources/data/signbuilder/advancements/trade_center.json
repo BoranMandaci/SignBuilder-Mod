@@ -24,6 +24,7 @@
             "items": [
               "signbuilder:symbol_euro",
               "signbuilder:symbol_dollar",
+              "signbuilder:symbol_pound",
               "signbuilder:symbol_tl"
             ]
           }

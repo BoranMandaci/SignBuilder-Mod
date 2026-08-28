@@ -172,5 +172,14 @@
   "advancements.signbuilder.lord_of_the_colors.description": "Используйте кисть 1000 раз.",
   "gui.signbuilder.blueprint.undo": "Отменить",
   "message.signbuilder.blueprint.undo_success": "Последний размещенный текст отменен, предметы возвращены!",
-  "message.signbuilder.blueprint.undo_fail": "Нечего отменять или блоки уже сломаны."
+  "message.signbuilder.blueprint.undo_fail": "Нечего отменять или блоки уже сломаны.",
+  "block.signbuilder.symbol_square_bracket_left": "Левая квадратная скобка",
+  "block.signbuilder.symbol_square_bracket_right": "Правая квадратная скобка",
+  "block.signbuilder.symbol_square_bracket_double": "Двойная квадратная скобка",
+  "tooltip.signbuilder.blueprint.square_bracket_double": "Двойная квадратная скобка",
+  "block.signbuilder.symbol_backslash": "Обратная косая черта",
+  "block.signbuilder.symbol_star": "Звезда",
+  "block.signbuilder.symbol_pound": "Символ фунта",
+  "tooltip.signbuilder.blueprint.star": "Звезда",
+  "tooltip.signbuilder.blueprint.pound": "Символ фунта"
 }

@@ -265,10 +265,13 @@ public class SignBlueprintItem extends Item {
             case '+' -> ModBlocks.SYMBOL_PLUS.get();
             case '-' -> ModBlocks.SYMBOL_MINUS.get();
             case '/' -> ModBlocks.SYMBOL_SLASH.get();
+            case '\\' -> ModBlocks.SYMBOL_BACKSLASH.get();
             case '#' -> ModBlocks.SYMBOL_HASHTAG.get();
+            case '*' -> ModBlocks.SYMBOL_STAR.get();
             case '♥' -> ModBlocks.SYMBOL_HEART.get();
             case '€' -> ModBlocks.SYMBOL_EURO.get();
             case '$' -> ModBlocks.SYMBOL_DOLLAR.get();
+            case '£' -> ModBlocks.SYMBOL_POUND.get();
             case '₺' -> ModBlocks.SYMBOL_TL.get();
             case '«' -> ModBlocks.SYMBOL_DOT_LEFT.get();
             case '•' -> ModBlocks.SYMBOL_DOT_CENTER.get();
@@ -276,6 +279,9 @@ public class SignBlueprintItem extends Item {
             case '(' -> ModBlocks.SYMBOL_BRACKET_LEFT.get();
             case ')' -> ModBlocks.SYMBOL_BRACKET_RIGHT.get();
             case '|' -> ModBlocks.SYMBOL_BRACKET_DOUBLE.get();
+            case '[' -> ModBlocks.SYMBOL_SQUARE_BRACKET_LEFT.get();
+            case ']' -> ModBlocks.SYMBOL_SQUARE_BRACKET_RIGHT.get();
+            case '¦' -> ModBlocks.SYMBOL_SQUARE_BRACKET_DOUBLE.get();
             case '↑' -> ModBlocks.ARROW_UP.get();
             case '↓' -> ModBlocks.ARROW_DOWN.get();
             case '←' -> ModBlocks.ARROW_LEFT.get();

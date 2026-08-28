@@ -1,13 +1,13 @@
 modLoader = "javafml"
 loaderVersion = "[47,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "signbuilder"
 version = "${version}"
 displayName = "Sign Builder"
-authors = "BoranMandaci"
+authors = "Boran Mandacı"
 description = '''
 A Minecraft mod for building custom signs.
 '''
