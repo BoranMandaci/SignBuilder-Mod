@@ -14,10 +14,6 @@
 
 Sign Builder, Architectury API kullanılarak Fabric ve Forge için sıfırdan geliştirilmiş, çapraz platform destekli bir Minecraft modudur. Klasik Minecraft tabelalarına bağlı kalmak yerine; harfler, sayılar ve semboller için fiziksel 3D bloklar sunar. Bu blokları basmak, boyamak ve aydınlatmak için özel mekanik araçlar içerir.
 
-> 🖼️ **Ekran Görüntüsü / Demo**
->
-> *Buraya neon tabelaların ve boyama mekaniklerinin bir ekran görüntüsü veya GIF'i eklenecek.*
-
 ## ✨ Temel Özellikler
 
 *   🏗️ **3D Harfler, Sayılar ve Semboller** — Özel modellenmiş harfler (A-Z), sayılar (0-9) ve genişletilmiş sembol seti (Oklar, Eğik Çizgi, Artı, Eksi, Kalp, $, €, ₺ gibi para birimleri). Duvar ve zemin yerleşimlerine anında uyum sağlayan akıllı vuruş kutuları (hitbox).
