@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "com.boran.signbuilder.fabric.SignBuilderFabric"
+    ],
+    "client": [
+      "com.boran.signbuilder.fabric.SignBuilderFabricClient"
     ]
   },
   "depends": {

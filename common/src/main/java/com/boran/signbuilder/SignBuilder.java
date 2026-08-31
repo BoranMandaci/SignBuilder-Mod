@@ -2,12 +2,16 @@ package com.boran.signbuilder;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
+import com.boran.signbuilder.client.ClientModEvents;
 import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
 import com.boran.signbuilder.menu.ModMenuTypes;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
+import dev.architectury.utils.EnvExecutor;
+import dev.architectury.utils.Env;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
 
 public class SignBuilder {
 
@@ -24,9 +28,9 @@ public class SignBuilder {
 
         ModMessages.register();
 
-        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
-            dev.architectury.event.events.client.ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
-                com.boran.signbuilder.client.ClientModEvents.init();
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
+                ClientModEvents.init();
             });
         });
     }

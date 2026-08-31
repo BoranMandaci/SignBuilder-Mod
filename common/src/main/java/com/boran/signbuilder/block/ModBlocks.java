@@ -1,11 +1,12 @@
 package com.boran.signbuilder.block;
 
-import com.boran.signbuilder.SignBuilder;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -19,8 +20,18 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create("signbuilder", Registries.BLOCK);
+    public static final DeferredRegister<Item> BLOCK_ITEMS = DeferredRegister.create("signbuilder", Registries.ITEM);
+
+    public static final List<RegistrySupplier<Block>> ALL_SIGN_BLOCKS = new ArrayList<>();
+    public static final List<RegistrySupplier<Item>> LETTER_ITEMS = new ArrayList<>();
+    public static final List<RegistrySupplier<Item>> NUMBER_ITEMS = new ArrayList<>();
+    public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
+
     public static final IntegerProperty COLOR = IntegerProperty.create("color", 0, 15);
     public static final BooleanProperty GLOWING = BooleanProperty.create("glowing");
 
@@ -32,59 +43,471 @@ public class ModBlocks {
                 .emissiveRendering((state, level, pos) -> state.getValue(GLOWING));
     }
 
-    public static final RegistrySupplier<Block> LETTER_A = BLOCKS.register("letter_a",
-            () -> new LetterBlock(createLetterProperties()) {
-                private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
-                private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
-                private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 14.0, 11.0);
-                private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 14.0, 8.0);
-                private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 15.0, 16.0);
-                private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 15.0, 3.0);
-                private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 15.0, 13.0);
-                private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 13.0);
+    public static BlockState getStandardPlacementState(BlockPlaceContext context, BlockState defaultState) {
+        Direction clickedFace = context.getClickedFace();
+        BlockState state = defaultState;
 
-                { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-                @Override
-                protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
+        net.minecraft.nbt.CompoundTag tag = context.getItemInHand().getTag();
+        if (tag != null) {
+            if (tag.contains("BlockStateTag")) {
+                net.minecraft.nbt.CompoundTag stateTag = tag.getCompound("BlockStateTag");
+                if (stateTag.contains("material") && state.hasProperty(LetterBlock.MATERIAL)) {
+                    try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase())); } catch (Exception ignored) {}
                 }
-
-                @Override
-                public BlockState getStateForPlacement(BlockPlaceContext context) {
-                    Direction clickedFace = context.getClickedFace();
-                    BlockState state = this.defaultBlockState();
-                    if (clickedFace.getAxis() == Direction.Axis.Y) {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                    } else {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                    }
+                if (stateTag.contains("color") && state.hasProperty(COLOR)) {
+                    try { state = state.setValue(COLOR, Integer.parseInt(stateTag.getString("color"))); } catch (Exception ignored) {}
                 }
-
-                @Override
-                public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                    net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                    Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                    if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                        switch (direction) {
-                            case EAST:  return SHAPE_WALL_EAST;
-                            case WEST:  return SHAPE_WALL_WEST;
-                            case SOUTH: return SHAPE_WALL_SOUTH;
-                            case NORTH: default: return SHAPE_WALL_NORTH;
-                        }
-                    } else {
-                        switch (direction) {
-                            case EAST:  return SHAPE_FLOOR_EAST;
-                            case WEST:  return SHAPE_FLOOR_WEST;
-                            case SOUTH: return SHAPE_FLOOR_SOUTH;
-                            case NORTH: default: return SHAPE_FLOOR_NORTH;
-                        }
-                    }
+                if (stateTag.contains("glowing") && state.hasProperty(GLOWING)) {
+                    try { state = state.setValue(GLOWING, Boolean.parseBoolean(stateTag.getString("glowing"))); } catch (Exception ignored) {}
                 }
-            });
+            } else if (tag.contains("BlockEntityTag")) {
+                net.minecraft.nbt.CompoundTag beTag = tag.getCompound("BlockEntityTag");
+                if (beTag.contains("SavedMaterial") && state.hasProperty(LetterBlock.MATERIAL)) {
+                    try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(beTag.getString("SavedMaterial").toUpperCase())); } catch (Exception ignored) {}
+                }
+            }
+        }
 
+        if (clickedFace.getAxis() == Direction.Axis.Y) {
+            return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
+        } else {
+            return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
+        }
+    }
+
+    private static RegistrySupplier<Block> registerLetterBlock(String name, java.util.function.Supplier<Block> supplier) {
+        RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
+        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
+
+        ALL_SIGN_BLOCKS.add(blockReg);
+        if (name.startsWith("letter_")) LETTER_ITEMS.add(itemReg);
+        else if (name.startsWith("number_")) NUMBER_ITEMS.add(itemReg);
+        else SYMBOL_ITEMS.add(itemReg);
+
+        return blockReg;
+    }
+
+    private static RegistrySupplier<Block> createLetterBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 15.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 13.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createMBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 14.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 14.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 14.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createWBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.5, 11.0, 14.0, 14.5);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.5, 8.0, 14.0, 14.5);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.5, 0.0, 8.0, 14.5, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.5, 0.0, 5.0, 14.5, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.5, 1.0, 13.0, 14.5, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.5, 1.0, 0.0, 14.5, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.5, 3.0, 15.0, 14.5);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.5, 16.0, 15.0, 14.5);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createSlashBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 15.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 15.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 15.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 16.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 13.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createBackslashBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 4.0, 11.0, 15.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 12.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 12.0, 15.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(4.0, 0.0, 5.0, 13.0, 15.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(4.0, 1.0, 13.0, 13.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 12.0, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 4.0, 3.0, 16.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 12.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createHorizontalArrowBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 12.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 12.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 12.0, 11.5);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 4.5, 15.0, 12.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 3.0, 13.0, 15.0, 13.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 3.0, 0.0, 15.0, 13.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 3.0, 1.0, 3.0, 13.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 3.0, 1.0, 16.0, 13.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createPlusBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createDiagonalArrowBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createHeartBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createMinusBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 9.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 9.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 9.0, 11.5);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 4.5, 15.0, 9.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 6.0, 13.0, 15.0, 10.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 6.0, 0.0, 15.0, 10.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 6.0, 1.0, 3.0, 10.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 6.0, 1.0, 16.0, 10.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createLeftDotBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 3.0, 6.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 3.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(10.0, 0.0, 8.0, 13.0, 3.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 6.0, 3.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 13.0, 4.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 6.0, 4.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 4.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 4.0, 6.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createCenterDotBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.5, 11.0, 3.0, 9.5);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.5, 8.0, 3.0, 9.5);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.5, 0.0, 8.0, 9.5, 3.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.5, 0.0, 5.0, 9.5, 3.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.5, 1.0, 13.0, 9.5, 4.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.5, 1.0, 0.0, 9.5, 4.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.5, 3.0, 4.0, 9.5);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.5, 16.0, 4.0, 9.5);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createRightDotBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 3.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 3.0, 6.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 6.0, 3.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(10.0, 0.0, 5.0, 13.0, 3.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 6.0, 4.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 13.0, 4.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 4.0, 6.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 4.0, 13.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createLeftSquareBracketBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 6.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 6.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(10.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 6.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 6.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createRightSquareBracketBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 6.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(10.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 6.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 6.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 6.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createStarBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 0.0, 11.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 0.0, 8.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(0.0, 0.0, 8.0, 16.0, 16.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(0.0, 0.0, 5.0, 16.0, 16.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createDoubleBracketBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createHashtagBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 14.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 14.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 14.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createTLBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 14.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 14.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 14.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    public static final RegistrySupplier<Block> LETTER_A = createLetterBlock("letter_a");
     public static final RegistrySupplier<Block> LETTER_B = createLetterBlock("letter_b");
     public static final RegistrySupplier<Block> LETTER_C = createLetterBlock("letter_c");
     public static final RegistrySupplier<Block> LETTER_D = createLetterBlock("letter_d");
@@ -93,58 +516,25 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> LETTER_G = createLetterBlock("letter_g");
     public static final RegistrySupplier<Block> LETTER_H = createLetterBlock("letter_h");
 
-    public static final RegistrySupplier<Block> LETTER_I = BLOCKS.register("letter_i",
-            () -> new LetterBlock(createLetterProperties()) {
-                private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
-                private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
-                private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.0, 0.0, 8.0, 10.0, 14.0, 11.0);
-                private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.0, 0.0, 5.0, 10.0, 14.0, 8.0);
-                private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.0, 1.0, 13.0, 10.0, 15.0, 16.0);
-                private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.0, 1.0, 0.0, 10.0, 15.0, 3.0);
-                private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.0, 3.0, 15.0, 10.0);
-                private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.0, 16.0, 15.0, 10.0);
-
-                { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-                @Override
-                protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-                }
-
-                @Override
-                public BlockState getStateForPlacement(BlockPlaceContext context) {
-                    Direction clickedFace = context.getClickedFace();
-                    BlockState state = this.defaultBlockState();
-                    if (clickedFace.getAxis() == Direction.Axis.Y) {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                    } else {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                    }
-                }
-
-                @Override
-                public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                    net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                    Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                    if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                        switch (direction) {
-                            case EAST:  return SHAPE_WALL_EAST;
-                            case WEST:  return SHAPE_WALL_WEST;
-                            case SOUTH: return SHAPE_WALL_SOUTH;
-                            case NORTH: default: return SHAPE_WALL_NORTH;
-                        }
-                    } else {
-                        switch (direction) {
-                            case EAST:  return SHAPE_FLOOR_EAST;
-                            case WEST:  return SHAPE_FLOOR_WEST;
-                            case SOUTH: return SHAPE_FLOOR_SOUTH;
-                            case NORTH: default: return SHAPE_FLOOR_NORTH;
-                        }
-                    }
-                }
-            });
+    public static final RegistrySupplier<Block> LETTER_I = registerLetterBlock("letter_i", () -> new LetterBlock(createLetterProperties()) {
+        private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
+        private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
+        private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.0, 0.0, 8.0, 10.0, 14.0, 11.0);
+        private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.0, 0.0, 5.0, 10.0, 14.0, 8.0);
+        private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.0, 1.0, 13.0, 10.0, 15.0, 16.0);
+        private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.0, 1.0, 0.0, 10.0, 15.0, 3.0);
+        private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.0, 3.0, 15.0, 10.0);
+        private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.0, 16.0, 15.0, 10.0);
+        { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+        @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+        @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+            Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+            else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+        }
+    });
 
     public static final RegistrySupplier<Block> LETTER_J = createLetterBlock("letter_j");
     public static final RegistrySupplier<Block> LETTER_K = createLetterBlock("letter_k");
@@ -165,58 +555,25 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> NUMBER_0 = createLetterBlock("number_0");
 
-    public static final RegistrySupplier<Block> NUMBER_1 = BLOCKS.register("number_1",
-            () -> new LetterBlock(createLetterProperties()) {
-                private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
-                private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
-                private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.0, 0.0, 8.0, 10.0, 14.0, 11.0);
-                private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.0, 0.0, 5.0, 10.0, 14.0, 8.0);
-                private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.0, 1.0, 13.0, 10.0, 15.0, 16.0);
-                private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.0, 1.0, 0.0, 10.0, 15.0, 3.0);
-                private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.0, 3.0, 15.0, 10.0);
-                private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.0, 16.0, 15.0, 10.0);
-
-                { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-                @Override
-                protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                    builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-                }
-
-                @Override
-                public BlockState getStateForPlacement(BlockPlaceContext context) {
-                    Direction clickedFace = context.getClickedFace();
-                    BlockState state = this.defaultBlockState();
-                    if (clickedFace.getAxis() == Direction.Axis.Y) {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                    } else {
-                        return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                                .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                    }
-                }
-
-                @Override
-                public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                    net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                    Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                    if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                        switch (direction) {
-                            case EAST:  return SHAPE_WALL_EAST;
-                            case WEST:  return SHAPE_WALL_WEST;
-                            case SOUTH: return SHAPE_WALL_SOUTH;
-                            case NORTH: default: return SHAPE_WALL_NORTH;
-                        }
-                    } else {
-                        switch (direction) {
-                            case EAST:  return SHAPE_FLOOR_EAST;
-                            case WEST:  return SHAPE_FLOOR_WEST;
-                            case SOUTH: return SHAPE_FLOOR_SOUTH;
-                            case NORTH: default: return SHAPE_FLOOR_NORTH;
-                        }
-                    }
-                }
-            });
+    public static final RegistrySupplier<Block> NUMBER_1 = registerLetterBlock("number_1", () -> new LetterBlock(createLetterProperties()) {
+        private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
+        private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.0, 8.0, 14.0, 10.0);
+        private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.0, 0.0, 8.0, 10.0, 14.0, 11.0);
+        private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.0, 0.0, 5.0, 10.0, 14.0, 8.0);
+        private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.0, 1.0, 13.0, 10.0, 15.0, 16.0);
+        private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.0, 1.0, 0.0, 10.0, 15.0, 3.0);
+        private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.0, 3.0, 15.0, 10.0);
+        private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.0, 16.0, 15.0, 10.0);
+        { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+        @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+        @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+            Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+            else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+        }
+    });
 
     public static final RegistrySupplier<Block> NUMBER_2 = createLetterBlock("number_2");
     public static final RegistrySupplier<Block> NUMBER_3 = createLetterBlock("number_3");
@@ -229,18 +586,15 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> ARROW_UP = createLetterBlock("arrow_up");
     public static final RegistrySupplier<Block> ARROW_DOWN = createLetterBlock("arrow_down");
-
     public static final RegistrySupplier<Block> ARROW_LEFT = createHorizontalArrowBlock("arrow_left");
     public static final RegistrySupplier<Block> ARROW_RIGHT = createHorizontalArrowBlock("arrow_right");
 
     public static final RegistrySupplier<Block> SYMBOL_PLUS = createPlusBlock("symbol_plus");
     public static final RegistrySupplier<Block> SYMBOL_MINUS = createMinusBlock("symbol_minus");
     public static final RegistrySupplier<Block> SYMBOL_HEART = createHeartBlock("symbol_heart");
-
     public static final RegistrySupplier<Block> SYMBOL_DOT_LEFT = createLeftDotBlock("symbol_dot_left");
     public static final RegistrySupplier<Block> SYMBOL_DOT_CENTER = createCenterDotBlock("symbol_dot_center");
     public static final RegistrySupplier<Block> SYMBOL_DOT_RIGHT = createRightDotBlock("symbol_dot_right");
-
     public static final RegistrySupplier<Block> SYMBOL_SLASH = createSlashBlock("symbol_slash");
 
     public static final RegistrySupplier<Block> ARROW_LEFT_UP = createDiagonalArrowBlock("arrow_left_up");
@@ -257,7 +611,6 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_SQUARE_BRACKET_DOUBLE = createDoubleBracketBlock("symbol_square_bracket_double");
 
     public static final RegistrySupplier<Block> SYMBOL_HASHTAG = createHashtagBlock("symbol_hashtag");
-
     public static final RegistrySupplier<Block> SYMBOL_EURO = createPlusBlock("symbol_euro");
     public static final RegistrySupplier<Block> SYMBOL_DOLLAR = createLetterBlock("symbol_dollar");
     public static final RegistrySupplier<Block> SYMBOL_TL = createTLBlock("symbol_tl");
@@ -272,1013 +625,11 @@ public class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .noOcclusion()));
 
+    public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
+            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
+
     public static void register() {
         BLOCKS.register();
-    }
-
-    private static RegistrySupplier<Block> createLetterBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 14.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 14.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 13.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createMBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 14.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 14.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 14.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createWBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.5, 11.0, 14.0, 14.5);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.5, 8.0, 14.0, 14.5);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.5, 0.0, 8.0, 14.5, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.5, 0.0, 5.0, 14.5, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.5, 1.0, 13.0, 14.5, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.5, 1.0, 0.0, 14.5, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.5, 3.0, 15.0, 14.5);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.5, 16.0, 15.0, 14.5);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createSlashBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 15.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 15.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 16.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 13.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createBackslashBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 4.0, 11.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 12.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 12.0, 15.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(4.0, 0.0, 5.0, 13.0, 15.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(4.0, 1.0, 13.0, 13.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 12.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 4.0, 3.0, 16.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 12.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createHorizontalArrowBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 12.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 12.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 12.0, 11.5);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 4.5, 15.0, 12.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 3.0, 13.0, 15.0, 13.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 3.0, 0.0, 15.0, 13.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 3.0, 1.0, 3.0, 13.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 3.0, 1.0, 16.0, 13.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createPlusBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createDiagonalArrowBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createHeartBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createMinusBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.5, 9.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 0.0, 1.0, 8.0, 9.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 9.0, 11.5);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 4.5, 15.0, 9.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 6.0, 13.0, 15.0, 10.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 6.0, 0.0, 15.0, 10.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 6.0, 1.0, 3.0, 10.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 6.0, 1.0, 16.0, 10.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createLeftDotBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 3.0, 6.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 3.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(10.0, 0.0, 8.0, 13.0, 3.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 6.0, 3.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 13.0, 4.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 6.0, 4.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 4.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 4.0, 6.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createCenterDotBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.5, 11.0, 3.0, 9.5);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.5, 8.0, 3.0, 9.5);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.5, 0.0, 8.0, 9.5, 3.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.5, 0.0, 5.0, 9.5, 3.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.5, 1.0, 13.0, 9.5, 4.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.5, 1.0, 0.0, 9.5, 4.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.5, 3.0, 4.0, 9.5);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.5, 16.0, 4.0, 9.5);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createRightDotBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 3.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 3.0, 6.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 6.0, 3.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(10.0, 0.0, 5.0, 13.0, 3.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 6.0, 4.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 13.0, 4.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 4.0, 6.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 4.0, 13.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createLeftSquareBracketBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 6.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 6.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(10.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 6.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 6.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; };
-                } else {
-                    return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; };
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createRightSquareBracketBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 6.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(10.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 6.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 15.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 6.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 6.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; };
-                } else {
-                    return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; };
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createStarBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 0.0, 11.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 0.0, 8.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(0.0, 0.0, 8.0, 16.0, 16.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(0.0, 0.0, 5.0, 16.0, 16.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createDoubleBracketBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createHashtagBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 14.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 14.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 14.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
-    }
-
-    private static RegistrySupplier<Block> createTLBlock(String name) {
-        return BLOCKS.register(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 14.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 15.0, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 14.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 14.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 14.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 15.0);
-
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false)); }
-
-            @Override
-            protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-                builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING);
-            }
-
-            @Override
-            public BlockState getStateForPlacement(BlockPlaceContext context) {
-                Direction clickedFace = context.getClickedFace();
-                BlockState state = this.defaultBlockState();
-                if (clickedFace.getAxis() == Direction.Axis.Y) {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, clickedFace == Direction.UP ? net.minecraft.world.level.block.state.properties.AttachFace.FLOOR : net.minecraft.world.level.block.state.properties.AttachFace.CEILING)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getCounterClockWise());
-                } else {
-                    return state.setValue(BlockStateProperties.ATTACH_FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
-                            .setValue(BlockStateProperties.HORIZONTAL_FACING, clickedFace);
-                }
-            }
-
-            @Override
-            public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-                    switch (direction) {
-                        case EAST:  return SHAPE_WALL_EAST;
-                        case WEST:  return SHAPE_WALL_WEST;
-                        case SOUTH: return SHAPE_WALL_SOUTH;
-                        case NORTH: default: return SHAPE_WALL_NORTH;
-                    }
-                } else {
-                    switch (direction) {
-                        case EAST:  return SHAPE_FLOOR_EAST;
-                        case WEST:  return SHAPE_FLOOR_WEST;
-                        case SOUTH: return SHAPE_FLOOR_SOUTH;
-                        case NORTH: default: return SHAPE_FLOOR_NORTH;
-                    }
-                }
-            }
-        });
+        BLOCK_ITEMS.register();
     }
 }

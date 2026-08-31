@@ -14,35 +14,48 @@ public class BrushColorPacket {
     private final int color;
     private final boolean isAddingCustom;
     private final boolean isRemovingCustom;
+    private final String materialTexture;
 
     public BrushColorPacket(int color) {
         this.color = color;
         this.isAddingCustom = false;
         this.isRemovingCustom = false;
+        this.materialTexture = "";
     }
 
     public BrushColorPacket(int color, boolean isAddingCustom) {
         this.color = color;
         this.isAddingCustom = isAddingCustom;
         this.isRemovingCustom = false;
+        this.materialTexture = "";
     }
 
     public BrushColorPacket(int color, boolean isAddingCustom, boolean isRemovingCustom) {
         this.color = color;
         this.isAddingCustom = isAddingCustom;
         this.isRemovingCustom = isRemovingCustom;
+        this.materialTexture = "";
+    }
+
+    public BrushColorPacket(String materialTexture) {
+        this.color = 0;
+        this.isAddingCustom = false;
+        this.isRemovingCustom = false;
+        this.materialTexture = materialTexture;
     }
 
     public BrushColorPacket(FriendlyByteBuf buf) {
         this.color = buf.readInt();
         this.isAddingCustom = buf.readBoolean();
         this.isRemovingCustom = buf.readBoolean();
+        this.materialTexture = buf.readUtf(256);
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(color);
         buf.writeBoolean(isAddingCustom);
         buf.writeBoolean(isRemovingCustom);
+        buf.writeUtf(materialTexture != null ? materialTexture : "");
     }
 
     public void handle(NetworkManager.PacketContext context) {
@@ -52,37 +65,29 @@ public class BrushColorPacket {
             if (stack.getItem() instanceof PaintBrushItem) {
                 CompoundTag tag = stack.getOrCreateTag();
 
+                if (!materialTexture.isEmpty()) {
+                    tag.putString("SelectedMaterial", materialTexture);
+                    return;
+                }
+
                 if (isRemovingCustom) {
                     if (tag.contains("CustomColors")) {
                         int[] oldColors = tag.getIntArray("CustomColors");
                         List<Integer> colorList = new ArrayList<>();
                         boolean removed = false;
-
                         for (int c : oldColors) {
-                            if (!removed && c == color) {
-                                removed = true;
-                                continue;
-                            }
+                            if (!removed && c == color) { removed = true; continue; }
                             colorList.add(c);
                         }
-
                         tag.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
                     }
                 } else if (isAddingCustom) {
                     tag.putInt("SelectedColor", color);
                     int[] oldColors = tag.contains("CustomColors") ? tag.getIntArray("CustomColors") : new int[0];
                     List<Integer> colorList = new ArrayList<>();
-
-                    for (int c : oldColors) {
-                        if (c != color) colorList.add(c);
-                    }
-
+                    for (int c : oldColors) { if (c != color) colorList.add(c); }
                     colorList.add(0, color);
-
-                    while (colorList.size() > 14) {
-                        colorList.remove(colorList.size() - 1);
-                    }
-
+                    while (colorList.size() > 14) { colorList.remove(colorList.size() - 1); }
                     tag.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
                 } else {
                     tag.putInt("SelectedColor", color);

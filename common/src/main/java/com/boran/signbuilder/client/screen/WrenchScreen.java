@@ -70,28 +70,10 @@ public class WrenchScreen extends Screen {
         guiGraphics.fill(startX - 1, startY, startX, startY + panelHeight, borderColor);
         guiGraphics.fill(startX + panelWidth, startY, startX + panelWidth + 1, startY + panelHeight, borderColor);
 
-        Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
-        Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off");
-        Component sfText = sfPrefix.copy().append(": ").append(sfState);
-
-        int sfWidth = this.font.width(sfText) + 6;
-        int sfHeight = 11;
-        int sfX = startX + panelWidth - sfWidth - 2;
-        int sfY = startY + 2;
-
-        int sfBgColor = this.isSmartFillEnabled ? 0xFF114411 : 0xFF441111;
-        int sfTextColor = this.isSmartFillEnabled ? 0x55FF55 : 0xFF5555;
-
-        guiGraphics.fill(sfX, sfY, sfX + sfWidth, sfY + sfHeight, sfBgColor);
-        guiGraphics.renderOutline(sfX, sfY, sfWidth, sfHeight, 0xFF777777);
-        guiGraphics.drawCenteredString(this.font, sfText, sfX + (sfWidth / 2), sfY + 2, sfTextColor);
+        drawSmartFillIndicator(guiGraphics, startX + panelWidth - 15, startY + 8, mouseX, mouseY);
 
         long time = Util.getMillis();
         Component tooltipToRender = null;
-
-        if (mouseX >= sfX && mouseX <= sfX + sfWidth && mouseY >= sfY && mouseY <= sfY + sfHeight) {
-            tooltipToRender = Component.translatable("tooltip.signbuilder.smart_fill_desc");
-        }
 
         for (int i = 0; i < MOD_KEYS.length; i++) {
             int rowY = startY + 5 + (i * rowHeight);
@@ -176,20 +158,30 @@ public class WrenchScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
+    private void drawSmartFillIndicator(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        int color = isSmartFillEnabled ? 0xFF00FF00 : 0xFFFF0000;
+        int glowColor = isSmartFillEnabled ? 0x6600FF00 : 0x66FF0000;
+
+        graphics.fill(x - 2, y - 2, x + 6, y + 6, 0xFF111111);
+        graphics.fill(x - 1, y - 1, x + 5, y + 5, 0xFF333333);
+
+        graphics.fill(x - 1, y - 1, x + 5, y + 5, glowColor);
+        graphics.fill(x, y, x + 4, y + 4, color);
+        graphics.fill(x, y, x + 2, y + 2, 0xAAFFFFFF);
+
+        if (mouseX >= x - 2 && mouseX <= x + 6 && mouseY >= y - 2 && mouseY <= y + 6) {
+            Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
+            Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off")
+                    .withStyle(isSmartFillEnabled ? net.minecraft.ChatFormatting.GREEN : net.minecraft.ChatFormatting.RED);
+            graphics.renderTooltip(this.font, sfPrefix.copy().append(": ").append(sfState), mouseX, mouseY);
+        }
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             int startX = (this.width - panelWidth) / 2;
             int startY = (this.height - panelHeight) / 2;
-
-            Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");
-            Component sfState = Component.translatable(this.isSmartFillEnabled ? "gui.signbuilder.on" : "gui.signbuilder.off");
-            int sfWidth = this.font.width(sfPrefix.copy().append(": ").append(sfState)) + 6;
-            int sfX = startX + panelWidth - sfWidth - 2;
-            int sfY = startY + 2;
-            if (mouseX >= sfX && mouseX <= sfX + sfWidth && mouseY >= sfY && mouseY <= sfY + 11) {
-                return true;
-            }
 
             for (int i = 0; i < MOD_KEYS.length; i++) {
                 int rowY = startY + 5 + (i * rowHeight);

@@ -7,9 +7,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create("signbuilder", Registries.BLOCK_ENTITY_TYPE);
@@ -18,7 +15,7 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("letter_block_entity", () ->
                     BlockEntityType.Builder.of(
                             (pos, state) -> new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), pos, state),
-                            getValidBlocks()
+                            ModBlocks.ALL_SIGN_BLOCKS.stream().map(RegistrySupplier::get).toArray(Block[]::new)
                     ).build(null));
 
     public static final RegistrySupplier<BlockEntityType<SignPressBlockEntity>> SIGN_PRESS_BE =
@@ -27,13 +24,5 @@ public class ModBlockEntities {
 
     public static void register() {
         BLOCK_ENTITIES.register();
-    }
-
-    private static Block[] getValidBlocks() {
-        List<Block> blocks = new ArrayList<>();
-        for (RegistrySupplier<Block> blockSupplier : ModBlocks.BLOCKS) {
-            blocks.add(blockSupplier.get());
-        }
-        return blocks.toArray(new Block[0]);
     }
 }
