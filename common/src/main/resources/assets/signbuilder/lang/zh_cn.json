@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "材料或萤石粉不足！",
   "message.signbuilder.smart_fill.success": "智能填充：成功应用于 %s 个方块。",
   "message.signbuilder.smart_fill.partial_material": "应用于 %s 个方块。%s 个失败（材料不足）。",
-  "message.signbuilder.smart_fill.partial_durability": "应用于 %s 个方块。%s 个失败（工具损坏）。"
+  "message.signbuilder.smart_fill.partial_durability": "应用于 %s 个方块。%s 个失败（工具损坏）。",
+  "block.signbuilder.letter_q": "字母 Q",
+  "block.signbuilder.symbol_comma": "逗号符号",
+  "block.signbuilder.symbol_yen": "日元符号",
+  "block.signbuilder.symbol_at": "艾特符号",
+  "block.signbuilder.symbol_ampersand": "和号符号",
+  "block.signbuilder.symbol_percent": "百分号符号",
+  "tooltip.signbuilder.blueprint.yen": "日元符号"
 }

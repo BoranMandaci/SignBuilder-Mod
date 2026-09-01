@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Nicht genug Material oder Glowstone!",
   "message.signbuilder.smart_fill.success": "Intelligentes Füllen: Auf %s Blöcke angewendet.",
   "message.signbuilder.smart_fill.partial_material": "Auf %s Blöcke angewendet. %s fehlgeschlagen (Nicht genug Material).",
-  "message.signbuilder.smart_fill.partial_durability": "Auf %s Blöcke angewendet. %s fehlgeschlagen (Werkzeug kaputt)."
+  "message.signbuilder.smart_fill.partial_durability": "Auf %s Blöcke angewendet. %s fehlgeschlagen (Werkzeug kaputt).",
+  "block.signbuilder.letter_q": "Buchstabe Q",
+  "block.signbuilder.symbol_comma": "Komma-Symbol",
+  "block.signbuilder.symbol_yen": "Yen-Symbol",
+  "block.signbuilder.symbol_at": "At-Symbol",
+  "block.signbuilder.symbol_ampersand": "Und-Symbol",
+  "block.signbuilder.symbol_percent": "Prozent-Symbol",
+  "tooltip.signbuilder.blueprint.yen": "Yen-Symbol"
 }

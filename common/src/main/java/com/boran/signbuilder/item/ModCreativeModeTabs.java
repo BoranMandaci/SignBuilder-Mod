@@ -54,13 +54,13 @@ public class ModCreativeModeTabs {
             String[] symbolOrder = {
                     "arrow_up", "arrow_down", "arrow_left", "arrow_right",
                     "arrow_left_up", "arrow_right_up", "arrow_left_down", "arrow_right_down",
-                    "symbol_plus", "symbol_minus",
-                    "symbol_dot_left", "symbol_dot_center", "symbol_dot_right",
+                    "symbol_plus", "symbol_minus", "symbol_percent",
+                    "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_comma",
                     "symbol_slash", "symbol_backslash",
                     "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double",
                     "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
-                    "symbol_hashtag", "symbol_heart", "symbol_star",
-                    "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_tl"
+                    "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
+                    "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl"
             };
 
             for (String name : symbolOrder) {

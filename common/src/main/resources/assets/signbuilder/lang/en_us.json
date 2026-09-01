@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Not enough materials/glowstone!",
   "message.signbuilder.smart_fill.success": "Smart Fill: Applied to %s blocks.",
   "message.signbuilder.smart_fill.partial_material": "Applied to %s blocks. %s failed (Missing Material).",
-  "message.signbuilder.smart_fill.partial_durability": "Applied to %s blocks. %s failed (Tool broken)."
+  "message.signbuilder.smart_fill.partial_durability": "Applied to %s blocks. %s failed (Tool broken).",
+  "block.signbuilder.letter_q": "Letter Q",
+  "block.signbuilder.symbol_comma": "Comma Symbol",
+  "block.signbuilder.symbol_yen": "Yen Symbol",
+  "block.signbuilder.symbol_at": "At Symbol",
+  "block.signbuilder.symbol_ampersand": "Ampersand Symbol",
+  "block.signbuilder.symbol_percent": "Percent Symbol",
+  "tooltip.signbuilder.blueprint.yen": "Yen Symbol"
 }

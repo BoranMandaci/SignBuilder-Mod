@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Materiale o polvere di luminite insufficiente!",
   "message.signbuilder.smart_fill.success": "Riempimento Intelligente: Applicato a %s blocchi.",
   "message.signbuilder.smart_fill.partial_material": "Applicato a %s blocchi. %s falliti (Materiale insufficiente).",
-  "message.signbuilder.smart_fill.partial_durability": "Applicato a %s blocchi. %s falliti (Strumento rotto)."
+  "message.signbuilder.smart_fill.partial_durability": "Applicato a %s blocchi. %s falliti (Strumento rotto).",
+  "block.signbuilder.letter_q": "Lettera Q",
+  "block.signbuilder.symbol_comma": "Simbolo della Virgola",
+  "block.signbuilder.symbol_yen": "Simbolo dello Yen",
+  "block.signbuilder.symbol_at": "Simbolo della Chiocciola",
+  "block.signbuilder.symbol_ampersand": "Simbolo della E Commerciale",
+  "block.signbuilder.symbol_percent": "Simbolo della Percentuale",
+  "tooltip.signbuilder.blueprint.yen": "Simbolo dello Yen"
 }

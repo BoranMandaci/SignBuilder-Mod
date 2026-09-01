@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Недостаточно материалов или светопыли!",
   "message.signbuilder.smart_fill.success": "Умная заливка: Успешно применено к %s блокам.",
   "message.signbuilder.smart_fill.partial_material": "Применено к %s блокам. %s не удалось (Нет материалов).",
-  "message.signbuilder.smart_fill.partial_durability": "Применено к %s блокам. %s не удалось (Инструмент сломан)."
+  "message.signbuilder.smart_fill.partial_durability": "Применено к %s блокам. %s не удалось (Инструмент сломан).",
+  "block.signbuilder.letter_q": "Буква Q",
+  "block.signbuilder.symbol_comma": "Символ запятой",
+  "block.signbuilder.symbol_yen": "Символ иены",
+  "block.signbuilder.symbol_at": "Символ at",
+  "block.signbuilder.symbol_ampersand": "Символ амперсанда",
+  "block.signbuilder.symbol_percent": "Символ процента",
+  "tooltip.signbuilder.blueprint.yen": "Символ иены"
 }

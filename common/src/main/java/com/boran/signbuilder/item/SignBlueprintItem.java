@@ -245,6 +245,7 @@ public class SignBlueprintItem extends Item {
             case 'N', 'n' -> "letter_n";
             case 'O', 'o', 'Ö', 'ö' -> "letter_o";
             case 'P', 'p' -> "letter_p";
+            case 'Q', 'q' -> "letter_q";
             case 'R', 'r' -> "letter_r";
             case 'S', 's', 'Ş', 'ş' -> "letter_s";
             case 'T', 't' -> "letter_t";
@@ -274,7 +275,12 @@ public class SignBlueprintItem extends Item {
             case '€' -> "symbol_euro";
             case '$' -> "symbol_dollar";
             case '£' -> "symbol_pound";
+            case '¥' -> "symbol_yen";
             case '₺' -> "symbol_tl";
+            case '@' -> "symbol_at";
+            case '&' -> "symbol_ampersand";
+            case ',' -> "symbol_comma";
+            case '%' -> "symbol_percent";
             case '«' -> "symbol_dot_left";
             case '•' -> "symbol_dot_center";
             case '»' -> "symbol_dot_right";

@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "¡No hay suficiente material o piedra luminosa!",
   "message.signbuilder.smart_fill.success": "Relleno Inteligente: Aplicado a %s bloques.",
   "message.signbuilder.smart_fill.partial_material": "Aplicado a %s bloques. %s fallaron (Falta de material).",
-  "message.signbuilder.smart_fill.partial_durability": "Aplicado a %s bloques. %s fallaron (Herramienta rota)."
+  "message.signbuilder.smart_fill.partial_durability": "Aplicado a %s bloques. %s fallaron (Herramienta rota).",
+  "block.signbuilder.letter_q": "Letra Q",
+  "block.signbuilder.symbol_comma": "Símbolo de Coma",
+  "block.signbuilder.symbol_yen": "Símbolo de Yen",
+  "block.signbuilder.symbol_at": "Símbolo de Arroba",
+  "block.signbuilder.symbol_ampersand": "Símbolo de Ampersand",
+  "block.signbuilder.symbol_percent": "Símbolo de Porcentaje",
+  "tooltip.signbuilder.blueprint.yen": "Símbolo de Yen"
 }

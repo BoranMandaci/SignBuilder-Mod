@@ -111,6 +111,50 @@ public class ModBlocks {
         });
     }
 
+    private static RegistrySupplier<Block> createOQBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createNumber0Block(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.0, 8.0, 14.0, 14.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.0, 0.0, 8.0, 14.0, 14.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.0, 0.0, 5.0, 14.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 14.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
     private static RegistrySupplier<Block> createMBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.0, 11.0, 14.0, 14.0);
@@ -183,10 +227,10 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 12.0);
             private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 12.0, 15.0, 11.0);
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(4.0, 0.0, 5.0, 13.0, 15.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(4.0, 1.0, 13.0, 13.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 12.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 4.0, 3.0, 16.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 12.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(5.0, 1.0, 13.0, 14.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 11.0, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 5.0, 3.0, 16.0, 14.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 16.0, 11.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -375,6 +419,28 @@ public class ModBlocks {
         });
     }
 
+    private static RegistrySupplier<Block> createCommaBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 4.0, 7.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 9.0, 8.0, 4.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(9.0, 0.0, 8.0, 13.0, 4.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 7.0, 4.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(9.0, 1.0, 13.0, 13.0, 5.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 7.0, 5.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 9.0, 3.0, 5.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 5.0, 7.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
     private static RegistrySupplier<Block> createLeftSquareBracketBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 10.0, 11.0, 14.0, 15.0);
@@ -429,6 +495,28 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL) { return switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }; }
+                else { return switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; }; }
+            }
+        });
+    }
+
+    private static RegistrySupplier<Block> createAmpersandBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 16.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 16.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 16.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 16.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 0.0, 13.0, 15.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 0.0, 0.0, 15.0, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 1.0, 3.0, 16.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 1.0, 16.0, 16.0, 15.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -541,8 +629,9 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> LETTER_L = createLetterBlock("letter_l");
     public static final RegistrySupplier<Block> LETTER_M = createMBlock("letter_m");
     public static final RegistrySupplier<Block> LETTER_N = createLetterBlock("letter_n");
-    public static final RegistrySupplier<Block> LETTER_O = createLetterBlock("letter_o");
+    public static final RegistrySupplier<Block> LETTER_O = createOQBlock("letter_o");
     public static final RegistrySupplier<Block> LETTER_P = createLetterBlock("letter_p");
+    public static final RegistrySupplier<Block> LETTER_Q = createOQBlock("letter_q");
     public static final RegistrySupplier<Block> LETTER_R = createLetterBlock("letter_r");
     public static final RegistrySupplier<Block> LETTER_S = createLetterBlock("letter_s");
     public static final RegistrySupplier<Block> LETTER_T = createLetterBlock("letter_t");
@@ -553,7 +642,7 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> LETTER_Y = createLetterBlock("letter_y");
     public static final RegistrySupplier<Block> LETTER_Z = createLetterBlock("letter_z");
 
-    public static final RegistrySupplier<Block> NUMBER_0 = createLetterBlock("number_0");
+    public static final RegistrySupplier<Block> NUMBER_0 = createNumber0Block("number_0");
 
     public static final RegistrySupplier<Block> NUMBER_1 = registerLetterBlock("number_1", () -> new LetterBlock(createLetterProperties()) {
         private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.0, 11.0, 14.0, 10.0);
@@ -596,6 +685,7 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_DOT_CENTER = createCenterDotBlock("symbol_dot_center");
     public static final RegistrySupplier<Block> SYMBOL_DOT_RIGHT = createRightDotBlock("symbol_dot_right");
     public static final RegistrySupplier<Block> SYMBOL_SLASH = createSlashBlock("symbol_slash");
+    public static final RegistrySupplier<Block> SYMBOL_COMMA = createCommaBlock("symbol_comma");
 
     public static final RegistrySupplier<Block> ARROW_LEFT_UP = createDiagonalArrowBlock("arrow_left_up");
     public static final RegistrySupplier<Block> ARROW_RIGHT_UP = createDiagonalArrowBlock("arrow_right_up");
@@ -614,10 +704,14 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_EURO = createPlusBlock("symbol_euro");
     public static final RegistrySupplier<Block> SYMBOL_DOLLAR = createLetterBlock("symbol_dollar");
     public static final RegistrySupplier<Block> SYMBOL_TL = createTLBlock("symbol_tl");
+    public static final RegistrySupplier<Block> SYMBOL_YEN = createLetterBlock("symbol_yen");
 
     public static final RegistrySupplier<Block> SYMBOL_BACKSLASH = createBackslashBlock("symbol_backslash");
     public static final RegistrySupplier<Block> SYMBOL_STAR = createStarBlock("symbol_star");
     public static final RegistrySupplier<Block> SYMBOL_POUND = createLetterBlock("symbol_pound");
+    public static final RegistrySupplier<Block> SYMBOL_AT = createStarBlock("symbol_at");
+    public static final RegistrySupplier<Block> SYMBOL_AMPERSAND = createAmpersandBlock("symbol_ampersand");
+    public static final RegistrySupplier<Block> SYMBOL_PERCENT = createAmpersandBlock("symbol_percent");
 
     public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
             () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)

@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Pas assez de matériaux ou de poudre lumineuse !",
   "message.signbuilder.smart_fill.success": "Remplissage Intelligent : Appliqué à %s blocs.",
   "message.signbuilder.smart_fill.partial_material": "Appliqué à %s blocs. %s ont échoué (Manque de matériaux).",
-  "message.signbuilder.smart_fill.partial_durability": "Appliqué à %s blocs. %s ont échoué (Outil cassé)."
+  "message.signbuilder.smart_fill.partial_durability": "Appliqué à %s blocs. %s ont échoué (Outil cassé).",
+  "block.signbuilder.letter_q": "Lettre Q",
+  "block.signbuilder.symbol_comma": "Symbole Virgule",
+  "block.signbuilder.symbol_yen": "Symbole Yen",
+  "block.signbuilder.symbol_at": "Symbole Arobase",
+  "block.signbuilder.symbol_ampersand": "Symbole Esperluette",
+  "block.signbuilder.symbol_percent": "Symbole Pourcentage",
+  "tooltip.signbuilder.blueprint.yen": "Symbole Yen"
 }

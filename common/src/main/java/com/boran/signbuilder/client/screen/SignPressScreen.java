@@ -25,10 +25,16 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
     private String selectedBlock = "";
 
     private final List<String> allBlocks = List.of(
-            "letter_a", "letter_b", "letter_c", "letter_d", "letter_e", "letter_f", "letter_g", "letter_h", "letter_i", "letter_j", "letter_k", "letter_l", "letter_m", "letter_n", "letter_o", "letter_p", "letter_r", "letter_s", "letter_t", "letter_u", "letter_v", "letter_w", "letter_x", "letter_y", "letter_z",
+            "letter_a", "letter_b", "letter_c", "letter_d", "letter_e", "letter_f", "letter_g", "letter_h", "letter_i", "letter_j", "letter_k", "letter_l", "letter_m", "letter_n", "letter_o", "letter_p", "letter_q", "letter_r", "letter_s", "letter_t", "letter_u", "letter_v", "letter_w", "letter_x", "letter_y", "letter_z",
             "number_0", "number_1", "number_2", "number_3", "number_4", "number_5", "number_6", "number_7", "number_8", "number_9",
             "arrow_up", "arrow_down", "arrow_left", "arrow_right", "arrow_left_up", "arrow_right_up", "arrow_left_down", "arrow_right_down",
-            "symbol_plus", "symbol_minus", "symbol_heart", "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_slash", "symbol_backslash", "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double", "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double", "symbol_hashtag", "symbol_star", "symbol_euro", "symbol_dollar", "symbol_pound", "symbol_tl"
+            "symbol_plus", "symbol_minus", "symbol_percent",
+            "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_comma",
+            "symbol_slash", "symbol_backslash",
+            "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double",
+            "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
+            "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
+            "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl"
     );
 
     public SignPressScreen(SignPressMenu menu, Inventory inventory, Component title) {
@@ -61,6 +67,10 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             int scrollY = this.topPos + 16;
             if (mouseX >= scrollX && mouseX < scrollX + 6 && mouseY >= scrollY && mouseY < scrollY + 54) {
                 this.scrolling = true;
+                int maxScrollY = scrollY + 54;
+                this.scrollOffs = ((float)mouseY - (float)scrollY - 7.5F) / ((float)(maxScrollY - scrollY) - 15.0F);
+                this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+                this.startIndex = (int)((double)(this.scrollOffs * (float)this.getOffs()) + 0.5D) * columns;
                 return true;
             }
         }
@@ -79,6 +89,10 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                         this.selectedBlock = allBlocks.get(blockIndex);
 
                         boolean isShift = Screen.hasShiftDown();
+
+                        if (this.minecraft != null && this.minecraft.player != null) {
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 1.0F, 1.0F);
+                        }
 
                         ModMessages.sendToServer(new SignPressCraftC2SPacket(this.selectedBlock, isShift));
                         return true;
@@ -100,6 +114,14 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            this.scrolling = false;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override

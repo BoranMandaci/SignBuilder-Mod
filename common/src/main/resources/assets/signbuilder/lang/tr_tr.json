@@ -200,5 +200,12 @@
   "message.signbuilder.missing_material": "Yeterli materyal veya ışıktaşı yok!",
   "message.signbuilder.smart_fill.success": "Akıllı Doldurma: %s blok başarıyla uygulandı.",
   "message.signbuilder.smart_fill.partial_material": "%s blok uygulandı. Kalan %s blok için yeterli materyal yok.",
-  "message.signbuilder.smart_fill.partial_durability": "%s blok uygulandı. Alet kırıldığı için %s blok iptal edildi."
+  "message.signbuilder.smart_fill.partial_durability": "%s blok uygulandı. Alet kırıldığı için %s blok iptal edildi.",
+  "block.signbuilder.letter_q": "Q Harfi",
+  "block.signbuilder.symbol_comma": "Virgül",
+  "block.signbuilder.symbol_yen": "Yen Sembolü",
+  "block.signbuilder.symbol_at": "Et Sembolü",
+  "block.signbuilder.symbol_ampersand": "Ve Sembolü",
+  "block.signbuilder.symbol_percent": "Yüzde Sembolü",
+  "tooltip.signbuilder.blueprint.yen": "Yen Sembolü"
 }
