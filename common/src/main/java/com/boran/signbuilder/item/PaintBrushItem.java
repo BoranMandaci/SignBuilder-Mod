@@ -310,6 +310,10 @@ public class PaintBrushItem extends Item {
     }
 
     public static int getActualHexColor(int colorValue) {
+        if (colorValue > 15 || colorValue < -1) {
+            return colorValue;
+        }
+
         return switch (colorValue) {
             case 0 -> 0xFFFFFF; case 1 -> 0xD87F33; case 2 -> 0xB24CD8; case 3 -> 0x6699D8; case 4 -> 0xE5E533; case 5 -> 0x7FCC19;
             case 6 -> 0xF27FA5; case 7 -> 0x4C4C4C; case 8 -> 0x999999; case 9 -> 0x4C7F99; case 10 -> 0x7F3FB2; case 11 -> 0x334CB2;
