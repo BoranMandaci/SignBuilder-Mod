@@ -4,11 +4,9 @@ import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
-import com.boran.signbuilder.client.screen.PaintBrushScreen;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -93,7 +91,7 @@ public class PaintBrushItem extends Item {
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
         }
 
-        if (level.isClientSide()) EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new PaintBrushScreen()));
+        if (level.isClientSide()) EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openPaintBrushScreen());
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
@@ -145,7 +143,7 @@ public class PaintBrushItem extends Item {
                         else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
                     }
                     level.setBlock(pos, newState, 11);
-                    EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ()));
+                    EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
                 } else {
                     level.setBlock(pos, newState, 3);
                     BlockEntity updatedBe = level.getBlockEntity(pos);
@@ -223,7 +221,7 @@ public class PaintBrushItem extends Item {
                     else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
                 }
                 level.setBlock(current, newState, 11);
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().levelRenderer.setBlocksDirty(current.getX(), current.getY(), current.getZ(), current.getX(), current.getY(), current.getZ()));
+                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
             } else {
                 level.setBlock(current, newState, 3);
                 BlockEntity updatedBe = level.getBlockEntity(current);

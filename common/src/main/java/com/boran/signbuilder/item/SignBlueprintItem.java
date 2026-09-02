@@ -1,10 +1,8 @@
 package com.boran.signbuilder.item;
 
-import com.boran.signbuilder.client.screen.BlueprintScreen;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -80,7 +78,7 @@ public class SignBlueprintItem extends Item {
 
             String finalCurrentText = currentText;
 
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new BlueprintScreen(finalCurrentText)));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openBlueprintScreen(finalCurrentText));
         }
 
         return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());

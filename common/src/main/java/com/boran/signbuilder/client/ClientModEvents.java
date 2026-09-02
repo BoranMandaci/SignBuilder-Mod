@@ -3,7 +3,6 @@ package com.boran.signbuilder.client;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
-import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.screen.SignPressScreen;
 import com.boran.signbuilder.menu.ModMenuTypes;
@@ -20,6 +19,8 @@ public class ClientModEvents {
 
     public static void init() {
         MenuRegistry.registerScreenFactory(ModMenuTypes.SIGN_PRESS_MENU.get(), SignPressScreen::new);
+
+        BlockEntityRendererRegistry.register(com.boran.signbuilder.block.entity.ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
 
         ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
             if (level != null && pos != null) {

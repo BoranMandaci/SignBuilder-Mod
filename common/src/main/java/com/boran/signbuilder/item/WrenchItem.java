@@ -2,11 +2,9 @@ package com.boran.signbuilder.item;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
-import com.boran.signbuilder.client.screen.WrenchScreen;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -96,7 +94,7 @@ public class WrenchItem extends Item {
             }
             pPlayer.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5F, 1.2F);
             int fc = cMode; boolean fm = dMonsters; boolean fa = dAnimals;
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().setScreen(new WrenchScreen(fc, fm, fa)));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openWrenchScreen(fc, fm, fa));
         }
 
         return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());

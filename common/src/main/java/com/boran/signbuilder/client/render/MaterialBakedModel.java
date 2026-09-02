@@ -94,5 +94,5 @@ public class MaterialBakedModel implements BakedModel {
     @Override public boolean isCustomRenderer() { return originalModel.isCustomRenderer(); }
     @Override public @NotNull TextureAtlasSprite getParticleIcon() { return originalModel.getParticleIcon(); }
     @Override public @NotNull ItemTransforms getTransforms() { return originalModel.getTransforms(); }
-    @Override public @NotNull ItemOverrides getOverrides() { return ItemOverrides.EMPTY; } // Vanilla standart boş dönüş (ÇÖKMEYİ ENGELLER)
+    @Override public @NotNull ItemOverrides getOverrides() { return ItemOverrides.EMPTY; }
 }
