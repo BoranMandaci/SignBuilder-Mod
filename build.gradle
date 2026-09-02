@@ -51,4 +51,9 @@ allprojects {
     java {
         withSourcesJar()
     }
+
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
 }
