@@ -34,7 +34,8 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double",
             "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
             "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
-            "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl"
+            "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl",
+            "backplate"
     );
 
     public SignPressScreen(SignPressMenu menu, Inventory inventory, Component title) {

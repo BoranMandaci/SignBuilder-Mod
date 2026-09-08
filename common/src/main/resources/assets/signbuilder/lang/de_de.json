@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "At-Symbol",
   "block.signbuilder.symbol_ampersand": "Und-Symbol",
   "block.signbuilder.symbol_percent": "Prozent-Symbol",
-  "tooltip.signbuilder.blueprint.yen": "Yen-Symbol"
+  "tooltip.signbuilder.blueprint.yen": "Yen-Symbol",
+  "material.signbuilder.gold_block": "Goldblock",
+  "material.signbuilder.diamond_block": "Diamantblock",
+  "material.signbuilder.lapis_block": "Lapislazuliblock",
+  "material.signbuilder.smooth_stone": "Glatter Stein",
+  "material.signbuilder.polished_diorite": "Polierter Diorit",
+  "material.signbuilder.bricks": "Ziegelsteine",
+  "material.signbuilder.stone_bricks": "Steinziegel",
+  "gui.signbuilder.wrench.mode.audio_sync": "Audiosynchronisation",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Blinkt im Rhythmus benachbarter Plattenspieler.",
+  "gui.signbuilder.wrench.mode.disco": "Disco",
+  "gui.signbuilder.wrench.mode.disco.desc": "Schneller Stroboskopeffekt.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Blickkontakt",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Leuchtet nur auf, wenn man es direkt ansieht.",
+  "gui.signbuilder.wrench.mode.low_power": "Geringe Leistung",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Leuchtet schwach, ohne die Umgebung zu erhellen.",
+  "block.signbuilder.backplate": "Rückwand",
+  "item.signbuilder.backplate": "Rückwand"
 }

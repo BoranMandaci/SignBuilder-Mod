@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "Symbole Arobase",
   "block.signbuilder.symbol_ampersand": "Symbole Esperluette",
   "block.signbuilder.symbol_percent": "Symbole Pourcentage",
-  "tooltip.signbuilder.blueprint.yen": "Symbole Yen"
+  "tooltip.signbuilder.blueprint.yen": "Symbole Yen",
+  "material.signbuilder.gold_block": "Bloc d'or",
+  "material.signbuilder.diamond_block": "Bloc de diamant",
+  "material.signbuilder.lapis_block": "Bloc de lapis-lazuli",
+  "material.signbuilder.smooth_stone": "Roche lisse",
+  "material.signbuilder.polished_diorite": "Diorite polie",
+  "material.signbuilder.bricks": "Briques",
+  "material.signbuilder.stone_bricks": "Briques en pierre",
+  "gui.signbuilder.wrench.mode.audio_sync": "Synchronisation audio",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Clignote au rythme des juke-boxes à proximité.",
+  "gui.signbuilder.wrench.mode.disco": "Disco",
+  "gui.signbuilder.wrench.mode.disco.desc": "Effet stroboscopique rapide.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Contact visuel",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "S'allume uniquement lorsqu'on le regarde directement.",
+  "gui.signbuilder.wrench.mode.low_power": "Basse Consommation",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Brille faiblement sans éclairer la zone environnante.",
+  "block.signbuilder.backplate": "Plaque Arrière",
+  "item.signbuilder.backplate": "Plaque Arrière"
 }

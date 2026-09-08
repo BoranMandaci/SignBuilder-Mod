@@ -14,7 +14,14 @@ public enum SignMaterial implements StringRepresentable {
     CHERRY("cherry"),
     BAMBOO("bamboo"),
     IRON("iron"),
-    ANDESITE("andesite");
+    ANDESITE("andesite"),
+    GOLD("gold"),
+    DIAMOND("diamond"),
+    LAPIS("lapis"),
+    SMOOTH_STONE("smooth_stone"),
+    POLISHED_DIORITE("polished_diorite"),
+    BRICKS("bricks"),
+    STONE_BRICKS("stone_bricks");
 
     private final String name;
 

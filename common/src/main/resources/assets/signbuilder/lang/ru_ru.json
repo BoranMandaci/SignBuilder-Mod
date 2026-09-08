@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "Символ at",
   "block.signbuilder.symbol_ampersand": "Символ амперсанда",
   "block.signbuilder.symbol_percent": "Символ процента",
-  "tooltip.signbuilder.blueprint.yen": "Символ иены"
+  "tooltip.signbuilder.blueprint.yen": "Символ иены",
+  "material.signbuilder.gold_block": "Золотой блок",
+  "material.signbuilder.diamond_block": "Алмазный блок",
+  "material.signbuilder.lapis_block": "Лазуритовый блок",
+  "material.signbuilder.smooth_stone": "Гладкий камень",
+  "material.signbuilder.polished_diorite": "Полированный диорит",
+  "material.signbuilder.bricks": "Кирпичи",
+  "material.signbuilder.stone_bricks": "Каменные кирпичи",
+  "gui.signbuilder.wrench.mode.audio_sync": "Синхронизация звука",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Мигает в такт проигрывателям поблизости.",
+  "gui.signbuilder.wrench.mode.disco": "Диско",
+  "gui.signbuilder.wrench.mode.disco.desc": "Быстрый стробоскопический эффект.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Зрительный контакт",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Загорается только при прямом взгляде.",
+  "gui.signbuilder.wrench.mode.low_power": "Низкая мощность",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Светится тускло, не освещая окружающее пространство.",
+  "block.signbuilder.backplate": "Задняя панель",
+  "item.signbuilder.backplate": "Задняя панель"
 }

@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "Et Sembolü",
   "block.signbuilder.symbol_ampersand": "Ve Sembolü",
   "block.signbuilder.symbol_percent": "Yüzde Sembolü",
-  "tooltip.signbuilder.blueprint.yen": "Yen Sembolü"
+  "tooltip.signbuilder.blueprint.yen": "Yen Sembolü",
+  "material.signbuilder.gold_block": "Altın Bloğu",
+  "material.signbuilder.diamond_block": "Elmas Bloğu",
+  "material.signbuilder.lapis_block": "Lapis Lazuli Bloğu",
+  "material.signbuilder.smooth_stone": "Düz Taş",
+  "material.signbuilder.polished_diorite": "Cilalı Diyorit",
+  "material.signbuilder.bricks": "Tuğla",
+  "material.signbuilder.stone_bricks": "Taş Tuğla",
+  "gui.signbuilder.wrench.mode.audio_sync": "Ses Senkronizasyonu",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Yakındaki Müzik Kutularının ritmine göre yanıp söner.",
+  "gui.signbuilder.wrench.mode.disco": "Disko",
+  "gui.signbuilder.wrench.mode.disco.desc": "Hızlı flaşör (strobe) efekti.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Göz Teması",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Sadece tabelaya doğrudan bakıldığında yanar.",
+  "gui.signbuilder.wrench.mode.low_power": "Düşük Güç",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Etrafı çok aydınlatmadan loş bir şekilde parlar.",
+  "block.signbuilder.backplate": "Plaka",
+  "item.signbuilder.backplate": "Plaka"
 }

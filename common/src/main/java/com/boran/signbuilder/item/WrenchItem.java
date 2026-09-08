@@ -21,7 +21,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +36,9 @@ public class WrenchItem extends Item {
 
     public static final String[] MOD_KEYS = {
             "gui.signbuilder.wrench.mode.normal", "gui.signbuilder.wrench.mode.blink", "gui.signbuilder.wrench.mode.flicker",
-            "gui.signbuilder.wrench.mode.wave", "gui.signbuilder.wrench.mode.breathing", "gui.signbuilder.wrench.mode.proximity", "gui.signbuilder.wrench.mode.night_shift"
+            "gui.signbuilder.wrench.mode.wave", "gui.signbuilder.wrench.mode.breathing", "gui.signbuilder.wrench.mode.proximity",
+            "gui.signbuilder.wrench.mode.night_shift", "gui.signbuilder.wrench.mode.audio_sync", "gui.signbuilder.wrench.mode.disco",
+            "gui.signbuilder.wrench.mode.eye_contact", "gui.signbuilder.wrench.mode.low_power"
     };
 
     public WrenchItem(Properties pProperties) {
@@ -152,14 +153,18 @@ public class WrenchItem extends Item {
                             stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
                         }
 
+                        BlockState newState = clickedBlock;
                         if (mode == -1) {
                             letterEntity.setWrenchMode(0); letterEntity.setActive(false);
-                            level.setBlock(pos, clickedBlock.setValue(ModBlocks.GLOWING, false), 2);
+                            newState = newState.setValue(ModBlocks.GLOWING, false);
+                            if (newState.hasProperty(ModBlocks.LOW_POWER)) newState = newState.setValue(ModBlocks.LOW_POWER, false);
                         } else {
                             letterEntity.setWrenchMode(mode); letterEntity.setActive(targetActive);
                             if (mode == 5) { letterEntity.setDetectsMonsters(detectsMonsters); letterEntity.setDetectsAnimals(detectsAnimals); }
-                            level.setBlock(pos, clickedBlock.setValue(ModBlocks.GLOWING, mode == 0 ? targetActive : false), 2);
+                            newState = newState.setValue(ModBlocks.GLOWING, (mode == 0 || mode == 10) ? targetActive : false);
+                            if (newState.hasProperty(ModBlocks.LOW_POWER)) newState = newState.setValue(ModBlocks.LOW_POWER, mode == 10);
                         }
+                        level.setBlock(pos, newState, 2);
                     }
                 }
                 level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
@@ -215,14 +220,18 @@ public class WrenchItem extends Item {
                 }
             }
 
+            BlockState newState = currentState;
             if (mode == -1) {
                 letter.setWrenchMode(0); letter.setActive(false);
-                level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, false), 2);
+                newState = newState.setValue(ModBlocks.GLOWING, false);
+                if (newState.hasProperty(ModBlocks.LOW_POWER)) newState = newState.setValue(ModBlocks.LOW_POWER, false);
             } else {
                 letter.setWrenchMode(mode); letter.setActive(willBeActive);
                 if (mode == 5) { letter.setDetectsMonsters(detectsMonsters); letter.setDetectsAnimals(detectsAnimals); }
-                level.setBlock(current, currentState.setValue(ModBlocks.GLOWING, mode == 0 ? willBeActive : false), 2);
+                newState = newState.setValue(ModBlocks.GLOWING, (mode == 0 || mode == 10) ? willBeActive : false);
+                if (newState.hasProperty(ModBlocks.LOW_POWER)) newState = newState.setValue(ModBlocks.LOW_POWER, mode == 10);
             }
+            level.setBlock(current, newState, 2);
             blocksModified++;
         }
 

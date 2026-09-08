@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "At Symbol",
   "block.signbuilder.symbol_ampersand": "Ampersand Symbol",
   "block.signbuilder.symbol_percent": "Percent Symbol",
-  "tooltip.signbuilder.blueprint.yen": "Yen Symbol"
+  "tooltip.signbuilder.blueprint.yen": "Yen Symbol",
+  "material.signbuilder.gold_block": "Gold Block",
+  "material.signbuilder.diamond_block": "Diamond Block",
+  "material.signbuilder.lapis_block": "Lapis Lazuli Block",
+  "material.signbuilder.smooth_stone": "Smooth Stone",
+  "material.signbuilder.polished_diorite": "Polished Diorite",
+  "material.signbuilder.bricks": "Bricks",
+  "material.signbuilder.stone_bricks": "Stone Bricks",
+  "gui.signbuilder.wrench.mode.audio_sync": "Audio Sync",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Flashes to the beat of nearby Jukeboxes.",
+  "gui.signbuilder.wrench.mode.disco": "Disco",
+  "gui.signbuilder.wrench.mode.disco.desc": "Fast strobe effect.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Eye Contact",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Lights up only when looked directly at.",
+  "gui.signbuilder.wrench.mode.low_power": "Low Power",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Shines dimly without lighting up the surrounding area.",
+  "block.signbuilder.backplate": "Backplate",
+  "item.signbuilder.backplate": "Backplate"
 }

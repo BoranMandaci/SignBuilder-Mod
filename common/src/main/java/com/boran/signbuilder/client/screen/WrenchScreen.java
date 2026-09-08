@@ -23,12 +23,16 @@ public class WrenchScreen extends Screen {
             "gui.signbuilder.wrench.mode.wave",
             "gui.signbuilder.wrench.mode.breathing",
             "gui.signbuilder.wrench.mode.proximity",
-            "gui.signbuilder.wrench.mode.night_shift"
+            "gui.signbuilder.wrench.mode.night_shift",
+            "gui.signbuilder.wrench.mode.audio_sync",
+            "gui.signbuilder.wrench.mode.disco",
+            "gui.signbuilder.wrench.mode.eye_contact",
+            "gui.signbuilder.wrench.mode.low_power"
     };
 
-    private final int panelWidth = 160;
-    private final int rowHeight = 22;
-    private final int panelHeight = ((MOD_KEYS.length + 1) * rowHeight) + 10;
+    private int panelWidth = 160;
+    private int rowHeight = 18;
+    private int panelHeight;
 
     public WrenchScreen(int currentMode, boolean detectsMonsters, boolean detectsAnimals) {
         super(Component.translatable("gui.signbuilder.wrench.title"));
@@ -40,6 +44,15 @@ public class WrenchScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+
+        rowHeight = 18;
+        panelHeight = ((MOD_KEYS.length + 1) * rowHeight) + 10;
+        int maxAvailableHeight = this.height - 35;
+
+        while (panelHeight > maxAvailableHeight && rowHeight > 12) {
+            rowHeight--;
+            panelHeight = ((MOD_KEYS.length + 1) * rowHeight) + 10;
+        }
 
         if (this.minecraft != null && this.minecraft.player != null) {
             ItemStack mainItem = this.minecraft.player.getMainHandItem();
@@ -59,9 +72,10 @@ public class WrenchScreen extends Screen {
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);
-        int startY = (this.height - panelHeight) / 2;
+        int startY = Math.max(18, (this.height - panelHeight) / 2);
 
-        guiGraphics.drawCenteredString(this.font, this.title, centerX, startY - 20, 0xFFD700);
+        int titleY = Math.max(4, startY - 14);
+        guiGraphics.drawCenteredString(this.font, this.title, centerX, titleY, 0xFFD700);
         guiGraphics.fill(startX, startY, startX + panelWidth, startY + panelHeight, 0xDD222222);
 
         int borderColor = 0xFFFFFFFF;
@@ -70,7 +84,7 @@ public class WrenchScreen extends Screen {
         guiGraphics.fill(startX - 1, startY, startX, startY + panelHeight, borderColor);
         guiGraphics.fill(startX + panelWidth, startY, startX + panelWidth + 1, startY + panelHeight, borderColor);
 
-        drawSmartFillIndicator(guiGraphics, startX + panelWidth - 15, startY + 8, mouseX, mouseY);
+        drawSmartFillIndicator(guiGraphics, startX + panelWidth - 15, startY + 6, mouseX, mouseY);
 
         long time = Util.getMillis();
         Component tooltipToRender = null;
@@ -85,31 +99,21 @@ public class WrenchScreen extends Screen {
             }
 
             if (i == 5) {
-                int toggleSize = 16;
-                int monsterToggleX = startX + panelWidth - 24;
-                int animalToggleX = startX + panelWidth - 44;
-                int toggleY = rowY + 3;
+                int toggleSize = Math.min(14, rowHeight - 2);
+                int monsterToggleX = startX + panelWidth - 22;
+                int animalToggleX = startX + panelWidth - 38;
+                int toggleY = rowY + (rowHeight - toggleSize) / 2;
 
                 boolean isHoveredMonster = mouseX >= monsterToggleX && mouseX <= monsterToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize;
                 boolean isHoveredAnimal = mouseX >= animalToggleX && mouseX <= animalToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize;
 
                 int animalBg = this.detectsAnimals ? 0xFF22AA22 : 0xFFAA2222;
                 guiGraphics.fill(animalToggleX, toggleY, animalToggleX + toggleSize, toggleY + toggleSize, animalBg);
-                guiGraphics.fill(animalToggleX + 2, toggleY + 2, animalToggleX + 14, toggleY + 14, 0xFFFFAAEE);
-                guiGraphics.fill(animalToggleX + 3, toggleY + 5, animalToggleX + 5, toggleY + 7, 0xFF111111);
-                guiGraphics.fill(animalToggleX + 11, toggleY + 5, animalToggleX + 13, toggleY + 7, 0xFF111111);
-                guiGraphics.fill(animalToggleX + 5, toggleY + 8, animalToggleX + 11, toggleY + 12, 0xFFE585A6);
-                guiGraphics.fill(animalToggleX + 6, toggleY + 9, animalToggleX + 7, toggleY + 11, 0xFF994466);
-                guiGraphics.fill(animalToggleX + 9, toggleY + 9, animalToggleX + 10, toggleY + 11, 0xFF994466);
+                guiGraphics.fill(animalToggleX + 2, toggleY + 2, animalToggleX + toggleSize - 2, toggleY + toggleSize - 2, 0xFFFFAAEE);
 
                 int monsterBg = this.detectsMonsters ? 0xFF22AA22 : 0xFFAA2222;
                 guiGraphics.fill(monsterToggleX, toggleY, monsterToggleX + toggleSize, toggleY + toggleSize, monsterBg);
-                int faceColor = 0xFF111111;
-                guiGraphics.fill(monsterToggleX + 2, toggleY + 3, monsterToggleX + 6, toggleY + 7, faceColor);
-                guiGraphics.fill(monsterToggleX + 10, toggleY + 3, monsterToggleX + 14, toggleY + 7, faceColor);
-                guiGraphics.fill(monsterToggleX + 6, toggleY + 7, monsterToggleX + 10, toggleY + 11, faceColor);
-                guiGraphics.fill(monsterToggleX + 4, toggleY + 11, monsterToggleX + 6, toggleY + 15, faceColor);
-                guiGraphics.fill(monsterToggleX + 10, toggleY + 11, monsterToggleX + 12, toggleY + 15, faceColor);
+                guiGraphics.fill(monsterToggleX + 2, toggleY + 2, monsterToggleX + toggleSize - 2, toggleY + toggleSize - 2, 0xFF111111);
 
                 if (isHoveredMonster) {
                     tooltipToRender = Component.translatable(this.detectsMonsters ? "gui.signbuilder.wrench.monster_toggle_on" : "gui.signbuilder.wrench.monster_toggle_off");
@@ -119,22 +123,32 @@ public class WrenchScreen extends Screen {
             }
 
             int alpha;
+            int ledColorHex = 0x00FFFF;
+
             if (i == 0) alpha = 255;
             else if (i == 1) alpha = ((time / 250L) % 2 == 0) ? 255 : 40;
             else if (i == 2) alpha = (Math.random() > 0.7) ? 255 : 40;
             else if (i == 3) alpha = (int)(((Math.sin(time / 200.0) + 1.0) / 2.0) * 200) + 55;
             else if (i == 4) alpha = (int)(((Math.sin(time / 600.0) + 1.0) / 2.0) * 200) + 55;
             else if (i == 5) alpha = (time % 1500L < 200) ? 255 : 40;
-            else alpha = ((time / 2000L) % 2 == 0) ? 255 : 40;
+            else if (i == 6) alpha = ((time / 2000L) % 2 == 0) ? 255 : 40;
+            else if (i == 7) alpha = (Math.random() > 0.4) ? 255 : 40;
+            else if (i == 8) alpha = ((time / 100L) % 2 == 0) ? 255 : 40;
+            else if (i == 10) alpha = 130;
+            else if (i == 11) {
+                alpha = (int)(((Math.sin(time / 300.0) + 1.0) / 2.0) * 120) + 70;
+                ledColorHex = 0x55FFFF;
+            } else alpha = 255;
 
-            int color = (alpha << 24) | 0x00FFFF;
+            int color = (alpha << 24) | ledColorHex;
             drawLedCircle(guiGraphics, startX + 16, rowY + (rowHeight / 2), color);
 
             Component text = Component.translatable(MOD_KEYS[i]);
             Component displayText = (i == currentMode) ? Component.literal("> ").append(text) : text;
 
             int textXOffset = (i == currentMode) ? 26 : 32;
-            guiGraphics.drawString(this.font, displayText, startX + textXOffset, rowY + 7, 0x00FFFF);
+            int textY = rowY + (rowHeight - 8) / 2;
+            guiGraphics.drawString(this.font, displayText, startX + textXOffset, textY, i == 11 ? 0x55FFFF : 0x00FFFF);
         }
 
         int turnOffY = startY + 5 + (MOD_KEYS.length * rowHeight);
@@ -147,9 +161,11 @@ public class WrenchScreen extends Screen {
         Component offText = Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(net.minecraft.ChatFormatting.RED);
         Component offDisplay = (currentMode == -1) ? Component.literal("> ").append(offText) : offText;
         int offTextOffset = (currentMode == -1) ? 26 : 32;
-        guiGraphics.drawString(this.font, offDisplay, startX + offTextOffset, turnOffY + 7, 0xFF5555);
+        int offTextY = turnOffY + (rowHeight - 8) / 2;
+        guiGraphics.drawString(this.font, offDisplay, startX + offTextOffset, offTextY, 0xFF5555);
 
-        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.close_prompt"), centerX, startY + panelHeight + 10, 0xFFFFFF);
+        int promptY = Math.min(this.height - 10, startY + panelHeight + 6);
+        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.close_prompt"), centerX, promptY, 0x888888);
 
         if (tooltipToRender != null) {
             guiGraphics.renderTooltip(this.font, tooltipToRender, mouseX, mouseY);
@@ -181,16 +197,16 @@ public class WrenchScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             int startX = (this.width - panelWidth) / 2;
-            int startY = (this.height - panelHeight) / 2;
+            int startY = Math.max(18, (this.height - panelHeight) / 2);
 
             for (int i = 0; i < MOD_KEYS.length; i++) {
                 int rowY = startY + 5 + (i * rowHeight);
 
                 if (i == 5) {
-                    int toggleSize = 16;
-                    int monsterToggleX = startX + panelWidth - 24;
-                    int animalToggleX = startX + panelWidth - 44;
-                    int toggleY = rowY + 3;
+                    int toggleSize = Math.min(14, rowHeight - 2);
+                    int monsterToggleX = startX + panelWidth - 22;
+                    int animalToggleX = startX + panelWidth - 38;
+                    int toggleY = rowY + (rowHeight - toggleSize) / 2;
 
                     if (mouseX >= animalToggleX && mouseX <= animalToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize) {
                         this.detectsAnimals = !this.detectsAnimals;

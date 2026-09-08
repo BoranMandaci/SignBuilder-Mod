@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "Símbolo de Arroba",
   "block.signbuilder.symbol_ampersand": "Símbolo de Ampersand",
   "block.signbuilder.symbol_percent": "Símbolo de Porcentaje",
-  "tooltip.signbuilder.blueprint.yen": "Símbolo de Yen"
+  "tooltip.signbuilder.blueprint.yen": "Símbolo de Yen",
+  "material.signbuilder.gold_block": "Bloque de oro",
+  "material.signbuilder.diamond_block": "Bloque de diamante",
+  "material.signbuilder.lapis_block": "Bloque de lapislázuli",
+  "material.signbuilder.smooth_stone": "Piedra lisa",
+  "material.signbuilder.polished_diorite": "Diorita pulida",
+  "material.signbuilder.bricks": "Ladrillos",
+  "material.signbuilder.stone_bricks": "Ladrillos de piedra",
+  "gui.signbuilder.wrench.mode.audio_sync": "Sincronización de audio",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Parpadea al ritmo de los tocadiscos cercanos.",
+  "gui.signbuilder.wrench.mode.disco": "Disco",
+  "gui.signbuilder.wrench.mode.disco.desc": "Efecto estroboscópico rápido.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Contacto visual",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Se ilumina solo cuando se mira directamente.",
+  "gui.signbuilder.wrench.mode.low_power": "Bajo Consumo",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Brilla tenuemente sin iluminar el área circundante.",
+  "block.signbuilder.backplate": "Placa Trasera",
+  "item.signbuilder.backplate": "Placa Trasera"
 }

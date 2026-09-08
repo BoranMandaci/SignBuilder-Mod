@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "Simbolo della Chiocciola",
   "block.signbuilder.symbol_ampersand": "Simbolo della E Commerciale",
   "block.signbuilder.symbol_percent": "Simbolo della Percentuale",
-  "tooltip.signbuilder.blueprint.yen": "Simbolo dello Yen"
+  "tooltip.signbuilder.blueprint.yen": "Simbolo dello Yen",
+  "material.signbuilder.gold_block": "Blocco d'oro",
+  "material.signbuilder.diamond_block": "Blocco di diamante",
+  "material.signbuilder.lapis_block": "Blocco di lapislazzuli",
+  "material.signbuilder.smooth_stone": "Pietra levigata",
+  "material.signbuilder.polished_diorite": "Diorite levigata",
+  "material.signbuilder.bricks": "Mattoni",
+  "material.signbuilder.stone_bricks": "Mattoni di pietra",
+  "gui.signbuilder.wrench.mode.audio_sync": "Sincronizzazione Audio",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "Lampeggia al ritmo dei Jukebox vicini.",
+  "gui.signbuilder.wrench.mode.disco": "Disco",
+  "gui.signbuilder.wrench.mode.disco.desc": "Effetto stroboscopico veloce.",
+  "gui.signbuilder.wrench.mode.eye_contact": "Contatto Visivo",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "Si accende solo quando viene guardato direttamente.",
+  "gui.signbuilder.wrench.mode.low_power": "Bassa Potenza",
+  "gui.signbuilder.wrench.mode.low_power.desc": "Brilla debolmente senza illuminare l'area circostante.",
+  "block.signbuilder.backplate": "Piastra Posteriore",
+  "item.signbuilder.backplate": "Piastra Posteriore"
 }

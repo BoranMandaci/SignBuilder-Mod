@@ -1,5 +1,6 @@
 package com.boran.signbuilder.item;
 
+import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
@@ -26,6 +27,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -104,68 +107,167 @@ public class PaintBrushItem extends Item {
         BlockState state = level.getBlockState(pos);
         BlockEntity blockEntity = level.getBlockEntity(pos);
 
-        if (blockEntity instanceof LetterBlockEntity letterEntity) {
+        boolean isBackplateBlock = state.getBlock() instanceof BackplateBlock;
+        boolean isLetterBlock = state.getBlock() instanceof LetterBlock;
+
+        if (!isBackplateBlock && !isLetterBlock) {
+            return InteractionResult.PASS;
+        }
+
+        LetterBlockEntity letterEntity = (blockEntity instanceof LetterBlockEntity lbe) ? lbe : null;
+        if (letterEntity == null) {
+            return InteractionResult.PASS;
+        }
+
+        Direction clickedFace = context.getClickedFace();
+        boolean isBackFace = determineIfBackFace(state, clickedFace, player);
+
+        boolean targetBackplate = isBackplateBlock;
+        if (isLetterBlock && letterEntity.hasBackplate()) {
             if (player != null && player.isShiftKeyDown()) {
-                if (!level.isClientSide()) {
-                    int copiedColor = letterEntity.isRainbow() ? -1 : letterEntity.getRgbColor();
-                    stack.getOrCreateTag().putInt("SelectedColor", copiedColor);
-                    if (copiedColor == -1) player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [Rainbow]").withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
-                    else player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]").withStyle(Style.EMPTY.withColor(copiedColor)), true);
-                }
-                if (player != null) level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
-                return InteractionResult.SUCCESS;
+                targetBackplate = true;
+            } else if (isBackFace) {
+                targetBackplate = true;
             }
+        }
 
-            CompoundTag tag = stack.getOrCreateTag();
-            int selectedColor = tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
-            boolean isSmartFill = tag.getBoolean("IsSmartFill");
-            SignMaterial newMaterial = parseMaterial(tag.contains("SelectedMaterial") ? tag.getString("SelectedMaterial") : "minecraft:white_concrete");
-
-            if (isSmartFill) {
-                applyColorToConnected(level, pos, player, stack, context.getHand(), selectedColor, newMaterial);
-            } else {
-                SignMaterial oldMaterial = state.hasProperty(LetterBlock.MATERIAL) ? state.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
-
-                if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, oldMaterial, newMaterial)) {
-                    player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
-                    return InteractionResult.FAIL;
-                }
-
-                BlockState newState = state;
-                if (state.hasProperty(LetterBlock.MATERIAL)) newState = state.setValue(LetterBlock.MATERIAL, newMaterial);
-                if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) newState = newState.setValue(ModBlocks.COLOR, selectedColor);
-
-                if (level.isClientSide()) {
-                    BlockEntity updatedBe = level.getBlockEntity(pos);
-                    if (updatedBe instanceof LetterBlockEntity be) {
-                        be.setSavedMaterial(newMaterial);
-                        if (selectedColor == -1) be.setRainbow(true);
-                        else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
-                    }
-                    level.setBlock(pos, newState, 11);
-                    EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
-                } else {
-                    level.setBlock(pos, newState, 3);
-                    BlockEntity updatedBe = level.getBlockEntity(pos);
-                    if (updatedBe instanceof LetterBlockEntity be) {
-                        be.setSavedMaterial(newMaterial);
-                        if (selectedColor == -1) be.setRainbow(true);
-                        else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
-                        be.setChanged();
-                        level.sendBlockUpdated(pos, state, newState, 3);
-                    }
-                    if (player != null) {
-                        level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                        if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
-                    }
-                }
+        if (player != null && player.isShiftKeyDown() && !targetBackplate && isLetterBlock) {
+            if (!level.isClientSide()) {
+                int copiedColor = letterEntity.isRainbow() ? -1 : letterEntity.getRgbColor();
+                stack.getOrCreateTag().putInt("SelectedColor", copiedColor);
+                if (copiedColor == -1) player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [Rainbow]").withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
+                else player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]").withStyle(Style.EMPTY.withColor(copiedColor)), true);
             }
+            level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
-        return InteractionResult.SUCCESS;
+
+        CompoundTag tag = stack.getOrCreateTag();
+        int selectedColor = tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
+        boolean isSmartFill = tag.getBoolean("IsSmartFill");
+        boolean hasMaterial = tag.contains("SelectedMaterial");
+        SignMaterial newMaterial = hasMaterial ? parseMaterial(tag.getString("SelectedMaterial")) : null;
+
+        SignMaterial currentMat;
+        if (targetBackplate) {
+            currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
+        } else {
+            currentMat = state.hasProperty(LetterBlock.MATERIAL) ? state.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+        }
+
+        if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
+            return InteractionResult.PASS;
+        }
+
+        if (isSmartFill) {
+            applyColorToConnected(level, pos, player, stack, context.getHand(), selectedColor, newMaterial, hasMaterial, targetBackplate, isBackFace);
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        if (hasMaterial) {
+            if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial)) {
+                player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
+                return InteractionResult.FAIL;
+            }
+        }
+
+        BlockState newState = state;
+        if (!targetBackplate && hasMaterial) {
+            if (state.hasProperty(LetterBlock.MATERIAL)) newState = state.setValue(LetterBlock.MATERIAL, newMaterial);
+        }
+        if (!targetBackplate && (newMaterial == null || newMaterial == SignMaterial.DEFAULT)) {
+            if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) {
+                newState = newState.setValue(ModBlocks.COLOR, selectedColor);
+            }
+        }
+
+        if (!level.isClientSide()) {
+            if (newState != state) level.setBlock(pos, newState, 3);
+            applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
+            level.sendBlockUpdated(pos, state, newState, 3);
+
+            if (player != null) {
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
+            }
+        } else {
+            if (newState != state) level.setBlock(pos, newState, 11);
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+        }
+
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, SignMaterial newMaterial) {
+    private boolean determineIfBackFace(BlockState state, Direction clickedFace, @Nullable Player player) {
+        Direction plateFrontNormal;
+        if (state.getBlock() instanceof BackplateBlock) {
+            plateFrontNormal = state.getValue(BackplateBlock.FACING);
+        } else {
+            AttachFace face = state.hasProperty(LetterBlock.FACE) ? state.getValue(LetterBlock.FACE) : AttachFace.WALL;
+            Direction facing = state.hasProperty(LetterBlock.FACING) ? state.getValue(LetterBlock.FACING) : Direction.NORTH;
+            plateFrontNormal = (face == AttachFace.FLOOR) ? facing.getCounterClockWise() : facing;
+        }
+
+        if (clickedFace == plateFrontNormal) {
+            return false;
+        }
+        if (clickedFace == plateFrontNormal.getOpposite()) {
+            return true;
+        }
+
+        if (player != null) {
+            Vec3 look = player.getLookAngle();
+            double dot = look.x * plateFrontNormal.getStepX() + look.z * plateFrontNormal.getStepZ();
+            return dot >= 0;
+        }
+        return false;
+    }
+
+    private void applyToEntity(LetterBlockEntity entity, boolean targetBackplate, boolean isBackFace, @Nullable SignMaterial newMaterial, int selectedColor) {
+        if (targetBackplate) {
+            if (isBackFace) {
+                if (newMaterial != null) {
+                    entity.setBackplateBackMaterial(newMaterial);
+                }
+                if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+                    if (selectedColor == -1) {
+                        entity.setBackplateBackRainbow(true);
+                    } else {
+                        entity.setBackplateBackRainbow(false);
+                        entity.setBackplateBackColor(getActualHexColor(selectedColor));
+                    }
+                }
+            } else {
+                if (newMaterial != null) {
+                    entity.setBackplateFrontMaterial(newMaterial);
+                }
+                if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+                    if (selectedColor == -1) {
+                        entity.setBackplateFrontRainbow(true);
+                    } else {
+                        entity.setBackplateFrontRainbow(false);
+                        entity.setBackplateFrontColor(getActualHexColor(selectedColor));
+                    }
+                }
+            }
+        } else {
+            if (newMaterial != null) {
+                entity.setSavedMaterial(newMaterial);
+            }
+            if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+                if (selectedColor == -1) {
+                    entity.setRainbow(true);
+                } else {
+                    entity.setRainbow(false);
+                    entity.setRgbColor(getActualHexColor(selectedColor));
+                }
+            }
+        }
+        entity.setChanged();
+        entity.sync();
+    }
+
+    private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, @Nullable SignMaterial newMaterial, boolean hasMaterial, boolean targetBackplate, boolean isBackFace) {
         List<BlockPos> targets = new ArrayList<>();
         Queue<BlockPos> queue = new LinkedList<>();
         Set<BlockPos> visited = new HashSet<>();
@@ -175,13 +277,17 @@ public class PaintBrushItem extends Item {
 
         while (!queue.isEmpty() && visited.size() <= 256) {
             BlockPos current = queue.poll();
-            if (level.getBlockEntity(current) instanceof LetterBlockEntity) {
+            BlockState cs = level.getBlockState(current);
+            if (cs.getBlock() instanceof LetterBlock || cs.getBlock() instanceof BackplateBlock) {
                 targets.add(current);
                 for (Direction dir : Direction.values()) {
                     BlockPos neighbor = current.relative(dir);
-                    if (!visited.contains(neighbor) && level.getBlockEntity(neighbor) instanceof LetterBlockEntity) {
-                        visited.add(neighbor);
-                        queue.add(neighbor);
+                    if (!visited.contains(neighbor)) {
+                        BlockState ns = level.getBlockState(neighbor);
+                        if (ns.getBlock() instanceof LetterBlock || ns.getBlock() instanceof BackplateBlock) {
+                            visited.add(neighbor);
+                            queue.add(neighbor);
+                        }
                     }
                 }
             }
@@ -200,39 +306,46 @@ public class PaintBrushItem extends Item {
             }
 
             BlockState currentState = level.getBlockState(current);
-            SignMaterial oldMaterial = currentState.hasProperty(LetterBlock.MATERIAL) ? currentState.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+            BlockEntity cbe = level.getBlockEntity(current);
+            LetterBlockEntity letterEntity = (cbe instanceof LetterBlockEntity lbe) ? lbe : null;
+            if (letterEntity == null) continue;
 
-            if (!level.isClientSide() && player != null) {
-                if (!tryConsumeMaterial(player, oldMaterial, newMaterial)) {
+            SignMaterial currentMat;
+            if (targetBackplate) {
+                currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
+            } else {
+                currentMat = currentState.hasProperty(LetterBlock.MATERIAL) ? currentState.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+            }
+
+            if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
+                continue;
+            }
+
+            if (hasMaterial) {
+                if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial)) {
                     failedMaterial++;
                     continue;
                 }
             }
 
             BlockState newState = currentState;
-            if (currentState.hasProperty(LetterBlock.MATERIAL)) newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
-            if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) newState = newState.setValue(ModBlocks.COLOR, selectedColor);
+            if (!targetBackplate && hasMaterial) {
+                if (currentState.hasProperty(LetterBlock.MATERIAL)) newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
+            }
+            if (!targetBackplate && (newMaterial == null || newMaterial == SignMaterial.DEFAULT)) {
+                if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) {
+                    newState = newState.setValue(ModBlocks.COLOR, selectedColor);
+                }
+            }
 
-            if (level.isClientSide()) {
-                BlockEntity updatedBe = level.getBlockEntity(current);
-                if (updatedBe instanceof LetterBlockEntity be) {
-                    be.setSavedMaterial(newMaterial);
-                    if (selectedColor == -1) be.setRainbow(true);
-                    else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
-                }
-                level.setBlock(current, newState, 11);
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
-            } else {
-                level.setBlock(current, newState, 3);
-                BlockEntity updatedBe = level.getBlockEntity(current);
-                if (updatedBe instanceof LetterBlockEntity be) {
-                    be.setSavedMaterial(newMaterial);
-                    if (selectedColor == -1) be.setRainbow(true);
-                    else { be.setRainbow(false); be.setRgbColor(getActualHexColor(selectedColor)); }
-                    be.setChanged();
-                    level.sendBlockUpdated(current, currentState, newState, 3);
-                }
+            if (!level.isClientSide()) {
+                if (newState != currentState) level.setBlock(current, newState, 3);
+                applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
+                level.sendBlockUpdated(current, currentState, newState, 3);
                 blocksPainted++;
+            } else {
+                if (newState != currentState) level.setBlock(current, newState, 11);
+                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
             }
         }
 
@@ -266,7 +379,11 @@ public class PaintBrushItem extends Item {
             case OAK -> "minecraft:oak_planks"; case SPRUCE -> "minecraft:spruce_planks"; case BIRCH -> "minecraft:birch_planks";
             case JUNGLE -> "minecraft:jungle_planks"; case ACACIA -> "minecraft:acacia_planks"; case DARK_OAK -> "minecraft:dark_oak_planks";
             case MANGROVE -> "minecraft:mangrove_planks"; case CHERRY -> "minecraft:cherry_planks"; case BAMBOO -> "minecraft:bamboo_planks";
-            case IRON -> "minecraft:iron_block"; case ANDESITE -> "minecraft:polished_andesite"; default -> "minecraft:white_concrete";
+            case IRON -> "minecraft:iron_block"; case ANDESITE -> "minecraft:polished_andesite";
+            case GOLD -> "minecraft:gold_block"; case DIAMOND -> "minecraft:diamond_block"; case LAPIS -> "minecraft:lapis_block";
+            case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
+            case BRICKS -> "minecraft:bricks"; case STONE_BRICKS -> "minecraft:stone_bricks";
+            default -> "minecraft:white_concrete";
         };
         return BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
     }
@@ -296,7 +413,11 @@ public class PaintBrushItem extends Item {
             case "minecraft:oak_planks" -> SignMaterial.OAK; case "minecraft:spruce_planks" -> SignMaterial.SPRUCE; case "minecraft:birch_planks" -> SignMaterial.BIRCH;
             case "minecraft:jungle_planks" -> SignMaterial.JUNGLE; case "minecraft:acacia_planks" -> SignMaterial.ACACIA; case "minecraft:dark_oak_planks" -> SignMaterial.DARK_OAK;
             case "minecraft:mangrove_planks" -> SignMaterial.MANGROVE; case "minecraft:cherry_planks" -> SignMaterial.CHERRY; case "minecraft:bamboo_planks" -> SignMaterial.BAMBOO;
-            case "minecraft:iron_block" -> SignMaterial.IRON; case "minecraft:polished_andesite" -> SignMaterial.ANDESITE; default -> SignMaterial.DEFAULT;
+            case "minecraft:iron_block" -> SignMaterial.IRON; case "minecraft:polished_andesite" -> SignMaterial.ANDESITE;
+            case "minecraft:gold_block" -> SignMaterial.GOLD; case "minecraft:diamond_block" -> SignMaterial.DIAMOND; case "minecraft:lapis_block" -> SignMaterial.LAPIS;
+            case "minecraft:smooth_stone" -> SignMaterial.SMOOTH_STONE; case "minecraft:polished_diorite" -> SignMaterial.POLISHED_DIORITE;
+            case "minecraft:bricks" -> SignMaterial.BRICKS; case "minecraft:stone_bricks" -> SignMaterial.STONE_BRICKS;
+            default -> SignMaterial.DEFAULT;
         };
     }
 

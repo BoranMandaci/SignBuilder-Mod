@@ -31,43 +31,54 @@ public class MaterialPickerScreen extends Screen {
                 "minecraft:white_concrete", "minecraft:oak_planks", "minecraft:spruce_planks",
                 "minecraft:birch_planks", "minecraft:jungle_planks", "minecraft:acacia_planks",
                 "minecraft:dark_oak_planks", "minecraft:mangrove_planks", "minecraft:cherry_planks",
-                "minecraft:bamboo_planks", "minecraft:iron_block", "minecraft:polished_andesite"
+                "minecraft:bamboo_planks", "minecraft:iron_block", "minecraft:polished_andesite",
+                "minecraft:gold_block", "minecraft:diamond_block", "minecraft:lapis_block",
+                "minecraft:smooth_stone", "minecraft:polished_diorite", "minecraft:bricks",
+                "minecraft:stone_bricks"
         };
 
         ItemStack[] icons = {
                 new ItemStack(Blocks.WHITE_CONCRETE), new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS),
                 new ItemStack(Blocks.BIRCH_PLANKS), new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS),
                 new ItemStack(Blocks.DARK_OAK_PLANKS), new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.CHERRY_PLANKS),
-                new ItemStack(Blocks.BAMBOO_PLANKS), new ItemStack(Blocks.IRON_BLOCK), new ItemStack(Blocks.POLISHED_ANDESITE)
+                new ItemStack(Blocks.BAMBOO_PLANKS), new ItemStack(Blocks.IRON_BLOCK), new ItemStack(Blocks.POLISHED_ANDESITE),
+                new ItemStack(Blocks.GOLD_BLOCK), new ItemStack(Blocks.DIAMOND_BLOCK), new ItemStack(Blocks.LAPIS_BLOCK),
+                new ItemStack(Blocks.SMOOTH_STONE), new ItemStack(Blocks.POLISHED_DIORITE), new ItemStack(Blocks.BRICKS),
+                new ItemStack(Blocks.STONE_BRICKS)
         };
 
         String[] translationKeys = {
                 "white_concrete", "oak_planks", "spruce_planks", "birch_planks",
                 "jungle_planks", "acacia_planks", "dark_oak_planks", "mangrove_planks",
-                "cherry_planks", "bamboo_planks", "iron_block", "polished_andesite"
+                "cherry_planks", "bamboo_planks", "iron_block", "polished_andesite",
+                "gold_block", "diamond_block", "lapis_block",
+                "smooth_stone", "polished_diorite", "bricks", "stone_bricks"
         };
 
-        int cols = 4;
-        int rows = 3;
+        int cols = 5;
+        int rows = 4;
 
-        int maxAvailableHeight = this.height - 80;
-        int maxAvailableWidth = this.width - 40;
+        int maxAvailableHeight = this.height - 50;
+        int maxAvailableWidth = this.width - 20;
 
-        while (buttonSize > 16) {
+        buttonSize = 36;
+        spacing = 12;
+
+        while (buttonSize > 10) {
             gridWidth = (buttonSize * cols) + (spacing * (cols - 1));
             gridHeight = (buttonSize * rows) + (spacing * (rows - 1));
 
             if (gridWidth <= maxAvailableWidth && gridHeight <= maxAvailableHeight) break;
 
             buttonSize -= 2;
-            spacing = Math.max(4, buttonSize / 3);
+            spacing = Math.max(2, buttonSize / 4);
         }
 
         gridWidth = (buttonSize * cols) + (spacing * (cols - 1));
         gridHeight = (buttonSize * rows) + (spacing * (rows - 1));
 
         startX = (this.width - gridWidth) / 2;
-        startY = (this.height - (gridHeight + 40)) / 2;
+        startY = Math.max(25, (this.height - (gridHeight + 25)) / 2);
 
         for (int i = 0; i < materials.length; i++) {
             int row = i / cols;
@@ -78,7 +89,7 @@ public class MaterialPickerScreen extends Screen {
             this.addRenderableWidget(new VisualMaterialButton(x, y, buttonSize, buttonSize, materials[i], translationKeys[i], icons[i]));
         }
 
-        int backBtnY = startY + gridHeight + 15;
+        int backBtnY = startY + gridHeight + 8;
         this.addRenderableWidget(new FlatBackButton(startX, backBtnY, gridWidth, 20, this.parentScreen));
     }
 
@@ -86,17 +97,18 @@ public class MaterialPickerScreen extends Screen {
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics);
 
-        int pad = 15;
+        int pad = 10;
         int panelLeft = startX - pad;
         int panelTop = startY - pad;
         int panelRight = startX + gridWidth + pad;
-        int panelBottom = startY + gridHeight + 45 + pad;
+        int panelBottom = startY + gridHeight + 35 + pad;
 
         graphics.fillGradient(panelLeft, panelTop, panelRight, panelBottom, 0xEE101010, 0xFA050505);
         graphics.renderOutline(panelLeft - 1, panelTop - 1, (panelRight - panelLeft) + 2, (panelBottom - panelTop) + 2, 0x50FFFFFF);
         graphics.renderOutline(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop, 0xAA000000);
 
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, panelTop - 12, 0xFFD700);
+        int titleY = Math.max(5, panelTop - 12);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }

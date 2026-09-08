@@ -207,5 +207,22 @@
   "block.signbuilder.symbol_at": "艾特符号",
   "block.signbuilder.symbol_ampersand": "和号符号",
   "block.signbuilder.symbol_percent": "百分号符号",
-  "tooltip.signbuilder.blueprint.yen": "日元符号"
+  "tooltip.signbuilder.blueprint.yen": "日元符号",
+  "material.signbuilder.gold_block": "金块",
+  "material.signbuilder.diamond_block": "钻石块",
+  "material.signbuilder.lapis_block": "青金石块",
+  "material.signbuilder.smooth_stone": "平滑石头",
+  "material.signbuilder.polished_diorite": "磨制闪长岩",
+  "material.signbuilder.bricks": "砖块",
+  "material.signbuilder.stone_bricks": "石砖",
+  "gui.signbuilder.wrench.mode.audio_sync": "音频同步",
+  "gui.signbuilder.wrench.mode.audio_sync.desc": "随着附近唱片机的节奏闪烁。",
+  "gui.signbuilder.wrench.mode.disco": "迪斯科",
+  "gui.signbuilder.wrench.mode.disco.desc": "快速频闪效果。",
+  "gui.signbuilder.wrench.mode.eye_contact": "眼神接触",
+  "gui.signbuilder.wrench.mode.eye_contact.desc": "仅在被直视时亮起。",
+  "gui.signbuilder.wrench.mode.low_power": "低功耗",
+  "gui.signbuilder.wrench.mode.low_power.desc": "发出微光，不会照亮周围区域。",
+  "block.signbuilder.backplate": "背板",
+  "item.signbuilder.backplate": "背板"
 }

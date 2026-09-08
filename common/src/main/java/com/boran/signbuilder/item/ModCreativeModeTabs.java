@@ -9,9 +9,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Item;
 
 public class ModCreativeModeTabs {
 
@@ -38,6 +38,7 @@ public class ModCreativeModeTabs {
             output.accept(ModItems.WRENCH.get());
             output.accept(ModItems.SIGN_BLUEPRINT.get());
             output.accept(ModBlocks.SIGN_PRESS_ITEM.get());
+            output.accept(ModBlocks.BACKPLATE_ITEM.get());
 
             for (RegistrySupplier<Item> itemReg : ModBlocks.LETTER_ITEMS) {
                 output.accept(itemReg.get());

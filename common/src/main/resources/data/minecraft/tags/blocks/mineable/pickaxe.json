@@ -70,6 +70,7 @@
     "signbuilder:symbol_square_bracket_double",
     "signbuilder:symbol_square_bracket_left",
     "signbuilder:symbol_square_bracket_right",
-    "signbuilder:sign_press"
+    "signbuilder:sign_press",
+    "signbuilder:backplate"
   ]
 }
