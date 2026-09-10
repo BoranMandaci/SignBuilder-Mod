@@ -16,13 +16,12 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create("signbuilder", Registries.BLOCK);
@@ -33,16 +32,9 @@ public class ModBlocks {
     public static final List<RegistrySupplier<Item>> NUMBER_ITEMS = new ArrayList<>();
     public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
 
-    public static final IntegerProperty COLOR = IntegerProperty.create("color", 0, 15);
-    public static final BooleanProperty GLOWING = BooleanProperty.create("glowing");
-    public static final BooleanProperty LOW_POWER = BooleanProperty.create("low_power");
-
     private static BlockBehaviour.Properties createLetterProperties() {
         return BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE)
-                .noOcclusion()
-                .lightLevel(state -> state.hasProperty(GLOWING) && state.getValue(GLOWING) ? (state.hasProperty(LOW_POWER) && state.getValue(LOW_POWER) ? 7 : 15) : 0)
-                .hasPostProcess((state, level, pos) -> state.hasProperty(GLOWING) && state.getValue(GLOWING))
-                .emissiveRendering((state, level, pos) -> state.hasProperty(GLOWING) && state.getValue(GLOWING));
+                .noOcclusion();
     }
 
     public static BlockState getStandardPlacementState(BlockPlaceContext context, BlockState defaultState) {
@@ -55,15 +47,6 @@ public class ModBlocks {
                 net.minecraft.nbt.CompoundTag stateTag = tag.getCompound("BlockStateTag");
                 if (stateTag.contains("material") && state.hasProperty(LetterBlock.MATERIAL)) {
                     try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase())); } catch (Exception ignored) {}
-                }
-                if (stateTag.contains("color") && state.hasProperty(COLOR)) {
-                    try { state = state.setValue(COLOR, Integer.parseInt(stateTag.getString("color"))); } catch (Exception ignored) {}
-                }
-                if (stateTag.contains("glowing") && state.hasProperty(GLOWING)) {
-                    try { state = state.setValue(GLOWING, Boolean.parseBoolean(stateTag.getString("glowing"))); } catch (Exception ignored) {}
-                }
-                if (stateTag.contains("low_power") && state.hasProperty(LOW_POWER)) {
-                    try { state = state.setValue(LOW_POWER, Boolean.parseBoolean(stateTag.getString("low_power"))); } catch (Exception ignored) {}
                 }
             } else if (tag.contains("BlockEntityTag")) {
                 net.minecraft.nbt.CompoundTag beTag = tag.getCompound("BlockEntityTag");
@@ -82,7 +65,7 @@ public class ModBlocks {
         }
     }
 
-    private static RegistrySupplier<Block> registerLetterBlock(String name, java.util.function.Supplier<Block> supplier) {
+    private static RegistrySupplier<Block> registerLetterBlock(String name, Supplier<Block> supplier) {
         RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
         RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
 
@@ -104,8 +87,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 15.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -128,8 +111,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(4.5, 1.0, 0.0, 11.5, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 4.5, 3.0, 15.0, 11.5);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 4.5, 16.0, 15.0, 11.5);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -148,12 +131,12 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -176,8 +159,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -200,8 +183,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -224,8 +207,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.5, 1.0, 0.0, 14.5, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.5, 3.0, 15.0, 14.5);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.5, 16.0, 15.0, 14.5);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -248,8 +231,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 16.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 16.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -272,8 +255,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(4.0, 1.0, 0.0, 13.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 16.0, 12.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 4.0, 16.0, 16.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -296,8 +279,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 4.0, 0.0, 15.0, 11.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 4.0, 1.0, 3.0, 11.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 4.0, 1.0, 16.0, 11.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -320,8 +303,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -344,8 +327,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -368,8 +351,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -392,8 +375,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 6.0, 0.0, 15.0, 9.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 6.0, 1.0, 3.0, 9.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 6.0, 1.0, 16.0, 9.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -416,8 +399,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 6.0, 4.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 4.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 4.0, 6.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -440,8 +423,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.5, 1.0, 0.0, 9.5, 4.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.5, 3.0, 4.0, 9.5);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.5, 16.0, 4.0, 9.5);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -464,8 +447,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 13.0, 4.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 4.0, 6.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 4.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -488,8 +471,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 7.0, 5.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 9.0, 3.0, 5.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 5.0, 7.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -512,8 +495,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(10.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 6.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 10.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -532,12 +515,12 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 10.0, 8.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(10.0, 0.0, 8.0, 15.0, 14.0, 11.0);
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 6.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 15.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(10.0, 1.0, 13.0, 15.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 6.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 10.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 6.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -560,8 +543,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -584,8 +567,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 0.0, 0.0, 15.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 1.0, 3.0, 16.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 1.0, 16.0, 16.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -608,8 +591,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -632,8 +615,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 1.0, 0.0, 14.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 14.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.0, 16.0, 15.0, 14.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -656,8 +639,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 14.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 0.0, 3.0, 15.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 16.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -680,8 +663,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 4.0, 0.0, 6.0, 13.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 4.0, 10.0, 3.0, 13.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 4.0, 3.0, 16.0, 13.0, 6.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -704,8 +687,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.0, 3.0, 0.0, 6.0, 13.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 3.0, 10.0, 3.0, 13.0, 14.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 3.0, 2.0, 16.0, 13.0, 6.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -728,8 +711,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(4.0, 11.0, 0.0, 13.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 11.0, 3.0, 3.0, 15.0, 12.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 11.0, 4.0, 16.0, 15.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -752,8 +735,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 11.0, 0.0, 7.0, 15.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 11.0, 9.0, 3.0, 15.0, 13.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 11.0, 3.0, 16.0, 15.0, 7.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -776,8 +759,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 2.0, 0.0, 15.0, 13.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 2.0, 1.0, 3.0, 13.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 2.0, 1.0, 16.0, 13.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -800,8 +783,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 0.0, 0.0, 14.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 3.0, 3.0, 16.0, 14.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 2.0, 16.0, 16.0, 13.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -824,8 +807,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 3.0, 0.0, 15.0, 12.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 3.0, 1.0, 3.0, 12.0, 15.0);
             private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 3.0, 1.0, 16.0, 12.0, 15.0);
-            { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
             @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
                 net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -856,8 +839,8 @@ public class ModBlocks {
         private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.4, 1.0, 0.0, 9.4, 15.0, 3.0);
         private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.6, 3.0, 15.0, 9.6);
         private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.4, 16.0, 15.0, 9.4);
-        { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+        { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
         @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
         @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
             net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -898,8 +881,8 @@ public class ModBlocks {
         private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.5, 1.0, 0.0, 9.5, 15.0, 3.0);
         private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.5, 3.0, 15.0, 12.5);
         private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.5, 16.0, 15.0, 9.5);
-        { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+        { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
         @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
         @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
             net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -962,6 +945,7 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> SYMBOL_COLON = createColonBlock("symbol_colon");
     public static final RegistrySupplier<Block> SYMBOL_SEMICOLON = createSemicolonBlock("symbol_semicolon");
+
     public static final RegistrySupplier<Block> SYMBOL_EXCLAMATION = registerLetterBlock("symbol_exclamation", () -> new LetterBlock(createLetterProperties()) {
         private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.4, 11.0, 14.0, 9.4);
         private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.6, 8.0, 14.0, 9.6);
@@ -971,8 +955,8 @@ public class ModBlocks {
         private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.4, 1.0, 0.0, 9.4, 15.0, 3.0);
         private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 6.6, 3.0, 15.0, 9.6);
         private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 6.4, 16.0, 15.0, 9.4);
-        { this.registerDefaultState(this.stateDefinition.any().setValue(GLOWING, false).setValue(LOW_POWER, false).setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
-        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, COLOR, GLOWING, LOW_POWER, LetterBlock.MATERIAL); }
+        { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT)); }
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL); }
         @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
         @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
             net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
@@ -983,6 +967,7 @@ public class ModBlocks {
             return LetterBlock.calculateHitbox(state, level, pos, baseShape);
         }
     });
+
     public static final RegistrySupplier<Block> SYMBOL_QUESTION = createQuestionBlock("symbol_question");
     public static final RegistrySupplier<Block> SYMBOL_EQUALS = createEqualsBlock("symbol_equals");
     public static final RegistrySupplier<Block> SYMBOL_DIVIDE = createDivideBlock("symbol_divide");

@@ -20,34 +20,34 @@ public class ModCreativeModeTabs {
 
     public static final RegistrySupplier<CreativeModeTab> LETTERS_TAB = CREATIVE_MODE_TABS.register("letters_tab",
             () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_letters"),
-                    () -> new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", "letter_a")))));
+                    () -> new ItemStack(ModBlocks.LETTER_A.get())));
 
     public static final RegistrySupplier<CreativeModeTab> NUMBERS_TAB = CREATIVE_MODE_TABS.register("numbers_tab",
             () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_numbers"),
-                    () -> new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", "number_0")))));
+                    () -> new ItemStack(ModBlocks.NUMBER_0.get())));
 
     public static final RegistrySupplier<CreativeModeTab> SYMBOLS_TAB = CREATIVE_MODE_TABS.register("symbols_tab",
             () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_symbols"),
-                    () -> new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", "symbol_plus")))));
+                    () -> new ItemStack(ModBlocks.SYMBOL_PLUS.get())));
 
     public static void register() {
         CREATIVE_MODE_TABS.register();
 
         CreativeTabRegistry.modify(LETTERS_TAB, (flags, output, hasOp) -> {
-            output.accept(ModItems.PAINT_BRUSH.get());
-            output.accept(ModItems.WRENCH.get());
-            output.accept(ModItems.SIGN_BLUEPRINT.get());
-            output.accept(ModBlocks.SIGN_PRESS_ITEM.get());
-            output.accept(ModBlocks.BACKPLATE_ITEM.get());
+            safeAccept(output, ModItems.PAINT_BRUSH);
+            safeAccept(output, ModItems.WRENCH);
+            safeAccept(output, ModItems.SIGN_BLUEPRINT);
+            safeAccept(output, ModBlocks.SIGN_PRESS_ITEM);
+            safeAccept(output, ModBlocks.BACKPLATE_ITEM);
 
             for (RegistrySupplier<Item> itemReg : ModBlocks.LETTER_ITEMS) {
-                output.accept(itemReg.get());
+                safeAccept(output, itemReg);
             }
         });
 
         CreativeTabRegistry.modify(NUMBERS_TAB, (flags, output, hasOp) -> {
             for (RegistrySupplier<Item> itemReg : ModBlocks.NUMBER_ITEMS) {
-                output.accept(itemReg.get());
+                safeAccept(output, itemReg);
             }
         });
 
@@ -66,9 +66,22 @@ public class ModCreativeModeTabs {
             };
 
             for (String name : symbolOrder) {
-                Item item = BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", name));
-                if (item != Items.AIR) output.accept(item);
+                ResourceLocation id = new ResourceLocation("signbuilder", name);
+                if (BuiltInRegistries.ITEM.containsKey(id)) {
+                    Item item = BuiltInRegistries.ITEM.get(id);
+                    if (item != null && item != Items.AIR) {
+                        output.accept(item);
+                    }
+                }
             }
         });
+    }
+
+    private static void safeAccept(CreativeModeTab.Output output, RegistrySupplier<Item> supplier) {
+        try {
+            if (supplier != null && supplier.isPresent()) {
+                output.accept(supplier.get());
+            }
+        } catch (Exception ignored) {}
     }
 }

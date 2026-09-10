@@ -99,12 +99,12 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         }
 
         BakedModel letterModel = dispatcher.getBlockModel(state);
-        SignMaterial letterMat = state.hasProperty(LetterBlock.MATERIAL) ? state.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+        SignMaterial letterMat = entity.getSavedMaterial();
         int rawLetterCol = entity.getRgbColor();
         int letterCol = (letterMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isRainbow() ? currentRainbow : (rawLetterCol == 0 ? 0xFFFFFF : rawLetterCol));
 
         BakedModel finalLetterModel = (letterMat != SignMaterial.DEFAULT)
-                ? new MaterialBakedModel(letterModel, letterMat, SignMaterial.DEFAULT)
+                ? new MaterialBakedModel(letterModel, letterMat, SignMaterial.DEFAULT, true)
                 : letterModel;
 
         float lr = ((letterCol >> 16) & 0xFF) / 255.0f;

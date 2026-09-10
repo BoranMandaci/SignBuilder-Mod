@@ -1,7 +1,5 @@
 package com.boran.signbuilder.block.entity;
 
-import com.boran.signbuilder.block.LetterBlock;
-import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -36,24 +34,27 @@ public class LetterBlockEntity extends BlockEntity {
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        if (state.hasProperty(ModBlocks.COLOR)) this.rgbColor = getActualHexColor(state.getValue(ModBlocks.COLOR));
-        if (state.hasProperty(ModBlocks.GLOWING)) this.isActive = state.getValue(ModBlocks.GLOWING);
-        if (state.hasProperty(LetterBlock.MATERIAL)) this.savedMaterial = state.getValue(LetterBlock.MATERIAL);
     }
 
     public void setSavedMaterial(SignMaterial mat) { this.savedMaterial = mat; setChanged(); sync(); }
     public SignMaterial getSavedMaterial() { return this.savedMaterial; }
+    public SignMaterial getMaterial() { return this.savedMaterial; }
 
     public void setActive(boolean active) { this.isActive = active; setChanged(); sync(); }
     public boolean isActive() { return this.isActive; }
+    public boolean isGlowing() { return this.isActive; }
+    public void setGlowing(boolean glowing) { this.isActive = glowing; setChanged(); sync(); }
+
     public void setWrenchMode(int mode) { this.wrenchMode = mode; setChanged(); sync(); }
     public int getWrenchMode() { return this.wrenchMode; }
     public void setDetectsMonsters(boolean detects) { this.detectsMonsters = detects; setChanged(); sync(); }
     public boolean doesDetectMonsters() { return this.detectsMonsters; }
     public void setDetectsAnimals(boolean detects) { this.detectsAnimals = detects; setChanged(); sync(); }
     public boolean doesDetectAnimals() { return this.detectsAnimals; }
+
     public void setRgbColor(int color) { this.rgbColor = color; this.isRainbow = false; setChanged(); sync(); }
     public int getRgbColor() { return rgbColor; }
+    public int getColorIndex() { return 0; }
     public void setRainbow(boolean rainbow) { this.isRainbow = rainbow; setChanged(); sync(); }
     public boolean isRainbow() { return isRainbow; }
 
@@ -91,6 +92,7 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putBoolean("IsRainbow", this.isRainbow);
         tag.putInt("WrenchMode", this.wrenchMode);
         tag.putBoolean("IsActive", this.isActive);
+        tag.putBoolean("Glowing", this.isActive);
         tag.putBoolean("DetectsMonsters", this.detectsMonsters);
         tag.putBoolean("DetectsAnimals", this.detectsAnimals);
         tag.putString("SavedMaterial", this.savedMaterial.name());
@@ -114,6 +116,8 @@ public class LetterBlockEntity extends BlockEntity {
         }
         if (tag.contains("WrenchMode")) this.wrenchMode = tag.getInt("WrenchMode");
         if (tag.contains("IsActive")) this.isActive = tag.getBoolean("IsActive");
+        else if (tag.contains("Glowing")) this.isActive = tag.getBoolean("Glowing");
+
         if (tag.contains("DetectsMonsters")) this.detectsMonsters = tag.getBoolean("DetectsMonsters");
         if (tag.contains("DetectsAnimals")) this.detectsAnimals = tag.getBoolean("DetectsAnimals");
 
@@ -157,6 +161,7 @@ public class LetterBlockEntity extends BlockEntity {
         beTag.putBoolean("IsRainbow", this.isRainbow);
         beTag.putInt("WrenchMode", this.wrenchMode);
         beTag.putBoolean("IsActive", this.isActive);
+        beTag.putBoolean("Glowing", this.isActive);
         beTag.putBoolean("DetectsMonsters", this.detectsMonsters);
         beTag.putBoolean("DetectsAnimals", this.detectsAnimals);
         beTag.putString("SavedMaterial", this.savedMaterial.name());
@@ -172,10 +177,7 @@ public class LetterBlockEntity extends BlockEntity {
         stack.getOrCreateTag().put("BlockEntityTag", beTag);
 
         CompoundTag stateTag = new CompoundTag();
-        if (state.hasProperty(ModBlocks.COLOR)) stateTag.putString("color", String.valueOf(state.getValue(ModBlocks.COLOR)));
-        if (state.hasProperty(ModBlocks.GLOWING)) stateTag.putString("glowing", String.valueOf(state.getValue(ModBlocks.GLOWING)));
         stateTag.putString("material", this.savedMaterial.name().toLowerCase());
-
         stack.getOrCreateTag().put("BlockStateTag", stateTag);
 
         return stack;
@@ -217,14 +219,14 @@ public class LetterBlockEntity extends BlockEntity {
             }
         }
 
-        if (!level.isClientSide() && state.hasProperty(ModBlocks.GLOWING)) {
+        if (!level.isClientSide()) {
             if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) return;
 
-            boolean isCurrentlyGlowing = state.getValue(ModBlocks.GLOWING);
+            boolean isCurrentlyGlowing = entity.isActive();
             boolean shouldGlow = false;
             long time = level.getGameTime();
 
-            if (entity.isActive()) {
+            if (entity.isActive() || entity.getWrenchMode() != 0) {
                 switch (entity.getWrenchMode()) {
                     case 1: shouldGlow = (time % 20) < 10; break;
                     case 2: shouldGlow = isCurrentlyGlowing; if (time % 4 == 0 && Math.random() > 0.7) shouldGlow = !isCurrentlyGlowing; break;
@@ -273,8 +275,7 @@ public class LetterBlockEntity extends BlockEntity {
                 }
             }
             if (shouldGlow != isCurrentlyGlowing) {
-                BlockState newState = state.setValue(ModBlocks.GLOWING, shouldGlow);
-                level.setBlock(pos, newState, 3);
+                entity.setActive(shouldGlow);
             }
         }
     }

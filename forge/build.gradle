@@ -18,6 +18,13 @@ loom {
         // convertAccessWideners = true
         // extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
     }
+
+    runs {
+        client {
+            vmArg "-Xmx4096M"
+            vmArg "-Xms2048M"
+        }
+    }
 }
 
 configurations {

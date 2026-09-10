@@ -1,4 +1,4 @@
-package com.boran.signbuilder.client;
+package com.boran.signbuilder.client.render;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.item.PaintBrushItem;
@@ -7,28 +7,44 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ModColorHandlers {
 
     public static void register() {
-        ItemLike[] signItems = ModBlocks.ALL_SIGN_BLOCKS.stream()
-                .map(RegistrySupplier::get)
-                .toArray(ItemLike[]::new);
+        List<ItemLike> signItems = new ArrayList<>();
+        for (RegistrySupplier<Block> supplier : ModBlocks.ALL_SIGN_BLOCKS) {
+            try {
+                if (supplier != null && supplier.isPresent()) {
+                    signItems.add(supplier.get());
+                }
+            } catch (Exception ignored) {}
+        }
 
-        ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, signItems);
-        ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, ModBlocks.BACKPLATE_ITEM.get());
+        if (!signItems.isEmpty()) {
+            ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, signItems.toArray(new ItemLike[0]));
+        }
+
+        try {
+            if (ModBlocks.BACKPLATE_ITEM.isPresent()) {
+                ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, ModBlocks.BACKPLATE_ITEM.get());
+            }
+        } catch (Exception ignored) {}
     }
 
     public static int getItemColor(ItemStack stack, int tintIndex) {
         CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-        if (beTag == null) {
+        if (beTag == null || beTag.isEmpty()) {
             return 0xFFFFFF;
         }
 
         if (stack.is(ModBlocks.BACKPLATE_ITEM.get())) {
             if (tintIndex == 0) {
-                String fMat = beTag.contains("BackplateFrontMaterial") ? beTag.getString("BackplateFrontMaterial") : beTag.getString("backplateFrontMaterial");
-                if (!fMat.isEmpty() && !fMat.equals("DEFAULT")) return 0xFFFFFF;
+                String fMat = getTagString(beTag, "BackplateFrontMaterial", "backplateFrontMaterial");
+                if (!fMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(fMat)) return 0xFFFFFF;
 
                 if (beTag.getBoolean("BackplateFrontRainbow") || beTag.getBoolean("backplateFrontRainbow")) {
                     float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
@@ -37,8 +53,8 @@ public class ModColorHandlers {
                 if (beTag.contains("BackplateFrontColor")) return beTag.getInt("BackplateFrontColor");
                 if (beTag.contains("backplateFrontColor")) return beTag.getInt("backplateFrontColor");
             } else if (tintIndex == 1) {
-                String bMat = beTag.contains("BackplateBackMaterial") ? beTag.getString("BackplateBackMaterial") : beTag.getString("backplateBackMaterial");
-                if (!bMat.isEmpty() && !bMat.equals("DEFAULT")) return 0xFFFFFF;
+                String bMat = getTagString(beTag, "BackplateBackMaterial", "backplateBackMaterial");
+                if (!bMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(bMat)) return 0xFFFFFF;
 
                 if (beTag.getBoolean("BackplateBackRainbow") || beTag.getBoolean("backplateBackRainbow")) {
                     float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
@@ -50,8 +66,12 @@ public class ModColorHandlers {
             return 0xFFFFFF;
         }
 
-        String mat = beTag.contains("SavedMaterial") ? beTag.getString("SavedMaterial") : beTag.getString("Material");
-        if (!mat.isEmpty() && !mat.equals("DEFAULT")) {
+        if (tintIndex != 0) {
+            return 0xFFFFFF;
+        }
+
+        String mat = getTagString(beTag, "SavedMaterial", "savedMaterial", "Material", "material");
+        if (!mat.isEmpty() && !"DEFAULT".equalsIgnoreCase(mat)) {
             return 0xFFFFFF;
         }
 
@@ -73,5 +93,14 @@ public class ModColorHandlers {
         }
 
         return 0xFFFFFF;
+    }
+
+    private static String getTagString(CompoundTag tag, String... keys) {
+        for (String key : keys) {
+            if (tag.contains(key)) {
+                return tag.getString(key);
+            }
+        }
+        return "";
     }
 }

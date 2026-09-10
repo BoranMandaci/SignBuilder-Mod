@@ -152,7 +152,7 @@ public class PaintBrushItem extends Item {
         if (targetBackplate) {
             currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
         } else {
-            currentMat = state.hasProperty(LetterBlock.MATERIAL) ? state.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+            currentMat = letterEntity.getSavedMaterial();
         }
 
         if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
@@ -171,27 +171,15 @@ public class PaintBrushItem extends Item {
             }
         }
 
-        BlockState newState = state;
-        if (!targetBackplate && hasMaterial) {
-            if (state.hasProperty(LetterBlock.MATERIAL)) newState = state.setValue(LetterBlock.MATERIAL, newMaterial);
-        }
-        if (!targetBackplate && (newMaterial == null || newMaterial == SignMaterial.DEFAULT)) {
-            if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) {
-                newState = newState.setValue(ModBlocks.COLOR, selectedColor);
-            }
-        }
-
         if (!level.isClientSide()) {
-            if (newState != state) level.setBlock(pos, newState, 3);
             applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-            level.sendBlockUpdated(pos, state, newState, 3);
+            level.sendBlockUpdated(pos, state, state, 3);
 
             if (player != null) {
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
             }
         } else {
-            if (newState != state) level.setBlock(pos, newState, 11);
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
         }
 
@@ -314,7 +302,7 @@ public class PaintBrushItem extends Item {
             if (targetBackplate) {
                 currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
             } else {
-                currentMat = currentState.hasProperty(LetterBlock.MATERIAL) ? currentState.getValue(LetterBlock.MATERIAL) : SignMaterial.DEFAULT;
+                currentMat = letterEntity.getSavedMaterial();
             }
 
             if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
@@ -328,23 +316,11 @@ public class PaintBrushItem extends Item {
                 }
             }
 
-            BlockState newState = currentState;
-            if (!targetBackplate && hasMaterial) {
-                if (currentState.hasProperty(LetterBlock.MATERIAL)) newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
-            }
-            if (!targetBackplate && (newMaterial == null || newMaterial == SignMaterial.DEFAULT)) {
-                if (selectedColor != -1 && selectedColor <= 15 && newState.hasProperty(ModBlocks.COLOR)) {
-                    newState = newState.setValue(ModBlocks.COLOR, selectedColor);
-                }
-            }
-
             if (!level.isClientSide()) {
-                if (newState != currentState) level.setBlock(current, newState, 3);
                 applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-                level.sendBlockUpdated(current, currentState, newState, 3);
+                level.sendBlockUpdated(current, currentState, currentState, 3);
                 blocksPainted++;
             } else {
-                if (newState != currentState) level.setBlock(current, newState, 11);
                 EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
             }
         }

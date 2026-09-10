@@ -63,15 +63,12 @@ public class LetterBlock extends Block implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.FLOOR)
-                .setValue(ModBlocks.GLOWING, false)
-                .setValue(ModBlocks.LOW_POWER, false)
-                .setValue(ModBlocks.COLOR, 0)
                 .setValue(MATERIAL, SignMaterial.DEFAULT));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FACE, ModBlocks.GLOWING, ModBlocks.LOW_POWER, ModBlocks.COLOR, MATERIAL);
+        builder.add(FACING, FACE, MATERIAL);
     }
 
     @Override
@@ -190,27 +187,6 @@ public class LetterBlock extends Block implements EntityBlock {
             CompoundTag beTag = stack.getTagElement("BlockEntityTag");
             if (beTag != null) {
                 lbe.load(beTag);
-
-                BlockState newState = state;
-                if (beTag.contains("SavedMaterial") && state.hasProperty(MATERIAL)) {
-                    try {
-                        SignMaterial mat = SignMaterial.valueOf(beTag.getString("SavedMaterial"));
-                        if (mat != SignMaterial.DEFAULT) {
-                            newState = newState.setValue(MATERIAL, mat);
-                        }
-                    } catch (Exception ignored) {}
-                }
-                if (beTag.contains("ColorIndex") && newState.hasProperty(ModBlocks.COLOR)) {
-                    newState = newState.setValue(ModBlocks.COLOR, beTag.getInt("ColorIndex"));
-                }
-                if (beTag.contains("Glowing") && newState.hasProperty(ModBlocks.GLOWING)) {
-                    newState = newState.setValue(ModBlocks.GLOWING, beTag.getBoolean("Glowing"));
-                }
-
-                if (newState != state) {
-                    level.setBlock(pos, newState, 3);
-                }
-
                 lbe.setChanged();
                 if (!level.isClientSide()) {
                     lbe.sync();
@@ -236,55 +212,6 @@ public class LetterBlock extends Block implements EntityBlock {
         if (be instanceof LetterBlockEntity lbe) {
             if (hasSilkTouch) {
                 ItemStack letterStack = lbe.getDroppedItemStack(state);
-                CompoundTag beTag = letterStack.getTagElement("BlockEntityTag");
-                if (beTag == null) {
-                    beTag = new CompoundTag();
-                    letterStack.addTagElement("BlockEntityTag", beTag);
-                }
-
-                int col = lbe.getRgbColor();
-                if (col != 0 && col != 0xFFFFFF) {
-                    beTag.putInt("RgbColor", col);
-                }
-                if (state.hasProperty(ModBlocks.COLOR)) {
-                    beTag.putInt("ColorIndex", state.getValue(ModBlocks.COLOR));
-                }
-                if (lbe.isRainbow()) {
-                    beTag.putBoolean("IsRainbow", true);
-                }
-                SignMaterial mat = state.hasProperty(MATERIAL) ? state.getValue(MATERIAL) : SignMaterial.DEFAULT;
-                if (mat != SignMaterial.DEFAULT) {
-                    beTag.putString("SavedMaterial", mat.name());
-                }
-
-                beTag.remove("HasBackplate");
-                beTag.remove("hasBackplate");
-                beTag.remove("BackplateFrontMaterial");
-                beTag.remove("backplateFrontMaterial");
-                beTag.remove("BackplateBackMaterial");
-                beTag.remove("backplateBackMaterial");
-                beTag.remove("BackplateFrontColor");
-                beTag.remove("backplateFrontColor");
-                beTag.remove("BackplateBackColor");
-                beTag.remove("backplateBackColor");
-                beTag.remove("BackplateFrontRainbow");
-                beTag.remove("backplateFrontRainbow");
-                beTag.remove("BackplateBackRainbow");
-                beTag.remove("backplateBackRainbow");
-
-                boolean isDefault = (mat == SignMaterial.DEFAULT)
-                        && (col == 0 || col == 0xFFFFFF)
-                        && !lbe.isRainbow()
-                        && !lbe.isActive()
-                        && lbe.getWrenchMode() == 0;
-
-                if (isDefault) {
-                    letterStack.removeTagKey("BlockEntityTag");
-                    if (letterStack.getTag() != null && letterStack.getTag().isEmpty()) {
-                        letterStack.setTag(null);
-                    }
-                }
-
                 drops.add(letterStack);
 
                 if (lbe.hasBackplate()) {
@@ -292,12 +219,13 @@ public class LetterBlock extends Block implements EntityBlock {
                 }
             } else {
                 drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
-                SignMaterial mat = state.hasProperty(MATERIAL) ? state.getValue(MATERIAL) : SignMaterial.DEFAULT;
+                SignMaterial mat = state.hasProperty(MATERIAL) ? state.getValue(MATERIAL) : lbe.getSavedMaterial();
                 if (mat != SignMaterial.DEFAULT) {
                     ItemStack matStack = BackplateBlock.getItemForMaterial(mat);
                     if (!matStack.isEmpty()) drops.add(matStack);
                 }
-                if (state.hasProperty(ModBlocks.GLOWING) && state.getValue(ModBlocks.GLOWING)) {
+
+                if (lbe.isActive()) {
                     drops.add(new ItemStack(Items.GLOWSTONE_DUST, 1));
                 }
 
@@ -326,11 +254,16 @@ public class LetterBlock extends Block implements EntityBlock {
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
         if (!pLevel.isClientSide) {
             BlockEntity be = pLevel.getBlockEntity(pPos);
-            boolean ignoreRedstone = be instanceof LetterBlockEntity lbe && (lbe.isActive() || lbe.getWrenchMode() != 0);
-            if (!ignoreRedstone) {
-                boolean hasSignal = pLevel.hasNeighborSignal(pPos);
-                if (pState.hasProperty(ModBlocks.GLOWING) && hasSignal != pState.getValue(ModBlocks.GLOWING)) {
-                    pLevel.setBlock(pPos, pState.setValue(ModBlocks.GLOWING, hasSignal), 3);
+            if (be instanceof LetterBlockEntity lbe) {
+                boolean ignoreRedstone = lbe.isActive() || lbe.getWrenchMode() != 0;
+                if (!ignoreRedstone) {
+                    boolean hasSignal = pLevel.hasNeighborSignal(pPos);
+                    if (lbe.isActive() != hasSignal) {
+                        lbe.setActive(hasSignal);
+                        lbe.setChanged();
+                        lbe.sync();
+                        pLevel.sendBlockUpdated(pPos, pState, pState, 3);
+                    }
                 }
             }
         }
