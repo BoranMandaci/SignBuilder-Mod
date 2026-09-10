@@ -12,19 +12,21 @@
 
 ## 📖 Giriş
 
-Sign Builder, Architectury API kullanılarak hem Fabric hem de Forge için sıfırdan geliştirilmiş platformlar arası bir Minecraft modudur. Dünyanızda son derece detaylı 3D metinler oluşturmak için kapsamlı bir iş akışı sunar. Basit varsayılan (vanilla) tabelalara güvenmek yerine, bu mod harfler, sayılar ve semboller için fiziksel bloklar sunar; üstüne bunları dinamik olarak inşa etmek, boyamak, dokulandırmak ve ışıklandırmak için özel araçlarla birlikte gelir.
+Sign Builder, Architectury API kullanılarak hem Fabric hem de Forge için sıfırdan geliştirilmiş platformlar arası bir Minecraft modudur. Dünyanızda son derece detaylı 3D metinler oluşturmak için kapsamlı bir iş akışı sunar. Basit varsayılan (vanilla) tabelalara güvenmek yerine; harfler, sayılar, semboller ve modüler tabela arkalıkları için fiziksel bloklar sunar; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak ve ışıklandırmak için özel araçlarla birlikte gelir.
 
 ## ✨ Temel Özellikler
 
-*   🧱 **Dinamik Materyal Sistemi (YENİ!)** — Tabelalar artık sadece betondan ibaret değil! Farklı temel materyalleri (tüm ahşap türleri, Demir Bloğu ve Cilalı Andezit desteklenir) yerleştirildiği an sıfır gecikmeli görsel güncellemelerle tabelalarınıza entegre edin.
-*   🎒 **Hayatta Kalma Uyumlu ve Gerçekçi Ganimetler (YENİ!)** — Bir tabelayı kırmak artık dinamik olarak üretildiği bileşenleri (3x Beyaz Beton, 1x Temel Materyal, 1x Işıktaşı Tozu) düşürür. **İpeksi Dokunuş (Silk Touch)** aletiyle kırmak, düşen eşya üzerindeki tüm NBT verilerini (renk, materyal, parlama durumu, animasyonlar) kusursuz bir şekilde koruyarak birebir aynı şekilde tekrar yerleştirmenizi sağlar!
-*   🏗️ **3D Harfler, Sayılar ve Semboller** — Son derece detaylı, özel modellenmiş harfler (A-Z), sayılar (0-9) ve geniş bir sembol seti. Tüm bloklar, duvar ve zemin yerleşimlerine mükemmel uyum sağlayan gelişmiş hitbox'lara (çarpışma kutularına) sahiptir.
-*   🗜️ **Tabela Presi (Sign Press)** — Hayatta kalma modu için özel bir üretim istasyonu. Beyaz betonunuzu temiz ve verimli bir şekilde belirli harflere ve sembollere dönüştürün. Otomasyon için hunilerle (hopper) tam uyumludur.
+*   🛡️ **Modüler Arkalık Sistemi (YENİ!)** — Tabelalarınıza derinlik ve kontrast kazandırın! Önceden yerleştirilmiş arkalıklara tabela monte edin ya da yerleştirilmiş tabelalara doğrudan arkalık takın. Ön ve arka yüzeyler birbirinden bağımsız olarak boyanabilir veya materyalle kaplanabilir. Bir arkalık eşyasıyla Eğilme (Shift) + Sağ Tık yaparak tüm NBT verilerini koruyarak arkalığı sökebilirsiniz.
+*   🧱 **Dinamik Materyal Sistemi** — Tabelalar artık sadece betondan ibaret değil! Genişletilmiş temel materyal seçeneklerini (tüm ahşap türleri, Demir Bloğu, Cilalı Andezit, Altın Bloğu, Elmas Bloğu, Lapis Lazuli Bloğu, Düz Taş, Cilalı Diyorit, Tuğla ve Taş Tuğla) sıfır gecikmeli görsel güncellemelerle tabelalarınıza entegre edin.
+*   🎒 **Hayatta Kalma Uyumlu ve Gerçekçi Ganimetler** — Bir tabelayı kırmak dinamik olarak üretildiği bileşenleri (3x Beyaz Beton, 1x Temel Materyal, 1x Işıktaşı Tozu) düşürür. Arkalıkları normal kırmak temel betonu iade eder. **İpeksi Dokunuş (Silk Touch)** aletiyle kırmak, düşen eşya üzerindeki tüm NBT verilerini (renkler, materyaller, parlama durumu, animasyonlar) kusursuz bir şekilde koruyarak birebir aynı şekilde tekrar yerleştirmenizi sağlar!
+*   📦 **Dinamik Envanter Çizimi (YENİ!)** — Elinizde ne varsa doğrudan onu görün. Uygulanan materyaller ve boyanan renkler, artık envanter ve sandık simgelerinde gerçek zamanlı ve dinamik olarak görüntülenir. Boyanmamış varsayılan tabelalar ise gereksiz veri fazlalığı olmadan sorunsuzca üst üste (stack) biner.
+*   🏗️ **3D Harfler, Sayılar ve Genişletilmiş Semboller** — Son derece detaylı, özel modellenmiş harfler (A-Z), sayılar (0-9) ve geniş bir sembol seti (oklar, matematik operatörleri ile `'`, `:`, `;`, `!`, `?`, `=`, `÷`, `"` gibi noktalama işaretleri dahil). Tüm bloklar, duvar ve zemin yerleşimlerine piksel seviyesinde uyum sağlayan gelişmiş hitbox'lara (çarpışma kutularına) sahiptir.
+*   🗜️ **Tabela Presi (Sign Press)** — Hayatta kalma modu için özel bir üretim istasyonu. Beyaz betonunuzu temiz ve verimli bir şekilde belirli harflere, sembollere ve tabela arkalıklarına dönüştürün. Otomasyon için hunilerle (hopper) tam uyumludur.
 *   🗺️ **Tabela Planı (Blueprint) ve Geri Alma** — İstediğiniz kelimeyi Blueprint arayüzüne yazın. Bir bloğa sağ tıkladığınızda tüm kelime otomatik olarak dünyaya inşa edilir. Bir hata mı yaptınız? Son yerleştirdiğiniz bloğu güvenle kaldırmak ve malzemelerinizi geri almak için kırmızı Geri Al (Undo) butonunu kullanın.
-*   🎨 **Boya Fırçası (Paint Brush) ve Özel Palet** — Havaya sağ tıklayarak hızlı yanıt veren bir arayüz açın. Kendi RGB/Hex kodlarınızı karıştırın ve kişisel paletinize 14 adede kadar özel renk kaydedin.
+*   🎨 **Boya Fırçası (Paint Brush) ve Özel Palet** — Havaya sağ tıklayarak hızlı yanıt veren bir arayüz açın. Kendi RGB/Hex kodlarınızı karıştırın ve kişisel paletinize 14 adede kadar özel renk kaydedin ya da materyal dokularını doğrudan tabela ve arkalıklara uygulayın.
 *   🌈 **Akıllı Doldurma (Smart Fill) ve Gökkuşağı Modu** — Sezgisel yeşil/kırmızı dairesel HUD göstergelerine sahip "Akıllı Doldurma" modunu açmak için Eğilme (Shift) + Havaya Sağ Tık yapın. İyimser istemci tarafı işleme (optimistic client-side rendering) sayesinde sıfır görsel gecikme ile birbirine bağlı tüm kelimeleri tek tıkla anında boyayın veya hareketlendirin.
 *   💧 **Damlalık (Eyedropper) Mekaniği** — Dünyadaki boyanmış herhangi bir bloğun tam hex rengini doğrudan Boya Fırçanıza kopyalamak için Eğilme + Sağ Tık yapın.
-*   🔧 **Neon Mekanikleri ve Kızıltaş (Redstone)** — Herhangi bir karaktere İngiliz Anahtarı (Wrench) ile sağ tıklayarak 7 farklı ışık modundan (Blink, Wave, Breathing vb.) birini uygulayın. Neon tabelalarınızı doğrudan kızıltaş sinyallerine bağlayarak otomatikleştirin!
+*   🔧 **Gelişmiş Neon Mekanikleri ve Kızıltaş (Redstone)** — Herhangi bir karaktere İngiliz Anahtarı (Wrench) ile sağ tıklayarak 11 farklı ışık modundan (Audio Sync, Disco, Eye Contact, Low Power, Wave, Breathing vb.) birini uygulayın. Neon tabelalarınızı doğrudan kızıltaş sinyallerine bağlayarak otomatikleştirin!
 *   🌍 **Küresel Yerelleştirme** — İngilizce, Türkçe, Rusça, İspanyolca, Basitleştirilmiş Çince, Almanca, Fransızca ve İtalyanca dillerine tamamen çevrilmiştir.
 
 ## 🛠️ Teknoloji Yığını
@@ -35,7 +37,7 @@ Sign Builder, Architectury API kullanılarak hem Fabric hem de Forge için sıf�
 *   🦊 **Fabric** / 🔨 **Forge** — Mod yükleyicileri.
 
 **Araçlar**
-*   🧊 **Blockbench** — Tüm karakter ve araç blokları için özel 3D modelleme ve dokulandırma.
+*   🧊 **Blockbench** — Tüm karakter, arkalık ve araç blokları için özel 3D modelleme ve dokulandırma.
 *   🐘 **Gradle** — Derleme otomasyonu ve bağımlılık yönetimi.
 
 ## 🚀 Başlangıç
