@@ -210,6 +210,9 @@ public class SignBlueprintItem extends Item {
             case ']' -> "symbol_square_bracket_right"; case '¦' -> "symbol_square_bracket_double"; case '↑' -> "arrow_up";
             case '↓' -> "arrow_down"; case '←' -> "arrow_left"; case '→' -> "arrow_right"; case '↖' -> "arrow_left_up";
             case '↗' -> "arrow_right_up"; case '↙' -> "arrow_left_down"; case '↘' -> "arrow_right_down";
+            case ':' -> "symbol_colon"; case ';' -> "symbol_semicolon"; case '!' -> "symbol_exclamation";
+            case '?' -> "symbol_question"; case '=' -> "symbol_equals"; case '÷' -> "symbol_divide";
+            case '\'' -> "symbol_apostrophe"; case '"' -> "symbol_quotes";
             default -> null;
         };
 

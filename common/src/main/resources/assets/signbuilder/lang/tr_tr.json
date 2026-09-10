@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Düşük Güç",
   "gui.signbuilder.wrench.mode.low_power.desc": "Etrafı çok aydınlatmadan loş bir şekilde parlar.",
   "block.signbuilder.backplate": "Plaka",
-  "item.signbuilder.backplate": "Plaka"
+  "item.signbuilder.backplate": "Plaka",
+  "block.signbuilder.symbol_colon": "İki Nokta",
+  "block.signbuilder.symbol_semicolon": "Noktalı Virgül",
+  "block.signbuilder.symbol_exclamation": "Ünlem İşareti",
+  "block.signbuilder.symbol_question": "Soru İşareti",
+  "block.signbuilder.symbol_equals": "Eşittir İşareti",
+  "block.signbuilder.symbol_divide": "Bölme İşareti",
+  "block.signbuilder.symbol_apostrophe": "Kesme İşareti",
+  "block.signbuilder.symbol_quotes": "Tırnak İşareti",
+  "tooltip.signbuilder.blueprint.divide": "Bölme İşareti"
 }

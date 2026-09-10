@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "低功耗",
   "gui.signbuilder.wrench.mode.low_power.desc": "发出微光，不会照亮周围区域。",
   "block.signbuilder.backplate": "背板",
-  "item.signbuilder.backplate": "背板"
+  "item.signbuilder.backplate": "背板",
+  "block.signbuilder.symbol_colon": "冒号",
+  "block.signbuilder.symbol_semicolon": "分号",
+  "block.signbuilder.symbol_exclamation": "感叹号",
+  "block.signbuilder.symbol_question": "问号",
+  "block.signbuilder.symbol_equals": "等号",
+  "block.signbuilder.symbol_divide": "除号",
+  "block.signbuilder.symbol_apostrophe": "撇号",
+  "block.signbuilder.symbol_quotes": "引号",
+  "tooltip.signbuilder.blueprint.divide": "除号"
 }

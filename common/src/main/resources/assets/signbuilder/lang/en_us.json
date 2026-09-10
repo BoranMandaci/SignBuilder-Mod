@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Low Power",
   "gui.signbuilder.wrench.mode.low_power.desc": "Shines dimly without lighting up the surrounding area.",
   "block.signbuilder.backplate": "Backplate",
-  "item.signbuilder.backplate": "Backplate"
+  "item.signbuilder.backplate": "Backplate",
+  "block.signbuilder.symbol_colon": "Colon",
+  "block.signbuilder.symbol_semicolon": "Semicolon",
+  "block.signbuilder.symbol_exclamation": "Exclamation Mark",
+  "block.signbuilder.symbol_question": "Question Mark",
+  "block.signbuilder.symbol_equals": "Equals Sign",
+  "block.signbuilder.symbol_divide": "Division Sign",
+  "block.signbuilder.symbol_apostrophe": "Apostrophe",
+  "block.signbuilder.symbol_quotes": "Quotation Mark",
+  "tooltip.signbuilder.blueprint.divide": "Division Sign"
 }

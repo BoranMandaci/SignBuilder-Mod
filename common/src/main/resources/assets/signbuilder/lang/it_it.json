@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Bassa Potenza",
   "gui.signbuilder.wrench.mode.low_power.desc": "Brilla debolmente senza illuminare l'area circostante.",
   "block.signbuilder.backplate": "Piastra Posteriore",
-  "item.signbuilder.backplate": "Piastra Posteriore"
+  "item.signbuilder.backplate": "Piastra Posteriore",
+  "block.signbuilder.symbol_colon": "Due punti",
+  "block.signbuilder.symbol_semicolon": "Punto e virgola",
+  "block.signbuilder.symbol_exclamation": "Punto esclamativo",
+  "block.signbuilder.symbol_question": "Punto interrogativo",
+  "block.signbuilder.symbol_equals": "Segno di uguale",
+  "block.signbuilder.symbol_divide": "Segno di divisione",
+  "block.signbuilder.symbol_apostrophe": "Apostrofo",
+  "block.signbuilder.symbol_quotes": "Virgolette",
+  "tooltip.signbuilder.blueprint.divide": "Segno di divisione"
 }

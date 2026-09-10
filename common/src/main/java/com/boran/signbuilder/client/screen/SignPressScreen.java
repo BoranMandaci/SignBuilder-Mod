@@ -35,6 +35,8 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
             "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
             "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl",
+            "symbol_colon", "symbol_semicolon", "symbol_exclamation", "symbol_question",
+            "symbol_equals", "symbol_divide", "symbol_apostrophe", "symbol_quotes",
             "backplate"
     );
 
@@ -233,10 +235,10 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
     private void drawDarkSlot(GuiGraphics guiGraphics, int x, int y, int width, int height) {
         guiGraphics.fill(x, y, x + width, y + height, 0xFF111214);
-        guiGraphics.fill(x, y, x + width - 1, y + 1, 0xFF050505);
-        guiGraphics.fill(x, y, x + 1, y + height - 1, 0xFF050505);
-        guiGraphics.fill(x + 1, y + height - 1, x + width, y + height, 0xFF4A4D53);
-        guiGraphics.fill(x + width - 1, y + 1, x + width, y + height, 0xFF4A4D53);
+        guiGraphics.fill(x, y, x + width, y + 1, 0xFF050505);
+        guiGraphics.fill(x, y, x + 1, y + height, 0xFF050505);
+        guiGraphics.fill(x, y + height - 1, x + width, y + height, 0xFF4A4D53);
+        guiGraphics.fill(x + width - 1, y, x + width, y + height, 0xFF4A4D53);
     }
 
     @Override

@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Basse Consommation",
   "gui.signbuilder.wrench.mode.low_power.desc": "Brille faiblement sans éclairer la zone environnante.",
   "block.signbuilder.backplate": "Plaque Arrière",
-  "item.signbuilder.backplate": "Plaque Arrière"
+  "item.signbuilder.backplate": "Plaque Arrière",
+  "block.signbuilder.symbol_colon": "Deux-points",
+  "block.signbuilder.symbol_semicolon": "Point-virgule",
+  "block.signbuilder.symbol_exclamation": "Point d'exclamation",
+  "block.signbuilder.symbol_question": "Point d'interrogation",
+  "block.signbuilder.symbol_equals": "Signe égal",
+  "block.signbuilder.symbol_divide": "Signe de division",
+  "block.signbuilder.symbol_apostrophe": "Apostrophe",
+  "block.signbuilder.symbol_quotes": "Guillemet",
+  "tooltip.signbuilder.blueprint.divide": "Signe de division"
 }

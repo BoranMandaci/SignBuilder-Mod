@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Низкая мощность",
   "gui.signbuilder.wrench.mode.low_power.desc": "Светится тускло, не освещая окружающее пространство.",
   "block.signbuilder.backplate": "Задняя панель",
-  "item.signbuilder.backplate": "Задняя панель"
+  "item.signbuilder.backplate": "Задняя панель",
+  "block.signbuilder.symbol_colon": "Двоеточие",
+  "block.signbuilder.symbol_semicolon": "Точка с запятой",
+  "block.signbuilder.symbol_exclamation": "Восклицательный знак",
+  "block.signbuilder.symbol_question": "Вопросительный знак",
+  "block.signbuilder.symbol_equals": "Знак равенства",
+  "block.signbuilder.symbol_divide": "Знак деления",
+  "block.signbuilder.symbol_apostrophe": "Апостроф",
+  "block.signbuilder.symbol_quotes": "Кавычки",
+  "tooltip.signbuilder.blueprint.divide": "Знак деления"
 }

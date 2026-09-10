@@ -224,5 +224,14 @@
   "gui.signbuilder.wrench.mode.low_power": "Geringe Leistung",
   "gui.signbuilder.wrench.mode.low_power.desc": "Leuchtet schwach, ohne die Umgebung zu erhellen.",
   "block.signbuilder.backplate": "Rückwand",
-  "item.signbuilder.backplate": "Rückwand"
+  "item.signbuilder.backplate": "Rückwand",
+  "block.signbuilder.symbol_colon": "Doppelpunkt",
+  "block.signbuilder.symbol_semicolon": "Semikolon",
+  "block.signbuilder.symbol_exclamation": "Ausrufezeichen",
+  "block.signbuilder.symbol_question": "Fragezeichen",
+  "block.signbuilder.symbol_equals": "Gleichheitszeichen",
+  "block.signbuilder.symbol_divide": "Geteiltzeichen",
+  "block.signbuilder.symbol_apostrophe": "Apostroph",
+  "block.signbuilder.symbol_quotes": "Anführungszeichen",
+  "tooltip.signbuilder.blueprint.divide": "Geteiltzeichen"
 }

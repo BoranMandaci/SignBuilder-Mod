@@ -70,6 +70,14 @@
     "signbuilder:symbol_square_bracket_double",
     "signbuilder:symbol_square_bracket_left",
     "signbuilder:symbol_square_bracket_right",
+    "signbuilder:symbol_apostrophe",
+    "signbuilder:symbol_colon",
+    "signbuilder:symbol_divide",
+    "signbuilder:symbol_equals",
+    "signbuilder:symbol_exclamation",
+    "signbuilder:symbol_question",
+    "signbuilder:symbol_quotes",
+    "signbuilder:symbol_semicolon",
     "signbuilder:sign_press",
     "signbuilder:backplate"
   ]
