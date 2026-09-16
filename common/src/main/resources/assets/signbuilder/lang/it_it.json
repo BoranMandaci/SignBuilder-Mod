@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Segno di divisione",
   "block.signbuilder.symbol_apostrophe": "Apostrofo",
   "block.signbuilder.symbol_quotes": "Virgolette",
-  "tooltip.signbuilder.blueprint.divide": "Segno di divisione"
+  "tooltip.signbuilder.blueprint.divide": "Segno di divisione",
+  "material.signbuilder.redstone_block": "Blocco di redstone",
+  "material.signbuilder.netherite_block": "Blocco di netherite",
+  "material.signbuilder.quartz_block": "Blocco di quarzo",
+  "material.signbuilder.polished_granite": "Granito levigato",
+  "material.signbuilder.purpur_block": "Blocco di purpur",
+  "material.signbuilder.stone": "Pietra",
+  "material.signbuilder.emerald_block": "Blocco di smeraldo",
+  "material.signbuilder.smooth_sandstone": "Arenaria levigata",
+  "material.signbuilder.smooth_red_sandstone": "Arenaria rossa levigata"
 }

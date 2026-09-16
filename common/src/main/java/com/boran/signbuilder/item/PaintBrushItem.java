@@ -2,7 +2,6 @@ package com.boran.signbuilder.item;
 
 import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.LetterBlock;
-import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.utils.Env;
@@ -10,6 +9,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -171,15 +170,22 @@ public class PaintBrushItem extends Item {
             }
         }
 
+        BlockState newState = state;
+        if (!targetBackplate && hasMaterial && state.hasProperty(LetterBlock.MATERIAL)) {
+            newState = state.setValue(LetterBlock.MATERIAL, newMaterial);
+        }
+
         if (!level.isClientSide()) {
+            if (newState != state) level.setBlock(pos, newState, 3);
             applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-            level.sendBlockUpdated(pos, state, state, 3);
+            level.sendBlockUpdated(pos, state, newState, 3);
 
             if (player != null) {
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
             }
         } else {
+            if (newState != state) level.setBlock(pos, newState, 11);
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
         }
 
@@ -316,11 +322,18 @@ public class PaintBrushItem extends Item {
                 }
             }
 
+            BlockState newState = currentState;
+            if (!targetBackplate && hasMaterial && currentState.hasProperty(LetterBlock.MATERIAL)) {
+                newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
+            }
+
             if (!level.isClientSide()) {
+                if (newState != currentState) level.setBlock(current, newState, 3);
                 applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-                level.sendBlockUpdated(current, currentState, currentState, 3);
+                level.sendBlockUpdated(current, currentState, newState, 3);
                 blocksPainted++;
             } else {
+                if (newState != currentState) level.setBlock(current, newState, 11);
                 EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
             }
         }
@@ -359,6 +372,15 @@ public class PaintBrushItem extends Item {
             case GOLD -> "minecraft:gold_block"; case DIAMOND -> "minecraft:diamond_block"; case LAPIS -> "minecraft:lapis_block";
             case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
             case BRICKS -> "minecraft:bricks"; case STONE_BRICKS -> "minecraft:stone_bricks";
+            case REDSTONE_BLOCK -> "minecraft:redstone_block";
+            case NETHERITE_BLOCK -> "minecraft:netherite_block";
+            case QUARTZ_BLOCK -> "minecraft:quartz_block";
+            case POLISHED_GRANITE -> "minecraft:polished_granite";
+            case PURPUR_BLOCK -> "minecraft:purpur_block";
+            case STONE -> "minecraft:stone";
+            case EMERALD_BLOCK -> "minecraft:emerald_block";
+            case SMOOTH_SANDSTONE -> "minecraft:smooth_sandstone";
+            case SMOOTH_RED_SANDSTONE -> "minecraft:smooth_red_sandstone";
             default -> "minecraft:white_concrete";
         };
         return BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
@@ -393,6 +415,15 @@ public class PaintBrushItem extends Item {
             case "minecraft:gold_block" -> SignMaterial.GOLD; case "minecraft:diamond_block" -> SignMaterial.DIAMOND; case "minecraft:lapis_block" -> SignMaterial.LAPIS;
             case "minecraft:smooth_stone" -> SignMaterial.SMOOTH_STONE; case "minecraft:polished_diorite" -> SignMaterial.POLISHED_DIORITE;
             case "minecraft:bricks" -> SignMaterial.BRICKS; case "minecraft:stone_bricks" -> SignMaterial.STONE_BRICKS;
+            case "minecraft:redstone_block" -> SignMaterial.REDSTONE_BLOCK;
+            case "minecraft:netherite_block" -> SignMaterial.NETHERITE_BLOCK;
+            case "minecraft:quartz_block" -> SignMaterial.QUARTZ_BLOCK;
+            case "minecraft:polished_granite" -> SignMaterial.POLISHED_GRANITE;
+            case "minecraft:purpur_block" -> SignMaterial.PURPUR_BLOCK;
+            case "minecraft:stone" -> SignMaterial.STONE;
+            case "minecraft:emerald_block" -> SignMaterial.EMERALD_BLOCK;
+            case "minecraft:smooth_sandstone" -> SignMaterial.SMOOTH_SANDSTONE;
+            case "minecraft:smooth_red_sandstone" -> SignMaterial.SMOOTH_RED_SANDSTONE;
             default -> SignMaterial.DEFAULT;
         };
     }

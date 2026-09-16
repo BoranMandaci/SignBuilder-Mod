@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Signo de división",
   "block.signbuilder.symbol_apostrophe": "Apóstrofo",
   "block.signbuilder.symbol_quotes": "Comillas",
-  "tooltip.signbuilder.blueprint.divide": "Signo de división"
+  "tooltip.signbuilder.blueprint.divide": "Signo de división",
+  "material.signbuilder.redstone_block": "Bloque de redstone",
+  "material.signbuilder.netherite_block": "Bloque de inframundita",
+  "material.signbuilder.quartz_block": "Bloque de cuarzo",
+  "material.signbuilder.polished_granite": "Granito pulido",
+  "material.signbuilder.purpur_block": "Bloque de púrpur",
+  "material.signbuilder.stone": "Piedra",
+  "material.signbuilder.emerald_block": "Bloque de esmeralda",
+  "material.signbuilder.smooth_sandstone": "Arenisca lisa",
+  "material.signbuilder.smooth_red_sandstone": "Arenisca roja lisa"
 }

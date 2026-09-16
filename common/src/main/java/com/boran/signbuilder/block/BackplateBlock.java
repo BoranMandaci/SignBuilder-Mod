@@ -329,6 +329,15 @@ public class BackplateBlock extends Block implements EntityBlock {
             case GOLD -> "minecraft:gold_block"; case DIAMOND -> "minecraft:diamond_block"; case LAPIS -> "minecraft:lapis_block";
             case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
             case BRICKS -> "minecraft:bricks"; case STONE_BRICKS -> "minecraft:stone_bricks";
+            case REDSTONE_BLOCK -> "minecraft:redstone_block";
+            case NETHERITE_BLOCK -> "minecraft:netherite_block";
+            case QUARTZ_BLOCK -> "minecraft:quartz_block";
+            case POLISHED_GRANITE -> "minecraft:polished_granite";
+            case PURPUR_BLOCK -> "minecraft:purpur_block";
+            case STONE -> "minecraft:stone";
+            case EMERALD_BLOCK -> "minecraft:emerald_block";
+            case SMOOTH_SANDSTONE -> "minecraft:smooth_sandstone";
+            case SMOOTH_RED_SANDSTONE -> "minecraft:smooth_red_sandstone";
             default -> "minecraft:white_concrete";
         };
     }

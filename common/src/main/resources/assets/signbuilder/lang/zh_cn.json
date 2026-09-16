@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "除号",
   "block.signbuilder.symbol_apostrophe": "撇号",
   "block.signbuilder.symbol_quotes": "引号",
-  "tooltip.signbuilder.blueprint.divide": "除号"
+  "tooltip.signbuilder.blueprint.divide": "除号",
+  "material.signbuilder.redstone_block": "红石块",
+  "material.signbuilder.netherite_block": "下界合金块",
+  "material.signbuilder.quartz_block": "石英块",
+  "material.signbuilder.polished_granite": "磨制花岗岩",
+  "material.signbuilder.purpur_block": "紫珀块",
+  "material.signbuilder.stone": "石头",
+  "material.signbuilder.emerald_block": "绿宝石块",
+  "material.signbuilder.smooth_sandstone": "平滑砂岩",
+  "material.signbuilder.smooth_red_sandstone": "平滑红砂岩"
 }

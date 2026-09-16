@@ -21,7 +21,16 @@ public enum SignMaterial implements StringRepresentable {
     SMOOTH_STONE("smooth_stone"),
     POLISHED_DIORITE("polished_diorite"),
     BRICKS("bricks"),
-    STONE_BRICKS("stone_bricks");
+    STONE_BRICKS("stone_bricks"),
+    REDSTONE_BLOCK("redstone_block"),
+    NETHERITE_BLOCK("netherite_block"),
+    QUARTZ_BLOCK("quartz_block"),
+    POLISHED_GRANITE("polished_granite"),
+    PURPUR_BLOCK("purpur_block"),
+    STONE("stone"),
+    EMERALD_BLOCK("emerald_block"),
+    SMOOTH_SANDSTONE("smooth_sandstone"),
+    SMOOTH_RED_SANDSTONE("smooth_red_sandstone");
 
     private final String name;
 

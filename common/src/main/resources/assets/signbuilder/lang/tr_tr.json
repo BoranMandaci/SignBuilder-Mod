@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Bölme İşareti",
   "block.signbuilder.symbol_apostrophe": "Kesme İşareti",
   "block.signbuilder.symbol_quotes": "Tırnak İşareti",
-  "tooltip.signbuilder.blueprint.divide": "Bölme İşareti"
+  "tooltip.signbuilder.blueprint.divide": "Bölme İşareti",
+  "material.signbuilder.redstone_block": "Kızıltaş Bloğu",
+  "material.signbuilder.netherite_block": "Netherit Bloğu",
+  "material.signbuilder.quartz_block": "Kuvars Bloğu",
+  "material.signbuilder.polished_granite": "Cilalı Granit",
+  "material.signbuilder.purpur_block": "Purpur Bloğu",
+  "material.signbuilder.stone": "Taş",
+  "material.signbuilder.emerald_block": "Zümrüt Bloğu",
+  "material.signbuilder.smooth_sandstone": "Düz Kumtaşı",
+  "material.signbuilder.smooth_red_sandstone": "Düz Kırmızı Kumtaşı"
 }

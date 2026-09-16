@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Знак деления",
   "block.signbuilder.symbol_apostrophe": "Апостроф",
   "block.signbuilder.symbol_quotes": "Кавычки",
-  "tooltip.signbuilder.blueprint.divide": "Знак деления"
+  "tooltip.signbuilder.blueprint.divide": "Знак деления",
+  "material.signbuilder.redstone_block": "Редстоуновый блок",
+  "material.signbuilder.netherite_block": "Незеритовый блок",
+  "material.signbuilder.quartz_block": "Кварцевый блок",
+  "material.signbuilder.polished_granite": "Полированный гранит",
+  "material.signbuilder.purpur_block": "Пурпурный блок",
+  "material.signbuilder.stone": "Камень",
+  "material.signbuilder.emerald_block": "Изумрудный блок",
+  "material.signbuilder.smooth_sandstone": "Гладкий песчаник",
+  "material.signbuilder.smooth_red_sandstone": "Гладкий красный песчаник"
 }

@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Signe de division",
   "block.signbuilder.symbol_apostrophe": "Apostrophe",
   "block.signbuilder.symbol_quotes": "Guillemet",
-  "tooltip.signbuilder.blueprint.divide": "Signe de division"
+  "tooltip.signbuilder.blueprint.divide": "Signe de division",
+  "material.signbuilder.redstone_block": "Bloc de redstone",
+  "material.signbuilder.netherite_block": "Bloc de netherite",
+  "material.signbuilder.quartz_block": "Bloc de quartz",
+  "material.signbuilder.polished_granite": "Granite poli",
+  "material.signbuilder.purpur_block": "Bloc de purpur",
+  "material.signbuilder.stone": "Roche",
+  "material.signbuilder.emerald_block": "Bloc d'émeraude",
+  "material.signbuilder.smooth_sandstone": "Grès poli",
+  "material.signbuilder.smooth_red_sandstone": "Grès rouge poli"
 }

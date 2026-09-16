@@ -233,5 +233,14 @@
   "block.signbuilder.symbol_divide": "Geteiltzeichen",
   "block.signbuilder.symbol_apostrophe": "Apostroph",
   "block.signbuilder.symbol_quotes": "Anführungszeichen",
-  "tooltip.signbuilder.blueprint.divide": "Geteiltzeichen"
+  "tooltip.signbuilder.blueprint.divide": "Geteiltzeichen",
+  "material.signbuilder.redstone_block": "Redstone-Block",
+  "material.signbuilder.netherite_block": "Netheritblock",
+  "material.signbuilder.quartz_block": "Quarzblock",
+  "material.signbuilder.polished_granite": "Polierter Granit",
+  "material.signbuilder.purpur_block": "Purpurblock",
+  "material.signbuilder.stone": "Stein",
+  "material.signbuilder.emerald_block": "Smaragdblock",
+  "material.signbuilder.smooth_sandstone": "Glatter Sandstein",
+  "material.signbuilder.smooth_red_sandstone": "Glatter roter Sandstein"
 }

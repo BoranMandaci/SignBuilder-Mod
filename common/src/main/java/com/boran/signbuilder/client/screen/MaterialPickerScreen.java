@@ -3,6 +3,7 @@ package com.boran.signbuilder.client.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,47 +19,66 @@ public class MaterialPickerScreen extends Screen {
     private int buttonSize = 36;
     private int spacing = 12;
 
+    private int currentPage = 0;
+    private final int itemsPerPage = 20;
+
+    private static final String[] ALL_MATERIALS = {
+            "minecraft:white_concrete", "minecraft:oak_planks", "minecraft:spruce_planks",
+            "minecraft:birch_planks", "minecraft:jungle_planks", "minecraft:acacia_planks",
+            "minecraft:dark_oak_planks", "minecraft:mangrove_planks", "minecraft:cherry_planks",
+            "minecraft:bamboo_planks", "minecraft:iron_block", "minecraft:polished_andesite",
+            "minecraft:gold_block", "minecraft:diamond_block", "minecraft:lapis_block",
+            "minecraft:smooth_stone", "minecraft:polished_diorite", "minecraft:bricks",
+            "minecraft:stone_bricks", "minecraft:redstone_block",
+            "minecraft:netherite_block", "minecraft:quartz_block", "minecraft:polished_granite",
+            "minecraft:purpur_block", "minecraft:stone", "minecraft:emerald_block",
+            "minecraft:smooth_sandstone", "minecraft:smooth_red_sandstone"
+    };
+
+    private static final String[] ALL_KEYS = {
+            "white_concrete", "oak_planks", "spruce_planks",
+            "birch_planks", "jungle_planks", "acacia_planks",
+            "dark_oak_planks", "mangrove_planks", "cherry_planks",
+            "bamboo_planks", "iron_block", "polished_andesite",
+            "gold_block", "diamond_block", "lapis_block",
+            "smooth_stone", "polished_diorite", "bricks",
+            "stone_bricks", "redstone_block",
+            "netherite_block", "quartz_block", "polished_granite",
+            "purpur_block", "stone", "emerald_block",
+            "smooth_sandstone", "smooth_red_sandstone"
+    };
+
     public MaterialPickerScreen(Screen parentScreen) {
         super(Component.translatable("gui.signbuilder.select_material"));
         this.parentScreen = parentScreen;
     }
 
-    @Override
-    protected void init() {
-        super.init();
-
-        String[] materials = {
-                "minecraft:white_concrete", "minecraft:oak_planks", "minecraft:spruce_planks",
-                "minecraft:birch_planks", "minecraft:jungle_planks", "minecraft:acacia_planks",
-                "minecraft:dark_oak_planks", "minecraft:mangrove_planks", "minecraft:cherry_planks",
-                "minecraft:bamboo_planks", "minecraft:iron_block", "minecraft:polished_andesite",
-                "minecraft:gold_block", "minecraft:diamond_block", "minecraft:lapis_block",
-                "minecraft:smooth_stone", "minecraft:polished_diorite", "minecraft:bricks",
-                "minecraft:stone_bricks"
-        };
-
-        ItemStack[] icons = {
+    private ItemStack[] createItemStacks() {
+        return new ItemStack[]{
                 new ItemStack(Blocks.WHITE_CONCRETE), new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS),
                 new ItemStack(Blocks.BIRCH_PLANKS), new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS),
                 new ItemStack(Blocks.DARK_OAK_PLANKS), new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.CHERRY_PLANKS),
                 new ItemStack(Blocks.BAMBOO_PLANKS), new ItemStack(Blocks.IRON_BLOCK), new ItemStack(Blocks.POLISHED_ANDESITE),
                 new ItemStack(Blocks.GOLD_BLOCK), new ItemStack(Blocks.DIAMOND_BLOCK), new ItemStack(Blocks.LAPIS_BLOCK),
                 new ItemStack(Blocks.SMOOTH_STONE), new ItemStack(Blocks.POLISHED_DIORITE), new ItemStack(Blocks.BRICKS),
-                new ItemStack(Blocks.STONE_BRICKS)
+                new ItemStack(Blocks.STONE_BRICKS), new ItemStack(Blocks.REDSTONE_BLOCK),
+                new ItemStack(Blocks.NETHERITE_BLOCK), new ItemStack(Blocks.QUARTZ_BLOCK), new ItemStack(Blocks.POLISHED_GRANITE),
+                new ItemStack(Blocks.PURPUR_BLOCK), new ItemStack(Blocks.STONE), new ItemStack(Blocks.EMERALD_BLOCK),
+                new ItemStack(Blocks.SMOOTH_SANDSTONE), new ItemStack(Blocks.SMOOTH_RED_SANDSTONE)
         };
+    }
 
-        String[] translationKeys = {
-                "white_concrete", "oak_planks", "spruce_planks", "birch_planks",
-                "jungle_planks", "acacia_planks", "dark_oak_planks", "mangrove_planks",
-                "cherry_planks", "bamboo_planks", "iron_block", "polished_andesite",
-                "gold_block", "diamond_block", "lapis_block",
-                "smooth_stone", "polished_diorite", "bricks", "stone_bricks"
-        };
+    @Override
+    protected void init() {
+        super.init();
+        this.clearWidgets();
+
+        ItemStack[] icons = createItemStacks();
 
         int cols = 5;
         int rows = 4;
 
-        int maxAvailableHeight = this.height - 50;
+        int maxAvailableHeight = this.height - 70;
         int maxAvailableWidth = this.width - 20;
 
         buttonSize = 36;
@@ -78,19 +98,40 @@ public class MaterialPickerScreen extends Screen {
         gridHeight = (buttonSize * rows) + (spacing * (rows - 1));
 
         startX = (this.width - gridWidth) / 2;
-        startY = Math.max(25, (this.height - (gridHeight + 25)) / 2);
+        startY = Math.max(25, (this.height - (gridHeight + 45)) / 2);
 
-        for (int i = 0; i < materials.length; i++) {
-            int row = i / cols;
-            int col = i % cols;
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, ALL_MATERIALS.length);
+
+        for (int i = startIndex; i < endIndex; i++) {
+            int slot = i - startIndex;
+            int row = slot / cols;
+            int col = slot % cols;
             int x = startX + (col * (buttonSize + spacing));
             int y = startY + (row * (buttonSize + spacing));
 
-            this.addRenderableWidget(new VisualMaterialButton(x, y, buttonSize, buttonSize, materials[i], translationKeys[i], icons[i]));
+            this.addRenderableWidget(new VisualMaterialButton(x, y, buttonSize, buttonSize, ALL_MATERIALS[i], ALL_KEYS[i], icons[i]));
         }
 
-        int backBtnY = startY + gridHeight + 8;
-        this.addRenderableWidget(new FlatBackButton(startX, backBtnY, gridWidth, 20, this.parentScreen));
+        int navY = startY + gridHeight + 6;
+        int maxPages = (int) Math.ceil((double) ALL_MATERIALS.length / itemsPerPage);
+
+        this.addRenderableWidget(Button.builder(Component.literal("<"), btn -> {
+            if (currentPage > 0) {
+                currentPage--;
+                this.init();
+            }
+        }).bounds(startX, navY, 24, 18).build());
+
+        this.addRenderableWidget(Button.builder(Component.literal(">"), btn -> {
+            if (currentPage < maxPages - 1) {
+                currentPage++;
+                this.init();
+            }
+        }).bounds(startX + gridWidth - 24, navY, 24, 18).build());
+
+        int backBtnY = navY + 22;
+        this.addRenderableWidget(new FlatBackButton(startX, backBtnY, gridWidth, 18, this.parentScreen));
     }
 
     @Override
@@ -101,7 +142,7 @@ public class MaterialPickerScreen extends Screen {
         int panelLeft = startX - pad;
         int panelTop = startY - pad;
         int panelRight = startX + gridWidth + pad;
-        int panelBottom = startY + gridHeight + 35 + pad;
+        int panelBottom = startY + gridHeight + 52 + pad;
 
         graphics.fillGradient(panelLeft, panelTop, panelRight, panelBottom, 0xEE101010, 0xFA050505);
         graphics.renderOutline(panelLeft - 1, panelTop - 1, (panelRight - panelLeft) + 2, (panelBottom - panelTop) + 2, 0x50FFFFFF);
@@ -109,6 +150,10 @@ public class MaterialPickerScreen extends Screen {
 
         int titleY = Math.max(5, panelTop - 12);
         graphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
+
+        int maxPages = (int) Math.ceil((double) ALL_MATERIALS.length / itemsPerPage);
+        int navY = startY + gridHeight + 11;
+        graphics.drawCenteredString(this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, 0xAAAAAA);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }

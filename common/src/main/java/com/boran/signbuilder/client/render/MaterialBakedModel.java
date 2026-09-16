@@ -1,5 +1,6 @@
 package com.boran.signbuilder.client.render;
 
+import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.client.Minecraft;
@@ -57,6 +58,13 @@ public class MaterialBakedModel implements BakedModel {
         }
 
         SignMaterial currentFMat = this.frontMat;
+        if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(LetterBlock.MATERIAL)) {
+            currentFMat = state.getValue(LetterBlock.MATERIAL);
+        }
+        if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(BackplateBlock.MATERIAL)) {
+            currentFMat = state.getValue(BackplateBlock.MATERIAL);
+        }
+
         SignMaterial currentBMat = this.backMat;
 
         if (currentFMat == SignMaterial.DEFAULT && currentBMat == SignMaterial.DEFAULT) {
@@ -145,6 +153,15 @@ public class MaterialBakedModel implements BakedModel {
             case POLISHED_DIORITE -> "block/polished_diorite";
             case BRICKS -> "block/bricks";
             case STONE_BRICKS -> "block/stone_bricks";
+            case REDSTONE_BLOCK -> "block/redstone_block";
+            case NETHERITE_BLOCK -> "block/netherite_block";
+            case QUARTZ_BLOCK -> "block/quartz_block_bottom";
+            case POLISHED_GRANITE -> "block/polished_granite";
+            case PURPUR_BLOCK -> "block/purpur_block";
+            case STONE -> "block/stone";
+            case EMERALD_BLOCK -> "block/emerald_block";
+            case SMOOTH_SANDSTONE -> "block/sandstone_top";
+            case SMOOTH_RED_SANDSTONE -> "block/red_sandstone_top";
             default -> "block/white_concrete";
         };
         return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", path));
