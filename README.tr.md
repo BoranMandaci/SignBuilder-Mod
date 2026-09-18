@@ -6,58 +6,59 @@
 
 # 🪧 Sign Builder
 
-Özel 3D tabelaları sorunsuzca inşa etmenizi, renklendirmenizi, ışıklandırmanızı ve materyallerini değiştirmenizi sağlayan, tam donanımlı, platformlar arası bir Minecraft modu. Hayatta Kalma (Survival) modu için mükemmel bir şekilde dengelenmiş son derece detaylı ve dinamik bir inşa sistemiyle şehirlerinizi dekore edin, depolarınızı düzenleyin ve parlayan neon dükkan tabelaları oluşturun.
+Özel 3D tabelaları zahmetsizce inşa etmek, renklendirmek, ışıklandırmak ve dokulandırmak için geliştirilmiş, tam donanımlı ve platformlar arası bir Minecraft modu. Hayatta Kalma (Survival) moduyla mükemmel dengelenmiş, yüksek detaylı ve dinamik bir inşa sistemiyle şehirlerinizi süsleyin, depolarınızı düzenleyin ve parlayan neon tabelalı dükkan cepheleri tasarlayın.
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Giriş
 
-Sign Builder, Architectury API kullanılarak hem Fabric hem de Forge için sıfırdan geliştirilmiş platformlar arası bir Minecraft modudur. Dünyanızda son derece detaylı 3D metinler oluşturmak için kapsamlı bir iş akışı sunar. Basit varsayılan (vanilla) tabelalara güvenmek yerine; harfler, sayılar, semboller ve modüler tabela arkalıkları için fiziksel bloklar sunar; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak ve ışıklandırmak için özel araçlarla birlikte gelir.
+Sign Builder, Architectury API kullanılarak hem Fabric hem de Forge için sıfırdan geliştirilmiş, platformlar arası bir Minecraft modudur. Dünyanızda yüksek detaylı 3D yazılar oluşturmanız için kapsamlı bir iş akışı sunar. Sıradan vanilla tabelalar yerine harfler, sayılar, semboller ve modüler arka plakalar (backplate) için fiziksel bloklar sağlar; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak ve aydınlatmak için özel araçlarla birlikte gelir.
 
 ## ✨ Temel Özellikler
 
-*   🛡️ **Modüler Arkalık Sistemi (YENİ!)** — Tabelalarınıza derinlik ve kontrast kazandırın! Önceden yerleştirilmiş arkalıklara tabela monte edin ya da yerleştirilmiş tabelalara doğrudan arkalık takın. Ön ve arka yüzeyler birbirinden bağımsız olarak boyanabilir veya materyalle kaplanabilir. Bir arkalık eşyasıyla Eğilme (Shift) + Sağ Tık yaparak tüm NBT verilerini koruyarak arkalığı sökebilirsiniz.
-*   🧱 **Dinamik Materyal Sistemi** — Tabelalar artık sadece betondan ibaret değil! Genişletilmiş temel materyal seçeneklerini (tüm ahşap türleri, Demir Bloğu, Cilalı Andezit, Altın Bloğu, Elmas Bloğu, Lapis Lazuli Bloğu, Düz Taş, Cilalı Diyorit, Tuğla ve Taş Tuğla) sıfır gecikmeli görsel güncellemelerle tabelalarınıza entegre edin.
-*   🎒 **Hayatta Kalma Uyumlu ve Gerçekçi Ganimetler** — Bir tabelayı kırmak dinamik olarak üretildiği bileşenleri (3x Beyaz Beton, 1x Temel Materyal, 1x Işıktaşı Tozu) düşürür. Arkalıkları normal kırmak temel betonu iade eder. **İpeksi Dokunuş (Silk Touch)** aletiyle kırmak, düşen eşya üzerindeki tüm NBT verilerini (renkler, materyaller, parlama durumu, animasyonlar) kusursuz bir şekilde koruyarak birebir aynı şekilde tekrar yerleştirmenizi sağlar!
-*   🏗️ **3D Harfler, Sayılar ve Genişletilmiş Semboller** — Son derece detaylı, özel modellenmiş harfler (A-Z), sayılar (0-9) ve geniş bir sembol seti (oklar, matematik operatörleri ile `'`, `:`, `;`, `!`, `?`, `=`, `÷`, `"` gibi noktalama işaretleri dahil). Tüm bloklar, duvar ve zemin yerleşimlerine piksel seviyesinde uyum sağlayan gelişmiş hitbox'lara (çarpışma kutularına) sahiptir.
-*   🗜️ **Tabela Presi (Sign Press)** — Hayatta kalma modu için özel bir üretim istasyonu. Beyaz betonunuzu temiz ve verimli bir şekilde belirli harflere, sembollere ve tabela arkalıklarına dönüştürün. Otomasyon için hunilerle (hopper) tam uyumludur.
-*   🗺️ **Tabela Planı (Blueprint) ve Geri Alma** — İstediğiniz kelimeyi Blueprint arayüzüne yazın. Bir bloğa sağ tıkladığınızda tüm kelime otomatik olarak dünyaya inşa edilir. Bir hata mı yaptınız? Son yerleştirdiğiniz bloğu güvenle kaldırmak ve malzemelerinizi geri almak için kırmızı Geri Al (Undo) butonunu kullanın.
-*   🎨 **Boya Fırçası (Paint Brush) ve Özel Palet** — Havaya sağ tıklayarak hızlı yanıt veren bir arayüz açın. Kendi RGB/Hex kodlarınızı karıştırın ve kişisel paletinize 14 adede kadar özel renk kaydedin ya da materyal dokularını doğrudan tabela ve arkalıklara uygulayın.
-*   🌈 **Akıllı Doldurma (Smart Fill) ve Gökkuşağı Modu** — Sezgisel yeşil/kırmızı dairesel HUD göstergelerine sahip "Akıllı Doldurma" modunu açmak için Eğilme (Shift) + Havaya Sağ Tık yapın. İyimser istemci tarafı işleme (optimistic client-side rendering) sayesinde sıfır görsel gecikme ile birbirine bağlı tüm kelimeleri tek tıkla anında boyayın veya hareketlendirin.
-*   💧 **Damlalık (Eyedropper) Mekaniği** — Dünyadaki boyanmış herhangi bir bloğun tam hex rengini doğrudan Boya Fırçanıza kopyalamak için Eğilme + Sağ Tık yapın.
-*   🔧 **Gelişmiş Neon Mekanikleri ve Kızıltaş (Redstone)** — Herhangi bir karaktere İngiliz Anahtarı (Wrench) ile sağ tıklayarak 11 farklı ışık modundan (Audio Sync, Disco, Eye Contact, Low Power, Wave, Breathing vb.) birini uygulayın. Neon tabelalarınızı doğrudan kızıltaş sinyallerine bağlayarak otomatikleştirin!
+*   🏢 **Otomatik 2x2 Çoklu Blok Tabelalar (YENİ!)** — Daha büyük tabelalara mı ihtiyacınız var? Aynı türdeki dört tabela bloğunu 2x2 düzeninde yerleştirdiğinizde, otomatik olarak 2.0x ölçekli devasa bir tabelaya dönüşür! Hem duvar hem de zemin yerleşimlerinde senkronize blok kırma, 4 katı malzeme harcayan/iade eden çoklu arka plakalar, dinamik çarpışma kutuları (hitbox) ve ana-kukla (master-dummy) veri senkronizasyonu sunar.
+*   🛡️ **Modüler Arka Plaka (Backplate) Sistemi** — Tabelalarınıza derinlik ve kontrast kazandırın! Tabelaları önceden yerleştirilmiş arka plakalara monte edin veya tekli ya da 2x2 çoklu blok tabelaların üzerine doğrudan bir arka plaka oturtun. Ön ve arka yüzeyler bağımsız olarak dokulandırılabilir ve boyanabilir. Boş elle Shift + Sağ Tık yaparak plakayı güvenle sökebilir ve malzemelerinizi geri alabilirsiniz.
+*   🧱 **28 Dinamik Materyal ve Arayüz Sayfalama** — Tabelalar artık sadece betondan ibaret değil! Yazılarınızı Kızıltaş Bloğu, Netherite Bloğu, Kuvars Bloğu, Zümrüt Bloğu, Purpur Bloğu, Cilalı Granit, Taş, Düzgün Kumtaşları, ahşaplar ve değerli madenler dahil olmak üzere 28 farklı materyalle özelleştirin. Boya Fırçası (Paint Brush) ekranındaki sayfa geçiş (`<` / `>`) butonlarıyla tüm materyallere kolayca göz atın.
+*   🎒 **Hayatta Kalmaya Hazır ve Gerçekçi Ganimetler** — Bir tabelayı kırmak, yapımında kullanılan bileşenleri dinamik olarak düşürür (3x Beyaz Beton, Temel Materyaller, Işık Taşı Tozu). Arka plakaların standart düşüşleri temel betonu iade eder. **İpeksi Dokunuş (Silk Touch)** büyülü bir aletle kazıldığında, eşya üzerindeki tüm NBT verileri (renkler, materyaller, ışık durumları, animasyonlar) kusursuz şekilde korunur!
+*   🏗️ **3D Harfler, Sayılar ve Genişletilmiş Semboller** — Özel olarak modellenmiş detaylı harfler (A-Z), sayılar (0-9), para birimi simgeleri (€, $, ₺, ¥), oklar, matematiksel operatörler ve noktalama işaretleri (`'`, `:`, `;`, `!`, `?`, `=`, `÷`, `"`, `#`, `@`, `&`, `%`, `*`). Tüm bloklar, duvar ve zemin yerleşimlerine doğal olarak uyum sağlayan piksel hassasiyetinde çarpışma kutularına sahiptir.
+*   🗜️ **Tabela Presi (The Sign Press)** — Hayatta Kalma moduna özel bir zanaat istasyonu. Beyaz betonlarınızı harflere, sembollere ve arka plakalara temiz ve verimli bir şekilde presleyin. Otomatik üretim hatları için hunilerle (hopper) tam uyumludur.
+*   🗺️ **Tabela Taslağı (The Sign Blueprint) ve Geri Alma (Undo)** — İstediğiniz kelimeyi Blueprint arayüzüne yazın. Tüm kelimeyi dünyaya otomatik olarak dizmek için bir bloğa sağ tıklayın. Hata mı yaptınız? Kırmızı Geri Al (Undo) butonunu kullanarak son yerleşiminizi güvenle kaldırabilir ve malzemelerinizi geri alabilirsiniz.
+*   🎨 **Boya Fırçası ve Özel Palet** — Havaya sağ tıklayarak arayüzü açın. Kendi RGB/Hex kodlarınızı oluşturup kişisel paletinize 14 adede kadar özel renk kaydedin veya tabela yüzeylerine ve arka plakalara çok sayfalı menüden doğrudan materyal dokuları uygulayın.
+*   🌈 **Akıllı Doldurma (Smart Fill) ve Gökkuşağı Modu** — Havaya Sneak + Sağ Tık yaparak sezgisel yeşil/kırmızı dairesel HUD göstergelerine sahip "Akıllı Doldurma" özelliğini açıp kapatın. Sıfır görsel gecikmeyle birbirine bağlı kelimelerin tamamını aynı anda boyayın, aydınlatın veya canlandırın.
+*   💧 **Damlalık (Eyedropper) Mekaniği** — Dünyadaki boyalı herhangi bir bloğa Sneak + Sağ Tık yaparak bloğun birebir hex rengini doğrudan Boya Fırçanıza kopyalayın.
+*   🔧 **Gelişmiş Neon Mekanikleri ve Kızıltaş** — Herhangi bir karaktere İngiliz Anahtarı (Wrench) ile sağ tıklayarak 11 farklı ışık modundan birini seçin (Ses Senkronizasyonu, Disko, Göz Teması, Düşük Güç, Dalga ve Nefes Alma dahil). Neon tabelalarınızı doğrudan kızıltaş sinyallerine bağlayarak otomatikleştirin!
 *   🌍 **Küresel Yerelleştirme** — İngilizce, Türkçe, Rusça, İspanyolca, Basitleştirilmiş Çince, Almanca, Fransızca ve İtalyanca dillerine tamamen çevrilmiştir.
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ Teknik Altyapı
 
 **Modlama API'si ve Diller**
-*   ☕ **Java** — Temel mantık ve arka plan.
-*   🧩 **Architectury API** — Eşzamanlı Forge ve Fabric geliştirme için platformlar arası soyutlama katmanı.
+*   ☕ **Java** — Çekirdek mantık ve arka uç.
+*   🧩 **Architectury API** — Forge ve Fabric platformlarında eşzamanlı geliştirme için soyutlama katmanı.
 *   🦊 **Fabric** / 🔨 **Forge** — Mod yükleyicileri.
 
 **Araçlar**
-*   🧊 **Blockbench** — Tüm karakter, arkalık ve araç blokları için özel 3D modelleme ve dokulandırma.
+*   🧊 **Blockbench** — Tüm karakter, arka plaka ve alet blokları için özel 3D modelleme ve dokulandırma.
 *   🐘 **Gradle** — Derleme otomasyonu ve bağımlılık yönetimi.
 
-## 🚀 Başlangıç
+## 🚀 Başlarken
 
-### Ön Koşullar
+### Gereksinimler
 *   Minecraft `1.20.1`
-*   **Fabric** veya **Forge** Mod Yükleyicisi
+*   **Fabric** veya **Forge** Mod Yükleyici
 *   [Architectury API](https://modrinth.com/mod/architectury-api) (Zorunlu Bağımlılık)
 
 ### Kurulum
 1.  Modun en son sürümünü **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** veya **[Modrinth](https://modrinth.com/mod/sign-builder)** üzerinden indirin.
-2.  Architectury API'nin gerekli sürümünü indirin (Fabric kullanıyorsanız Fabric API'yi de ekleyin).
-3.  İndirdiğiniz `.jar` dosyalarını Minecraft `mods` klasörünüze atın.
+2.  Gerekli Architectury API sürümünü indirin (Fabric kullanıyorsanız Fabric API'yi de edinin).
+3.  İndirdiğiniz `.jar` dosyalarını Minecraft klasörünüzdeki `mods` dizinine atın.
 4.  Oyunu başlatın!
 
 ## 🤝 Katkıda Bulunma
-Bu öncelikle kişisel bir portföy projesidir, ancak sorun bildirimleri (issues), öneriler ve pull request'ler her zaman kabul edilir. Karmaşık değişiklikler için yaklaşımı tartışabilmemiz adına lütfen önce bir issue açın.
+Bu proje temel olarak kişisel bir portföy çalışmasıdır; ancak hata bildirimleri, öneriler ve pull request'ler her zaman memnuniyetle karşılanır. Büyük çaplı değişiklikler için lütfen önce bir issue açarak planlanan yaklaşımı tartışın.
 
-## ⚖️ Sorumluluk Reddi ve Yasal Uyarı
-*   Bu proje **GNU General Public License v3.0 (GPLv3)** altında lisanslanmıştır. Daha fazla detay için `LICENSE` dosyasına bakın.
-*   Bu proje, Minecraft için tamamen hayran yapımı, açık kaynaklı bir modifikasyondur.
-*   Tüm özel 3D modeller ve kod uygulamaları, yazar tarafından oluşturulan orijinal çalışmalardır.
+## ⚖️ Sorumluluk Reddi ve Yasal Bildirim
+*   Bu proje **GNU General Public License v3.0 (GPLv3)** lisansı altındadır. Detaylar için `LICENSE` dosyasına göz atabilirsiniz.
+*   Bu proje tamamen hayran yapımı, açık kaynaklı bir Minecraft modifikasyonudur.
+*   Tüm özel 3D modeller ve kod uygulamaları yazar tarafından üretilmiş özgün çalışmalardır.
 
-**Boran Mandacı** tarafından geliştirilmiştir.
+**Boran Mandacı** tarafından geliştirilmiştir
