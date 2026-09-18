@@ -33,9 +33,9 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +44,8 @@ import java.util.List;
 
 public class LetterBlock extends Block implements EntityBlock {
 
+    // 0: Kapalı, 1: Low Power (6 ışık), 2: Normal (15 ışık)
+    public static final IntegerProperty LIGHT_MODE = IntegerProperty.create("light_mode", 0, 2);
     public static final EnumProperty<SignMaterial> MATERIAL = EnumProperty.create("material", SignMaterial.class);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<AttachFace> FACE = BlockStateProperties.ATTACH_FACE;
@@ -81,12 +83,36 @@ public class LetterBlock extends Block implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.FLOOR)
-                .setValue(MATERIAL, SignMaterial.DEFAULT));
+                .setValue(MATERIAL, SignMaterial.DEFAULT)
+                .setValue(LIGHT_MODE, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FACE, MATERIAL);
+        builder.add(FACING, FACE, MATERIAL, LIGHT_MODE);
+    }
+
+    public static void updateLightLevel(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
+        if (level.isClientSide()) return;
+
+        int targetMode = 0;
+        if (entity.isActive()) {
+            targetMode = (entity.getWrenchMode() == 10) ? 1 : 2;
+        }
+
+        if (entity.isBig()) {
+            BlockPos[] positions = getBigBlockPositions(entity.getBlockPos(), level.getBlockState(entity.getBlockPos()));
+            for (BlockPos p : positions) {
+                BlockState s = level.getBlockState(p);
+                if (s.hasProperty(LIGHT_MODE) && s.getValue(LIGHT_MODE) != targetMode) {
+                    level.setBlock(p, s.setValue(LIGHT_MODE, targetMode), 3);
+                }
+            }
+        } else {
+            if (state.hasProperty(LIGHT_MODE) && state.getValue(LIGHT_MODE) != targetMode) {
+                level.setBlock(pos, state.setValue(LIGHT_MODE, targetMode), 3);
+            }
+        }
     }
 
     @Override
@@ -374,6 +400,7 @@ public class LetterBlock extends Block implements EntityBlock {
             lbe.setChanged();
             if (!level.isClientSide()) {
                 lbe.sync();
+                updateLightLevel(level, pos, state, lbe);
             } else {
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
@@ -461,6 +488,8 @@ public class LetterBlock extends Block implements EntityBlock {
                     if (hasAnyBackplate) {
                         updateAllEntitiesBackplate(level, b00, mState, true, true, fMat, bMat, fCol, bCol, fRain, bRain);
                     }
+
+                    updateLightLevel(level, b00, level.getBlockState(b00), actualMaster);
 
                     level.sendBlockUpdated(b00, level.getBlockState(b00), level.getBlockState(b00), 3);
                     level.sendBlockUpdated(b10, level.getBlockState(b10), level.getBlockState(b10), 3);
@@ -639,6 +668,7 @@ public class LetterBlock extends Block implements EntityBlock {
                         master.setActive(hasSignal);
                         master.setChanged();
                         master.sync();
+                        updateLightLevel(pLevel, master.getBlockPos(), pLevel.getBlockState(master.getBlockPos()), master);
                         pLevel.sendBlockUpdated(master.getBlockPos(), pLevel.getBlockState(master.getBlockPos()), pLevel.getBlockState(master.getBlockPos()), 3);
                     }
                 }

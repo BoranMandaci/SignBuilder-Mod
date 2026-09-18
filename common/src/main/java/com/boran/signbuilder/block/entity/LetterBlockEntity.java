@@ -1,5 +1,6 @@
 package com.boran.signbuilder.block.entity;
 
+import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -279,7 +280,13 @@ public class LetterBlockEntity extends BlockEntity {
         }
 
         if (!level.isClientSide()) {
-            if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) return;
+            if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {
+                int expectedMode = entity.isActive() ? (entity.getWrenchMode() == 10 ? 1 : 2) : 0;
+                if (state.hasProperty(LetterBlock.LIGHT_MODE) && state.getValue(LetterBlock.LIGHT_MODE) != expectedMode) {
+                    LetterBlock.updateLightLevel(level, pos, state, entity);
+                }
+                return;
+            }
 
             boolean isCurrentlyGlowing = entity.isActive();
             boolean shouldGlow = false;
@@ -336,6 +343,12 @@ public class LetterBlockEntity extends BlockEntity {
             }
             if (shouldGlow != isCurrentlyGlowing) {
                 entity.setActive(shouldGlow);
+                LetterBlock.updateLightLevel(level, pos, state, entity);
+            } else {
+                int expectedMode = entity.isActive() ? (entity.getWrenchMode() == 10 ? 1 : 2) : 0;
+                if (state.hasProperty(LetterBlock.LIGHT_MODE) && state.getValue(LetterBlock.LIGHT_MODE) != expectedMode) {
+                    LetterBlock.updateLightLevel(level, pos, state, entity);
+                }
             }
         }
     }

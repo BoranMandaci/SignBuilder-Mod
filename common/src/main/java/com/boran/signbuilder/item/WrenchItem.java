@@ -172,6 +172,7 @@ public class WrenchItem extends Item {
                     }
                     letterEntity.setChanged();
                     letterEntity.sync();
+                    LetterBlock.updateLightLevel(level, targetPos, targetState, letterEntity);
                     level.sendBlockUpdated(targetPos, targetState, targetState, 3);
                 }
                 level.playSound(null, targetPos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
@@ -248,6 +249,7 @@ public class WrenchItem extends Item {
             }
             letter.setChanged();
             letter.sync();
+            LetterBlock.updateLightLevel(level, effectivePos, currentState, letter);
             level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
             blocksModified++;
         }
