@@ -113,13 +113,17 @@ public class PaintBrushItem extends Item {
             return InteractionResult.PASS;
         }
 
-        LetterBlockEntity letterEntity = (blockEntity instanceof LetterBlockEntity lbe) ? lbe : null;
-        if (letterEntity == null) {
+        LetterBlockEntity rawEntity = (blockEntity instanceof LetterBlockEntity lbe) ? lbe : null;
+        if (rawEntity == null) {
             return InteractionResult.PASS;
         }
 
+        LetterBlockEntity letterEntity = rawEntity.getEffectiveMaster();
+        BlockPos targetPos = letterEntity.getBlockPos();
+        BlockState targetState = level.getBlockState(targetPos);
+
         Direction clickedFace = context.getClickedFace();
-        boolean isBackFace = determineIfBackFace(state, clickedFace, player);
+        boolean isBackFace = determineIfBackFace(targetState, clickedFace, player);
 
         boolean targetBackplate = isBackplateBlock;
         if (isLetterBlock && letterEntity.hasBackplate()) {
@@ -137,7 +141,7 @@ public class PaintBrushItem extends Item {
                 if (copiedColor == -1) player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [Rainbow]").withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
                 else player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]").withStyle(Style.EMPTY.withColor(copiedColor)), true);
             }
-            level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
+            level.playSound(null, targetPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
@@ -159,34 +163,36 @@ public class PaintBrushItem extends Item {
         }
 
         if (isSmartFill) {
-            applyColorToConnected(level, pos, player, stack, context.getHand(), selectedColor, newMaterial, hasMaterial, targetBackplate, isBackFace);
+            applyColorToConnected(level, targetPos, player, stack, context.getHand(), selectedColor, newMaterial, hasMaterial, targetBackplate, isBackFace);
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
+        int materialCost = letterEntity.isBig() ? 4 : 1;
+
         if (hasMaterial) {
-            if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial)) {
+            if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial, materialCost)) {
                 player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
                 return InteractionResult.FAIL;
             }
         }
 
-        BlockState newState = state;
-        if (!targetBackplate && hasMaterial && state.hasProperty(LetterBlock.MATERIAL)) {
-            newState = state.setValue(LetterBlock.MATERIAL, newMaterial);
+        BlockState newState = targetState;
+        if (!targetBackplate && hasMaterial && targetState.hasProperty(LetterBlock.MATERIAL)) {
+            newState = targetState.setValue(LetterBlock.MATERIAL, newMaterial);
         }
 
         if (!level.isClientSide()) {
-            if (newState != state) level.setBlock(pos, newState, 3);
+            if (newState != targetState) level.setBlock(targetPos, newState, 3);
             applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-            level.sendBlockUpdated(pos, state, newState, 3);
+            level.sendBlockUpdated(targetPos, targetState, newState, 3);
 
             if (player != null) {
-                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, targetPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
             }
         } else {
-            if (newState != state) level.setBlock(pos, newState, 11);
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+            if (newState != targetState) level.setBlock(targetPos, newState, 11);
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(targetPos));
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide());
@@ -273,7 +279,13 @@ public class PaintBrushItem extends Item {
             BlockPos current = queue.poll();
             BlockState cs = level.getBlockState(current);
             if (cs.getBlock() instanceof LetterBlock || cs.getBlock() instanceof BackplateBlock) {
-                targets.add(current);
+                BlockEntity be = level.getBlockEntity(current);
+                if (be instanceof LetterBlockEntity lbe) {
+                    BlockPos effectivePos = lbe.getEffectiveMaster().getBlockPos();
+                    if (!targets.contains(effectivePos)) {
+                        targets.add(effectivePos);
+                    }
+                }
                 for (Direction dir : Direction.values()) {
                     BlockPos neighbor = current.relative(dir);
                     if (!visited.contains(neighbor)) {
@@ -299,10 +311,11 @@ public class PaintBrushItem extends Item {
                 continue;
             }
 
-            BlockState currentState = level.getBlockState(current);
             BlockEntity cbe = level.getBlockEntity(current);
-            LetterBlockEntity letterEntity = (cbe instanceof LetterBlockEntity lbe) ? lbe : null;
-            if (letterEntity == null) continue;
+            if (!(cbe instanceof LetterBlockEntity rawLbe)) continue;
+            LetterBlockEntity letterEntity = rawLbe.getEffectiveMaster();
+            BlockPos effectivePos = letterEntity.getBlockPos();
+            BlockState currentState = level.getBlockState(effectivePos);
 
             SignMaterial currentMat;
             if (targetBackplate) {
@@ -315,8 +328,10 @@ public class PaintBrushItem extends Item {
                 continue;
             }
 
+            int materialCost = letterEntity.isBig() ? 4 : 1;
+
             if (hasMaterial) {
-                if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial)) {
+                if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial, materialCost)) {
                     failedMaterial++;
                     continue;
                 }
@@ -328,13 +343,13 @@ public class PaintBrushItem extends Item {
             }
 
             if (!level.isClientSide()) {
-                if (newState != currentState) level.setBlock(current, newState, 3);
+                if (newState != currentState) level.setBlock(effectivePos, newState, 3);
                 applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-                level.sendBlockUpdated(current, currentState, newState, 3);
+                level.sendBlockUpdated(effectivePos, currentState, newState, 3);
                 blocksPainted++;
             } else {
-                if (newState != currentState) level.setBlock(current, newState, 11);
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(current));
+                if (newState != currentState) level.setBlock(effectivePos, newState, 11);
+                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(effectivePos));
             }
         }
 
@@ -349,15 +364,15 @@ public class PaintBrushItem extends Item {
         }
     }
 
-    private boolean tryConsumeMaterial(Player player, SignMaterial oldMat, SignMaterial newMat) {
+    private boolean tryConsumeMaterial(Player player, SignMaterial oldMat, SignMaterial newMat, int amount) {
         if (player.isCreative() || oldMat == newMat) return true;
         if (newMat != SignMaterial.DEFAULT) {
             Item requiredItem = getItemForMaterial(newMat);
-            if (countItemInInventory(player, requiredItem) < 1) return false;
-            consumeItemFromInventory(player, requiredItem, 1);
+            if (countItemInInventory(player, requiredItem) < amount) return false;
+            consumeItemFromInventory(player, requiredItem, amount);
         }
         if (oldMat != SignMaterial.DEFAULT) {
-            ItemStack refundStack = new ItemStack(getItemForMaterial(oldMat), 1);
+            ItemStack refundStack = new ItemStack(getItemForMaterial(oldMat), amount);
             if (!player.getInventory().add(refundStack)) player.drop(refundStack, false);
         }
         return true;

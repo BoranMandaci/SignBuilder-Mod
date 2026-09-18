@@ -3,6 +3,7 @@ package com.boran.signbuilder.block.entity;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -30,10 +31,34 @@ public class LetterBlockEntity extends BlockEntity {
     private boolean backplateFrontRainbow = false;
     private boolean backplateBackRainbow = false;
 
+    private boolean isBig = false;
+    private boolean isDummy = false;
+    @Nullable
+    private BlockPos masterPos = null;
+
     private boolean isAudioPlaying = false;
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public boolean isBig() { return this.isBig; }
+    public void setBig(boolean big) { this.isBig = big; setChanged(); sync(); }
+
+    public boolean isDummy() { return this.isDummy; }
+    public void setDummy(boolean dummy) { this.isDummy = dummy; setChanged(); sync(); }
+
+    @Nullable
+    public BlockPos getMasterPos() { return this.masterPos; }
+    public void setMasterPos(@Nullable BlockPos pos) { this.masterPos = pos; setChanged(); sync(); }
+
+    public LetterBlockEntity getEffectiveMaster() {
+        if (this.isDummy && this.masterPos != null && this.level != null) {
+            if (this.level.getBlockEntity(this.masterPos) instanceof LetterBlockEntity master) {
+                return master;
+            }
+        }
+        return this;
     }
 
     public void setSavedMaterial(SignMaterial mat) { this.savedMaterial = mat; setChanged(); sync(); }
@@ -104,6 +129,12 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putInt("BPBackColor", this.backplateBackColor);
         tag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
         tag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
+
+        tag.putBoolean("IsBig", this.isBig);
+        tag.putBoolean("IsDummy", this.isDummy);
+        if (this.masterPos != null) {
+            tag.put("MasterPos", NbtUtils.writeBlockPos(this.masterPos));
+        }
     }
 
     @Override
@@ -133,6 +164,14 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("BPFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BPFrontRainbow");
         if (tag.contains("BPBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BPBackRainbow");
 
+        this.isBig = tag.getBoolean("IsBig");
+        this.isDummy = tag.getBoolean("IsDummy");
+        if (tag.contains("MasterPos")) {
+            this.masterPos = NbtUtils.readBlockPos(tag.getCompound("MasterPos"));
+        } else {
+            this.masterPos = null;
+        }
+
         if (level != null && level.isClientSide) {
             dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(worldPosition)
@@ -155,30 +194,50 @@ public class LetterBlockEntity extends BlockEntity {
 
     public ItemStack getDroppedItemStack(BlockState state) {
         ItemStack stack = new ItemStack(state.getBlock());
+
+        boolean isCustomized = (this.rgbColor != 0xFFFFFF)
+                || this.isRainbow
+                || (this.wrenchMode != 0)
+                || this.isActive
+                || !this.detectsMonsters
+                || this.detectsAnimals
+                || (this.savedMaterial != SignMaterial.DEFAULT)
+                || this.hasBackplate;
+
+        if (!isCustomized) {
+            return stack;
+        }
+
         CompoundTag beTag = new CompoundTag();
 
-        beTag.putInt("RGBColor", this.rgbColor);
-        beTag.putBoolean("IsRainbow", this.isRainbow);
-        beTag.putInt("WrenchMode", this.wrenchMode);
-        beTag.putBoolean("IsActive", this.isActive);
-        beTag.putBoolean("Glowing", this.isActive);
-        beTag.putBoolean("DetectsMonsters", this.detectsMonsters);
-        beTag.putBoolean("DetectsAnimals", this.detectsAnimals);
-        beTag.putString("SavedMaterial", this.savedMaterial.name());
+        if (this.rgbColor != 0xFFFFFF) beTag.putInt("RGBColor", this.rgbColor);
+        if (this.isRainbow) beTag.putBoolean("IsRainbow", this.isRainbow);
+        if (this.wrenchMode != 0) beTag.putInt("WrenchMode", this.wrenchMode);
+        if (this.isActive) {
+            beTag.putBoolean("IsActive", this.isActive);
+            beTag.putBoolean("Glowing", this.isActive);
+        }
+        if (!this.detectsMonsters) beTag.putBoolean("DetectsMonsters", this.detectsMonsters);
+        if (this.detectsAnimals) beTag.putBoolean("DetectsAnimals", this.detectsAnimals);
+        if (this.savedMaterial != SignMaterial.DEFAULT) beTag.putString("SavedMaterial", this.savedMaterial.name());
 
-        beTag.putBoolean("HasBackplate", this.hasBackplate);
-        beTag.putString("BPFrontMat", this.backplateFrontMaterial.name());
-        beTag.putString("BPBackMat", this.backplateBackMaterial.name());
-        beTag.putInt("BPFrontColor", this.backplateFrontColor);
-        beTag.putInt("BPBackColor", this.backplateBackColor);
-        beTag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
-        beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
+        if (this.hasBackplate) {
+            beTag.putBoolean("HasBackplate", this.hasBackplate);
+            if (this.backplateFrontMaterial != SignMaterial.DEFAULT) beTag.putString("BPFrontMat", this.backplateFrontMaterial.name());
+            if (this.backplateBackMaterial != SignMaterial.DEFAULT) beTag.putString("BPBackMat", this.backplateBackMaterial.name());
+            if (this.backplateFrontColor != 0xFFFFFF) beTag.putInt("BPFrontColor", this.backplateFrontColor);
+            if (this.backplateBackColor != 0xFFFFFF) beTag.putInt("BPBackColor", this.backplateBackColor);
+            if (this.backplateFrontRainbow) beTag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
+            if (this.backplateBackRainbow) beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
+        }
 
         stack.getOrCreateTag().put("BlockEntityTag", beTag);
 
-        CompoundTag stateTag = new CompoundTag();
-        stateTag.putString("material", this.savedMaterial.name().toLowerCase());
-        stack.getOrCreateTag().put("BlockStateTag", stateTag);
+        if (this.savedMaterial != SignMaterial.DEFAULT) {
+            CompoundTag stateTag = new CompoundTag();
+            stateTag.putString("material", this.savedMaterial.name().toLowerCase());
+            stack.getOrCreateTag().put("BlockStateTag", stateTag);
+        }
 
         return stack;
     }
@@ -234,7 +293,7 @@ public class LetterBlockEntity extends BlockEntity {
                     case 4: shouldGlow = (time % 60) < 30; break;
                     case 5:
                         if (time % 10 == 0) {
-                            AABB bounds = new AABB(pos).inflate(6.0);
+                            AABB bounds = new AABB(pos).inflate(entity.isBig() ? 8.0 : 6.0);
                             shouldGlow = !level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, bounds,
                                     t -> t instanceof net.minecraft.world.entity.player.Player ||
                                             (entity.doesDetectMonsters() && t instanceof net.minecraft.world.entity.monster.Monster) ||
@@ -256,6 +315,7 @@ public class LetterBlockEntity extends BlockEntity {
                     case 9:
                         if (time % 5 == 0) {
                             AABB bounds = new AABB(pos);
+                            if (entity.isBig()) bounds = bounds.inflate(1.0);
                             shouldGlow = false;
                             for (net.minecraft.world.entity.player.Player p : level.players()) {
                                 if (p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 256) {
@@ -278,5 +338,9 @@ public class LetterBlockEntity extends BlockEntity {
                 entity.setActive(shouldGlow);
             }
         }
+    }
+
+    public AABB getRenderBoundingBox() {
+        return new AABB(this.worldPosition).inflate(8.0);
     }
 }

@@ -1,15 +1,23 @@
 package com.boran.signbuilder;
 
+import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
+import com.boran.signbuilder.item.PaintBrushItem;
 import com.boran.signbuilder.menu.ModMenuTypes;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
-import dev.architectury.utils.EnvExecutor;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 
 public class SignBuilder {
 
@@ -25,6 +33,24 @@ public class SignBuilder {
         ModCreativeModeTabs.register();
 
         ModMessages.register();
+
+        InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
+            if (hand == InteractionHand.MAIN_HAND && player.isShiftKeyDown()) {
+                ItemStack held = player.getItemInHand(hand);
+                if (held.getItem() instanceof PaintBrushItem) {
+                    return EventResult.pass();
+                }
+
+                Level level = player.level();
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof LetterBlock) {
+                    if (LetterBlock.tryDetachBackplate(level, pos, player)) {
+                        return EventResult.interruptTrue();
+                    }
+                }
+            }
+            return EventResult.pass();
+        });
 
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             com.boran.signbuilder.client.ClientModEvents.init();

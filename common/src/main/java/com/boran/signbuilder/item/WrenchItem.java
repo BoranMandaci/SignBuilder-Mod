@@ -109,7 +109,11 @@ public class WrenchItem extends Item {
         Player player = pContext.getPlayer();
         ItemStack stack = pContext.getItemInHand();
 
-        if (clickedBlock.getBlock() instanceof LetterBlock && level.getBlockEntity(pos) instanceof LetterBlockEntity letterEntity) {
+        if (clickedBlock.getBlock() instanceof LetterBlock && level.getBlockEntity(pos) instanceof LetterBlockEntity rawEntity) {
+            LetterBlockEntity letterEntity = rawEntity.getEffectiveMaster();
+            BlockPos targetPos = letterEntity.getBlockPos();
+            BlockState targetState = level.getBlockState(targetPos);
+
             if (player != null && player.isShiftKeyDown()) {
                 if (!level.isClientSide()) {
                     int copiedMode = letterEntity.getWrenchMode();
@@ -117,7 +121,7 @@ public class WrenchItem extends Item {
                     stack.getOrCreateTag().putBoolean("DetectsMonsters", letterEntity.doesDetectMonsters());
                     stack.getOrCreateTag().putBoolean("DetectsAnimals", letterEntity.doesDetectAnimals());
                     player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(MOD_KEYS[copiedMode]).withStyle(ChatFormatting.AQUA)), true);
-                    level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
+                    level.playSound(null, targetPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide());
             }
@@ -136,18 +140,20 @@ public class WrenchItem extends Item {
                 boolean targetActive = (mode != -1) && (letterEntity.getWrenchMode() != mode || !wasActive);
 
                 if (isSmartFill) {
-                    applyModeToConnected(level, pos, player, stack, pContext.getHand(), mode, targetActive, detectsMonsters, detectsAnimals);
+                    applyModeToConnected(level, targetPos, player, stack, pContext.getHand(), mode, targetActive, detectsMonsters, detectsAnimals);
                 } else {
+                    int dustCost = letterEntity.isBig() ? 4 : 1;
+
                     if (player != null && !player.isCreative()) {
                         if (!wasActive && targetActive) {
-                            if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= 1) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, 1);
+                            if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
                             else {
                                 player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
                                 player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
                                 return InteractionResult.FAIL;
                             }
                         } else if (wasActive && !targetActive) {
-                            ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, 1);
+                            ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
                             if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
                         }
                         stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
@@ -166,9 +172,9 @@ public class WrenchItem extends Item {
                     }
                     letterEntity.setChanged();
                     letterEntity.sync();
-                    level.sendBlockUpdated(pos, clickedBlock, clickedBlock, 3);
+                    level.sendBlockUpdated(targetPos, targetState, targetState, 3);
                 }
-                level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
+                level.playSound(null, targetPos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
@@ -185,8 +191,11 @@ public class WrenchItem extends Item {
 
         while (!queue.isEmpty() && visited.size() <= 256) {
             BlockPos current = queue.poll();
-            if (level.getBlockEntity(current) instanceof LetterBlockEntity) {
-                targets.add(current);
+            if (level.getBlockEntity(current) instanceof LetterBlockEntity be) {
+                BlockPos effectivePos = be.getEffectiveMaster().getBlockPos();
+                if (!targets.contains(effectivePos)) {
+                    targets.add(effectivePos);
+                }
                 for (Direction dir : Direction.values()) {
                     BlockPos neighbor = current.relative(dir);
                     if (!visited.contains(neighbor) && level.getBlockEntity(neighbor) instanceof LetterBlockEntity) {
@@ -206,17 +215,22 @@ public class WrenchItem extends Item {
                 continue;
             }
 
-            LetterBlockEntity letter = (LetterBlockEntity) level.getBlockEntity(current);
-            BlockState currentState = level.getBlockState(current);
+            LetterBlockEntity rawLetter = (LetterBlockEntity) level.getBlockEntity(current);
+            if (rawLetter == null) continue;
+            LetterBlockEntity letter = rawLetter.getEffectiveMaster();
+            BlockPos effectivePos = letter.getBlockPos();
+            BlockState currentState = level.getBlockState(effectivePos);
+
             boolean wasActive = letter.isActive();
             boolean willBeActive = (mode != -1) && targetActive;
+            int dustCost = letter.isBig() ? 4 : 1;
 
             if (player != null && !player.isCreative()) {
                 if (!wasActive && willBeActive) {
-                    if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= 1) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, 1);
+                    if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
                     else { failedMaterial++; continue; }
                 } else if (wasActive && !willBeActive) {
-                    ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, 1);
+                    ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
                     if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
                 }
             }
@@ -234,7 +248,7 @@ public class WrenchItem extends Item {
             }
             letter.setChanged();
             letter.sync();
-            level.sendBlockUpdated(current, currentState, currentState, 3);
+            level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
             blocksModified++;
         }
 

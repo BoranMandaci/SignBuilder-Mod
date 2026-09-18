@@ -1,16 +1,16 @@
 package com.boran.signbuilder.client.render;
 
 import com.boran.signbuilder.block.BackplateBlock;
-import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -35,12 +35,23 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     }
 
     @Override
+    public int getViewDistance() {
+        return 64;
+    }
+
+    @Override
     public void render(LetterBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        if (entity.isDummy()) {
+            return;
+        }
+
         BlockState state = entity.getBlockState();
         if (entity.getLevel() == null) return;
 
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
-        VertexConsumer buffer = bufferSource.getBuffer(Sheets.cutoutBlockSheet());
+        RenderType renderType = ItemBlockRenderTypes.getRenderType(state, false);
+        VertexConsumer buffer = bufferSource.getBuffer(renderType);
+
         int light = entity.isActive() ? 15728880 : LevelRenderer.getLightColor(entity.getLevel(), entity.getBlockPos());
         int currentRainbow = calculateRainbowColor();
 
@@ -66,6 +77,27 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
         AttachFace face = state.hasProperty(BlockStateProperties.ATTACH_FACE) ? state.getValue(BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
         Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? state.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
+
+        poseStack.pushPose();
+
+        if (entity.isBig()) {
+            if (face == AttachFace.WALL) {
+                switch (facing) {
+                    case NORTH -> poseStack.translate(-1.0, 0.0, -1.0);
+                    case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
+                    case EAST  -> poseStack.translate(0.0, 0.0, -1.0);
+                    case WEST  -> poseStack.translate(-1.0, 0.0, 0.0);
+                }
+            } else {
+                switch (facing) {
+                    case EAST  -> poseStack.translate(0.0, 0.0, -0.6875);
+                    case NORTH -> poseStack.translate(-0.6875, 0.0, 0.0);
+                    case SOUTH -> poseStack.translate(-0.3125, 0.0, 0.0);
+                    case WEST  -> poseStack.translate(0.0, 0.0, -0.3125);
+                }
+            }
+            poseStack.scale(2.0F, 2.0F, 2.0F);
+        }
 
         if (entity.hasBackplate()) {
             SignMaterial fMat = entity.getBackplateFrontMaterial();
@@ -120,6 +152,8 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
                 light,
                 packedOverlay
         );
+
+        poseStack.popPose();
         poseStack.popPose();
     }
 

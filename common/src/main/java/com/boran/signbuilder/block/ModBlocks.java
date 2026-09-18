@@ -976,7 +976,6 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
             () -> new BackplateBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE)
-                    .strength(1.0f)
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
