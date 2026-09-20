@@ -11,20 +11,23 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 
 import java.util.List;
 
 public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBlockEntity> {
+
+    private static final Direction[] DIRECTIONS = Direction.values();
+    private static final RandomSource RANDOM = RandomSource.create();
 
     public LetterBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -36,7 +39,12 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
     @Override
     public int getViewDistance() {
-        return 64;
+        return 128;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(LetterBlockEntity blockEntity) {
+        return blockEntity.isBig();
     }
 
     @Override
@@ -158,15 +166,18 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     }
 
     private void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, BakedModel model, BlockState state, int frontColor, int backColor, int light, int overlay) {
-        RandomSource random = RandomSource.create(42L);
-        for (Direction dir : Direction.values()) {
-            renderPlateQuadList(pose, buffer, model.getQuads(state, dir, random), frontColor, backColor, light, overlay);
+        for (int i = 0; i < 6; i++) {
+            RANDOM.setSeed(42L);
+            renderPlateQuadList(pose, buffer, model.getQuads(state, DIRECTIONS[i], RANDOM), frontColor, backColor, light, overlay);
         }
-        renderPlateQuadList(pose, buffer, model.getQuads(state, null, random), frontColor, backColor, light, overlay);
+        RANDOM.setSeed(42L);
+        renderPlateQuadList(pose, buffer, model.getQuads(state, null, RANDOM), frontColor, backColor, light, overlay);
     }
 
     private void renderPlateQuadList(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
-        for (BakedQuad quad : quads) {
+        int quadCount = quads.size();
+        for (int i = 0; i < quadCount; i++) {
+            BakedQuad quad = quads.get(i);
             int color = 0xFFFFFF;
             if (quad.getTintIndex() == 0) {
                 color = frontColor;
