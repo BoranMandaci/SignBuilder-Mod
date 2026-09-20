@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Камень",
   "material.signbuilder.emerald_block": "Изумрудный блок",
   "material.signbuilder.smooth_sandstone": "Гладкий песчаник",
-  "material.signbuilder.smooth_red_sandstone": "Гладкий красный песчаник"
+  "material.signbuilder.smooth_red_sandstone": "Гладкий красный песчаник",
+  "block.signbuilder.symbol_greater_than": "Знак «больше»",
+  "block.signbuilder.symbol_less_than": "Знак «меньше»",
+  "block.signbuilder.letter_a_de": "Буква Ä",
+  "block.signbuilder.letter_eszett": "Буква ß",
+  "block.signbuilder.letter_c_tr": "Буква Ç",
+  "block.signbuilder.letter_g_tr": "Буква Ğ",
+  "block.signbuilder.letter_i_tr": "Буква İ",
+  "block.signbuilder.letter_o_tr": "Буква Ö",
+  "block.signbuilder.letter_s_tr": "Буква Ş",
+  "block.signbuilder.letter_u_tr": "Буква Ü"
 }

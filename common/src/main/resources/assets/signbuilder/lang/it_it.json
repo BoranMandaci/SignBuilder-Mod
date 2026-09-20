@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Pietra",
   "material.signbuilder.emerald_block": "Blocco di smeraldo",
   "material.signbuilder.smooth_sandstone": "Arenaria levigata",
-  "material.signbuilder.smooth_red_sandstone": "Arenaria rossa levigata"
+  "material.signbuilder.smooth_red_sandstone": "Arenaria rossa levigata",
+  "block.signbuilder.symbol_greater_than": "Simbolo maggiore di",
+  "block.signbuilder.symbol_less_than": "Simbolo minore di",
+  "block.signbuilder.letter_a_de": "Lettera Ä",
+  "block.signbuilder.letter_eszett": "Lettera ß",
+  "block.signbuilder.letter_c_tr": "Lettera Ç",
+  "block.signbuilder.letter_g_tr": "Lettera Ğ",
+  "block.signbuilder.letter_i_tr": "Lettera İ",
+  "block.signbuilder.letter_o_tr": "Lettera Ö",
+  "block.signbuilder.letter_s_tr": "Lettera Ş",
+  "block.signbuilder.letter_u_tr": "Lettera Ü"
 }

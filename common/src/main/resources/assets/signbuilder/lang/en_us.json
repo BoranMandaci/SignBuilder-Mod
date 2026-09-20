@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Stone",
   "material.signbuilder.emerald_block": "Block of Emerald",
   "material.signbuilder.smooth_sandstone": "Smooth Sandstone",
-  "material.signbuilder.smooth_red_sandstone": "Smooth Red Sandstone"
+  "material.signbuilder.smooth_red_sandstone": "Smooth Red Sandstone",
+  "block.signbuilder.symbol_greater_than": "Greater Than Symbol",
+  "block.signbuilder.symbol_less_than": "Less Than Symbol",
+  "block.signbuilder.letter_a_de": "Letter Ä",
+  "block.signbuilder.letter_eszett": "Letter ß",
+  "block.signbuilder.letter_c_tr": "Letter Ç",
+  "block.signbuilder.letter_g_tr": "Letter Ğ",
+  "block.signbuilder.letter_i_tr": "Letter İ",
+  "block.signbuilder.letter_o_tr": "Letter Ö",
+  "block.signbuilder.letter_s_tr": "Letter Ş",
+  "block.signbuilder.letter_u_tr": "Letter Ü"
 }

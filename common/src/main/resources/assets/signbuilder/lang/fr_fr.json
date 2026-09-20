@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Roche",
   "material.signbuilder.emerald_block": "Bloc d'émeraude",
   "material.signbuilder.smooth_sandstone": "Grès poli",
-  "material.signbuilder.smooth_red_sandstone": "Grès rouge poli"
+  "material.signbuilder.smooth_red_sandstone": "Grès rouge poli",
+  "block.signbuilder.symbol_greater_than": "Symbole supérieur à",
+  "block.signbuilder.symbol_less_than": "Symbole inférieur à",
+  "block.signbuilder.letter_a_de": "Lettre Ä",
+  "block.signbuilder.letter_eszett": "Lettre ß",
+  "block.signbuilder.letter_c_tr": "Lettre Ç",
+  "block.signbuilder.letter_g_tr": "Lettre Ğ",
+  "block.signbuilder.letter_i_tr": "Lettre İ",
+  "block.signbuilder.letter_o_tr": "Lettre Ö",
+  "block.signbuilder.letter_s_tr": "Lettre Ş",
+  "block.signbuilder.letter_u_tr": "Lettre Ü"
 }

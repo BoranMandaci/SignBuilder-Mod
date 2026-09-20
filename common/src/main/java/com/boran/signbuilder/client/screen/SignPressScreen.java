@@ -26,9 +26,11 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
     private final List<String> allBlocks = List.of(
             "letter_a", "letter_b", "letter_c", "letter_d", "letter_e", "letter_f", "letter_g", "letter_h", "letter_i", "letter_j", "letter_k", "letter_l", "letter_m", "letter_n", "letter_o", "letter_p", "letter_q", "letter_r", "letter_s", "letter_t", "letter_u", "letter_v", "letter_w", "letter_x", "letter_y", "letter_z",
+            "letter_a_de", "letter_c_tr", "letter_g_tr", "letter_i_tr", "letter_o_tr", "letter_s_tr", "letter_u_tr", "letter_eszett",
             "number_0", "number_1", "number_2", "number_3", "number_4", "number_5", "number_6", "number_7", "number_8", "number_9",
             "arrow_up", "arrow_down", "arrow_left", "arrow_right", "arrow_left_up", "arrow_right_up", "arrow_left_down", "arrow_right_down",
             "symbol_plus", "symbol_minus", "symbol_percent",
+            "symbol_greater_than", "symbol_less_than",
             "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_comma",
             "symbol_slash", "symbol_backslash",
             "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double",

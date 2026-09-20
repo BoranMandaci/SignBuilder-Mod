@@ -40,8 +40,24 @@ public class ModCreativeModeTabs {
             safeAccept(output, ModBlocks.SIGN_PRESS_ITEM);
             safeAccept(output, ModBlocks.BACKPLATE_ITEM);
 
-            for (RegistrySupplier<Item> itemReg : ModBlocks.LETTER_ITEMS) {
-                safeAccept(output, itemReg);
+            String[] letterOrder = {
+                    "letter_a", "letter_b", "letter_c", "letter_d", "letter_e", "letter_f",
+                    "letter_g", "letter_h", "letter_i", "letter_j", "letter_k", "letter_l",
+                    "letter_m", "letter_n", "letter_o", "letter_p", "letter_q", "letter_r",
+                    "letter_s", "letter_t", "letter_u", "letter_v", "letter_w", "letter_x",
+                    "letter_y", "letter_z",
+                    "letter_a_de", "letter_c_tr", "letter_g_tr", "letter_i_tr",
+                    "letter_o_tr", "letter_s_tr", "letter_u_tr", "letter_eszett"
+            };
+
+            for (String name : letterOrder) {
+                ResourceLocation id = new ResourceLocation("signbuilder", name);
+                if (BuiltInRegistries.ITEM.containsKey(id)) {
+                    Item item = BuiltInRegistries.ITEM.get(id);
+                    if (item != null && item != Items.AIR) {
+                        output.accept(item);
+                    }
+                }
             }
         });
 
@@ -56,6 +72,7 @@ public class ModCreativeModeTabs {
                     "arrow_up", "arrow_down", "arrow_left", "arrow_right",
                     "arrow_left_up", "arrow_right_up", "arrow_left_down", "arrow_right_down",
                     "symbol_plus", "symbol_minus", "symbol_divide", "symbol_equals", "symbol_percent",
+                    "symbol_greater_than", "symbol_less_than",
                     "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_comma",
                     "symbol_question", "symbol_exclamation", "symbol_colon", "symbol_semicolon", "symbol_apostrophe", "symbol_quotes",
                     "symbol_slash", "symbol_backslash",

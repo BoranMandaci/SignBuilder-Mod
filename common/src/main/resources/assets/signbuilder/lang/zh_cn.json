@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "石头",
   "material.signbuilder.emerald_block": "绿宝石块",
   "material.signbuilder.smooth_sandstone": "平滑砂岩",
-  "material.signbuilder.smooth_red_sandstone": "平滑红砂岩"
+  "material.signbuilder.smooth_red_sandstone": "平滑红砂岩",
+  "block.signbuilder.symbol_greater_than": "大于号",
+  "block.signbuilder.symbol_less_than": "小于号",
+  "block.signbuilder.letter_a_de": "字母 Ä",
+  "block.signbuilder.letter_eszett": "字母 ß",
+  "block.signbuilder.letter_c_tr": "字母 Ç",
+  "block.signbuilder.letter_g_tr": "字母 Ğ",
+  "block.signbuilder.letter_i_tr": "字母 İ",
+  "block.signbuilder.letter_o_tr": "字母 Ö",
+  "block.signbuilder.letter_s_tr": "字母 Ş",
+  "block.signbuilder.letter_u_tr": "字母 Ü"
 }

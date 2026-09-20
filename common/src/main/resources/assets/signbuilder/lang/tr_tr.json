@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Taş",
   "material.signbuilder.emerald_block": "Zümrüt Bloğu",
   "material.signbuilder.smooth_sandstone": "Düz Kumtaşı",
-  "material.signbuilder.smooth_red_sandstone": "Düz Kırmızı Kumtaşı"
+  "material.signbuilder.smooth_red_sandstone": "Düz Kırmızı Kumtaşı",
+  "block.signbuilder.symbol_greater_than": "Büyüktür Sembolü",
+  "block.signbuilder.symbol_less_than": "Küçüktür Sembolü",
+  "block.signbuilder.letter_a_de": "Ä Harfi",
+  "block.signbuilder.letter_eszett": "ß Harfi",
+  "block.signbuilder.letter_c_tr": "Ç Harfi",
+  "block.signbuilder.letter_g_tr": "Ğ Harfi",
+  "block.signbuilder.letter_i_tr": "İ Harfi",
+  "block.signbuilder.letter_o_tr": "Ö Harfi",
+  "block.signbuilder.letter_s_tr": "Ş Harfi",
+  "block.signbuilder.letter_u_tr": "Ü Harfi"
 }

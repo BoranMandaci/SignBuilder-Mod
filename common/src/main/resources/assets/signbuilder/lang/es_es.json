@@ -242,5 +242,15 @@
   "material.signbuilder.stone": "Piedra",
   "material.signbuilder.emerald_block": "Bloque de esmeralda",
   "material.signbuilder.smooth_sandstone": "Arenisca lisa",
-  "material.signbuilder.smooth_red_sandstone": "Arenisca roja lisa"
+  "material.signbuilder.smooth_red_sandstone": "Arenisca roja lisa",
+  "block.signbuilder.symbol_greater_than": "Símbolo mayor que",
+  "block.signbuilder.symbol_less_than": "Símbolo menor que",
+  "block.signbuilder.letter_a_de": "Letra Ä",
+  "block.signbuilder.letter_eszett": "Letra ß",
+  "block.signbuilder.letter_c_tr": "Letra Ç",
+  "block.signbuilder.letter_g_tr": "Letra Ğ",
+  "block.signbuilder.letter_i_tr": "Letra İ",
+  "block.signbuilder.letter_o_tr": "Letra Ö",
+  "block.signbuilder.letter_s_tr": "Letra Ş",
+  "block.signbuilder.letter_u_tr": "Letra Ü"
 }
