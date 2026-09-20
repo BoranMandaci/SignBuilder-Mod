@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "Буква İ",
   "block.signbuilder.letter_o_tr": "Буква Ö",
   "block.signbuilder.letter_s_tr": "Буква Ş",
-  "block.signbuilder.letter_u_tr": "Буква Ü"
+  "block.signbuilder.letter_u_tr": "Буква Ü",
+  "container.signbuilder.sign_press": "Пресс для вывесок",
+  "item.signbuilder.sign_press": "Пресс для вывесок",
+  "gui.signbuilder.blueprint.mode": "Режим: %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 Обычный",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 Мультиблок",
+  "message.signbuilder.blueprint.mode_toggle": "Режим чертежа: %s",
+  "gui.signbuilder.blueprint.horizontal": "Горизонт.",
+  "gui.signbuilder.blueprint.vertical": "Вертикаль",
+  "tooltip.signbuilder.blueprint.backplate_desc": "Автоматически прикрепляет задние панели к установленным вывескам."
 }

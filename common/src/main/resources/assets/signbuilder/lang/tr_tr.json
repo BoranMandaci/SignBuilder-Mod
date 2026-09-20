@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "İ Harfi",
   "block.signbuilder.letter_o_tr": "Ö Harfi",
   "block.signbuilder.letter_s_tr": "Ş Harfi",
-  "block.signbuilder.letter_u_tr": "Ü Harfi"
+  "block.signbuilder.letter_u_tr": "Ü Harfi",
+  "container.signbuilder.sign_press": "Tabela Presi",
+  "item.signbuilder.sign_press": "Tabela Presi",
+  "gui.signbuilder.blueprint.mode": "Mod: %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 Normal",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 Çoklu Blok",
+  "message.signbuilder.blueprint.mode_toggle": "Taslak Modu: %s",
+  "gui.signbuilder.blueprint.horizontal": "Yatay",
+  "gui.signbuilder.blueprint.vertical": "Dikey",
+  "tooltip.signbuilder.blueprint.backplate_desc": "Tabelaların arkasına otomatik arka plaka takar."
 }

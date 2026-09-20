@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "Lettera İ",
   "block.signbuilder.letter_o_tr": "Lettera Ö",
   "block.signbuilder.letter_s_tr": "Lettera Ş",
-  "block.signbuilder.letter_u_tr": "Lettera Ü"
+  "block.signbuilder.letter_u_tr": "Lettera Ü",
+  "container.signbuilder.sign_press": "Pressa per cartelli",
+  "item.signbuilder.sign_press": "Pressa per cartelli",
+  "gui.signbuilder.blueprint.mode": "Modalità: %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 Normale",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 Multiblocco",
+  "message.signbuilder.blueprint.mode_toggle": "Modalità progetto: %s",
+  "gui.signbuilder.blueprint.horizontal": "Orizzontale",
+  "gui.signbuilder.blueprint.vertical": "Verticale",
+  "tooltip.signbuilder.blueprint.backplate_desc": "Applica automaticamente piastre posteriori ai cartelli posizionati."
 }

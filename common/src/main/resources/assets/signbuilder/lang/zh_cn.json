@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "字母 İ",
   "block.signbuilder.letter_o_tr": "字母 Ö",
   "block.signbuilder.letter_s_tr": "字母 Ş",
-  "block.signbuilder.letter_u_tr": "字母 Ü"
+  "block.signbuilder.letter_u_tr": "字母 Ü",
+  "container.signbuilder.sign_press": "告示牌压制机",
+  "item.signbuilder.sign_press": "告示牌压制机",
+  "gui.signbuilder.blueprint.mode": "模式: %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 普通",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 多方块",
+  "message.signbuilder.blueprint.mode_toggle": "蓝图模式: %s",
+  "gui.signbuilder.blueprint.horizontal": "水平",
+  "gui.signbuilder.blueprint.vertical": "垂直",
+  "tooltip.signbuilder.blueprint.backplate_desc": "自动为放置的告示牌添加背板。"
 }

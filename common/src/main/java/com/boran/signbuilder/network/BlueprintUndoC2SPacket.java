@@ -1,5 +1,7 @@
 package com.boran.signbuilder.network;
 
+import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,7 +13,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlueprintUndoC2SPacket {
 
@@ -36,7 +42,9 @@ public class BlueprintUndoC2SPacket {
         if (stack.hasTag() && stack.getTag().contains("UndoHistory")) {
             long[] history = stack.getTag().getLongArray("UndoHistory");
             Level level = player.level();
-            int undoneCount = 0;
+
+            List<ItemStack> itemsToRefund = new ArrayList<>();
+            List<BlockPos> positionsToClear = new ArrayList<>();
 
             for (long posLong : history) {
                 BlockPos pos = BlockPos.of(posLong);
@@ -44,25 +52,40 @@ public class BlueprintUndoC2SPacket {
 
                 ResourceLocation blockKey = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                 if (blockKey != null && blockKey.getNamespace().equals("signbuilder")) {
-                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    itemsToRefund.add(new ItemStack(state.getBlock().asItem()));
 
-                    if (!player.isCreative()) {
-                        ItemStack drop = new ItemStack(state.getBlock().asItem());
+                    BlockEntity be = level.getBlockEntity(pos);
+                    if (be instanceof LetterBlockEntity letterBe) {
+                        if (letterBe.hasBackplate()) {
+                            itemsToRefund.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get()));
+                        }
+                    }
+
+                    positionsToClear.add(pos);
+                }
+            }
+
+            int undoneCount = positionsToClear.size();
+
+            if (undoneCount > 0) {
+                for (BlockPos pos : positionsToClear) {
+                    if (!level.getBlockState(pos).isAir()) {
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+
+                if (!player.isCreative()) {
+                    for (ItemStack drop : itemsToRefund) {
                         if (!player.getInventory().add(drop)) {
                             player.drop(drop, false);
                         }
                     }
-                    undoneCount++;
-                }
-            }
 
-            if (undoneCount > 0) {
-                stack.getTag().remove("UndoHistory");
-
-                if (!player.isCreative()) {
                     final InteractionHand finalHand = hand;
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(finalHand));
                 }
+
+                stack.getTag().remove("UndoHistory");
 
                 player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.undo_success").withStyle(net.minecraft.ChatFormatting.GREEN), true);
                 level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.2F);

@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "Lettre İ",
   "block.signbuilder.letter_o_tr": "Lettre Ö",
   "block.signbuilder.letter_s_tr": "Lettre Ş",
-  "block.signbuilder.letter_u_tr": "Lettre Ü"
+  "block.signbuilder.letter_u_tr": "Lettre Ü",
+  "container.signbuilder.sign_press": "Presse à panneaux",
+  "item.signbuilder.sign_press": "Presse à panneaux",
+  "gui.signbuilder.blueprint.mode": "Mode : %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 Normal",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 Multi-blocs",
+  "message.signbuilder.blueprint.mode_toggle": "Mode du plan : %s",
+  "gui.signbuilder.blueprint.horizontal": "Horizontal",
+  "gui.signbuilder.blueprint.vertical": "Vertical",
+  "tooltip.signbuilder.blueprint.backplate_desc": "Attache automatiquement des plaques arrière aux panneaux placés."
 }

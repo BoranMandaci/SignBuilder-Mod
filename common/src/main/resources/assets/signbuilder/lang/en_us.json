@@ -252,5 +252,16 @@
   "block.signbuilder.letter_i_tr": "Letter İ",
   "block.signbuilder.letter_o_tr": "Letter Ö",
   "block.signbuilder.letter_s_tr": "Letter Ş",
-  "block.signbuilder.letter_u_tr": "Letter Ü"
+  "block.signbuilder.letter_u_tr": "Letter Ü",
+  "container.signbuilder.sign_press": "Sign Press",
+  "item.signbuilder.sign_press": "Sign Press",
+  "gui.signbuilder.blueprint.mode": "Mode: %s",
+  "gui.signbuilder.blueprint.mode_1x1": "1x1",
+  "gui.signbuilder.blueprint.mode_2x2": "2x2",
+  "tooltip.signbuilder.blueprint.mode_1x1": "1x1 Normal",
+  "tooltip.signbuilder.blueprint.mode_2x2": "2x2 Multi-Block",
+  "message.signbuilder.blueprint.mode_toggle": "Blueprint Mode: %s",
+  "gui.signbuilder.blueprint.horizontal": "Horizontal",
+  "gui.signbuilder.blueprint.vertical": "Vertical",
+  "tooltip.signbuilder.blueprint.backplate_desc": "Automatically attaches backplates to placed signs."
 }
