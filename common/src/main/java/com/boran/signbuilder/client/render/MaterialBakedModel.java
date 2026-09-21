@@ -162,6 +162,18 @@ public class MaterialBakedModel implements BakedModel {
             case EMERALD_BLOCK -> "block/emerald_block";
             case SMOOTH_SANDSTONE -> "block/sandstone_top";
             case SMOOTH_RED_SANDSTONE -> "block/red_sandstone_top";
+            case COPPER_BLOCK -> "block/copper_block";
+            case AMETHYST_BLOCK -> "block/amethyst_block";
+            case COAL_BLOCK -> "block/coal_block";
+            case END_STONE_BRICKS -> "block/end_stone_bricks";
+            case NETHER_BRICKS -> "block/nether_bricks";
+            case RED_NETHER_BRICKS -> "block/red_nether_bricks";
+            case PRISMARINE_BRICKS -> "block/prismarine_bricks";
+            case MUD_BRICKS -> "block/mud_bricks";
+            case DEEPSLATE_BRICKS -> "block/deepslate_bricks";
+            case CRIMSON_PLANKS -> "block/crimson_planks";
+            case WARPED_PLANKS -> "block/warped_planks";
+            case MOSSY_STONE_BRICKS -> "block/mossy_stone_bricks";
             default -> "block/white_concrete";
         };
         return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", path));

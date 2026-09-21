@@ -30,7 +30,19 @@ public enum SignMaterial implements StringRepresentable {
     STONE("stone"),
     EMERALD_BLOCK("emerald_block"),
     SMOOTH_SANDSTONE("smooth_sandstone"),
-    SMOOTH_RED_SANDSTONE("smooth_red_sandstone");
+    SMOOTH_RED_SANDSTONE("smooth_red_sandstone"),
+    COPPER_BLOCK("copper_block"),
+    AMETHYST_BLOCK("amethyst_block"),
+    COAL_BLOCK("coal_block"),
+    END_STONE_BRICKS("end_stone_bricks"),
+    NETHER_BRICKS("nether_bricks"),
+    RED_NETHER_BRICKS("red_nether_bricks"),
+    PRISMARINE_BRICKS("prismarine_bricks"),
+    MUD_BRICKS("mud_bricks"),
+    DEEPSLATE_BRICKS("deepslate_bricks"),
+    CRIMSON_PLANKS("crimson_planks"),
+    WARPED_PLANKS("warped_planks"),
+    MOSSY_STONE_BRICKS("mossy_stone_bricks");
 
     private final String name;
 

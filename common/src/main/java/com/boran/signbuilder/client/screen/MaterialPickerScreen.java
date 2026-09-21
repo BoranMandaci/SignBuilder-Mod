@@ -23,29 +23,39 @@ public class MaterialPickerScreen extends Screen {
     private final int itemsPerPage = 20;
 
     private static final String[] ALL_MATERIALS = {
-            "minecraft:white_concrete", "minecraft:oak_planks", "minecraft:spruce_planks",
-            "minecraft:birch_planks", "minecraft:jungle_planks", "minecraft:acacia_planks",
-            "minecraft:dark_oak_planks", "minecraft:mangrove_planks", "minecraft:cherry_planks",
-            "minecraft:bamboo_planks", "minecraft:iron_block", "minecraft:polished_andesite",
-            "minecraft:gold_block", "minecraft:diamond_block", "minecraft:lapis_block",
-            "minecraft:smooth_stone", "minecraft:polished_diorite", "minecraft:bricks",
-            "minecraft:stone_bricks", "minecraft:redstone_block",
-            "minecraft:netherite_block", "minecraft:quartz_block", "minecraft:polished_granite",
-            "minecraft:purpur_block", "minecraft:stone", "minecraft:emerald_block",
-            "minecraft:smooth_sandstone", "minecraft:smooth_red_sandstone"
+            "minecraft:white_concrete",
+            "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
+            "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
+            "minecraft:mangrove_planks", "minecraft:cherry_planks", "minecraft:bamboo_planks",
+            "minecraft:crimson_planks", "minecraft:warped_planks",
+            "minecraft:bricks", "minecraft:stone_bricks", "minecraft:mossy_stone_bricks",
+            "minecraft:deepslate_bricks", "minecraft:mud_bricks", "minecraft:nether_bricks",
+            "minecraft:red_nether_bricks", "minecraft:end_stone_bricks",
+            "minecraft:purpur_block", "minecraft:prismarine_bricks", "minecraft:stone",
+            "minecraft:smooth_stone", "minecraft:smooth_sandstone", "minecraft:smooth_red_sandstone",
+            "minecraft:polished_andesite", "minecraft:polished_diorite", "minecraft:polished_granite",
+            "minecraft:quartz_block", "minecraft:coal_block", "minecraft:amethyst_block",
+            "minecraft:copper_block", "minecraft:redstone_block", "minecraft:lapis_block",
+            "minecraft:iron_block", "minecraft:gold_block", "minecraft:diamond_block",
+            "minecraft:emerald_block", "minecraft:netherite_block"
     };
 
     private static final String[] ALL_KEYS = {
-            "white_concrete", "oak_planks", "spruce_planks",
-            "birch_planks", "jungle_planks", "acacia_planks",
-            "dark_oak_planks", "mangrove_planks", "cherry_planks",
-            "bamboo_planks", "iron_block", "polished_andesite",
-            "gold_block", "diamond_block", "lapis_block",
-            "smooth_stone", "polished_diorite", "bricks",
-            "stone_bricks", "redstone_block",
-            "netherite_block", "quartz_block", "polished_granite",
-            "purpur_block", "stone", "emerald_block",
-            "smooth_sandstone", "smooth_red_sandstone"
+            "white_concrete",
+            "oak_planks", "spruce_planks", "birch_planks",
+            "jungle_planks", "acacia_planks", "dark_oak_planks",
+            "mangrove_planks", "cherry_planks", "bamboo_planks",
+            "crimson_planks", "warped_planks",
+            "bricks", "stone_bricks", "mossy_stone_bricks",
+            "deepslate_bricks", "mud_bricks", "nether_bricks",
+            "red_nether_bricks", "end_stone_bricks",
+            "purpur_block", "prismarine_bricks", "stone",
+            "smooth_stone", "smooth_sandstone", "smooth_red_sandstone",
+            "polished_andesite", "polished_diorite", "polished_granite",
+            "quartz_block", "coal_block", "amethyst_block",
+            "copper_block", "redstone_block", "lapis_block",
+            "iron_block", "gold_block", "diamond_block",
+            "emerald_block", "netherite_block"
     };
 
     public MaterialPickerScreen(Screen parentScreen) {
@@ -55,16 +65,21 @@ public class MaterialPickerScreen extends Screen {
 
     private ItemStack[] createItemStacks() {
         return new ItemStack[]{
-                new ItemStack(Blocks.WHITE_CONCRETE), new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS),
-                new ItemStack(Blocks.BIRCH_PLANKS), new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS),
-                new ItemStack(Blocks.DARK_OAK_PLANKS), new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.CHERRY_PLANKS),
-                new ItemStack(Blocks.BAMBOO_PLANKS), new ItemStack(Blocks.IRON_BLOCK), new ItemStack(Blocks.POLISHED_ANDESITE),
-                new ItemStack(Blocks.GOLD_BLOCK), new ItemStack(Blocks.DIAMOND_BLOCK), new ItemStack(Blocks.LAPIS_BLOCK),
-                new ItemStack(Blocks.SMOOTH_STONE), new ItemStack(Blocks.POLISHED_DIORITE), new ItemStack(Blocks.BRICKS),
-                new ItemStack(Blocks.STONE_BRICKS), new ItemStack(Blocks.REDSTONE_BLOCK),
-                new ItemStack(Blocks.NETHERITE_BLOCK), new ItemStack(Blocks.QUARTZ_BLOCK), new ItemStack(Blocks.POLISHED_GRANITE),
-                new ItemStack(Blocks.PURPUR_BLOCK), new ItemStack(Blocks.STONE), new ItemStack(Blocks.EMERALD_BLOCK),
-                new ItemStack(Blocks.SMOOTH_SANDSTONE), new ItemStack(Blocks.SMOOTH_RED_SANDSTONE)
+                new ItemStack(Blocks.WHITE_CONCRETE),
+                new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS), new ItemStack(Blocks.BIRCH_PLANKS),
+                new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS), new ItemStack(Blocks.DARK_OAK_PLANKS),
+                new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.CHERRY_PLANKS), new ItemStack(Blocks.BAMBOO_PLANKS),
+                new ItemStack(Blocks.CRIMSON_PLANKS), new ItemStack(Blocks.WARPED_PLANKS),
+                new ItemStack(Blocks.BRICKS), new ItemStack(Blocks.STONE_BRICKS), new ItemStack(Blocks.MOSSY_STONE_BRICKS),
+                new ItemStack(Blocks.DEEPSLATE_BRICKS), new ItemStack(Blocks.MUD_BRICKS), new ItemStack(Blocks.NETHER_BRICKS),
+                new ItemStack(Blocks.RED_NETHER_BRICKS), new ItemStack(Blocks.END_STONE_BRICKS),
+                new ItemStack(Blocks.PURPUR_BLOCK), new ItemStack(Blocks.PRISMARINE_BRICKS), new ItemStack(Blocks.STONE),
+                new ItemStack(Blocks.SMOOTH_STONE), new ItemStack(Blocks.SMOOTH_SANDSTONE), new ItemStack(Blocks.SMOOTH_RED_SANDSTONE),
+                new ItemStack(Blocks.POLISHED_ANDESITE), new ItemStack(Blocks.POLISHED_DIORITE), new ItemStack(Blocks.POLISHED_GRANITE),
+                new ItemStack(Blocks.QUARTZ_BLOCK), new ItemStack(Blocks.COAL_BLOCK), new ItemStack(Blocks.AMETHYST_BLOCK),
+                new ItemStack(Blocks.COPPER_BLOCK), new ItemStack(Blocks.REDSTONE_BLOCK), new ItemStack(Blocks.LAPIS_BLOCK),
+                new ItemStack(Blocks.IRON_BLOCK), new ItemStack(Blocks.GOLD_BLOCK), new ItemStack(Blocks.DIAMOND_BLOCK),
+                new ItemStack(Blocks.EMERALD_BLOCK), new ItemStack(Blocks.NETHERITE_BLOCK)
         };
     }
 

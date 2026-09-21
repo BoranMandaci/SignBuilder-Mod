@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Attache automatiquement des plaques arrière aux panneaux placés.",
   "block.signbuilder.symbol_asterisk": "Symbole astérisque",
   "block.signbuilder.symbol_checkmark": "Symbole de coche",
-  "block.signbuilder.symbol_infinity": "Symbole infini"
+  "block.signbuilder.symbol_infinity": "Symbole infini",
+  "material.signbuilder.copper_block": "Bloc de cuivre",
+  "material.signbuilder.amethyst_block": "Bloc d'améthyste",
+  "material.signbuilder.coal_block": "Bloc de charbon",
+  "material.signbuilder.end_stone_bricks": "Pierres de l'End taillées",
+  "material.signbuilder.nether_bricks": "Briques du Nether",
+  "material.signbuilder.red_nether_bricks": "Briques rouges du Nether",
+  "material.signbuilder.prismarine_bricks": "Prismarine taillée",
+  "material.signbuilder.mud_bricks": "Briques de boue",
+  "material.signbuilder.deepslate_bricks": "Ardoise des abîmes taillée",
+  "material.signbuilder.crimson_planks": "Planches carmin",
+  "material.signbuilder.warped_planks": "Planches biscornues",
+  "material.signbuilder.mossy_stone_bricks": "Pierres moussues taillées"
 }

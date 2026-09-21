@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "自动为放置的告示牌添加背板。",
   "block.signbuilder.symbol_asterisk": "星号符号",
   "block.signbuilder.symbol_checkmark": "对勾符号",
-  "block.signbuilder.symbol_infinity": "无限符号"
+  "block.signbuilder.symbol_infinity": "无限符号",
+  "material.signbuilder.copper_block": "铜块",
+  "material.signbuilder.amethyst_block": "紫水晶块",
+  "material.signbuilder.coal_block": "煤炭块",
+  "material.signbuilder.end_stone_bricks": "末地石砖",
+  "material.signbuilder.nether_bricks": "下界砖",
+  "material.signbuilder.red_nether_bricks": "红色下界砖",
+  "material.signbuilder.prismarine_bricks": "海晶石砖",
+  "material.signbuilder.mud_bricks": "泥砖",
+  "material.signbuilder.deepslate_bricks": "深板岩砖",
+  "material.signbuilder.crimson_planks": "绯红木板",
+  "material.signbuilder.warped_planks": "诡异木板",
+  "material.signbuilder.mossy_stone_bricks": "苔石砖"
 }

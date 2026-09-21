@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Автоматически прикрепляет задние панели к установленным вывескам.",
   "block.signbuilder.symbol_asterisk": "Знак звёздочки",
   "block.signbuilder.symbol_checkmark": "Знак галочки",
-  "block.signbuilder.symbol_infinity": "Символ бесконечности"
+  "block.signbuilder.symbol_infinity": "Символ бесконечности",
+  "material.signbuilder.copper_block": "Медный блок",
+  "material.signbuilder.amethyst_block": "Аметистовый блок",
+  "material.signbuilder.coal_block": "Угольный блок",
+  "material.signbuilder.end_stone_bricks": "Кирпичи из камня Края",
+  "material.signbuilder.nether_bricks": "Незерские кирпичи",
+  "material.signbuilder.red_nether_bricks": "Красные незерские кирпичи",
+  "material.signbuilder.prismarine_bricks": "Призмариновые кирпичи",
+  "material.signbuilder.mud_bricks": "Саманные кирпичи",
+  "material.signbuilder.deepslate_bricks": "Глубинносланцевые кирпичи",
+  "material.signbuilder.crimson_planks": "Багровые доски",
+  "material.signbuilder.warped_planks": "Искажённые доски",
+  "material.signbuilder.mossy_stone_bricks": "Замшелые каменные кирпичи"
 }

@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Applica automaticamente piastre posteriori ai cartelli posizionati.",
   "block.signbuilder.symbol_asterisk": "Simbolo asterisco",
   "block.signbuilder.symbol_checkmark": "Simbolo spunta",
-  "block.signbuilder.symbol_infinity": "Simbolo infinito"
+  "block.signbuilder.symbol_infinity": "Simbolo infinito",
+  "material.signbuilder.copper_block": "Blocco di rame",
+  "material.signbuilder.amethyst_block": "Blocco di ametista",
+  "material.signbuilder.coal_block": "Blocco di carbone",
+  "material.signbuilder.end_stone_bricks": "Mattoni di pietra dell'End",
+  "material.signbuilder.nether_bricks": "Mattoni del Nether",
+  "material.signbuilder.red_nether_bricks": "Mattoni del Nether rossi",
+  "material.signbuilder.prismarine_bricks": "Mattoni di prismarina",
+  "material.signbuilder.mud_bricks": "Mattoni di fango",
+  "material.signbuilder.deepslate_bricks": "Mattoni di ardesia profonda",
+  "material.signbuilder.crimson_planks": "Assi cremisi",
+  "material.signbuilder.warped_planks": "Assi strambe",
+  "material.signbuilder.mossy_stone_bricks": "Mattoni di pietra muschiosi"
 }

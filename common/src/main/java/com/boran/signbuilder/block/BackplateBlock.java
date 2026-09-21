@@ -338,6 +338,18 @@ public class BackplateBlock extends Block implements EntityBlock {
             case EMERALD_BLOCK -> "minecraft:emerald_block";
             case SMOOTH_SANDSTONE -> "minecraft:smooth_sandstone";
             case SMOOTH_RED_SANDSTONE -> "minecraft:smooth_red_sandstone";
+            case COPPER_BLOCK -> "minecraft:copper_block";
+            case AMETHYST_BLOCK -> "minecraft:amethyst_block";
+            case COAL_BLOCK -> "minecraft:coal_block";
+            case END_STONE_BRICKS -> "minecraft:end_stone_bricks";
+            case NETHER_BRICKS -> "minecraft:nether_bricks";
+            case RED_NETHER_BRICKS -> "minecraft:red_nether_bricks";
+            case PRISMARINE_BRICKS -> "minecraft:prismarine_bricks";
+            case MUD_BRICKS -> "minecraft:mud_bricks";
+            case DEEPSLATE_BRICKS -> "minecraft:deepslate_bricks";
+            case CRIMSON_PLANKS -> "minecraft:crimson_planks";
+            case WARPED_PLANKS -> "minecraft:warped_planks";
+            case MOSSY_STONE_BRICKS -> "minecraft:mossy_stone_bricks";
             default -> "minecraft:white_concrete";
         };
     }

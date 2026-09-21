@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Bringt automatisch Rückplatten an platzierten Schildern an.",
   "block.signbuilder.symbol_asterisk": "Sternchen-Symbol",
   "block.signbuilder.symbol_checkmark": "Häkchen-Symbol",
-  "block.signbuilder.symbol_infinity": "Unendlichkeitssymbol"
+  "block.signbuilder.symbol_infinity": "Unendlichkeitssymbol",
+  "material.signbuilder.copper_block": "Kupferblock",
+  "material.signbuilder.amethyst_block": "Amethystblock",
+  "material.signbuilder.coal_block": "Kohleblock",
+  "material.signbuilder.end_stone_bricks": "Endsteinziegel",
+  "material.signbuilder.nether_bricks": "Netherziegel",
+  "material.signbuilder.red_nether_bricks": "Rote Netherziegel",
+  "material.signbuilder.prismarine_bricks": "Prismarinziegel",
+  "material.signbuilder.mud_bricks": "Schlammziegel",
+  "material.signbuilder.deepslate_bricks": "Tiefenschieferziegel",
+  "material.signbuilder.crimson_planks": "Karmesinbretter",
+  "material.signbuilder.warped_planks": "Wirrbretter",
+  "material.signbuilder.mossy_stone_bricks": "Bemooste Steinziegel"
 }

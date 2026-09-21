@@ -396,6 +396,18 @@ public class PaintBrushItem extends Item {
             case EMERALD_BLOCK -> "minecraft:emerald_block";
             case SMOOTH_SANDSTONE -> "minecraft:smooth_sandstone";
             case SMOOTH_RED_SANDSTONE -> "minecraft:smooth_red_sandstone";
+            case COPPER_BLOCK -> "minecraft:copper_block";
+            case AMETHYST_BLOCK -> "minecraft:amethyst_block";
+            case COAL_BLOCK -> "minecraft:coal_block";
+            case END_STONE_BRICKS -> "minecraft:end_stone_bricks";
+            case NETHER_BRICKS -> "minecraft:nether_bricks";
+            case RED_NETHER_BRICKS -> "minecraft:red_nether_bricks";
+            case PRISMARINE_BRICKS -> "minecraft:prismarine_bricks";
+            case MUD_BRICKS -> "minecraft:mud_bricks";
+            case DEEPSLATE_BRICKS -> "minecraft:deepslate_bricks";
+            case CRIMSON_PLANKS -> "minecraft:crimson_planks";
+            case WARPED_PLANKS -> "minecraft:warped_planks";
+            case MOSSY_STONE_BRICKS -> "minecraft:mossy_stone_bricks";
             default -> "minecraft:white_concrete";
         };
         return BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
@@ -439,6 +451,18 @@ public class PaintBrushItem extends Item {
             case "minecraft:emerald_block" -> SignMaterial.EMERALD_BLOCK;
             case "minecraft:smooth_sandstone" -> SignMaterial.SMOOTH_SANDSTONE;
             case "minecraft:smooth_red_sandstone" -> SignMaterial.SMOOTH_RED_SANDSTONE;
+            case "minecraft:copper_block" -> SignMaterial.COPPER_BLOCK;
+            case "minecraft:amethyst_block" -> SignMaterial.AMETHYST_BLOCK;
+            case "minecraft:coal_block" -> SignMaterial.COAL_BLOCK;
+            case "minecraft:end_stone_bricks" -> SignMaterial.END_STONE_BRICKS;
+            case "minecraft:nether_bricks" -> SignMaterial.NETHER_BRICKS;
+            case "minecraft:red_nether_bricks" -> SignMaterial.RED_NETHER_BRICKS;
+            case "minecraft:prismarine_bricks" -> SignMaterial.PRISMARINE_BRICKS;
+            case "minecraft:mud_bricks" -> SignMaterial.MUD_BRICKS;
+            case "minecraft:deepslate_bricks" -> SignMaterial.DEEPSLATE_BRICKS;
+            case "minecraft:crimson_planks" -> SignMaterial.CRIMSON_PLANKS;
+            case "minecraft:warped_planks" -> SignMaterial.WARPED_PLANKS;
+            case "minecraft:mossy_stone_bricks" -> SignMaterial.MOSSY_STONE_BRICKS;
             default -> SignMaterial.DEFAULT;
         };
     }

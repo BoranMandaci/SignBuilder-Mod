@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Tabelaların arkasına otomatik arka plaka takar.",
   "block.signbuilder.symbol_asterisk": "Yıldız Sembolü",
   "block.signbuilder.symbol_checkmark": "Onay Sembolü",
-  "block.signbuilder.symbol_infinity": "Sonsuzluk Sembolü"
+  "block.signbuilder.symbol_infinity": "Sonsuzluk Sembolü",
+  "material.signbuilder.copper_block": "Bakır Bloğu",
+  "material.signbuilder.amethyst_block": "Ametist Bloğu",
+  "material.signbuilder.coal_block": "Kömür Bloğu",
+  "material.signbuilder.end_stone_bricks": "End Taşı Tuğlası",
+  "material.signbuilder.nether_bricks": "Nether Tuğlası",
+  "material.signbuilder.red_nether_bricks": "Kızıl Nether Tuğlası",
+  "material.signbuilder.prismarine_bricks": "Prizmarin Tuğlası",
+  "material.signbuilder.mud_bricks": "Çamur Tuğlası",
+  "material.signbuilder.deepslate_bricks": "Derinkayrak Tuğlası",
+  "material.signbuilder.crimson_planks": "Kızıl Tahta",
+  "material.signbuilder.warped_planks": "Çarpık Tahta",
+  "material.signbuilder.mossy_stone_bricks": "Yosunlu Taş Tuğla"
 }

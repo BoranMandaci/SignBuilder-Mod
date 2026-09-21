@@ -266,5 +266,17 @@
   "tooltip.signbuilder.blueprint.backplate_desc": "Coloca automáticamente placas traseras en los carteles colocados.",
   "block.signbuilder.symbol_asterisk": "Símbolo de asterisco",
   "block.signbuilder.symbol_checkmark": "Símbolo de verificación",
-  "block.signbuilder.symbol_infinity": "Símbolo de infinito"
+  "block.signbuilder.symbol_infinity": "Símbolo de infinito",
+  "material.signbuilder.copper_block": "Bloque de cobre",
+  "material.signbuilder.amethyst_block": "Bloque de amatista",
+  "material.signbuilder.coal_block": "Bloque de carbón",
+  "material.signbuilder.end_stone_bricks": "Ladrillos de piedra del End",
+  "material.signbuilder.nether_bricks": "Ladrillos del Nether",
+  "material.signbuilder.red_nether_bricks": "Ladrillos del Nether rojos",
+  "material.signbuilder.prismarine_bricks": "Ladrillos de prismarina",
+  "material.signbuilder.mud_bricks": "Ladrillos de barro",
+  "material.signbuilder.deepslate_bricks": "Ladrillos de pizarra profunda",
+  "material.signbuilder.crimson_planks": "Tablones carmesí",
+  "material.signbuilder.warped_planks": "Tablones distorsionados",
+  "material.signbuilder.mossy_stone_bricks": "Ladrillos de piedra musgosos"
 }

@@ -44,7 +44,6 @@ import java.util.List;
 
 public class LetterBlock extends Block implements EntityBlock {
 
-    // 0: Kapalı, 1: Low Power (6 ışık), 2: Normal (15 ışık)
     public static final IntegerProperty LIGHT_MODE = IntegerProperty.create("light_mode", 0, 2);
     public static final EnumProperty<SignMaterial> MATERIAL = EnumProperty.create("material", SignMaterial.class);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
