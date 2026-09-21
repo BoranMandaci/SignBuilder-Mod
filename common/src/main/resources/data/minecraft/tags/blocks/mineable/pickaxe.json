@@ -88,6 +88,9 @@
     "signbuilder:symbol_semicolon",
     "signbuilder:symbol_greater_than",
     "signbuilder:symbol_less_than",
+    "signbuilder:symbol_asterisk",
+    "signbuilder:symbol_checkmark",
+    "signbuilder:symbol_infinity",
     "signbuilder:sign_press",
     "signbuilder:backplate"
   ]

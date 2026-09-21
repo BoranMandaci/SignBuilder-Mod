@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Modalità progetto: %s",
   "gui.signbuilder.blueprint.horizontal": "Orizzontale",
   "gui.signbuilder.blueprint.vertical": "Verticale",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Applica automaticamente piastre posteriori ai cartelli posizionati."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Applica automaticamente piastre posteriori ai cartelli posizionati.",
+  "block.signbuilder.symbol_asterisk": "Simbolo asterisco",
+  "block.signbuilder.symbol_checkmark": "Simbolo spunta",
+  "block.signbuilder.symbol_infinity": "Simbolo infinito"
 }

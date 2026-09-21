@@ -387,7 +387,9 @@ public class SignBlueprintItem extends Item {
             case '5' -> "number_5"; case '6' -> "number_6"; case '7' -> "number_7"; case '8' -> "number_8";
             case '9' -> "number_9";
             case '+' -> "symbol_plus"; case '-' -> "symbol_minus"; case '/' -> "symbol_slash";
-            case '\\' -> "symbol_backslash"; case '#' -> "symbol_hashtag"; case '*' -> "symbol_star";
+            case '\\' -> "symbol_backslash"; case '#' -> "symbol_hashtag";
+            case '*' -> "symbol_asterisk"; case '★' -> "symbol_star";
+            case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
             case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
             case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
             case ',' -> "symbol_comma"; case '%' -> "symbol_percent";

@@ -59,40 +59,38 @@ public class BlueprintScreen extends Screen {
         int btnWidth = 18;
         int btnHeight = 18;
 
-        String[] row1Insert = {"Ä", "ß", "Ç", "Ğ", "İ", "Ö", "Ş", "Ü", "€", "$", "£", "¥", "₺", "♥", "*", "@", "&"};
-        String[] row1Display = {"Ä", "ß", "Ç", "Ğ", "İ", "Ö", "Ş", "Ü", "€", "$", "£", "¥", "₺", "♥", "★", "@", "&"};
+        String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "÷", "=", "%", ">", "<"};
+        String[] row1Display = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "÷", "=", "%", ">", "<"};
         String[] row1Tooltips = {
-                "block.signbuilder.letter_a_de", "block.signbuilder.letter_eszett", "block.signbuilder.letter_c_tr",
-                "block.signbuilder.letter_g_tr", "block.signbuilder.letter_i_tr", "block.signbuilder.letter_o_tr",
-                "block.signbuilder.letter_s_tr", "block.signbuilder.letter_u_tr", "block.signbuilder.symbol_euro",
-                "block.signbuilder.symbol_dollar", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen",
-                "block.signbuilder.symbol_tl", "block.signbuilder.symbol_heart", "block.signbuilder.symbol_star",
-                "block.signbuilder.symbol_at", "block.signbuilder.symbol_ampersand"
-        };
-
-        String[] row2Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "«", "•", "»", "|", "¦", ",", ":", ";", "#"};
-        String[] row2Display = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "• ", "•", " •", ")(", "][", ",", ":", ";", "#"};
-        String[] row2Tooltips = {
                 "block.signbuilder.arrow_up", "block.signbuilder.arrow_down", "block.signbuilder.arrow_left",
                 "block.signbuilder.arrow_right", "block.signbuilder.arrow_left_up", "block.signbuilder.arrow_right_up",
-                "block.signbuilder.arrow_left_down", "block.signbuilder.arrow_right_down", "block.signbuilder.symbol_dot_left",
-                "block.signbuilder.symbol_dot_center", "block.signbuilder.symbol_dot_right", "block.signbuilder.symbol_bracket_double",
-                "block.signbuilder.symbol_square_bracket_double", "block.signbuilder.symbol_comma", "block.signbuilder.symbol_colon",
-                "block.signbuilder.symbol_semicolon", "block.signbuilder.symbol_hashtag"
+                "block.signbuilder.arrow_left_down", "block.signbuilder.arrow_right_down", "block.signbuilder.symbol_plus",
+                "block.signbuilder.symbol_minus", "block.signbuilder.symbol_divide", "block.signbuilder.symbol_equals",
+                "block.signbuilder.symbol_percent", "block.signbuilder.symbol_greater_than", "block.signbuilder.symbol_less_than"
         };
 
-        String[] row3Insert = {"+", "-", "÷", "=", "%", "<", ">", "(", ")", "[", "]", "/", "\\", "!", "?", "'", "\""};
-        String[] row3Display = {"+", "-", "÷", "=", "%", "<", ">", "(", ")", "[", "]", "/", "\\", "!", "?", "'", "\""};
+        String[] row2Insert = {"«", "•", "»", ",", "?", "!", ":", ";", "'", "\"", "/", "\\", "(", ")", "|"};
+        String[] row2Display = {"• ", "•", " •", ",", "?", "!", ":", ";", "'", "\"", "/", "\\", "(", ")", ")("};
+        String[] row2Tooltips = {
+                "block.signbuilder.symbol_dot_left", "block.signbuilder.symbol_dot_center", "block.signbuilder.symbol_dot_right",
+                "block.signbuilder.symbol_comma", "block.signbuilder.symbol_question", "block.signbuilder.symbol_exclamation",
+                "block.signbuilder.symbol_colon", "block.signbuilder.symbol_semicolon", "block.signbuilder.symbol_apostrophe",
+                "block.signbuilder.symbol_quotes", "block.signbuilder.symbol_slash", "block.signbuilder.symbol_backslash",
+                "block.signbuilder.symbol_bracket_left", "block.signbuilder.symbol_bracket_right", "block.signbuilder.symbol_bracket_double"
+        };
+
+        String[] row3Insert = {"[", "]", "¦", "#", "♥", "★", "@", "&", "*", "✓", "∞", "$", "€", "£", "¥", "₺"};
+        String[] row3Display = {"[", "]", "][", "#", "♥", "★", "@", "&", "*", "✓", "∞", "$", "€", "£", "¥", "₺"};
         String[] row3Tooltips = {
-                "block.signbuilder.symbol_plus", "block.signbuilder.symbol_minus", "block.signbuilder.symbol_divide",
-                "block.signbuilder.symbol_equals", "block.signbuilder.symbol_percent", "block.signbuilder.symbol_less_than",
-                "block.signbuilder.symbol_greater_than", "block.signbuilder.symbol_bracket_left", "block.signbuilder.symbol_bracket_right",
-                "block.signbuilder.symbol_square_bracket_left", "block.signbuilder.symbol_square_bracket_right", "block.signbuilder.symbol_slash",
-                "block.signbuilder.symbol_backslash", "block.signbuilder.symbol_exclamation", "block.signbuilder.symbol_question",
-                "block.signbuilder.symbol_apostrophe", "block.signbuilder.symbol_quotes"
+                "block.signbuilder.symbol_square_bracket_left", "block.signbuilder.symbol_square_bracket_right", "block.signbuilder.symbol_square_bracket_double",
+                "block.signbuilder.symbol_hashtag", "block.signbuilder.symbol_heart", "block.signbuilder.symbol_star",
+                "block.signbuilder.symbol_at", "block.signbuilder.symbol_ampersand", "block.signbuilder.symbol_asterisk",
+                "block.signbuilder.symbol_checkmark", "block.signbuilder.symbol_infinity", "block.signbuilder.symbol_dollar",
+                "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl"
         };
 
-        int totalGridWidth = 17 * btnWidth;
+        int maxRowLength = 16;
+        int totalGridWidth = maxRowLength * btnWidth;
         int startX = centerX - (totalGridWidth / 2);
 
         this.textField = new EditBox(this.font, startX, centerY - 58, totalGridWidth, 20, Component.literal("Word"));
@@ -101,26 +99,29 @@ public class BlueprintScreen extends Screen {
         this.addRenderableWidget(this.textField);
         this.setInitialFocus(this.textField);
 
+        int row1StartX = centerX - (row1Insert.length * btnWidth / 2);
         for (int i = 0; i < row1Insert.length; i++) {
             String insert = row1Insert[i];
             Button.Builder btn = Button.builder(Component.literal(row1Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(startX + (i * btnWidth), centerY - 32, btnWidth, btnHeight)
+                    .bounds(row1StartX + (i * btnWidth), centerY - 32, btnWidth, btnHeight)
                     .tooltip(Tooltip.create(Component.translatable(row1Tooltips[i])));
             this.addRenderableWidget(btn.build());
         }
 
+        int row2StartX = centerX - (row2Insert.length * btnWidth / 2);
         for (int i = 0; i < row2Insert.length; i++) {
             String insert = row2Insert[i];
             Button.Builder btn = Button.builder(Component.literal(row2Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(startX + (i * btnWidth), centerY - 12, btnWidth, btnHeight)
+                    .bounds(row2StartX + (i * btnWidth), centerY - 12, btnWidth, btnHeight)
                     .tooltip(Tooltip.create(Component.translatable(row2Tooltips[i])));
             this.addRenderableWidget(btn.build());
         }
 
+        int row3StartX = centerX - (row3Insert.length * btnWidth / 2);
         for (int i = 0; i < row3Insert.length; i++) {
             String insert = row3Insert[i];
             Button.Builder btn = Button.builder(Component.literal(row3Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(startX + (i * btnWidth), centerY + 8, btnWidth, btnHeight)
+                    .bounds(row3StartX + (i * btnWidth), centerY + 8, btnWidth, btnHeight)
                     .tooltip(Tooltip.create(Component.translatable(row3Tooltips[i])));
             this.addRenderableWidget(btn.build());
         }
@@ -133,23 +134,23 @@ public class BlueprintScreen extends Screen {
         this.sizeToggleButton = Button.builder(getSizeButtonText(), button -> {
             this.is2x2 = !this.is2x2;
             button.setMessage(getSizeButtonText());
-        }).bounds(startX + 45, centerY + 34, 46, 20).build();
+        }).bounds(startX + 45, centerY + 34, 48, 20).build();
         this.addRenderableWidget(this.sizeToggleButton);
 
         this.dirToggleButton = Button.builder(getDirButtonText(), button -> {
             this.isVertical = !this.isVertical;
             button.setMessage(getDirButtonText());
-        }).bounds(startX + 94, centerY + 34, 74, 20).build();
+        }).bounds(startX + 96, centerY + 34, 76, 20).build();
         this.addRenderableWidget(this.dirToggleButton);
 
         this.backplateToggleButton = Button.builder(getBackplateButtonText(), button -> {
             this.withBackplate = !this.withBackplate;
             button.setMessage(getBackplateButtonText());
-        }).bounds(startX + 171, centerY + 34, 72, 20).tooltip(Tooltip.create(Component.translatable("tooltip.signbuilder.blueprint.backplate_desc"))).build();
+        }).bounds(startX + 175, centerY + 34, 72, 20).tooltip(Tooltip.create(Component.translatable("tooltip.signbuilder.blueprint.backplate_desc"))).build();
         this.addRenderableWidget(this.backplateToggleButton);
 
         this.addRenderableWidget(Button.builder(Component.translatable("gui.signbuilder.blueprint.save"), button -> this.onClose())
-                .bounds(startX + 246, centerY + 34, 60, 20).build());
+                .bounds(startX + 250, centerY + 34, totalGridWidth - 250, 20).build());
     }
 
     private Component getSizeButtonText() {

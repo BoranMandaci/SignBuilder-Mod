@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Modo del plano: %s",
   "gui.signbuilder.blueprint.horizontal": "Horizontal",
   "gui.signbuilder.blueprint.vertical": "Vertical",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Coloca automáticamente placas traseras en los carteles colocados."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Coloca automáticamente placas traseras en los carteles colocados.",
+  "block.signbuilder.symbol_asterisk": "Símbolo de asterisco",
+  "block.signbuilder.symbol_checkmark": "Símbolo de verificación",
+  "block.signbuilder.symbol_infinity": "Símbolo de infinito"
 }

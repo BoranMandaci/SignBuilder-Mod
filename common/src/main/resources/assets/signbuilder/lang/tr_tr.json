@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Taslak Modu: %s",
   "gui.signbuilder.blueprint.horizontal": "Yatay",
   "gui.signbuilder.blueprint.vertical": "Dikey",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Tabelaların arkasına otomatik arka plaka takar."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Tabelaların arkasına otomatik arka plaka takar.",
+  "block.signbuilder.symbol_asterisk": "Yıldız Sembolü",
+  "block.signbuilder.symbol_checkmark": "Onay Sembolü",
+  "block.signbuilder.symbol_infinity": "Sonsuzluk Sembolü"
 }

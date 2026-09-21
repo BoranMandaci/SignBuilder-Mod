@@ -74,12 +74,17 @@ public class BlueprintPreviewRenderer {
 
         int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
 
-        AttachFace attachFace = (clickedFace.getAxis() == Direction.Axis.Y)
+        boolean isFloor = (clickedFace.getAxis() == Direction.Axis.Y);
+        AttachFace attachFace = isFloor
                 ? (clickedFace == Direction.UP ? AttachFace.FLOOR : AttachFace.CEILING)
                 : AttachFace.WALL;
 
-        Direction modelFacing = (clickedFace.getAxis() == Direction.Axis.Y)
+        Direction modelFacing = isFloor
                 ? playerFacing.getCounterClockWise()
+                : clickedFace;
+
+        Direction backplateFacing = isFloor
+                ? playerFacing.getOpposite()
                 : clickedFace;
 
         double wallOffsetX = 0.0;
@@ -88,6 +93,29 @@ public class BlueprintPreviewRenderer {
         if (clickedFace == Direction.NORTH) wallOffsetZ = -1.0;
         else if (clickedFace == Direction.WEST) wallOffsetX = -1.0;
         else if (clickedFace == Direction.DOWN) wallOffsetY = -1.0;
+
+        double fOffX = 0.0;
+        double fOffZ = 0.0;
+        if (isFloor) {
+            switch (playerFacing) {
+                case SOUTH -> {
+                    fOffX = -1.0;
+                    fOffZ = -1.0;
+                }
+                case WEST -> {
+                    fOffX = 0.0;
+                    fOffZ = -1.0;
+                }
+                case EAST -> {
+                    fOffX = -1.0;
+                    fOffZ = 0.0;
+                }
+                default -> {
+                    fOffX = 0.0;
+                    fOffZ = 0.0;
+                }
+            }
+        }
 
         BakedModel bpModel = null;
         BlockState bpState = null;
@@ -98,7 +126,7 @@ public class BlueprintPreviewRenderer {
                 bpState = bpState.setValue(BlockStateProperties.ATTACH_FACE, attachFace);
             }
             if (bpState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                bpState = bpState.setValue(BlockStateProperties.HORIZONTAL_FACING, modelFacing);
+                bpState = bpState.setValue(BlockStateProperties.HORIZONTAL_FACING, backplateFacing);
             }
             bpModel = mc.getBlockRenderer().getBlockModel(bpState);
         }
@@ -171,12 +199,25 @@ public class BlueprintPreviewRenderer {
                     float b = canPlace ? 0.4F : 0.2F;
                     float a = 0.65F;
 
-                    double minX = Math.min(baseX, baseX + rightStepX);
-                    double minY = baseY;
-                    double minZ = Math.min(baseZ, baseZ + rightStepZ);
+                    double renderX;
+                    double renderY;
+                    double renderZ;
+
+                    if (isFloor) {
+                        renderX = baseX + fOffX;
+                        renderY = baseY;
+                        renderZ = baseZ + fOffZ;
+                    } else {
+                        double minX = Math.min(baseX, baseX + rightStepX);
+                        double minY = baseY;
+                        double minZ = Math.min(baseZ, baseZ + rightStepZ);
+                        renderX = minX + wallOffsetX;
+                        renderY = minY + wallOffsetY;
+                        renderZ = minZ + wallOffsetZ;
+                    }
 
                     poseStack.pushPose();
-                    poseStack.translate((minX + wallOffsetX) - camX, (minY + wallOffsetY) - camY, (minZ + wallOffsetZ) - camZ);
+                    poseStack.translate(renderX - camX, renderY - camY, renderZ - camZ);
                     poseStack.scale(2.0F, 2.0F, 2.0F);
                     renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
 
@@ -224,12 +265,25 @@ public class BlueprintPreviewRenderer {
                     float b = canPlace ? 0.4F : 0.2F;
                     float a = 0.65F;
 
-                    double minX = Math.min(baseX, baseX + rightStepX);
-                    double minY = baseY;
-                    double minZ = Math.min(baseZ, baseZ + rightStepZ);
+                    double renderX;
+                    double renderY;
+                    double renderZ;
+
+                    if (isFloor) {
+                        renderX = baseX + fOffX;
+                        renderY = baseY;
+                        renderZ = baseZ + fOffZ;
+                    } else {
+                        double minX = Math.min(baseX, baseX + rightStepX);
+                        double minY = baseY;
+                        double minZ = Math.min(baseZ, baseZ + rightStepZ);
+                        renderX = minX + wallOffsetX;
+                        renderY = minY + wallOffsetY;
+                        renderZ = minZ + wallOffsetZ;
+                    }
 
                     poseStack.pushPose();
-                    poseStack.translate((minX + wallOffsetX) - camX, (minY + wallOffsetY) - camY, (minZ + wallOffsetZ) - camZ);
+                    poseStack.translate(renderX - camX, renderY - camY, renderZ - camZ);
                     poseStack.scale(2.0F, 2.0F, 2.0F);
                     renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
 

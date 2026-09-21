@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Bauplanmodus: %s",
   "gui.signbuilder.blueprint.horizontal": "Horizontal",
   "gui.signbuilder.blueprint.vertical": "Vertikal",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Bringt automatisch Rückplatten an platzierten Schildern an."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Bringt automatisch Rückplatten an platzierten Schildern an.",
+  "block.signbuilder.symbol_asterisk": "Sternchen-Symbol",
+  "block.signbuilder.symbol_checkmark": "Häkchen-Symbol",
+  "block.signbuilder.symbol_infinity": "Unendlichkeitssymbol"
 }

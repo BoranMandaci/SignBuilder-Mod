@@ -54,7 +54,7 @@ public class ModCreativeModeTabs {
                 ResourceLocation id = new ResourceLocation("signbuilder", name);
                 if (BuiltInRegistries.ITEM.containsKey(id)) {
                     Item item = BuiltInRegistries.ITEM.get(id);
-                    if (item != null && item != Items.AIR) {
+                    if (item != Items.AIR) {
                         output.accept(item);
                     }
                 }
@@ -79,6 +79,7 @@ public class ModCreativeModeTabs {
                     "symbol_bracket_left", "symbol_bracket_right", "symbol_bracket_double",
                     "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
                     "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
+                    "symbol_asterisk", "symbol_checkmark", "symbol_infinity",
                     "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl"
             };
 
@@ -86,7 +87,7 @@ public class ModCreativeModeTabs {
                 ResourceLocation id = new ResourceLocation("signbuilder", name);
                 if (BuiltInRegistries.ITEM.containsKey(id)) {
                     Item item = BuiltInRegistries.ITEM.get(id);
-                    if (item != null && item != Items.AIR) {
+                    if (item != Items.AIR) {
                         output.accept(item);
                     }
                 }

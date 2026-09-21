@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Mode du plan : %s",
   "gui.signbuilder.blueprint.horizontal": "Horizontal",
   "gui.signbuilder.blueprint.vertical": "Vertical",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Attache automatiquement des plaques arrière aux panneaux placés."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Attache automatiquement des plaques arrière aux panneaux placés.",
+  "block.signbuilder.symbol_asterisk": "Symbole astérisque",
+  "block.signbuilder.symbol_checkmark": "Symbole de coche",
+  "block.signbuilder.symbol_infinity": "Symbole infini"
 }

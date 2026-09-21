@@ -263,5 +263,8 @@
   "message.signbuilder.blueprint.mode_toggle": "Blueprint Mode: %s",
   "gui.signbuilder.blueprint.horizontal": "Horizontal",
   "gui.signbuilder.blueprint.vertical": "Vertical",
-  "tooltip.signbuilder.blueprint.backplate_desc": "Automatically attaches backplates to placed signs."
+  "tooltip.signbuilder.blueprint.backplate_desc": "Automatically attaches backplates to placed signs.",
+  "block.signbuilder.symbol_asterisk": "Asterisk Symbol",
+  "block.signbuilder.symbol_checkmark": "Checkmark Symbol",
+  "block.signbuilder.symbol_infinity": "Infinity Symbol"
 }
