@@ -310,5 +310,8 @@
   "message.signbuilder.wrench.pin.record_saved": "密码已成功保存：%s",
   "message.signbuilder.wrench.pin.record_cancelled": "未输入任何字符，录制已取消。",
   "message.signbuilder.wrench.pin.recording_hint": "正在录制密码（%s）。按住 Shift 并右键完成录制。",
-  "tooltip.signbuilder.wrench.recording_pin": "● 密码录制进行中：%s"
+  "tooltip.signbuilder.wrench.recording_pin": "● 密码录制进行中：%s",
+  "gui.signbuilder.blueprint.size.1x1": "1x1 常规",
+  "gui.signbuilder.blueprint.size.2x2": "2x2 多方块",
+  "gui.signbuilder.blueprint.size.3x3": "3x3 多方块"
 }

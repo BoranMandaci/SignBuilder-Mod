@@ -9,39 +9,46 @@ import net.minecraft.world.item.ItemStack;
 
 public class BlueprintTextC2SPacket {
     private final String text;
+    private final int size;
     private final boolean is2x2;
     private final boolean isVertical;
     private final boolean withBackplate;
 
-    public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical, boolean withBackplate) {
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate) {
         this.text = text;
-        this.is2x2 = is2x2;
+        this.size = size;
+        this.is2x2 = (size == 2);
         this.isVertical = isVertical;
         this.withBackplate = withBackplate;
     }
 
+    public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical, boolean withBackplate) {
+        this(text, is2x2 ? 2 : 1, isVertical, withBackplate);
+    }
+
     public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical) {
-        this(text, is2x2, isVertical, false);
+        this(text, is2x2 ? 2 : 1, isVertical, false);
     }
 
     public BlueprintTextC2SPacket(String text, boolean is2x2) {
-        this(text, is2x2, false, false);
+        this(text, is2x2 ? 2 : 1, false, false);
     }
 
     public BlueprintTextC2SPacket(String text) {
-        this(text, false, false, false);
+        this(text, 1, false, false);
     }
 
     public BlueprintTextC2SPacket(FriendlyByteBuf buf) {
         this.text = buf.readUtf();
-        this.is2x2 = buf.readBoolean();
+        this.size = buf.readInt();
+        this.is2x2 = (this.size == 2);
         this.isVertical = buf.readBoolean();
         this.withBackplate = buf.readBoolean();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeUtf(this.text);
-        buf.writeBoolean(this.is2x2);
+        buf.writeInt(this.size);
         buf.writeBoolean(this.isVertical);
         buf.writeBoolean(this.withBackplate);
     }
@@ -56,6 +63,7 @@ public class BlueprintTextC2SPacket {
 
             if (stack.getItem() instanceof SignBlueprintItem) {
                 stack.getOrCreateTag().putString("BlueprintText", this.text);
+                stack.getOrCreateTag().putInt("Size", this.size);
                 stack.getOrCreateTag().putBoolean("Is2x2", this.is2x2);
                 stack.getOrCreateTag().putBoolean("IsVertical", this.isVertical);
                 stack.getOrCreateTag().putBoolean("WithBackplate", this.withBackplate);

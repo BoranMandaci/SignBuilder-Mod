@@ -310,5 +310,8 @@
   "message.signbuilder.wrench.pin.record_saved": "Şifre başarıyla kaydedildi: %s",
   "message.signbuilder.wrench.pin.record_cancelled": "Şifre girişi yapılmadı, kayıt iptal edildi.",
   "message.signbuilder.wrench.pin.recording_hint": "Şifre kayıt modundasınız (%s). Bitirmek için Shift + Sağ tık yapın.",
-  "tooltip.signbuilder.wrench.recording_pin": "● ŞİFRE KAYIT MODU AKTİF: %s"
+  "tooltip.signbuilder.wrench.recording_pin": "● ŞİFRE KAYIT MODU AKTİF: %s",
+  "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
+  "gui.signbuilder.blueprint.size.2x2": "2x2 Çoklu Blok",
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Çoklu Blok"
 }

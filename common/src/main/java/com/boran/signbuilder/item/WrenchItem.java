@@ -255,7 +255,7 @@ public class WrenchItem extends Item {
                     if (isSmartFill) {
                         applyLightModeToConnected(level, targetPos, player, stack, pContext.getHand(), mode, targetActive, detectsMonsters, detectsAnimals);
                     } else {
-                        int dustCost = letterEntity.isBig() ? 4 : 1;
+                        int dustCost = (letterEntity.getSize() == 3) ? 9 : (letterEntity.getSize() == 2 ? 4 : 1);
 
                         if (player != null && !player.isCreative()) {
                             if (!wasActive && targetActive) {
@@ -351,7 +351,7 @@ public class WrenchItem extends Item {
 
             if (blockNoChange) continue;
 
-            int dustCost = letter.isBig() ? 4 : 1;
+            int dustCost = (letter.getSize() == 3) ? 9 : (letter.getSize() == 2 ? 4 : 1);
 
             if (player != null && !player.isCreative()) {
                 if (!wasActive && targetActive) {

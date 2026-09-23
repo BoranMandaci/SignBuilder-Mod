@@ -1,5 +1,6 @@
 package com.boran.signbuilder.client.render;
 
+import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.item.SignBlueprintItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -57,20 +58,21 @@ public class BlueprintPreviewRenderer {
         HitResult hit = mc.hitResult;
         if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) return;
 
-        boolean is2x2 = tag.getBoolean("Is2x2");
+        int size = 1;
+        if (tag.contains("Size")) {
+            size = tag.getInt("Size");
+        } else if (tag.getBoolean("Is2x2")) {
+            size = 2;
+        }
+
         boolean isVertical = tag.getBoolean("IsVertical");
         boolean withBackplate = tag.getBoolean("WithBackplate");
 
         Direction clickedFace = blockHit.getDirection();
-        BlockPos clickedPos = blockHit.getBlockPos();
-        int startX = clickedPos.getX() + clickedFace.getStepX();
-        int startY = clickedPos.getY() + clickedFace.getStepY();
-        int startZ = clickedPos.getZ() + clickedFace.getStepZ();
+        BlockPos startPos = blockHit.getBlockPos().relative(clickedFace);
 
         Direction playerFacing = player.getDirection();
         Direction rightDir = playerFacing.getClockWise();
-        int rightStepX = rightDir.getStepX();
-        int rightStepZ = rightDir.getStepZ();
 
         int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
 
@@ -79,57 +81,9 @@ public class BlueprintPreviewRenderer {
                 ? (clickedFace == Direction.UP ? AttachFace.FLOOR : AttachFace.CEILING)
                 : AttachFace.WALL;
 
-        Direction modelFacing = isFloor
+        Direction facing = isFloor
                 ? playerFacing.getCounterClockWise()
                 : clickedFace;
-
-        Direction backplateFacing = isFloor
-                ? playerFacing.getOpposite()
-                : clickedFace;
-
-        double wallOffsetX = 0.0;
-        double wallOffsetY = 0.0;
-        double wallOffsetZ = 0.0;
-        if (clickedFace == Direction.NORTH) wallOffsetZ = -1.0;
-        else if (clickedFace == Direction.WEST) wallOffsetX = -1.0;
-        else if (clickedFace == Direction.DOWN) wallOffsetY = -1.0;
-
-        double fOffX = 0.0;
-        double fOffZ = 0.0;
-        if (isFloor) {
-            switch (playerFacing) {
-                case SOUTH -> {
-                    fOffX = -1.0;
-                    fOffZ = -1.0;
-                }
-                case WEST -> {
-                    fOffX = 0.0;
-                    fOffZ = -1.0;
-                }
-                case EAST -> {
-                    fOffX = -1.0;
-                    fOffZ = 0.0;
-                }
-                default -> {
-                    fOffX = 0.0;
-                    fOffZ = 0.0;
-                }
-            }
-        }
-
-        BakedModel bpModel = null;
-        BlockState bpState = null;
-        if (withBackplate) {
-            Block bpBlock = ModBlocks.BACKPLATE.get();
-            bpState = bpBlock.defaultBlockState();
-            if (bpState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
-                bpState = bpState.setValue(BlockStateProperties.ATTACH_FACE, attachFace);
-            }
-            if (bpState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                bpState = bpState.setValue(BlockStateProperties.HORIZONTAL_FACING, backplateFacing);
-            }
-            bpModel = mc.getBlockRenderer().getBlockModel(bpState);
-        }
 
         Vec3 camPos = camera.getPosition();
         double camX = camPos.x;
@@ -152,148 +106,113 @@ public class BlueprintPreviewRenderer {
                 continue;
             }
 
+            BlockPos basePos;
+            if (!isVertical) {
+                basePos = startPos.relative(rightDir, effectiveIdx * size);
+            } else {
+                int baseY = (stepDirY == 1)
+                        ? startPos.getY() + (effectiveIdx * size)
+                        : startPos.getY() - (size - 1) - (effectiveIdx * size);
+                basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
+            }
+
+            boolean canPlace = true;
+            for (int dy = 0; dy < size; dy++) {
+                for (int dx = 0; dx < size; dx++) {
+                    SCRATCH_POS.set(basePos).move(rightDir, dx).move(Direction.UP, dy);
+                    if (!level.getBlockState(SCRATCH_POS).canBeReplaced()) {
+                        canPlace = false;
+                        break;
+                    }
+                }
+                if (!canPlace) break;
+            }
+
+            float r = canPlace ? 0.3F : 1.0F;
+            float g = canPlace ? 1.0F : 0.2F;
+            float b = canPlace ? 0.4F : 0.2F;
+            float a = 0.65F;
+
             BlockState stateToPlace = block.defaultBlockState();
             if (stateToPlace.hasProperty(BlockStateProperties.ATTACH_FACE)) {
                 stateToPlace = stateToPlace.setValue(BlockStateProperties.ATTACH_FACE, attachFace);
             }
             if (stateToPlace.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                stateToPlace = stateToPlace.setValue(BlockStateProperties.HORIZONTAL_FACING, modelFacing);
+                stateToPlace = stateToPlace.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
             }
 
             BakedModel model = mc.getBlockRenderer().getBlockModel(stateToPlace);
 
-            if (!isVertical) {
-                if (!is2x2) {
-                    int posX = startX + (rightStepX * effectiveIdx);
-                    int posY = startY;
-                    int posZ = startZ + (rightStepZ * effectiveIdx);
+            poseStack.pushPose();
 
-                    SCRATCH_POS.set(posX, posY, posZ);
-                    boolean canPlace = level.getBlockState(SCRATCH_POS).canBeReplaced();
+            double posX = basePos.getX() - camX;
+            double posY = basePos.getY() - camY;
+            double posZ = basePos.getZ() - camZ;
 
-                    float r = canPlace ? 0.3F : 1.0F;
-                    float g = canPlace ? 1.0F : 0.2F;
-                    float b = canPlace ? 0.4F : 0.2F;
-                    float a = 0.65F;
-
-                    poseStack.pushPose();
-                    poseStack.translate(posX - camX, posY - camY, posZ - camZ);
-                    renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
-
-                    if (withBackplate && bpModel != null) {
-                        renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
-                    }
-                    poseStack.popPose();
-                } else {
-                    int baseX = startX + (rightStepX * (effectiveIdx * 2));
-                    int baseY = startY;
-                    int baseZ = startZ + (rightStepZ * (effectiveIdx * 2));
-
-                    boolean canPlace = level.getBlockState(SCRATCH_POS.set(baseX, baseY, baseZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX + rightStepX, baseY, baseZ + rightStepZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX, baseY + 1, baseZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX + rightStepX, baseY + 1, baseZ + rightStepZ)).canBeReplaced();
-
-                    float r = canPlace ? 0.3F : 1.0F;
-                    float g = canPlace ? 1.0F : 0.2F;
-                    float b = canPlace ? 0.4F : 0.2F;
-                    float a = 0.65F;
-
-                    double renderX;
-                    double renderY;
-                    double renderZ;
-
-                    if (isFloor) {
-                        renderX = baseX + fOffX;
-                        renderY = baseY;
-                        renderZ = baseZ + fOffZ;
-                    } else {
-                        double minX = Math.min(baseX, baseX + rightStepX);
-                        double minY = baseY;
-                        double minZ = Math.min(baseZ, baseZ + rightStepZ);
-                        renderX = minX + wallOffsetX;
-                        renderY = minY + wallOffsetY;
-                        renderZ = minZ + wallOffsetZ;
-                    }
-
-                    poseStack.pushPose();
-                    poseStack.translate(renderX - camX, renderY - camY, renderZ - camZ);
-                    poseStack.scale(2.0F, 2.0F, 2.0F);
-                    renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
-
-                    if (withBackplate && bpModel != null) {
-                        renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
-                    }
-                    poseStack.popPose();
-                }
-            } else {
-                if (!is2x2) {
-                    int posX = startX;
-                    int posY = startY + (stepDirY * effectiveIdx);
-                    int posZ = startZ;
-
-                    SCRATCH_POS.set(posX, posY, posZ);
-                    boolean canPlace = level.getBlockState(SCRATCH_POS).canBeReplaced();
-
-                    float r = canPlace ? 0.3F : 1.0F;
-                    float g = canPlace ? 1.0F : 0.2F;
-                    float b = canPlace ? 0.4F : 0.2F;
-                    float a = 0.65F;
-
-                    poseStack.pushPose();
-                    poseStack.translate(posX - camX, posY - camY, posZ - camZ);
-                    renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
-
-                    if (withBackplate && bpModel != null) {
-                        renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
-                    }
-                    poseStack.popPose();
-                } else {
-                    int baseX = startX;
-                    int baseY = (stepDirY == 1)
-                            ? startY + (effectiveIdx * 2)
-                            : startY - 1 - (effectiveIdx * 2);
-                    int baseZ = startZ;
-
-                    boolean canPlace = level.getBlockState(SCRATCH_POS.set(baseX, baseY, baseZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX + rightStepX, baseY, baseZ + rightStepZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX, baseY + 1, baseZ)).canBeReplaced()
-                            && level.getBlockState(SCRATCH_POS.set(baseX + rightStepX, baseY + 1, baseZ + rightStepZ)).canBeReplaced();
-
-                    float r = canPlace ? 0.3F : 1.0F;
-                    float g = canPlace ? 1.0F : 0.2F;
-                    float b = canPlace ? 0.4F : 0.2F;
-                    float a = 0.65F;
-
-                    double renderX;
-                    double renderY;
-                    double renderZ;
-
-                    if (isFloor) {
-                        renderX = baseX + fOffX;
-                        renderY = baseY;
-                        renderZ = baseZ + fOffZ;
-                    } else {
-                        double minX = Math.min(baseX, baseX + rightStepX);
-                        double minY = baseY;
-                        double minZ = Math.min(baseZ, baseZ + rightStepZ);
-                        renderX = minX + wallOffsetX;
-                        renderY = minY + wallOffsetY;
-                        renderZ = minZ + wallOffsetZ;
-                    }
-
-                    poseStack.pushPose();
-                    poseStack.translate(renderX - camX, renderY - camY, renderZ - camZ);
-                    poseStack.scale(2.0F, 2.0F, 2.0F);
-                    renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
-
-                    if (withBackplate && bpModel != null) {
-                        renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
-                    }
-                    poseStack.popPose();
+            if (isFloor) {
+                if (playerFacing == Direction.SOUTH) {
+                    posX -= (size - 1);
+                } else if (playerFacing == Direction.WEST) {
+                    posZ -= (size - 1);
                 }
             }
 
+            poseStack.translate(posX, posY, posZ);
+
+            if (size == 3) {
+                if (attachFace == AttachFace.WALL) {
+                    switch (facing) {
+                        case NORTH -> poseStack.translate(-2.0, 0.0, -2.0);
+                        case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
+                        case EAST  -> poseStack.translate(0.0, 0.0, -2.0);
+                        case WEST  -> poseStack.translate(-2.0, 0.0, 0.0);
+                    }
+                } else {
+                    switch (facing) {
+                        case EAST  -> poseStack.translate(0.0, 0.0, -1.375);
+                        case NORTH -> poseStack.translate(-1.375, 0.0, 0.0);
+                        case SOUTH -> poseStack.translate(-0.625, 0.0, 0.0);
+                        case WEST  -> poseStack.translate(0.0, 0.0, -0.625);
+                    }
+                }
+                poseStack.scale(3.0F, 3.0F, 3.0F);
+            } else if (size == 2) {
+                if (attachFace == AttachFace.WALL) {
+                    switch (facing) {
+                        case NORTH -> poseStack.translate(-1.0, 0.0, -1.0);
+                        case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
+                        case EAST  -> poseStack.translate(0.0, 0.0, -1.0);
+                        case WEST  -> poseStack.translate(-1.0, 0.0, 0.0);
+                    }
+                } else {
+                    switch (facing) {
+                        case EAST  -> poseStack.translate(0.0, 0.0, -0.6875);
+                        case NORTH -> poseStack.translate(-0.6875, 0.0, 0.0);
+                        case SOUTH -> poseStack.translate(-0.3125, 0.0, 0.0);
+                        case WEST  -> poseStack.translate(0.0, 0.0, -0.3125);
+                    }
+                }
+                poseStack.scale(2.0F, 2.0F, 2.0F);
+            }
+
+            if (withBackplate) {
+                Direction plateFacing = (attachFace == AttachFace.FLOOR) ? facing.getCounterClockWise() : facing;
+                BlockState bpState = ModBlocks.BACKPLATE.get().defaultBlockState()
+                        .setValue(BackplateBlock.FACING, plateFacing)
+                        .setValue(BackplateBlock.FACE, attachFace);
+
+                BakedModel bpModel = mc.getBlockRenderer().getBlockModel(bpState);
+                renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
+            }
+
+            if (withBackplate && attachFace == AttachFace.WALL) {
+                float onePixel = 0.0625f;
+                poseStack.translate(facing.getStepX() * onePixel, 0, facing.getStepZ() * onePixel);
+            }
+
+            renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
+
+            poseStack.popPose();
             effectiveIdx++;
         }
 

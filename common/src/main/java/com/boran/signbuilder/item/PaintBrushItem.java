@@ -167,7 +167,8 @@ public class PaintBrushItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        int materialCost = letterEntity.isBig() ? 4 : 1;
+        int size = letterEntity.getSize();
+        int materialCost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
 
         if (hasMaterial) {
             if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial, materialCost)) {
@@ -181,18 +182,29 @@ public class PaintBrushItem extends Item {
             newState = targetState.setValue(LetterBlock.MATERIAL, newMaterial);
         }
 
+        BlockPos[] affectedPositions = (size == 3)
+                ? LetterBlock.get3x3BlockPositions(targetPos, targetState)
+                : (size == 2 ? LetterBlock.getBigBlockPositions(targetPos, targetState) : new BlockPos[] { targetPos });
+
         if (!level.isClientSide()) {
-            if (newState != targetState) level.setBlock(targetPos, newState, 3);
-            applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-            level.sendBlockUpdated(targetPos, targetState, newState, 3);
+            for (BlockPos p : affectedPositions) {
+                if (newState != targetState) level.setBlock(p, newState, 3);
+                BlockEntity be = level.getBlockEntity(p);
+                if (be instanceof LetterBlockEntity lbe) {
+                    applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+                }
+                level.sendBlockUpdated(p, targetState, newState, 3);
+            }
 
             if (player != null) {
                 level.playSound(null, targetPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
             }
         } else {
-            if (newState != targetState) level.setBlock(targetPos, newState, 11);
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(targetPos));
+            for (BlockPos p : affectedPositions) {
+                if (newState != targetState) level.setBlock(p, newState, 11);
+                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p));
+            }
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide());
@@ -328,7 +340,8 @@ public class PaintBrushItem extends Item {
                 continue;
             }
 
-            int materialCost = letterEntity.isBig() ? 4 : 1;
+            int size = letterEntity.getSize();
+            int materialCost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
 
             if (hasMaterial) {
                 if (!level.isClientSide() && player != null && !tryConsumeMaterial(player, currentMat, newMaterial, materialCost)) {
@@ -342,14 +355,25 @@ public class PaintBrushItem extends Item {
                 newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
             }
 
+            BlockPos[] multiPositions = (size == 3)
+                    ? LetterBlock.get3x3BlockPositions(effectivePos, currentState)
+                    : (size == 2 ? LetterBlock.getBigBlockPositions(effectivePos, currentState) : new BlockPos[] { effectivePos });
+
             if (!level.isClientSide()) {
-                if (newState != currentState) level.setBlock(effectivePos, newState, 3);
-                applyToEntity(letterEntity, targetBackplate, isBackFace, newMaterial, selectedColor);
-                level.sendBlockUpdated(effectivePos, currentState, newState, 3);
+                for (BlockPos p : multiPositions) {
+                    if (newState != currentState) level.setBlock(p, newState, 3);
+                    BlockEntity be = level.getBlockEntity(p);
+                    if (be instanceof LetterBlockEntity lbe) {
+                        applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+                    }
+                    level.sendBlockUpdated(p, currentState, newState, 3);
+                }
                 blocksPainted++;
             } else {
-                if (newState != currentState) level.setBlock(effectivePos, newState, 11);
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(effectivePos));
+                for (BlockPos p : multiPositions) {
+                    if (newState != currentState) level.setBlock(p, newState, 11);
+                    dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p));
+                }
             }
         }
 
@@ -427,8 +451,13 @@ public class PaintBrushItem extends Item {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack s = player.getInventory().getItem(i);
             if (s.getItem() == item) {
-                if (s.getCount() >= amountLeft) { s.shrink(amountLeft); break; }
-                else { amountLeft -= s.getCount(); s.setCount(0); }
+                if (s.getCount() >= amountLeft) {
+                    s.shrink(amountLeft);
+                    break;
+                } else {
+                    amountLeft -= s.getCount();
+                    s.setCount(0);
+                }
             }
         }
     }

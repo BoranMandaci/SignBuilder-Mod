@@ -310,5 +310,8 @@
   "message.signbuilder.wrench.pin.record_saved": "PIN guardado con éxito: %s",
   "message.signbuilder.wrench.pin.record_cancelled": "No se introdujo ninguna secuencia, grabación cancelada.",
   "message.signbuilder.wrench.pin.recording_hint": "Grabación de PIN activa (%s). Shift + Clic derecho para finalizar.",
-  "tooltip.signbuilder.wrench.recording_pin": "● GRABACIÓN DE PIN ACTIVA: %s"
+  "tooltip.signbuilder.wrench.recording_pin": "● GRABACIÓN DE PIN ACTIVA: %s",
+  "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
+  "gui.signbuilder.blueprint.size.2x2": "2x2 Multibloque",
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multibloque"
 }

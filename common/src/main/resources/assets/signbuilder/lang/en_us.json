@@ -310,5 +310,8 @@
   "message.signbuilder.wrench.pin.record_saved": "PIN successfully saved: %s",
   "message.signbuilder.wrench.pin.record_cancelled": "No sequence entered, recording cancelled.",
   "message.signbuilder.wrench.pin.recording_hint": "You are recording a PIN (%s). Shift + Right-click to finish.",
-  "tooltip.signbuilder.wrench.recording_pin": "● PIN RECORDING ACTIVE: %s"
+  "tooltip.signbuilder.wrench.recording_pin": "● PIN RECORDING ACTIVE: %s",
+  "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
+  "gui.signbuilder.blueprint.size.2x2": "2x2 Multi-Block",
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multi-Block"
 }

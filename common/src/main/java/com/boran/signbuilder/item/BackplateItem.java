@@ -4,6 +4,7 @@ import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
+import com.boran.signbuilder.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
@@ -34,53 +35,56 @@ public class BackplateItem extends BlockItem {
 
         if (state.getBlock() instanceof LetterBlock) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof LetterBlockEntity letter) {
+            if (be instanceof LetterBlockEntity rawLetter) {
+                LetterBlockEntity letter = rawLetter.getEffectiveMaster();
+                BlockPos mPos = letter.getBlockPos();
+                BlockState mState = level.getBlockState(mPos);
+                int size = letter.getSize();
+                int cost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
+
                 if (player != null && player.isShiftKeyDown()) {
-                    if (letter.hasBackplate()) {
-                        if (!level.isClientSide()) {
-                            ItemStack detached = BackplateBlock.getDroppedBackplateItemStack(letter);
-
-                            letter.setHasBackplate(false);
-                            letter.setBackplateFrontMaterial(SignMaterial.DEFAULT);
-                            letter.setBackplateBackMaterial(SignMaterial.DEFAULT);
-                            letter.setBackplateFrontColor(0xFFFFFF);
-                            letter.setBackplateBackColor(0xFFFFFF);
-                            letter.setBackplateFrontRainbow(false);
-                            letter.setBackplateBackRainbow(false);
-                            letter.setChanged();
-                            letter.sync();
-                            level.sendBlockUpdated(pos, state, state, 3);
-
-                            if (!player.getInventory().add(detached)) {
-                                player.drop(detached, false);
-                            }
-                            level.playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
-                        } else {
-                            dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
-                                    com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
-                            );
-                        }
+                    if (LetterBlock.tryDetachBackplate(level, pos, player)) {
                         return InteractionResult.sidedSuccess(level.isClientSide());
                     }
+                    return InteractionResult.PASS;
                 } else if (!letter.hasBackplate()) {
-                    letter.setHasBackplate(true);
-                    CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-                    if (beTag != null) {
-                        BackplateBlock.applyBackplateTagToEntity(letter, beTag);
+                    if (player != null && !player.isCreative() && stack.getCount() < cost) {
+                        return InteractionResult.FAIL;
                     }
 
+                    CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+                    LetterBlockEntity temp = new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), mPos, mState);
+                    if (beTag != null) {
+                        BackplateBlock.applyBackplateTagToEntity(temp, beTag);
+                    }
+
+                    SignMaterial fMat = temp.getBackplateFrontMaterial();
+                    SignMaterial bMat = temp.getBackplateBackMaterial();
+                    int fCol = temp.getBackplateFrontColor();
+                    int bCol = temp.getBackplateBackColor();
+                    boolean fRain = temp.isBackplateFrontRainbow();
+                    boolean bRain = temp.isBackplateBackRainbow();
+
                     if (!level.isClientSide()) {
+                        LetterBlock.updateAllEntitiesBackplate(level, mPos, mState, size, true, fMat, bMat, fCol, bCol, fRain, bRain);
+
                         if (player != null && !player.isCreative()) {
-                            stack.shrink(1);
+                            stack.shrink(cost);
                         }
                         level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                        letter.setChanged();
-                        letter.sync();
-                        level.sendBlockUpdated(pos, state, state, 3);
                     } else {
-                        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
-                                com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
-                        );
+                        dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
+                            com.boran.signbuilder.client.ClientHooks.setBlocksDirty(mPos);
+                            if (size == 3) {
+                                for (BlockPos p : LetterBlock.get3x3BlockPositions(mPos, mState)) {
+                                    com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
+                                }
+                            } else if (size == 2) {
+                                for (BlockPos p : LetterBlock.getBigBlockPositions(mPos, mState)) {
+                                    com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
+                                }
+                            }
+                        });
                     }
                     return InteractionResult.sidedSuccess(level.isClientSide());
                 }

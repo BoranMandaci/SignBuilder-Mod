@@ -47,13 +47,14 @@ public class SignBlueprintItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         String currentText = "";
-        boolean is2x2 = false;
+        int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
         CompoundTag tag = pStack.getTag();
         if (tag != null) {
             if (tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
-            if (tag.contains("Is2x2")) is2x2 = tag.getBoolean("Is2x2");
+            if (tag.contains("Size")) size = tag.getInt("Size");
+            else if (tag.getBoolean("Is2x2")) size = 2;
             if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
             if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
         }
@@ -67,9 +68,10 @@ public class SignBlueprintItem extends Item {
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }
 
+        String sizeText = (size == 3) ? "3x3 Multi-Block" : (size == 2 ? "2x2 Multi-Block" : "1x1 Normal");
+        ChatFormatting sizeColor = (size == 3) ? ChatFormatting.LIGHT_PURPLE : (size == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
         pTooltipComponents.add(Component.literal("Size: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(is2x2 ? "2x2 Multi-Block" : "1x1 Normal")
-                        .withStyle(is2x2 ? ChatFormatting.GOLD : ChatFormatting.AQUA)));
+                .append(Component.literal(sizeText).withStyle(sizeColor)));
 
         pTooltipComponents.add(Component.literal("Direction: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.translatable(isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
@@ -90,32 +92,39 @@ public class SignBlueprintItem extends Item {
 
         if (pPlayer.isShiftKeyDown()) {
             if (!pLevel.isClientSide()) {
-                boolean is2x2 = stack.getOrCreateTag().getBoolean("Is2x2");
+                int size = 1;
+                if (stack.getOrCreateTag().contains("Size")) size = stack.getOrCreateTag().getInt("Size");
+                else if (stack.getOrCreateTag().getBoolean("Is2x2")) size = 2;
+
                 boolean isVert = stack.getOrCreateTag().getBoolean("IsVertical");
 
-                boolean next2x2;
+                int nextSize;
                 boolean nextVert;
 
-                if (!is2x2 && !isVert) {
-                    next2x2 = false;
-                    nextVert = true;
-                } else if (!is2x2 && isVert) {
-                    next2x2 = true;
-                    nextVert = false;
-                } else if (is2x2 && !isVert) {
-                    next2x2 = true;
-                    nextVert = true;
+                if (size == 1 && !isVert) {
+                    nextSize = 1; nextVert = true;
+                } else if (size == 1 && isVert) {
+                    nextSize = 2; nextVert = false;
+                } else if (size == 2 && !isVert) {
+                    nextSize = 2; nextVert = true;
+                } else if (size == 2 && isVert) {
+                    nextSize = 3; nextVert = false;
+                } else if (size == 3 && !isVert) {
+                    nextSize = 3; nextVert = true;
                 } else {
-                    next2x2 = false;
-                    nextVert = false;
+                    nextSize = 1; nextVert = false;
                 }
 
-                stack.getOrCreateTag().putBoolean("Is2x2", next2x2);
+                stack.getOrCreateTag().putInt("Size", nextSize);
+                stack.getOrCreateTag().putBoolean("Is2x2", nextSize == 2);
                 stack.getOrCreateTag().putBoolean("IsVertical", nextVert);
+
+                String sizeStr = (nextSize == 3) ? "3x3" : (nextSize == 2 ? "2x2" : "1x1");
+                ChatFormatting color = (nextSize == 3) ? ChatFormatting.LIGHT_PURPLE : (nextSize == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
 
                 pPlayer.displayClientMessage(
                         Component.literal("Blueprint: ").withStyle(ChatFormatting.YELLOW)
-                                .append(Component.literal(next2x2 ? "2x2" : "1x1").withStyle(next2x2 ? ChatFormatting.GOLD : ChatFormatting.AQUA))
+                                .append(Component.literal(sizeStr).withStyle(color))
                                 .append(Component.literal(" "))
                                 .append(Component.translatable(nextVert ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                                         .withStyle(nextVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN)),
@@ -147,13 +156,14 @@ public class SignBlueprintItem extends Item {
         if (level.isClientSide() || player == null) return InteractionResult.SUCCESS;
 
         String text = "";
-        boolean is2x2 = false;
+        int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
         CompoundTag tag = stack.getTag();
         if (tag != null) {
             if (tag.contains("BlueprintText")) text = tag.getString("BlueprintText");
-            if (tag.contains("Is2x2")) is2x2 = tag.getBoolean("Is2x2");
+            if (tag.contains("Size")) size = tag.getInt("Size");
+            else if (tag.getBoolean("Is2x2")) size = 2;
             if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
             if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
         }
@@ -163,7 +173,7 @@ public class SignBlueprintItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        int blocksPerChar = is2x2 ? 4 : 1;
+        int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
 
         if (!player.isCreative()) {
             Map<Item, Integer> requiredItems = new HashMap<>();
@@ -230,14 +240,14 @@ public class SignBlueprintItem extends Item {
             if (blockToPlace == null) continue;
 
             if (!isVertical) {
-                if (!is2x2) {
+                if (size == 1) {
                     BlockPos currentPos = startPos.relative(rightDir, effectiveIdx);
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
                     placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
-                } else {
+                } else if (size == 2) {
                     BlockPos basePos = startPos.relative(rightDir, effectiveIdx * 2);
                     BlockPos p00 = basePos;
                     BlockPos p10 = basePos.relative(rightDir, 1);
@@ -255,16 +265,44 @@ public class SignBlueprintItem extends Item {
                         placedPositions.add(p.asLong());
                         blocksPlaced++;
                     }
+                } else {
+                    BlockPos basePos = startPos.relative(rightDir, effectiveIdx * 3);
+                    boolean canPlaceAll = true;
+                    BlockPos[] grid = new BlockPos[9];
+                    int gIdx = 0;
+                    for (int dy = 0; dy < 3; dy++) {
+                        for (int dx = 0; dx < 3; dx++) {
+                            BlockPos p = basePos.relative(rightDir, dx).relative(Direction.UP, dy);
+                            if (!level.getBlockState(p).canBeReplaced()) {
+                                canPlaceAll = false;
+                                break;
+                            }
+                            grid[gIdx++] = p;
+                        }
+                        if (!canPlaceAll) break;
+                    }
+
+                    if (!canPlaceAll) break;
+
+                    for (BlockPos p : grid) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
                 }
             } else {
-                if (!is2x2) {
-                    BlockPos currentPos = new BlockPos(startPos.getX(), startPos.getY() + (stepDirY * effectiveIdx), startPos.getZ());
+                if (size == 1) {
+                    int posY = (stepDirY == 1)
+                            ? startPos.getY() + effectiveIdx
+                            : startPos.getY() - effectiveIdx;
+
+                    BlockPos currentPos = new BlockPos(startPos.getX(), posY, startPos.getZ());
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
                     placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
-                } else {
+                } else if (size == 2) {
                     int baseY = (stepDirY == 1)
                             ? startPos.getY() + (effectiveIdx * 2)
                             : startPos.getY() - 1 - (effectiveIdx * 2);
@@ -282,6 +320,34 @@ public class SignBlueprintItem extends Item {
 
                     BlockPos[] quad = {p00, p10, p01, p11};
                     for (BlockPos p : quad) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
+                } else {
+                    int baseY = (stepDirY == 1)
+                            ? startPos.getY() + (effectiveIdx * 3)
+                            : startPos.getY() - 2 - (effectiveIdx * 3);
+
+                    BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
+                    boolean canPlaceAll = true;
+                    BlockPos[] grid = new BlockPos[9];
+                    int gIdx = 0;
+                    for (int dy = 0; dy < 3; dy++) {
+                        for (int dx = 0; dx < 3; dx++) {
+                            BlockPos p = basePos.relative(rightDir, dx).relative(Direction.UP, dy);
+                            if (!level.getBlockState(p).canBeReplaced()) {
+                                canPlaceAll = false;
+                                break;
+                            }
+                            grid[gIdx++] = p;
+                        }
+                        if (!canPlaceAll) break;
+                    }
+
+                    if (!canPlaceAll) break;
+
+                    for (BlockPos p : grid) {
                         placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
                         placedPositions.add(p.asLong());
                         blocksPlaced++;

@@ -17,7 +17,7 @@ import org.lwjgl.glfw.GLFW;
 public class BlueprintScreen extends Screen {
     private EditBox textField;
     private final String initialText;
-    private boolean is2x2;
+    private int size = 1;
     private boolean isVertical;
     private boolean withBackplate;
 
@@ -30,12 +30,16 @@ public class BlueprintScreen extends Screen {
         this.initialText = initialText;
     }
 
-    public BlueprintScreen(String initialText, boolean is2x2, boolean isVertical, boolean withBackplate) {
+    public BlueprintScreen(String initialText, int size, boolean isVertical, boolean withBackplate) {
         super(Component.literal("Sign Blueprint"));
         this.initialText = initialText;
-        this.is2x2 = is2x2;
+        this.size = size;
         this.isVertical = isVertical;
         this.withBackplate = withBackplate;
+    }
+
+    public BlueprintScreen(String initialText, boolean is2x2, boolean isVertical, boolean withBackplate) {
+        this(initialText, is2x2 ? 2 : 1, isVertical, withBackplate);
     }
 
     @Override
@@ -50,7 +54,13 @@ public class BlueprintScreen extends Screen {
                 stack = this.minecraft.player.getOffhandItem();
             }
             if (stack.getItem() instanceof SignBlueprintItem && stack.getTag() != null) {
-                this.is2x2 = stack.getTag().getBoolean("Is2x2");
+                if (stack.getTag().contains("Size")) {
+                    this.size = stack.getTag().getInt("Size");
+                } else if (stack.getTag().getBoolean("Is2x2")) {
+                    this.size = 2;
+                } else {
+                    this.size = 1;
+                }
                 this.isVertical = stack.getTag().getBoolean("IsVertical");
                 this.withBackplate = stack.getTag().getBoolean("WithBackplate");
             }
@@ -132,7 +142,7 @@ public class BlueprintScreen extends Screen {
         }).bounds(startX, centerY + 34, 42, 20).build());
 
         this.sizeToggleButton = Button.builder(getSizeButtonText(), button -> {
-            this.is2x2 = !this.is2x2;
+            this.size = (this.size % 3) + 1;
             button.setMessage(getSizeButtonText());
         }).bounds(startX + 45, centerY + 34, 48, 20).build();
         this.addRenderableWidget(this.sizeToggleButton);
@@ -154,8 +164,17 @@ public class BlueprintScreen extends Screen {
     }
 
     private Component getSizeButtonText() {
-        return Component.literal(this.is2x2 ? "2x2" : "1x1")
-                .withStyle(this.is2x2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
+        String label = switch (this.size) {
+            case 3 -> "3x3";
+            case 2 -> "2x2";
+            default -> "1x1";
+        };
+        ChatFormatting color = switch (this.size) {
+            case 3 -> ChatFormatting.LIGHT_PURPLE;
+            case 2 -> ChatFormatting.GOLD;
+            default -> ChatFormatting.AQUA;
+        };
+        return Component.literal(label).withStyle(color);
     }
 
     private Component getDirButtonText() {
@@ -198,15 +217,26 @@ public class BlueprintScreen extends Screen {
         }
         String enteredText = sb.toString();
 
-        ModMessages.sendToServer(new BlueprintTextC2SPacket(enteredText, this.is2x2, this.isVertical, this.withBackplate));
+        ModMessages.sendToServer(new BlueprintTextC2SPacket(enteredText, this.size, this.isVertical, this.withBackplate));
 
         if (this.minecraft != null && this.minecraft.player != null) {
             if (!enteredText.isEmpty()) {
+                String sizeStr = switch (this.size) {
+                    case 3 -> "3x3";
+                    case 2 -> "2x2";
+                    default -> "1x1";
+                };
+                ChatFormatting sizeColor = switch (this.size) {
+                    case 3 -> ChatFormatting.LIGHT_PURPLE;
+                    case 2 -> ChatFormatting.GOLD;
+                    default -> ChatFormatting.AQUA;
+                };
+
                 this.minecraft.player.displayClientMessage(
                         Component.translatable("message.signbuilder.blueprint.saved")
                                 .withStyle(ChatFormatting.YELLOW)
                                 .append(Component.literal(enteredText).withStyle(ChatFormatting.AQUA))
-                                .append(Component.literal(" [" + (this.is2x2 ? "2x2" : "1x1") + "] ").withStyle(this.is2x2 ? ChatFormatting.GOLD : ChatFormatting.AQUA))
+                                .append(Component.literal(" [" + sizeStr + "] ").withStyle(sizeColor))
                                 .append(Component.literal("[").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                                         .withStyle(this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN))

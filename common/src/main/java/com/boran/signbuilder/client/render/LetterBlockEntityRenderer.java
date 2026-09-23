@@ -45,7 +45,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
     @Override
     public boolean shouldRenderOffScreen(LetterBlockEntity blockEntity) {
-        return blockEntity.isBig();
+        return blockEntity.getSize() > 1;
     }
 
     @Override
@@ -89,7 +89,24 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
         poseStack.pushPose();
 
-        if (entity.isBig()) {
+        if (entity.getSize() == 3) {
+            if (face == AttachFace.WALL) {
+                switch (facing) {
+                    case NORTH -> poseStack.translate(-2.0, 0.0, -2.0);
+                    case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
+                    case EAST  -> poseStack.translate(0.0, 0.0, -2.0);
+                    case WEST  -> poseStack.translate(-2.0, 0.0, 0.0);
+                }
+            } else {
+                switch (facing) {
+                    case EAST  -> poseStack.translate(0.0, 0.0, -1.375);
+                    case NORTH -> poseStack.translate(-1.375, 0.0, 0.0);
+                    case SOUTH -> poseStack.translate(-0.625, 0.0, 0.0);
+                    case WEST  -> poseStack.translate(0.0, 0.0, -0.625);
+                }
+            }
+            poseStack.scale(3.0F, 3.0F, 3.0F);
+        } else if (entity.getSize() == 2) {
             if (face == AttachFace.WALL) {
                 switch (facing) {
                     case NORTH -> poseStack.translate(-1.0, 0.0, -1.0);

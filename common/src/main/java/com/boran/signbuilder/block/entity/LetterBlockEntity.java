@@ -51,7 +51,7 @@ public class LetterBlockEntity extends BlockEntity {
     private boolean backplateFrontRainbow = false;
     private boolean backplateBackRainbow = false;
 
-    private boolean isBig = false;
+    private int size = 1;
     private boolean isDummy = false;
     @Nullable
     private BlockPos masterPos = null;
@@ -72,8 +72,16 @@ public class LetterBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
-    public boolean isBig() { return this.isBig; }
-    public void setBig(boolean big) { this.isBig = big; setChanged(); sync(); }
+    public int getSize() { return this.size; }
+    public void setSize(int size) { this.size = size; setChanged(); sync(); }
+
+    public boolean isBig() { return this.size == 2; }
+    public void setBig(boolean big) { this.size = big ? 2 : 1; setChanged(); sync(); }
+
+    public boolean is3x3() { return this.size == 3; }
+    public void set3x3(boolean is3x3) { this.size = is3x3 ? 3 : 1; setChanged(); sync(); }
+
+    public int getBlockCount() { return this.size * this.size; }
 
     public boolean isDummy() { return this.isDummy; }
     public void setDummy(boolean dummy) { this.isDummy = dummy; setChanged(); sync(); }
@@ -314,9 +322,12 @@ public class LetterBlockEntity extends BlockEntity {
         if (this.level != null && !this.level.isClientSide()) {
             notifyRedstoneNeighbors(this.worldPosition);
 
-            if (this.isBig) {
-                BlockPos[] bigPositions = LetterBlock.getBigBlockPositions(this.worldPosition, getBlockState());
-                for (BlockPos p : bigPositions) {
+            if (this.size > 1) {
+                BlockPos[] positions = (this.size == 3)
+                        ? LetterBlock.get3x3BlockPositions(this.worldPosition, getBlockState())
+                        : LetterBlock.getBigBlockPositions(this.worldPosition, getBlockState());
+
+                for (BlockPos p : positions) {
                     if (!p.equals(this.worldPosition)) {
                         BlockEntity be = this.level.getBlockEntity(p);
                         if (be instanceof LetterBlockEntity dummy) {
@@ -389,7 +400,8 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
         tag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
 
-        tag.putBoolean("IsBig", this.isBig);
+        tag.putInt("Size", this.size);
+        tag.putBoolean("IsBig", this.size == 2);
         tag.putBoolean("IsDummy", this.isDummy);
         if (this.masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(this.masterPos));
@@ -430,7 +442,14 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("BPFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BPFrontRainbow");
         if (tag.contains("BPBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BPBackRainbow");
 
-        this.isBig = tag.getBoolean("IsBig");
+        if (tag.contains("Size")) {
+            this.size = tag.getInt("Size");
+        } else if (tag.getBoolean("IsBig")) {
+            this.size = 2;
+        } else {
+            this.size = 1;
+        }
+
         this.isDummy = tag.getBoolean("IsDummy");
         if (tag.contains("MasterPos")) {
             this.masterPos = NbtUtils.readBlockPos(tag.getCompound("MasterPos"));
@@ -603,7 +622,7 @@ public class LetterBlockEntity extends BlockEntity {
                     case 4: shouldGlow = (time % 60) < 30; break;
                     case 5:
                         if (time % 10 == 0) {
-                            AABB bounds = new AABB(pos).inflate(entity.isBig() ? 8.0 : 6.0);
+                            AABB bounds = new AABB(pos).inflate(entity.getSize() == 3 ? 10.0 : (entity.getSize() == 2 ? 8.0 : 6.0));
                             shouldGlow = !level.getEntitiesOfClass(LivingEntity.class, bounds,
                                     t -> t instanceof Player ||
                                             (entity.doesDetectMonsters() && t instanceof Monster) ||
@@ -625,7 +644,8 @@ public class LetterBlockEntity extends BlockEntity {
                     case 9:
                         if (time % 5 == 0) {
                             AABB bounds = new AABB(pos);
-                            if (entity.isBig()) bounds = bounds.inflate(1.0);
+                            if (entity.getSize() == 3) bounds = bounds.inflate(2.0);
+                            else if (entity.getSize() == 2) bounds = bounds.inflate(1.0);
                             shouldGlow = false;
                             for (Player p : level.players()) {
                                 if (p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 256) {
@@ -657,6 +677,6 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     public AABB getRenderBoundingBox() {
-        return new AABB(this.worldPosition).inflate(8.0);
+        return new AABB(this.worldPosition).inflate(this.size == 3 ? 12.0 : 8.0);
     }
 }
