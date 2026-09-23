@@ -1,6 +1,7 @@
 package com.boran.signbuilder.client.render;
 
 import com.boran.signbuilder.block.BackplateBlock;
+import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
@@ -133,6 +134,21 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         }
 
         poseStack.pushPose();
+
+        if (entity.isPressed() && face == AttachFace.WALL) {
+            float wallPlane = (facing == Direction.NORTH || facing == Direction.WEST) ? 1.0f : 0.0f;
+            float depthScale = 2.0f / 3.0f;
+            if (facing.getAxis() == Direction.Axis.Z) {
+                poseStack.translate(0, 0, wallPlane);
+                poseStack.scale(1.0f, 1.0f, depthScale);
+                poseStack.translate(0, 0, -wallPlane);
+            } else {
+                poseStack.translate(wallPlane, 0, 0);
+                poseStack.scale(depthScale, 1.0f, 1.0f);
+                poseStack.translate(-wallPlane, 0, 0);
+            }
+        }
+
         if (entity.hasBackplate() && face == AttachFace.WALL) {
             float onePixel = 0.0625f;
             poseStack.translate(facing.getStepX() * onePixel, 0, facing.getStepZ() * onePixel);

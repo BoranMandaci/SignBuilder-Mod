@@ -3,17 +3,36 @@ package com.boran.signbuilder.block.entity;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class LetterBlockEntity extends BlockEntity {
     private int rgbColor = 0xFFFFFF;
@@ -38,6 +57,16 @@ public class LetterBlockEntity extends BlockEntity {
     private BlockPos masterPos = null;
 
     private boolean isAudioPlaying = false;
+
+    private int buttonMode = 0;
+    private boolean syncWord = false;
+    private boolean isPressed = false;
+    private int pressTicks = 0;
+    private String pinCode = "";
+    private String enteredBuffer = "";
+    private int pinResetTicks = 0;
+    private boolean isPinPowered = false;
+    private final List<BlockPos> enteredPositions = new ArrayList<>();
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -105,6 +134,235 @@ public class LetterBlockEntity extends BlockEntity {
     public boolean isBackplateBackRainbow() { return backplateBackRainbow; }
     public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; setChanged(); sync(); }
 
+    public int getButtonMode() { return this.buttonMode; }
+    public void setButtonMode(int mode) { this.buttonMode = mode; setChanged(); sync(); }
+
+    public boolean isSyncWord() { return this.syncWord; }
+    public void setSyncWord(boolean sync) { this.syncWord = sync; setChanged(); sync(); }
+
+    public boolean isPressed() { return this.isPressed; }
+    public void setPressed(boolean pressed) { this.isPressed = pressed; setChanged(); sync(); }
+
+    public boolean isPinPowered() { return this.isPinPowered; }
+    public void setPinPowered(boolean pinPowered) { this.isPinPowered = pinPowered; setChanged(); sync(); }
+
+    public String getPinCode() { return this.pinCode; }
+    public void setPinCode(String pin) { this.pinCode = pin != null ? pin : ""; setChanged(); sync(); }
+
+    public boolean isWoodMaterial() {
+        return switch (this.savedMaterial) {
+            case OAK, SPRUCE, BIRCH, JUNGLE, ACACIA, DARK_OAK, MANGROVE, CHERRY, BAMBOO, CRIMSON_PLANKS, WARPED_PLANKS -> true;
+            default -> false;
+        };
+    }
+
+    public boolean isMetalMaterial() {
+        return switch (this.savedMaterial) {
+            case IRON, GOLD, COPPER_BLOCK, NETHERITE_BLOCK -> true;
+            default -> false;
+        };
+    }
+
+    public void triggerPress(@Nullable Player player) {
+        if (this.level == null) return;
+
+        if (this.isDummy) {
+            LetterBlockEntity master = getEffectiveMaster();
+            if (master != this) {
+                master.triggerPress(player);
+                return;
+            }
+        }
+
+        if (this.buttonMode == 0) return;
+
+        if (this.buttonMode == 1) {
+            if (this.isPressed) return;
+            int duration = isWoodMaterial() ? 30 : 20;
+            applyPressedState(true, duration);
+            playPressSound(true);
+        } else if (this.buttonMode == 2) {
+            boolean nextState = !this.isPressed;
+            applyPressedState(nextState, 0);
+            playPressSound(nextState);
+        } else if (this.buttonMode == 3) {
+            handlePinInput(player);
+        }
+    }
+
+    private void handlePinInput(@Nullable Player player) {
+        if (this.level == null || this.level.isClientSide()) return;
+
+        List<LetterBlockEntity> wordMembers = collectConnectedWord();
+        if (wordMembers.isEmpty()) return;
+
+        LetterBlockEntity controller = wordMembers.get(0);
+        for (LetterBlockEntity member : wordMembers) {
+            if (member.getBlockPos().compareTo(controller.getBlockPos()) < 0) {
+                controller = member;
+            }
+        }
+
+        if (controller.isPinPowered) {
+            return;
+        }
+
+        String targetPin = controller.getPinCode();
+        if (targetPin.isEmpty()) {
+            for (LetterBlockEntity member : wordMembers) {
+                if (!member.getPinCode().isEmpty()) {
+                    targetPin = member.getPinCode();
+                    controller.setPinCode(targetPin);
+                    break;
+                }
+            }
+        }
+        if (targetPin.isEmpty()) {
+            targetPin = this.pinCode;
+            controller.setPinCode(targetPin);
+        }
+        if (targetPin.isEmpty()) {
+            return;
+        }
+
+        String cleanTargetPin = targetPin.replace(" ", "");
+        if (cleanTargetPin.isEmpty()) return;
+
+        String myChar = LetterBlock.getCharacterFromBlock(getBlockState().getBlock());
+        this.applyPressedState(true, 0);
+        this.playPressSound(true);
+
+        controller.enteredBuffer += myChar;
+        controller.enteredPositions.add(this.worldPosition);
+        controller.pinResetTicks = 120;
+
+        if (controller.enteredBuffer.length() >= cleanTargetPin.length()) {
+            boolean isMatch = controller.enteredBuffer.equalsIgnoreCase(cleanTargetPin);
+
+            if (isMatch) {
+                for (BlockPos p : controller.enteredPositions) {
+                    BlockEntity be = this.level.getBlockEntity(p);
+                    if (be instanceof LetterBlockEntity rawLbe) {
+                        LetterBlockEntity member = LetterBlock.findMaster(this.level, p, rawLbe);
+                        member.isPinPowered = true;
+                        member.applyPressedState(true, 40);
+                    }
+                }
+                this.level.playSound(null, this.worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.8F, 1.2F);
+            } else {
+                for (BlockPos p : controller.enteredPositions) {
+                    BlockEntity be = this.level.getBlockEntity(p);
+                    if (be instanceof LetterBlockEntity rawLbe) {
+                        LetterBlockEntity member = LetterBlock.findMaster(this.level, p, rawLbe);
+                        member.isPinPowered = false;
+                        member.applyPressedState(false, 0);
+                    }
+                }
+                this.level.playSound(null, this.worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
+            }
+            controller.enteredBuffer = "";
+            controller.enteredPositions.clear();
+            controller.pinResetTicks = 0;
+        }
+    }
+
+    private List<LetterBlockEntity> collectConnectedWord() {
+        List<LetterBlockEntity> members = new ArrayList<>();
+        if (this.level == null) return members;
+
+        Queue<BlockPos> queue = new LinkedList<>();
+        Set<BlockPos> visited = new HashSet<>();
+        Set<BlockPos> visitedMasters = new HashSet<>();
+
+        queue.add(this.worldPosition);
+        visited.add(this.worldPosition);
+
+        while (!queue.isEmpty() && visited.size() <= 64) {
+            BlockPos current = queue.poll();
+            BlockEntity be = this.level.getBlockEntity(current);
+            if (be instanceof LetterBlockEntity rawLbe) {
+                LetterBlockEntity master = LetterBlock.findMaster(this.level, current, rawLbe);
+                if (visitedMasters.add(master.getBlockPos())) {
+                    members.add(master);
+                }
+            }
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        BlockPos neighbor = current.offset(dx, dy, dz);
+                        if (!visited.contains(neighbor)) {
+                            BlockState ns = this.level.getBlockState(neighbor);
+                            if (ns.getBlock() instanceof LetterBlock) {
+                                visited.add(neighbor);
+                                queue.add(neighbor);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return members;
+    }
+
+    public void applyPressedState(boolean pressed, int duration) {
+        this.isPressed = pressed;
+        this.pressTicks = duration;
+        setChanged();
+        sync();
+
+        if (this.level != null && !this.level.isClientSide()) {
+            notifyRedstoneNeighbors(this.worldPosition);
+
+            if (this.isBig) {
+                BlockPos[] bigPositions = LetterBlock.getBigBlockPositions(this.worldPosition, getBlockState());
+                for (BlockPos p : bigPositions) {
+                    if (!p.equals(this.worldPosition)) {
+                        BlockEntity be = this.level.getBlockEntity(p);
+                        if (be instanceof LetterBlockEntity dummy) {
+                            dummy.isPressed = pressed;
+                            dummy.pressTicks = duration;
+                            dummy.setChanged();
+                            dummy.sync();
+                            notifyRedstoneNeighbors(p);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void releaseButton() {
+        if (this.level == null) return;
+        this.isPinPowered = false;
+        applyPressedState(false, 0);
+        playPressSound(false);
+    }
+
+    private void notifyRedstoneNeighbors(BlockPos pos) {
+        if (this.level == null) return;
+        this.level.updateNeighborsAt(pos, getBlockState().getBlock());
+        for (Direction dir : Direction.values()) {
+            this.level.updateNeighborsAt(pos.relative(dir), getBlockState().getBlock());
+        }
+    }
+
+    public void playPressSound(boolean pressOn) {
+        if (this.level == null) return;
+        SoundEvent sound;
+
+        if (isWoodMaterial()) {
+            sound = pressOn ? SoundEvents.WOODEN_BUTTON_CLICK_ON : SoundEvents.WOODEN_BUTTON_CLICK_OFF;
+        } else if (isMetalMaterial()) {
+            sound = pressOn ? SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON : SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF;
+        } else {
+            sound = pressOn ? SoundEvents.STONE_BUTTON_CLICK_ON : SoundEvents.STONE_BUTTON_CLICK_OFF;
+        }
+
+        float pitch = pressOn ? 0.6F : 0.5F;
+        this.level.playSound(null, this.worldPosition, sound, SoundSource.BLOCKS, 0.4F, pitch);
+    }
+
     public void sync() {
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -136,6 +394,13 @@ public class LetterBlockEntity extends BlockEntity {
         if (this.masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(this.masterPos));
         }
+
+        if (this.buttonMode != 0) tag.putInt("ButtonMode", this.buttonMode);
+        if (this.syncWord) tag.putBoolean("SyncWord", this.syncWord);
+        if (this.isPressed) tag.putBoolean("IsPressed", this.isPressed);
+        if (this.pressTicks > 0) tag.putInt("PressTicks", this.pressTicks);
+        if (!this.pinCode.isEmpty()) tag.putString("PinCode", this.pinCode);
+        tag.putBoolean("IsPinPowered", this.isPinPowered);
     }
 
     @Override
@@ -173,6 +438,13 @@ public class LetterBlockEntity extends BlockEntity {
             this.masterPos = null;
         }
 
+        this.buttonMode = tag.getInt("ButtonMode");
+        this.syncWord = tag.getBoolean("SyncWord");
+        this.isPressed = tag.getBoolean("IsPressed");
+        this.pressTicks = tag.getInt("PressTicks");
+        this.pinCode = tag.contains("PinCode") ? tag.getString("PinCode") : "";
+        this.isPinPowered = tag.getBoolean("IsPinPowered");
+
         if (level != null && level.isClientSide) {
             dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(worldPosition)
@@ -203,7 +475,10 @@ public class LetterBlockEntity extends BlockEntity {
                 || !this.detectsMonsters
                 || this.detectsAnimals
                 || (this.savedMaterial != SignMaterial.DEFAULT)
-                || this.hasBackplate;
+                || this.hasBackplate
+                || (this.buttonMode != 0)
+                || this.syncWord
+                || !this.pinCode.isEmpty();
 
         if (!isCustomized) {
             return stack;
@@ -232,6 +507,10 @@ public class LetterBlockEntity extends BlockEntity {
             if (this.backplateBackRainbow) beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
         }
 
+        if (this.buttonMode != 0) beTag.putInt("ButtonMode", this.buttonMode);
+        if (this.syncWord) beTag.putBoolean("SyncWord", this.syncWord);
+        if (!this.pinCode.isEmpty()) beTag.putString("PinCode", this.pinCode);
+
         stack.getOrCreateTag().put("BlockEntityTag", beTag);
 
         if (this.savedMaterial != SignMaterial.DEFAULT) {
@@ -253,11 +532,35 @@ public class LetterBlockEntity extends BlockEntity {
         };
     }
 
-    public static void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
+    public static void tick(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
+        if (!level.isClientSide()) {
+            if (entity.pressTicks > 0) {
+                entity.pressTicks--;
+                if (entity.pressTicks == 0) {
+                    entity.releaseButton();
+                }
+            }
+            if (entity.pinResetTicks > 0) {
+                entity.pinResetTicks--;
+                if (entity.pinResetTicks == 0) {
+                    for (BlockPos p : entity.enteredPositions) {
+                        BlockEntity be = level.getBlockEntity(p);
+                        if (be instanceof LetterBlockEntity rawLbe) {
+                            LetterBlockEntity member = LetterBlock.findMaster(level, p, rawLbe);
+                            member.isPinPowered = false;
+                            member.applyPressedState(false, 0);
+                        }
+                    }
+                    entity.enteredBuffer = "";
+                    entity.enteredPositions.clear();
+                }
+            }
+        }
+
         if (level.isClientSide) {
             boolean dirty = false;
             float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
 
             if (entity.isRainbow()) {
                 entity.rgbColor = rainbowRgb;
@@ -301,17 +604,17 @@ public class LetterBlockEntity extends BlockEntity {
                     case 5:
                         if (time % 10 == 0) {
                             AABB bounds = new AABB(pos).inflate(entity.isBig() ? 8.0 : 6.0);
-                            shouldGlow = !level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, bounds,
-                                    t -> t instanceof net.minecraft.world.entity.player.Player ||
-                                            (entity.doesDetectMonsters() && t instanceof net.minecraft.world.entity.monster.Monster) ||
-                                            (entity.doesDetectAnimals() && t instanceof net.minecraft.world.entity.animal.Animal)).isEmpty();
+                            shouldGlow = !level.getEntitiesOfClass(LivingEntity.class, bounds,
+                                    t -> t instanceof Player ||
+                                            (entity.doesDetectMonsters() && t instanceof Monster) ||
+                                            (entity.doesDetectAnimals() && t instanceof Animal)).isEmpty();
                         } else shouldGlow = isCurrentlyGlowing; break;
                     case 6: shouldGlow = (time % 20 == 0) ? level.isNight() : isCurrentlyGlowing; break;
                     case 7:
                         if (time % 10 == 0) {
                             entity.isAudioPlaying = false;
                             for (BlockPos p : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
-                                if (level.getBlockEntity(p) instanceof net.minecraft.world.level.block.entity.JukeboxBlockEntity jbe) {
+                                if (level.getBlockEntity(p) instanceof JukeboxBlockEntity jbe) {
                                     if (jbe.isRecordPlaying()) { entity.isAudioPlaying = true; break; }
                                 }
                             }
@@ -324,11 +627,11 @@ public class LetterBlockEntity extends BlockEntity {
                             AABB bounds = new AABB(pos);
                             if (entity.isBig()) bounds = bounds.inflate(1.0);
                             shouldGlow = false;
-                            for (net.minecraft.world.entity.player.Player p : level.players()) {
+                            for (Player p : level.players()) {
                                 if (p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 256) {
-                                    net.minecraft.world.phys.Vec3 eye = p.getEyePosition();
-                                    net.minecraft.world.phys.Vec3 look = p.getLookAngle();
-                                    net.minecraft.world.phys.Vec3 end = eye.add(look.x * 16, look.y * 16, look.z * 16);
+                                    Vec3 eye = p.getEyePosition();
+                                    Vec3 look = p.getLookAngle();
+                                    Vec3 end = eye.add(look.x * 16, look.y * 16, look.z * 16);
                                     if (bounds.clip(eye, end).isPresent()) {
                                         shouldGlow = true;
                                         break;

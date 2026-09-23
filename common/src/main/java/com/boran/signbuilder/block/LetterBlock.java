@@ -3,8 +3,11 @@ package com.boran.signbuilder.block;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.PaintBrushItem;
+import com.boran.signbuilder.item.SignBlueprintItem;
+import com.boran.signbuilder.item.WrenchItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,6 +15,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -35,12 +39,17 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class LetterBlock extends Block implements EntityBlock {
 
@@ -91,6 +100,172 @@ public class LetterBlock extends Block implements EntityBlock {
         builder.add(FACING, FACE, MATERIAL, LIGHT_MODE);
     }
 
+    public static String getCharacterFromBlock(Block block) {
+        String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        return switch (path) {
+            case "letter_a" -> "A";
+            case "letter_a_de" -> "Ä";
+            case "letter_b" -> "B";
+            case "letter_c" -> "C";
+            case "letter_c_tr" -> "Ç";
+            case "letter_d" -> "D";
+            case "letter_e" -> "E";
+            case "letter_f" -> "F";
+            case "letter_g" -> "G";
+            case "letter_g_tr" -> "Ğ";
+            case "letter_h" -> "H";
+            case "letter_i" -> "I";
+            case "letter_i_tr" -> "İ";
+            case "letter_j" -> "J";
+            case "letter_k" -> "K";
+            case "letter_l" -> "L";
+            case "letter_m" -> "M";
+            case "letter_n" -> "N";
+            case "letter_o" -> "O";
+            case "letter_o_tr" -> "Ö";
+            case "letter_p" -> "P";
+            case "letter_q" -> "Q";
+            case "letter_r" -> "R";
+            case "letter_s" -> "S";
+            case "letter_s_tr" -> "Ş";
+            case "letter_t" -> "T";
+            case "letter_u" -> "U";
+            case "letter_u_tr" -> "Ü";
+            case "letter_v" -> "V";
+            case "letter_w" -> "W";
+            case "letter_x" -> "X";
+            case "letter_y" -> "Y";
+            case "letter_z" -> "Z";
+            case "letter_eszett" -> "ß";
+            case "number_0" -> "0";
+            case "number_1" -> "1";
+            case "number_2" -> "2";
+            case "number_3" -> "3";
+            case "number_4" -> "4";
+            case "number_5" -> "5";
+            case "number_6" -> "6";
+            case "number_7" -> "7";
+            case "number_8" -> "8";
+            case "number_9" -> "9";
+            case "symbol_plus" -> "+";
+            case "symbol_minus" -> "-";
+            case "symbol_slash" -> "/";
+            case "symbol_backslash" -> "\\";
+            case "symbol_hashtag" -> "#";
+            case "symbol_asterisk" -> "*";
+            case "symbol_star" -> "★";
+            case "symbol_checkmark" -> "✓";
+            case "symbol_infinity" -> "∞";
+            case "symbol_heart" -> "♥";
+            case "symbol_euro" -> "€";
+            case "symbol_dollar" -> "$";
+            case "symbol_pound" -> "£";
+            case "symbol_yen" -> "¥";
+            case "symbol_tl" -> "₺";
+            case "symbol_at" -> "@";
+            case "symbol_ampersand" -> "&";
+            case "symbol_comma" -> ",";
+            case "symbol_percent" -> "%";
+            case "symbol_less_than" -> "<";
+            case "symbol_greater_than" -> ">";
+            case "symbol_dot_left" -> "«";
+            case "symbol_dot_center" -> "•";
+            case "symbol_dot_right" -> "»";
+            case "symbol_bracket_left" -> "(";
+            case "symbol_bracket_right" -> ")";
+            case "symbol_bracket_double" -> "|";
+            case "symbol_square_bracket_left" -> "[";
+            case "symbol_square_bracket_right" -> "]";
+            case "symbol_square_bracket_double" -> "¦";
+            case "arrow_up" -> "↑";
+            case "arrow_down" -> "↓";
+            case "arrow_left" -> "←";
+            case "arrow_right" -> "→";
+            case "arrow_left_up" -> "↖";
+            case "arrow_right_up" -> "↗";
+            case "arrow_left_down" -> "↙";
+            case "arrow_right_down" -> "↘";
+            case "symbol_colon" -> ":";
+            case "symbol_semicolon" -> ";";
+            case "symbol_exclamation" -> "!";
+            case "symbol_question" -> "?";
+            case "symbol_equals" -> "=";
+            case "symbol_divide" -> "÷";
+            case "symbol_apostrophe" -> "'";
+            case "symbol_quotes" -> "\"";
+            default -> {
+                if (path.startsWith("letter_")) {
+                    String[] parts = path.split("_");
+                    yield parts[1].toUpperCase();
+                } else if (path.startsWith("number_")) {
+                    yield path.substring("number_".length());
+                }
+                yield "?";
+            }
+        };
+    }
+
+    private int getDigitValue() {
+        String path = BuiltInRegistries.BLOCK.getKey(this).getPath();
+        for (int i = 0; i <= 9; i++) {
+            if (path.endsWith(String.valueOf(i)) || path.contains("_" + i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof LetterBlockEntity rawLetter) {
+            LetterBlockEntity master = findMaster(level, pos, rawLetter);
+            int digit = getDigitValue();
+            if (master.getButtonMode() == 3) {
+                if (!master.isPinPowered()) {
+                    return 0;
+                }
+                return digit >= 0 ? digit : 15;
+            } else if (master.getButtonMode() != 0) {
+                if (!master.isPressed()) {
+                    return 0;
+                }
+                return digit >= 0 ? digit : 15;
+            } else {
+                return digit >= 0 ? digit : (master.isActive() ? 15 : 0);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
+        if (!level.isClientSide()) {
+            AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+            if (face == AttachFace.WALL) {
+                BlockPos pos = hit.getBlockPos();
+                BlockEntity rawBe = level.getBlockEntity(pos);
+                if (rawBe instanceof LetterBlockEntity rawLetter) {
+                    LetterBlockEntity master = findMaster(level, pos, rawLetter);
+                    if (master.getButtonMode() != 0) {
+                        Player player = (projectile.getOwner() instanceof Player p) ? p : null;
+                        if (master.isSyncWord() && master.getButtonMode() != 3) {
+                            triggerWord(level, master.getBlockPos(), player);
+                        } else {
+                            master.triggerPress(player);
+                        }
+                    }
+                }
+            }
+        }
+        super.onProjectileHit(level, state, hit, projectile);
+    }
+
     public static void updateLightLevel(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
         if (level.isClientSide()) return;
 
@@ -129,6 +304,57 @@ public class LetterBlock extends Block implements EntityBlock {
         return ModBlocks.getStandardPlacementState(context, this.defaultBlockState());
     }
 
+    public static Direction getAttachmentDirection(BlockState state) {
+        AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+        if (face == AttachFace.CEILING) return Direction.UP;
+        if (face == AttachFace.FLOOR) return Direction.DOWN;
+        Direction facing = state.hasProperty(FACING) ? state.getValue(FACING) : Direction.NORTH;
+        return facing.getOpposite();
+    }
+
+    @Override
+    public boolean isSignalSource(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        if (state.hasProperty(FACE) && state.getValue(FACE) != AttachFace.WALL) {
+            return 0;
+        }
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof LetterBlockEntity rawLetter) {
+            LetterBlockEntity master = findMaster(level, pos, rawLetter);
+            if (master.getButtonMode() == 3) {
+                return master.isPinPowered() ? 15 : 0;
+            }
+            if (master.isPressed()) {
+                return 15;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        if (state.hasProperty(FACE) && state.getValue(FACE) != AttachFace.WALL) {
+            return 0;
+        }
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof LetterBlockEntity rawLetter) {
+            LetterBlockEntity master = findMaster(level, pos, rawLetter);
+            if (getAttachmentDirection(state).getOpposite() == direction) {
+                if (master.getButtonMode() == 3) {
+                    return master.isPinPowered() ? 15 : 0;
+                }
+                if (master.isPressed()) {
+                    return 15;
+                }
+            }
+        }
+        return 0;
+    }
+
     public static VoxelShape calculateHitbox(BlockState state, BlockGetter level, BlockPos pos, VoxelShape letterShape) {
         BlockEntity be = level.getBlockEntity(pos);
         AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
@@ -136,6 +362,8 @@ public class LetterBlock extends Block implements EntityBlock {
 
         if (be instanceof LetterBlockEntity rawLetter) {
             LetterBlockEntity master = findMaster(level, pos, rawLetter);
+            VoxelShape finalShape;
+
             if (master.isBig()) {
                 if (face == AttachFace.WALL) {
                     VoxelShape base6pxShape = switch (dir) {
@@ -154,9 +382,10 @@ public class LetterBlock extends Block implements EntityBlock {
                         };
                         double offX = dir.getStepX() * 0.125;
                         double offZ = dir.getStepZ() * 0.125;
-                        return Shapes.or(base6pxShape.move(offX, 0, offZ), plateShape);
+                        finalShape = Shapes.or(base6pxShape.move(offX, 0, offZ), plateShape);
+                    } else {
+                        finalShape = base6pxShape;
                     }
-                    return base6pxShape;
                 } else {
                     VoxelShape baseFloorShape = (dir == Direction.NORTH || dir == Direction.SOUTH)
                             ? SHAPE_2X2_FLOOR_EW
@@ -169,13 +398,12 @@ public class LetterBlock extends Block implements EntityBlock {
                             case SOUTH -> BP_2X2_FLOOR_EAST;
                             default    -> BP_2X2_FLOOR_WEST;
                         };
-                        return Shapes.or(baseFloorShape, plateFloorShape);
+                        finalShape = Shapes.or(baseFloorShape, plateFloorShape);
+                    } else {
+                        finalShape = baseFloorShape;
                     }
-                    return baseFloorShape;
                 }
-            }
-
-            if (master.hasBackplate()) {
+            } else if (master.hasBackplate()) {
                 if (face == AttachFace.WALL) {
                     VoxelShape plateShape = switch (dir) {
                         case SOUTH -> BP_WALL_SOUTH;
@@ -185,7 +413,7 @@ public class LetterBlock extends Block implements EntityBlock {
                     };
                     double offX = dir.getStepX() * 0.0625;
                     double offZ = dir.getStepZ() * 0.0625;
-                    return Shapes.or(letterShape.move(offX, 0, offZ), plateShape);
+                    finalShape = Shapes.or(letterShape.move(offX, 0, offZ), plateShape);
                 } else {
                     VoxelShape plateShape = switch (dir) {
                         case EAST  -> BP_FLOOR_NORTH;
@@ -193,9 +421,30 @@ public class LetterBlock extends Block implements EntityBlock {
                         case SOUTH -> BP_FLOOR_EAST;
                         default    -> BP_FLOOR_WEST;
                     };
-                    return Shapes.or(letterShape, plateShape);
+                    finalShape = Shapes.or(letterShape, plateShape);
                 }
+            } else {
+                finalShape = letterShape;
             }
+
+            if (master.isPressed() && face == AttachFace.WALL) {
+                VoxelShape pressedShape = Shapes.empty();
+                for (AABB aabb : finalShape.toAabbs()) {
+                    double minX = aabb.minX, minY = aabb.minY, minZ = aabb.minZ;
+                    double maxX = aabb.maxX, maxY = aabb.maxY, maxZ = aabb.maxZ;
+                    switch (dir) {
+                        case NORTH -> minZ = Math.min(maxZ, minZ + 0.0625);
+                        case SOUTH -> maxZ = Math.max(minZ, maxZ - 0.0625);
+                        case WEST  -> minX = Math.min(maxX, minX + 0.0625);
+                        case EAST  -> maxX = Math.max(minX, maxX - 0.0625);
+                        default -> {}
+                    }
+                    pressedShape = Shapes.or(pressedShape, Shapes.create(minX, minY, minZ, maxX, maxY, maxZ));
+                }
+                finalShape = pressedShape;
+            }
+
+            return finalShape;
         }
         return letterShape;
     }
@@ -309,6 +558,51 @@ public class LetterBlock extends Block implements EntityBlock {
         return true;
     }
 
+    private static void triggerWord(Level level, BlockPos startPos, Player player) {
+        BlockEntity startBe = level.getBlockEntity(startPos);
+        if (!(startBe instanceof LetterBlockEntity startRaw)) return;
+        LetterBlockEntity originMaster = findMaster(level, startPos, startRaw);
+        if (originMaster.getButtonMode() == 0) return;
+
+        boolean isPulse = (originMaster.getButtonMode() == 1);
+        if (isPulse && originMaster.isPressed()) return;
+
+        boolean targetState = isPulse || !originMaster.isPressed();
+        int duration = isPulse ? (originMaster.isWoodMaterial() ? 30 : 20) : 0;
+
+        Queue<BlockPos> queue = new LinkedList<>();
+        Set<BlockPos> visited = new HashSet<>();
+        Set<BlockPos> triggeredMasters = new HashSet<>();
+        queue.add(startPos);
+        visited.add(startPos);
+
+        while (!queue.isEmpty() && visited.size() <= 64) {
+            BlockPos current = queue.poll();
+            BlockState curState = level.getBlockState(current);
+            if (curState.hasProperty(FACE) && curState.getValue(FACE) == AttachFace.WALL) {
+                BlockEntity be = level.getBlockEntity(current);
+                if (be instanceof LetterBlockEntity lbe) {
+                    LetterBlockEntity master = findMaster(level, current, lbe);
+                    if (triggeredMasters.add(master.getBlockPos())) {
+                        master.applyPressedState(targetState, duration);
+                    }
+                }
+            }
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = current.relative(dir);
+                if (!visited.contains(neighbor)) {
+                    BlockState ns = level.getBlockState(neighbor);
+                    if (ns.getBlock() instanceof LetterBlock && ns.hasProperty(FACE) && ns.getValue(FACE) == AttachFace.WALL) {
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        originMaster.playPressSound(targetState);
+    }
+
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (hand != InteractionHand.MAIN_HAND) {
@@ -316,7 +610,7 @@ public class LetterBlock extends Block implements EntityBlock {
         }
 
         ItemStack held = player.getItemInHand(hand);
-        if (held.getItem() instanceof PaintBrushItem) {
+        if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof WrenchItem || held.getItem() instanceof SignBlueprintItem) {
             return InteractionResult.PASS;
         }
 
@@ -377,6 +671,18 @@ public class LetterBlock extends Block implements EntityBlock {
                         }
                     }
                 });
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+        if (face == AttachFace.WALL && master.getButtonMode() != 0) {
+            if (!level.isClientSide()) {
+                if (master.isSyncWord() && master.getButtonMode() != 3) {
+                    triggerWord(level, mPos, player);
+                } else {
+                    master.triggerPress(player);
+                }
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
@@ -656,23 +962,6 @@ public class LetterBlock extends Block implements EntityBlock {
 
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-        if (!pLevel.isClientSide) {
-            BlockEntity be = pLevel.getBlockEntity(pPos);
-            if (be instanceof LetterBlockEntity lbe) {
-                LetterBlockEntity master = findMaster(pLevel, pPos, lbe);
-                boolean ignoreRedstone = master.isActive() || master.getWrenchMode() != 0;
-                if (!ignoreRedstone) {
-                    boolean hasSignal = pLevel.hasNeighborSignal(pPos);
-                    if (master.isActive() != hasSignal) {
-                        master.setActive(hasSignal);
-                        master.setChanged();
-                        master.sync();
-                        updateLightLevel(pLevel, master.getBlockPos(), pLevel.getBlockState(master.getBlockPos()), master);
-                        pLevel.sendBlockUpdated(master.getBlockPos(), pLevel.getBlockState(master.getBlockPos()), pLevel.getBlockState(master.getBlockPos()), 3);
-                    }
-                }
-            }
-        }
         super.neighborChanged(pState, pLevel, pPos, pBlock, pFromPos, pIsMoving);
     }
 
