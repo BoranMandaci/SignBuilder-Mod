@@ -313,5 +313,13 @@
   "tooltip.signbuilder.wrench.recording_pin": "● ŞİFRE KAYIT MODU AKTİF: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Çoklu Blok",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Çoklu Blok"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Çoklu Blok",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Blueprint ile yerleştirdiğiniz bir yazıyı geri alın.",
+  "advancements.signbuilder.wide_format.title": "Geniş Format",
+  "advancements.signbuilder.wide_format.description": "Blueprint ile ilk 2x2 multiblock tabelanızı dikin.",
+  "advancements.signbuilder.billboard.title": "Billboard",
+  "advancements.signbuilder.billboard.description": "İlk 3x3 dev harf bloğunuzu başarıyla yerleştirin.",
+  "advancements.signbuilder.mounting_panel.title": "Montaj Paneli",
+  "advancements.signbuilder.mounting_panel.description": "Bir bloğa plaka yerleştirin."
 }

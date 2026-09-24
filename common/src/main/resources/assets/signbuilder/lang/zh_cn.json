@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● 密码录制进行中：%s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 常规",
   "gui.signbuilder.blueprint.size.2x2": "2x2 多方块",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 多方块"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 多方块",
+  "block.signbuilder.symbol_cross": "叉号符号",
+  "block.signbuilder.symbol_circle": "圆形符号",
+  "block.signbuilder.symbol_diamond": "菱形符号",
+  "block.signbuilder.symbol_note": "音符符号",
+  "block.signbuilder.symbol_note_double": "双音符符号",
+  "block.signbuilder.symbol_skull": "骷髅符号",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "撤销使用蓝图放置的文本。",
+  "advancements.signbuilder.wide_format.title": "宽幅格式",
+  "advancements.signbuilder.wide_format.description": "使用蓝图放置你的第一个 2x2 多方块招牌。",
+  "advancements.signbuilder.billboard.title": "广告牌",
+  "advancements.signbuilder.billboard.description": "成功放置你的第一个 3x3 巨型字母方块。",
+  "advancements.signbuilder.mounting_panel.title": "安装面板",
+  "advancements.signbuilder.mounting_panel.description": "在方块上放置背板。"
 }

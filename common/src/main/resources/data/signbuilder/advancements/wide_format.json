@@ -1,0 +1,28 @@
+{
+  "parent": "signbuilder:master_architect",
+  "display": {
+    "icon": {
+      "item": "signbuilder:number_2"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.wide_format.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.wide_format.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "placed_2x2": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "placed_2x2"
+    ]
+  ]
+}

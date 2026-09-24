@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● REGISTRAZIONE PIN ATTIVA: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normale",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Multiblocco",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Multiblocco"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multiblocco",
+  "block.signbuilder.symbol_cross": "Simbolo della croce",
+  "block.signbuilder.symbol_circle": "Simbolo del cerchio",
+  "block.signbuilder.symbol_diamond": "Simbolo del rombo",
+  "block.signbuilder.symbol_note": "Simbolo della nota musicale",
+  "block.signbuilder.symbol_note_double": "Simbolo della doppia nota musicale",
+  "block.signbuilder.symbol_skull": "Simbolo del teschio",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Annulla un testo posizionato con il progetto.",
+  "advancements.signbuilder.wide_format.title": "Grande formato",
+  "advancements.signbuilder.wide_format.description": "Posiziona la tua prima insegna multiblocco 2x2 usando il progetto.",
+  "advancements.signbuilder.billboard.title": "Cartellone",
+  "advancements.signbuilder.billboard.description": "Posiziona con successo il tuo primo blocco di lettere gigante 3x3.",
+  "advancements.signbuilder.mounting_panel.title": "Pannello di montaggio",
+  "advancements.signbuilder.mounting_panel.description": "Posiziona una piastra su un blocco."
 }

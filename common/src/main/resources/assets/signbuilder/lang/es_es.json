@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● GRABACIÓN DE PIN ACTIVA: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Multibloque",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Multibloque"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multibloque",
+  "block.signbuilder.symbol_cross": "Símbolo de cruz",
+  "block.signbuilder.symbol_circle": "Símbolo de círculo",
+  "block.signbuilder.symbol_diamond": "Símbolo de rombo",
+  "block.signbuilder.symbol_note": "Símbolo de nota musical",
+  "block.signbuilder.symbol_note_double": "Símbolo de doble nota musical",
+  "block.signbuilder.symbol_skull": "Símbolo de calavera",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Deshaz un texto colocado con el plano.",
+  "advancements.signbuilder.wide_format.title": "Gran formato",
+  "advancements.signbuilder.wide_format.description": "Coloca tu primer letrero multibloque 2x2 con el plano.",
+  "advancements.signbuilder.billboard.title": "Valla publicitaria",
+  "advancements.signbuilder.billboard.description": "Coloca con éxito tu primer bloque de letras gigante de 3x3.",
+  "advancements.signbuilder.mounting_panel.title": "Panel de montaje",
+  "advancements.signbuilder.mounting_panel.description": "Coloca una placa en un bloque."
 }

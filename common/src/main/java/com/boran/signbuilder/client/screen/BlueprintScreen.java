@@ -69,13 +69,13 @@ public class BlueprintScreen extends Screen {
         int btnWidth = 18;
         int btnHeight = 18;
 
-        String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "÷", "=", "%", ">", "<"};
-        String[] row1Display = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "÷", "=", "%", ">", "<"};
+        String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<"};
+        String[] row1Display = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<"};
         String[] row1Tooltips = {
                 "block.signbuilder.arrow_up", "block.signbuilder.arrow_down", "block.signbuilder.arrow_left",
                 "block.signbuilder.arrow_right", "block.signbuilder.arrow_left_up", "block.signbuilder.arrow_right_up",
                 "block.signbuilder.arrow_left_down", "block.signbuilder.arrow_right_down", "block.signbuilder.symbol_plus",
-                "block.signbuilder.symbol_minus", "block.signbuilder.symbol_divide", "block.signbuilder.symbol_equals",
+                "block.signbuilder.symbol_minus", "block.signbuilder.symbol_cross", "block.signbuilder.symbol_divide", "block.signbuilder.symbol_equals",
                 "block.signbuilder.symbol_percent", "block.signbuilder.symbol_greater_than", "block.signbuilder.symbol_less_than"
         };
 
@@ -89,17 +89,19 @@ public class BlueprintScreen extends Screen {
                 "block.signbuilder.symbol_bracket_left", "block.signbuilder.symbol_bracket_right", "block.signbuilder.symbol_bracket_double"
         };
 
-        String[] row3Insert = {"[", "]", "¦", "#", "♥", "★", "@", "&", "*", "✓", "∞", "$", "€", "£", "¥", "₺"};
-        String[] row3Display = {"[", "]", "][", "#", "♥", "★", "@", "&", "*", "✓", "∞", "$", "€", "£", "¥", "₺"};
+        String[] row3Insert = {"[", "]", "¦", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "$", "€", "£", "¥", "₺"};
+        String[] row3Display = {"[", "]", "][", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "$", "€", "£", "¥", "₺"};
         String[] row3Tooltips = {
                 "block.signbuilder.symbol_square_bracket_left", "block.signbuilder.symbol_square_bracket_right", "block.signbuilder.symbol_square_bracket_double",
                 "block.signbuilder.symbol_hashtag", "block.signbuilder.symbol_heart", "block.signbuilder.symbol_star",
                 "block.signbuilder.symbol_at", "block.signbuilder.symbol_ampersand", "block.signbuilder.symbol_asterisk",
-                "block.signbuilder.symbol_checkmark", "block.signbuilder.symbol_infinity", "block.signbuilder.symbol_dollar",
-                "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl"
+                "block.signbuilder.symbol_checkmark", "block.signbuilder.symbol_infinity",
+                "block.signbuilder.symbol_circle", "block.signbuilder.symbol_diamond",
+                "block.signbuilder.symbol_note", "block.signbuilder.symbol_note_double", "block.signbuilder.symbol_skull",
+                "block.signbuilder.symbol_dollar", "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl"
         };
 
-        int maxRowLength = 16;
+        int maxRowLength = Math.max(row1Insert.length, Math.max(row2Insert.length, row3Insert.length));
         int totalGridWidth = maxRowLength * btnWidth;
         int startX = centerX - (totalGridWidth / 2);
 

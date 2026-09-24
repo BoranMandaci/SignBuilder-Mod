@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● ENREGISTREMENT PIN ACTIF : %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Multi-bloc",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Multi-bloc"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multi-bloc",
+  "block.signbuilder.symbol_cross": "Symbole de croix",
+  "block.signbuilder.symbol_circle": "Symbole de cercle",
+  "block.signbuilder.symbol_diamond": "Symbole de losange",
+  "block.signbuilder.symbol_note": "Symbole de note de musique",
+  "block.signbuilder.symbol_note_double": "Symbole de double note de musique",
+  "block.signbuilder.symbol_skull": "Symbole de crâne",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Annulez un texte placé avec le plan.",
+  "advancements.signbuilder.wide_format.title": "Grand format",
+  "advancements.signbuilder.wide_format.description": "Placez votre premier panneau multi-blocs 2x2 à l'aide du plan.",
+  "advancements.signbuilder.billboard.title": "Panneau publicitaire",
+  "advancements.signbuilder.billboard.description": "Placez avec succès votre premier bloc de lettres géant 3x3.",
+  "advancements.signbuilder.mounting_panel.title": "Panneau de montage",
+  "advancements.signbuilder.mounting_panel.description": "Placez une plaque sur un bloc."
 }

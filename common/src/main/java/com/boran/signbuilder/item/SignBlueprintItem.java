@@ -5,12 +5,14 @@ import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -38,7 +40,7 @@ import java.util.Map;
 
 public class SignBlueprintItem extends Item {
 
-    private static final Map<Character, Block> CHAR_BLOCK_CACHE = new HashMap<>(64);
+    private static final Map<Character, Block> CHAR_BLOCK_CACHE = new HashMap<>(128);
 
     public SignBlueprintItem(Properties pProperties) {
         super(pProperties.durability(32));
@@ -79,7 +81,7 @@ public class SignBlueprintItem extends Item {
 
         pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
-                        .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.RED)));
+                        .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
@@ -361,6 +363,21 @@ public class SignBlueprintItem extends Item {
             level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
             stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
+
+            if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
+                if (size == 2) {
+                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "wide_format"));
+                    if (adv != null) {
+                        serverPlayer.getAdvancements().award(adv, "placed_2x2");
+                    }
+                } else if (size == 3) {
+                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "billboard"));
+                    if (adv != null) {
+                        serverPlayer.getAdvancements().award(adv, "placed_3x3");
+                    }
+                }
+            }
+
             if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
         }
         return InteractionResult.SUCCESS;
@@ -452,10 +469,12 @@ public class SignBlueprintItem extends Item {
             case '1' -> "number_1"; case '2' -> "number_2"; case '3' -> "number_3"; case '4' -> "number_4";
             case '5' -> "number_5"; case '6' -> "number_6"; case '7' -> "number_7"; case '8' -> "number_8";
             case '9' -> "number_9";
-            case '+' -> "symbol_plus"; case '-' -> "symbol_minus"; case '/' -> "symbol_slash";
+            case '+' -> "symbol_plus"; case '-' -> "symbol_minus"; case '✗', '×' -> "symbol_cross"; case '/' -> "symbol_slash";
             case '\\' -> "symbol_backslash"; case '#' -> "symbol_hashtag";
             case '*' -> "symbol_asterisk"; case '★' -> "symbol_star";
             case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
+            case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
+            case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
             case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
             case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
             case ',' -> "symbol_comma"; case '%' -> "symbol_percent";

@@ -1,0 +1,28 @@
+{
+  "parent": "signbuilder:root",
+  "display": {
+    "icon": {
+      "item": "signbuilder:backplate"
+    },
+    "title": {
+      "translate": "advancements.signbuilder.mounting_panel.title"
+    },
+    "description": {
+      "translate": "advancements.signbuilder.mounting_panel.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "placed_backplate": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "placed_backplate"
+    ]
+  ]
+}

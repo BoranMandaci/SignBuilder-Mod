@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● ЗАПИСЬ PIN-КОДА АКТИВНА: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Обычный",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Мультиблок",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Мультиблок"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Мультиблок",
+  "block.signbuilder.symbol_cross": "Символ креста",
+  "block.signbuilder.symbol_circle": "Символ круга",
+  "block.signbuilder.symbol_diamond": "Символ ромба",
+  "block.signbuilder.symbol_note": "Символ музыкальной ноты",
+  "block.signbuilder.symbol_note_double": "Символ двойной ноты",
+  "block.signbuilder.symbol_skull": "Символ черепа",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Отмените текст, размещенный с помощью чертежа.",
+  "advancements.signbuilder.wide_format.title": "Широкий формат",
+  "advancements.signbuilder.wide_format.description": "Установите свою первую мультиблочную вывеску 2x2 с помощью чертежа.",
+  "advancements.signbuilder.billboard.title": "Билборд",
+  "advancements.signbuilder.billboard.description": "Успешно установите свой первый гигантский буквенный блок 3x3.",
+  "advancements.signbuilder.mounting_panel.title": "Монтажная панель",
+  "advancements.signbuilder.mounting_panel.description": "Установите панель на блок."
 }

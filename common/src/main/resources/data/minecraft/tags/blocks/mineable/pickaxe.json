@@ -91,6 +91,12 @@
     "signbuilder:symbol_asterisk",
     "signbuilder:symbol_checkmark",
     "signbuilder:symbol_infinity",
+    "signbuilder:symbol_cross",
+    "signbuilder:symbol_circle",
+    "signbuilder:symbol_diamond",
+    "signbuilder:symbol_note",
+    "signbuilder:symbol_note_double",
+    "signbuilder:symbol_skull",
     "signbuilder:sign_press",
     "signbuilder:backplate"
   ]

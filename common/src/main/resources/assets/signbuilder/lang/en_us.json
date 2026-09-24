@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● PIN RECORDING ACTIVE: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Multi-Block",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Multi-Block"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multi-Block",
+  "block.signbuilder.symbol_cross": "Cross Symbol",
+  "block.signbuilder.symbol_circle": "Circle Symbol",
+  "block.signbuilder.symbol_diamond": "Diamond Symbol",
+  "block.signbuilder.symbol_note": "Music Note Symbol",
+  "block.signbuilder.symbol_note_double": "Double Music Note Symbol",
+  "block.signbuilder.symbol_skull": "Skull Symbol",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Undo a text placed with the Blueprint.",
+  "advancements.signbuilder.wide_format.title": "Wide Format",
+  "advancements.signbuilder.wide_format.description": "Place your first 2x2 multiblock sign using the Blueprint.",
+  "advancements.signbuilder.billboard.title": "Billboard",
+  "advancements.signbuilder.billboard.description": "Successfully place your first 3x3 giant letter block.",
+  "advancements.signbuilder.mounting_panel.title": "Mounting Panel",
+  "advancements.signbuilder.mounting_panel.description": "Place a backplate on a block."
 }

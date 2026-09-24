@@ -30,7 +30,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             "letter_a_de", "letter_c_tr", "letter_g_tr", "letter_i_tr", "letter_o_tr", "letter_s_tr", "letter_u_tr", "letter_eszett",
             "number_0", "number_1", "number_2", "number_3", "number_4", "number_5", "number_6", "number_7", "number_8", "number_9",
             "arrow_up", "arrow_down", "arrow_left", "arrow_right", "arrow_left_up", "arrow_right_up", "arrow_left_down", "arrow_right_down",
-            "symbol_plus", "symbol_minus", "symbol_divide", "symbol_equals", "symbol_percent",
+            "symbol_plus", "symbol_minus", "symbol_cross", "symbol_divide", "symbol_equals", "symbol_percent",
             "symbol_greater_than", "symbol_less_than",
             "symbol_dot_left", "symbol_dot_center", "symbol_dot_right", "symbol_comma",
             "symbol_question", "symbol_exclamation", "symbol_colon", "symbol_semicolon", "symbol_apostrophe", "symbol_quotes",
@@ -39,6 +39,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
             "symbol_square_bracket_left", "symbol_square_bracket_right", "symbol_square_bracket_double",
             "symbol_hashtag", "symbol_heart", "symbol_star", "symbol_at", "symbol_ampersand",
             "symbol_asterisk", "symbol_checkmark", "symbol_infinity",
+            "symbol_circle", "symbol_diamond", "symbol_note", "symbol_note_double", "symbol_skull",
             "symbol_dollar", "symbol_euro", "symbol_pound", "symbol_yen", "symbol_tl"
     );
 

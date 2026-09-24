@@ -313,5 +313,19 @@
   "tooltip.signbuilder.wrench.recording_pin": "● PIN-AUFNAHME AKTIV: %s",
   "gui.signbuilder.blueprint.size.1x1": "1x1 Normal",
   "gui.signbuilder.blueprint.size.2x2": "2x2 Multiblock",
-  "gui.signbuilder.blueprint.size.3x3": "3x3 Multiblock"
+  "gui.signbuilder.blueprint.size.3x3": "3x3 Multiblock",
+  "block.signbuilder.symbol_cross": "Kreuz-Symbol",
+  "block.signbuilder.symbol_circle": "Kreis-Symbol",
+  "block.signbuilder.symbol_diamond": "Karo-Symbol",
+  "block.signbuilder.symbol_note": "Musiknoten-Symbol",
+  "block.signbuilder.symbol_note_double": "Doppelnoten-Symbol",
+  "block.signbuilder.symbol_skull": "Totenkopf-Symbol",
+  "advancements.signbuilder.ctrl_z.title": "Ctrl + Z",
+  "advancements.signbuilder.ctrl_z.description": "Mache einen mit der Blaupause platzierten Text rückgängig.",
+  "advancements.signbuilder.wide_format.title": "Breitbildformat",
+  "advancements.signbuilder.wide_format.description": "Platziere dein erstes 2x2-Multiblock-Schild mit der Blaupause.",
+  "advancements.signbuilder.billboard.title": "Billboard",
+  "advancements.signbuilder.billboard.description": "Platziere erfolgreich deinen ersten riesigen 3x3-Buchstabenblock.",
+  "advancements.signbuilder.mounting_panel.title": "Montageplatte",
+  "advancements.signbuilder.mounting_panel.description": "Platziere eine Platte an einem Block."
 }

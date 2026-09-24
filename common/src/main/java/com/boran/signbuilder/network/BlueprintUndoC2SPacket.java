@@ -3,6 +3,7 @@ package com.boran.signbuilder.network;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -86,6 +87,13 @@ public class BlueprintUndoC2SPacket {
                 }
 
                 stack.getTag().remove("UndoHistory");
+
+                if (player.getServer() != null) {
+                    Advancement adv = player.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "ctrl_z"));
+                    if (adv != null) {
+                        player.getAdvancements().award(adv, "undo_used");
+                    }
+                }
 
                 player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.undo_success").withStyle(net.minecraft.ChatFormatting.GREEN), true);
                 level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.2F);
