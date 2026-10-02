@@ -93,8 +93,8 @@ public class MaterialPickerScreen extends Screen {
         int cols = 5;
         int rows = 4;
 
-        int maxAvailableHeight = this.height - 70;
-        int maxAvailableWidth = this.width - 20;
+        int maxAvailableHeight = Math.max(48, this.height - 96);
+        int maxAvailableWidth = Math.max(48, this.width - 32);
 
         buttonSize = 36;
         spacing = 12;
@@ -113,7 +113,7 @@ public class MaterialPickerScreen extends Screen {
         gridHeight = (buttonSize * rows) + (spacing * (rows - 1));
 
         startX = (this.width - gridWidth) / 2;
-        startY = Math.max(25, (this.height - (gridHeight + 45)) / 2);
+        startY = Math.max(14, (this.height - (gridHeight + 62)) / 2);
 
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, ALL_MATERIALS.length);
@@ -159,16 +159,16 @@ public class MaterialPickerScreen extends Screen {
         int panelRight = startX + gridWidth + pad;
         int panelBottom = startY + gridHeight + 52 + pad;
 
-        graphics.fillGradient(panelLeft, panelTop, panelRight, panelBottom, 0xEE101010, 0xFA050505);
-        graphics.renderOutline(panelLeft - 1, panelTop - 1, (panelRight - panelLeft) + 2, (panelBottom - panelTop) + 2, 0x50FFFFFF);
-        graphics.renderOutline(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop, 0xAA000000);
+        SignBuilderUi.drawPanel(graphics, panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop);
 
         int titleY = Math.max(5, panelTop - 12);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
+        graphics.fillGradient(panelLeft + 28, titleY - 4, panelRight - 28, titleY + 14, 0xEE343F4E, 0xEE252D38);
+        graphics.fill(panelLeft + 28, titleY - 4, panelLeft + 30, titleY + 14, SignBuilderUi.ACCENT);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, titleY + 1, SignBuilderUi.TEXT);
 
         int maxPages = (int) Math.ceil((double) ALL_MATERIALS.length / itemsPerPage);
         int navY = startY + gridHeight + 11;
-        graphics.drawCenteredString(this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, 0xAAAAAA);
+        graphics.drawCenteredString(this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, SignBuilderUi.MUTED);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -183,8 +183,9 @@ public class MaterialPickerScreen extends Screen {
 
         @Override
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF282828);
-            int outlineColor = this.isHoveredOrFocused() ? 0xFFFFAA00 : 0xFF555555;
+            graphics.fillGradient(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+                    this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
+            int outlineColor = this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181;
             graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, outlineColor);
             graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         }
@@ -213,8 +214,9 @@ public class MaterialPickerScreen extends Screen {
 
         @Override
         public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF282828);
-            int borderColor = this.isHoveredOrFocused() ? 0xFFFFAA00 : 0xFF555555;
+            graphics.fillGradient(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+                    this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
+            int borderColor = this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181;
             graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, borderColor);
 
             int iconX = this.getX() + (this.width - 16) / 2;

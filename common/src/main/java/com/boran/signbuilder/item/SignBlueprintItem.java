@@ -1,6 +1,7 @@
 package com.boran.signbuilder.item;
 
 import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -226,8 +227,14 @@ public class SignBlueprintItem extends Item {
 
         Direction clickedFace = pContext.getClickedFace();
         BlockPos startPos = pContext.getClickedPos().relative(clickedFace);
-        Direction playerFacing = pContext.getHorizontalDirection();
-        Direction rightDir = playerFacing.getClockWise();
+        boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
+        int rotation = wall
+                ? SignRotation.fromDirection(clickedFace)
+                : size > 1
+                    ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
+                    : SignRotation.fromYaw(player.getYRot(), -2);
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
 
         int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
         int blocksPlaced = 0;
@@ -243,18 +250,18 @@ public class SignBlueprintItem extends Item {
 
             if (!isVertical) {
                 if (size == 1) {
-                    BlockPos currentPos = startPos.relative(rightDir, effectiveIdx);
+                    BlockPos currentPos = offsetRight(startPos, rightX, rightZ, effectiveIdx);
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate);
+                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
                 } else if (size == 2) {
-                    BlockPos basePos = startPos.relative(rightDir, effectiveIdx * 2);
+                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 2);
                     BlockPos p00 = basePos;
-                    BlockPos p10 = basePos.relative(rightDir, 1);
+                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
-                    BlockPos p11 = basePos.relative(rightDir, 1).relative(Direction.UP, 1);
+                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
                     if (!level.getBlockState(p00).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
                             !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
@@ -263,18 +270,18 @@ public class SignBlueprintItem extends Item {
 
                     BlockPos[] quad = {p00, p10, p01, p11};
                     for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
                         blocksPlaced++;
                     }
                 } else {
-                    BlockPos basePos = startPos.relative(rightDir, effectiveIdx * 3);
+                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 3);
                     boolean canPlaceAll = true;
                     BlockPos[] grid = new BlockPos[9];
                     int gIdx = 0;
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = basePos.relative(rightDir, dx).relative(Direction.UP, dy);
+                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
                             if (!level.getBlockState(p).canBeReplaced()) {
                                 canPlaceAll = false;
                                 break;
@@ -287,7 +294,7 @@ public class SignBlueprintItem extends Item {
                     if (!canPlaceAll) break;
 
                     for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
                         blocksPlaced++;
                     }
@@ -301,7 +308,7 @@ public class SignBlueprintItem extends Item {
                     BlockPos currentPos = new BlockPos(startPos.getX(), posY, startPos.getZ());
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate);
+                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
                 } else if (size == 2) {
@@ -311,9 +318,9 @@ public class SignBlueprintItem extends Item {
 
                     BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
                     BlockPos p00 = basePos;
-                    BlockPos p10 = basePos.relative(rightDir, 1);
+                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
-                    BlockPos p11 = basePos.relative(rightDir, 1).relative(Direction.UP, 1);
+                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
                     if (!level.getBlockState(p00).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
                             !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
@@ -322,7 +329,7 @@ public class SignBlueprintItem extends Item {
 
                     BlockPos[] quad = {p00, p10, p01, p11};
                     for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
                         blocksPlaced++;
                     }
@@ -337,7 +344,7 @@ public class SignBlueprintItem extends Item {
                     int gIdx = 0;
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = basePos.relative(rightDir, dx).relative(Direction.UP, dy);
+                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
                             if (!level.getBlockState(p).canBeReplaced()) {
                                 canPlaceAll = false;
                                 break;
@@ -350,7 +357,7 @@ public class SignBlueprintItem extends Item {
                     if (!canPlaceAll) break;
 
                     for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate);
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
                         blocksPlaced++;
                     }
@@ -383,7 +390,7 @@ public class SignBlueprintItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate) {
+    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate, int rotation, int size) {
         BlockHitResult hitResult = new BlockHitResult(pContext.getClickLocation(), clickedFace, pos, pContext.isInside());
         UseOnContext offsetContext = new UseOnContext(player, pContext.getHand(), hitResult);
         BlockPlaceContext placeContext = new BlockPlaceContext(offsetContext);
@@ -391,7 +398,11 @@ public class SignBlueprintItem extends Item {
         if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();
 
         level.setBlock(pos, stateToPlace, 3);
-        blockToPlace.setPlacedBy(level, pos, stateToPlace, player, new ItemStack(blockToPlace));
+        ItemStack placedStack = new ItemStack(blockToPlace);
+        if (size > 1) {
+            placedStack.getOrCreateTagElement("BlockEntityTag").putInt("FacingRotation", rotation);
+        }
+        blockToPlace.setPlacedBy(level, pos, stateToPlace, player, placedStack);
 
         if (withBackplate) {
             BlockEntity be = level.getBlockEntity(pos);
@@ -399,6 +410,10 @@ public class SignBlueprintItem extends Item {
                 letterBe.setHasBackplate(true);
             }
         }
+    }
+
+    private static BlockPos offsetRight(BlockPos pos, int rightX, int rightZ, int distance) {
+        return pos.offset(rightX * distance, 0, rightZ * distance);
     }
 
     private int countItemInInventory(Player player, Item item) {

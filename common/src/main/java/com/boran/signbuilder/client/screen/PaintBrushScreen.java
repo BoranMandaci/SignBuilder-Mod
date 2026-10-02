@@ -19,6 +19,7 @@ public class PaintBrushScreen extends Screen {
     private int startY;
     private int gridWidth;
     private int gridHeight;
+    private int gridColumns;
     private int matBtnWidth;
     private int matBtnX;
     private int dynamicPadding = 18;
@@ -60,25 +61,37 @@ public class PaintBrushScreen extends Screen {
         }
 
         int totalElements = 16 + 1 + customColors.length + 1;
-        int totalRows = (totalElements - 1) / 4 + 1;
-
         int maxAvailableHeight = this.height - 120;
         int maxAvailableWidth = this.width - 40;
+        int preferredColumns = Math.max(4, Math.min(8, (totalElements + 3) / 4));
+        int buttonSize = 8;
+        int spacing = 2;
+        this.gridColumns = 4;
 
-        int buttonSize = 26;
-        int spacing = 10;
-        this.dynamicPadding = 18;
+        for (int columns = 4; columns <= preferredColumns; columns++) {
+            int candidateSize = 26;
+            int candidateSpacing = 8;
+            int rows = (totalElements + columns - 1) / columns;
 
-        while (buttonSize > 8) {
-            gridWidth = (buttonSize * 4) + (spacing * 3);
-            gridHeight = (buttonSize * totalRows) + (spacing * (totalRows - 1));
-            if (gridWidth <= maxAvailableWidth && gridHeight <= maxAvailableHeight) break;
-            buttonSize--;
-            spacing = Math.max(2, buttonSize / 3);
+            while (candidateSize > 8) {
+                int candidateWidth = candidateSize * columns + candidateSpacing * (columns - 1);
+                int candidateHeight = candidateSize * rows + candidateSpacing * (rows - 1);
+                if (candidateWidth <= maxAvailableWidth && candidateHeight <= maxAvailableHeight) break;
+                candidateSize--;
+                candidateSpacing = Math.max(2, candidateSize / 3);
+            }
+
+            if (candidateSize > buttonSize) {
+                buttonSize = candidateSize;
+                spacing = candidateSpacing;
+                this.gridColumns = columns;
+            }
+            if (candidateSize >= 18) break;
         }
 
-        this.dynamicPadding = Math.min(18, buttonSize);
-        gridWidth = (buttonSize * 4) + (spacing * 3);
+        int totalRows = (totalElements + this.gridColumns - 1) / this.gridColumns;
+        this.dynamicPadding = Math.min(14, buttonSize);
+        gridWidth = (buttonSize * this.gridColumns) + (spacing * (this.gridColumns - 1));
         gridHeight = (buttonSize * totalRows) + (spacing * (totalRows - 1));
 
         startX = (this.width - gridWidth) / 2;
@@ -86,27 +99,27 @@ public class PaintBrushScreen extends Screen {
 
         int currentIndex = 0;
         for (int i = 0; i < 16; i++) {
-            int row = currentIndex / 4; int col = currentIndex % 4;
+            int row = currentIndex / this.gridColumns; int col = currentIndex % this.gridColumns;
             this.addRenderableWidget(new ColorButton(startX + (col * (buttonSize + spacing)), startY + (row * (buttonSize + spacing)), buttonSize, buttonSize, colorNames[i], colorCodes[i], i));
             currentIndex++;
         }
 
-        int rRow = currentIndex / 4; int rCol = currentIndex % 4;
+        int rRow = currentIndex / this.gridColumns; int rCol = currentIndex % this.gridColumns;
         this.addRenderableWidget(new RainbowButton(startX + (rCol * (buttonSize + spacing)), startY + (rRow * (buttonSize + spacing)), buttonSize, buttonSize));
         currentIndex++;
 
         for (int customColor : customColors) {
-            int cRow = currentIndex / 4; int cCol = currentIndex % 4;
+            int cRow = currentIndex / this.gridColumns; int cCol = currentIndex % this.gridColumns;
             this.addRenderableWidget(new CustomColorButton(startX + (cCol * (buttonSize + spacing)), startY + (cRow * (buttonSize + spacing)), buttonSize, buttonSize, customColor, this));
             currentIndex++;
         }
 
-        int pRow = currentIndex / 4; int pCol = currentIndex % 4;
+        int pRow = currentIndex / this.gridColumns; int pCol = currentIndex % this.gridColumns;
         this.addRenderableWidget(new AddColorButton(startX + (pCol * (buttonSize + spacing)), startY + (pRow * (buttonSize + spacing)), buttonSize, buttonSize, this));
 
         Component matText = Component.translatable("gui.signbuilder.select_material");
-        matBtnWidth = Math.max(gridWidth, this.font.width(matText) + 24);
-        matBtnX = startX + (gridWidth - matBtnWidth) / 2;
+        matBtnWidth = Math.min(Math.max(0, this.width - 32), Math.max(gridWidth, this.font.width(matText) + 24));
+        matBtnX = (this.width - matBtnWidth) / 2;
         int matBtnY = startY + gridHeight + 15;
 
         this.addRenderableWidget(new FlatMaterialButton(matBtnX, matBtnY, matBtnWidth, 20, this));
@@ -121,14 +134,11 @@ public class PaintBrushScreen extends Screen {
         int panelTop = startY - dynamicPadding;
         int panelBottom = startY + gridHeight + 45 + dynamicPadding;
 
-        pGuiGraphics.fillGradient(panelLeft, panelTop, panelRight, panelBottom, 0xEE101010, 0xFA050505);
-        pGuiGraphics.renderOutline(panelLeft - 1, panelTop - 1, (panelRight - panelLeft) + 2, (panelBottom - panelTop) + 2, 0x50FFFFFF);
-        pGuiGraphics.renderOutline(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop, 0xAA000000);
+        SignBuilderUi.drawPanel(pGuiGraphics, panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop);
+        SignBuilderUi.drawHeader(pGuiGraphics, this.font, panelLeft, panelTop - 23, panelRight - panelLeft,
+                this.title, null);
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-
-        int titleY = Math.max(10, panelTop - (dynamicPadding > 10 ? 28 : 22));
-        pGuiGraphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFD700);
 
         drawSmartFillIndicator(pGuiGraphics, panelRight - 20, panelTop + 5, pMouseX, pMouseY);
 
@@ -163,9 +173,11 @@ public class PaintBrushScreen extends Screen {
         }
         @Override
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF282828);
-            graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, this.isHoveredOrFocused() ? 0xFFFFAA00 : 0xFF555555);
-            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+            graphics.fillGradient(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+                    this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
+            graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2,
+                    this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181);
+            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, SignBuilderUi.TEXT);
         }
         @Override
         public void onPress() { Minecraft.getInstance().setScreen(new MaterialPickerScreen(parent)); }
@@ -278,15 +290,12 @@ public class PaintBrushScreen extends Screen {
     }
 
     private static void renderColorButton(GuiGraphics graphics, int x, int y, int width, int height, int colorHex, boolean isHovered) {
-        graphics.fill(x - 1, y - 1, x + width + 1, y + 1, 0xFF373737);
-        graphics.fill(x - 1, y - 1, x + 1, y + height + 1, 0xFF373737);
-        graphics.fill(x - 1, y + height, x + width + 1, y + height + 1, 0xFFFFFFFF);
-        graphics.fill(x + width, y - 1, x + width + 1, y + height + 1, 0xFFFFFFFF);
-        graphics.fill(x, y, x + width, y + height, 0xFF000000);
+        graphics.fill(x - 1, y - 1, x + width + 1, y + height + 1, 0xFF0C1015);
+        graphics.fill(x, y, x + width, y + height, 0xFF788493);
         graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xFF000000 | colorHex);
         if (isHovered) {
-            graphics.fillGradient(x + 1, y + 1, x + width - 1, y + height - 1, 0x60FFFFFF, 0x10FFFFFF);
-            graphics.renderOutline(x - 2, y - 2, width + 4, height + 4, 0xCCFFFFFF);
+            graphics.fillGradient(x + 1, y + 1, x + width - 1, y + height - 1, 0x42FFFFFF, 0x08FFFFFF);
+            graphics.renderOutline(x - 2, y - 2, width + 4, height + 4, SignBuilderUi.ACCENT);
         }
     }
 }

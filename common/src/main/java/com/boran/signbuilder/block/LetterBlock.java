@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -63,50 +64,10 @@ public class LetterBlock extends Block implements EntityBlock {
     public static final VoxelShape BP_WALL_EAST  = Block.box(0, 0, 0, 1, 16, 16);
     public static final VoxelShape BP_WALL_WEST  = Block.box(15, 0, 0, 16, 16, 16);
 
-    public static final VoxelShape BP_2X2_WALL_NORTH = Block.box(0, 0, 14, 16, 16, 16);
-    public static final VoxelShape BP_2X2_WALL_SOUTH = Block.box(0, 0, 0, 16, 16, 2);
-    public static final VoxelShape BP_2X2_WALL_EAST  = Block.box(0, 0, 0, 2, 16, 16);
-    public static final VoxelShape BP_2X2_WALL_WEST  = Block.box(14, 0, 0, 16, 16, 16);
-
-    public static final VoxelShape BP_3X3_WALL_NORTH = Block.box(0, 0, 13, 16, 16, 16);
-    public static final VoxelShape BP_3X3_WALL_SOUTH = Block.box(0, 0, 0, 16, 16, 3);
-    public static final VoxelShape BP_3X3_WALL_EAST  = Block.box(0, 0, 0, 3, 16, 16);
-    public static final VoxelShape BP_3X3_WALL_WEST  = Block.box(13, 0, 0, 16, 16, 16);
-
     public static final VoxelShape BP_FLOOR_NORTH = Block.box(11, 0, 0, 12, 16, 16);
     public static final VoxelShape BP_FLOOR_SOUTH = Block.box(4, 0, 0, 5, 16, 16);
     public static final VoxelShape BP_FLOOR_EAST  = Block.box(0, 0, 11, 16, 16, 12);
     public static final VoxelShape BP_FLOOR_WEST  = Block.box(0, 0, 4, 16, 16, 5);
-
-    public static final VoxelShape BP_2X2_FLOOR_NORTH = Block.box(11, 0, 0, 13, 16, 16);
-    public static final VoxelShape BP_2X2_FLOOR_SOUTH = Block.box(3, 0, 0, 5, 16, 16);
-    public static final VoxelShape BP_2X2_FLOOR_EAST  = Block.box(0, 0, 11, 16, 16, 13);
-    public static final VoxelShape BP_2X2_FLOOR_WEST  = Block.box(0, 0, 3, 16, 16, 5);
-
-    public static final VoxelShape BP_3X3_FLOOR_NORTH = Block.box(11, 0, 0, 14, 16, 16);
-    public static final VoxelShape BP_3X3_FLOOR_SOUTH = Block.box(2, 0, 0, 5, 16, 16);
-    public static final VoxelShape BP_3X3_FLOOR_EAST  = Block.box(0, 0, 11, 16, 16, 14);
-    public static final VoxelShape BP_3X3_FLOOR_WEST  = Block.box(0, 0, 2, 16, 16, 5);
-
-    private static final VoxelShape SHAPE_6PX_WALL_NORTH = Block.box(0, 0, 10, 16, 16, 16);
-    private static final VoxelShape SHAPE_6PX_WALL_SOUTH = Block.box(0, 0, 0, 16, 16, 6);
-    private static final VoxelShape SHAPE_6PX_WALL_EAST  = Block.box(0, 0, 0, 6, 16, 16);
-    private static final VoxelShape SHAPE_6PX_WALL_WEST  = Block.box(10, 0, 0, 16, 16, 16);
-
-    private static final VoxelShape SHAPE_9PX_WALL_NORTH = Block.box(0, 0, 7, 16, 16, 16);
-    private static final VoxelShape SHAPE_9PX_WALL_SOUTH = Block.box(0, 0, 0, 16, 16, 9);
-    private static final VoxelShape SHAPE_9PX_WALL_EAST  = Block.box(0, 0, 0, 9, 16, 16);
-    private static final VoxelShape SHAPE_9PX_WALL_WEST  = Block.box(7, 0, 0, 16, 16, 16);
-
-    private static final VoxelShape SHAPE_2X2_FLOOR_NORTH = Block.box(5, 0, 0, 11, 16, 16);
-    private static final VoxelShape SHAPE_2X2_FLOOR_SOUTH = Block.box(5, 0, 0, 11, 16, 16);
-    private static final VoxelShape SHAPE_2X2_FLOOR_EAST  = Block.box(0, 0, 5, 16, 16, 11);
-    private static final VoxelShape SHAPE_2X2_FLOOR_WEST  = Block.box(0, 0, 5, 16, 16, 11);
-
-    private static final VoxelShape SHAPE_3X3_FLOOR_NORTH = Block.box(2, 0, 0, 11, 16, 16);
-    private static final VoxelShape SHAPE_3X3_FLOOR_SOUTH = Block.box(5, 0, 0, 14, 16, 16);
-    private static final VoxelShape SHAPE_3X3_FLOOR_EAST  = Block.box(0, 0, 2, 16, 16, 11);
-    private static final VoxelShape SHAPE_3X3_FLOOR_WEST  = Block.box(0, 0, 5, 16, 16, 14);
 
     public LetterBlock(Properties properties) {
         super(properties);
@@ -298,8 +259,8 @@ public class LetterBlock extends Block implements EntityBlock {
 
         if (entity.getSize() > 1) {
             BlockPos[] positions = (entity.getSize() == 3)
-                    ? get3x3BlockPositions(entity.getBlockPos(), level.getBlockState(entity.getBlockPos()))
-                    : getBigBlockPositions(entity.getBlockPos(), level.getBlockState(entity.getBlockPos()));
+                    ? get3x3BlockPositions(entity.getBlockPos(), level.getBlockState(entity.getBlockPos()), entity.getFacingRotation())
+                    : getBigBlockPositions(entity.getBlockPos(), level.getBlockState(entity.getBlockPos()), entity.getFacingRotation());
 
             for (BlockPos p : positions) {
                 BlockState s = level.getBlockState(p);
@@ -387,143 +348,187 @@ public class LetterBlock extends Block implements EntityBlock {
 
         if (be instanceof LetterBlockEntity rawLetter) {
             LetterBlockEntity master = findMaster(level, pos, rawLetter);
-            VoxelShape finalShape;
+            int rotation = master.getFacingRotation();
+            double rotationDelta = SignRotation.deltaDegrees(rotation, dir);
+            int normalRotation = face == AttachFace.WALL ? rotation : Math.floorMod(rotation - 2, 8);
+            double normalLength = Math.sqrt(
+                    SignRotation.facingX(normalRotation) * SignRotation.facingX(normalRotation)
+                            + SignRotation.facingZ(normalRotation) * SignRotation.facingZ(normalRotation));
+            if (normalLength == 0.0) normalLength = 1.0;
+            double normalX = SignRotation.facingX(normalRotation) / normalLength;
+            double normalZ = SignRotation.facingZ(normalRotation) / normalLength;
+            double plateClearance = face == AttachFace.WALL ? 1.0 / 16.0 : 2.0 / 16.0;
+            VoxelShape glyphShape = letterShape;
+            VoxelShape plateShape = Shapes.empty();
 
-            if (master.getSize() == 3) {
-                if (face == AttachFace.WALL) {
-                    VoxelShape base9pxShape = switch (dir) {
-                        case SOUTH -> SHAPE_9PX_WALL_SOUTH;
-                        case EAST  -> SHAPE_9PX_WALL_EAST;
-                        case WEST  -> SHAPE_9PX_WALL_WEST;
-                        default    -> SHAPE_9PX_WALL_NORTH;
-                    };
-
-                    if (master.hasBackplate()) {
-                        VoxelShape plateShape = switch (dir) {
-                            case SOUTH -> BP_3X3_WALL_SOUTH;
-                            case EAST  -> BP_3X3_WALL_EAST;
-                            case WEST  -> BP_3X3_WALL_WEST;
-                            default    -> BP_3X3_WALL_NORTH;
-                        };
-                        double offX = dir.getStepX() * 0.1875;
-                        double offZ = dir.getStepZ() * 0.1875;
-                        finalShape = Shapes.or(base9pxShape.move(offX, 0, offZ), plateShape);
-                    } else {
-                        finalShape = base9pxShape;
-                    }
-                } else {
-                    VoxelShape baseFloorLetter = switch (dir) {
-                        case NORTH -> SHAPE_3X3_FLOOR_NORTH;
-                        case SOUTH -> SHAPE_3X3_FLOOR_SOUTH;
-                        case EAST  -> SHAPE_3X3_FLOOR_EAST;
-                        default    -> SHAPE_3X3_FLOOR_WEST;
-                    };
-
-                    if (master.hasBackplate()) {
-                        VoxelShape plateFloorShape = switch (dir) {
-                            case NORTH -> BP_3X3_FLOOR_NORTH;
-                            case SOUTH -> BP_3X3_FLOOR_SOUTH;
-                            case EAST  -> BP_3X3_FLOOR_EAST;
-                            default    -> BP_3X3_FLOOR_WEST;
-                        };
-                        finalShape = Shapes.or(baseFloorLetter, plateFloorShape);
-                    } else {
-                        finalShape = baseFloorLetter;
-                    }
+            if (master.getSize() > 1) {
+                int size = master.getSize();
+                double offsetX = getMultiblockOffsetX(face, dir, size);
+                double offsetZ = getMultiblockOffsetZ(face, dir, size);
+                BlockPos relativePos = pos.subtract(master.getBlockPos());
+                if (master.hasBackplate()) {
+                    plateShape = face == AttachFace.WALL
+                            ? switch (dir) {
+                                case SOUTH -> BP_WALL_SOUTH;
+                                case EAST -> BP_WALL_EAST;
+                                case WEST -> BP_WALL_WEST;
+                                default -> BP_WALL_NORTH;
+                            }
+                            : switch (dir) {
+                                case NORTH -> BP_FLOOR_NORTH;
+                                case SOUTH -> BP_FLOOR_SOUTH;
+                                case EAST -> BP_FLOOR_EAST;
+                                default -> BP_FLOOR_WEST;
+                            };
                 }
-            } else if (master.getSize() == 2) {
-                if (face == AttachFace.WALL) {
-                    VoxelShape base6pxShape = switch (dir) {
-                        case SOUTH -> SHAPE_6PX_WALL_SOUTH;
-                        case EAST  -> SHAPE_6PX_WALL_EAST;
-                        case WEST  -> SHAPE_6PX_WALL_WEST;
-                        default    -> SHAPE_6PX_WALL_NORTH;
-                    };
 
-                    if (master.hasBackplate()) {
-                        VoxelShape plateShape = switch (dir) {
-                            case SOUTH -> BP_2X2_WALL_SOUTH;
-                            case EAST  -> BP_2X2_WALL_EAST;
-                            case WEST  -> BP_2X2_WALL_WEST;
-                            default    -> BP_2X2_WALL_NORTH;
-                        };
-                        double offX = dir.getStepX() * 0.125;
-                        double offZ = dir.getStepZ() * 0.125;
-                        finalShape = Shapes.or(base6pxShape.move(offX, 0, offZ), plateShape);
-                    } else {
-                        finalShape = base6pxShape;
-                    }
-                } else {
-                    VoxelShape baseFloorLetter = switch (dir) {
-                        case NORTH -> SHAPE_2X2_FLOOR_NORTH;
-                        case SOUTH -> SHAPE_2X2_FLOOR_SOUTH;
-                        case EAST  -> SHAPE_2X2_FLOOR_EAST;
-                        default    -> SHAPE_2X2_FLOOR_WEST;
-                    };
-
-                    if (master.hasBackplate()) {
-                        VoxelShape plateFloorShape = switch (dir) {
-                            case NORTH -> BP_2X2_FLOOR_NORTH;
-                            case SOUTH -> BP_2X2_FLOOR_SOUTH;
-                            case EAST  -> BP_2X2_FLOOR_EAST;
-                            default    -> BP_2X2_FLOOR_WEST;
-                        };
-                        finalShape = Shapes.or(baseFloorLetter, plateFloorShape);
-                    } else {
-                        finalShape = baseFloorLetter;
-                    }
+                glyphShape = scaleAndOffsetShape(glyphShape, size, offsetX, offsetZ);
+                if (master.hasBackplate()) {
+                    plateShape = scaleAndOffsetShape(plateShape, size, offsetX, offsetZ);
                 }
+                if (master.isPressed() && face == AttachFace.WALL) {
+                    glyphShape = compressPressedShape(glyphShape, dir, 0.0625 * size);
+                    if (master.hasBackplate()) plateShape = compressPressedShape(plateShape, dir, 0.0625 * size);
+                }
+                glyphShape = SignRotation.rotateAroundOrigin(glyphShape, rotationDelta);
+                if (master.hasBackplate()) plateShape = SignRotation.rotateAroundOrigin(plateShape, rotationDelta);
+                if (master.hasBackplate()) {
+                    glyphShape = glyphShape.move(normalX * plateClearance, 0.0, normalZ * plateClearance);
+                }
+                if (face != AttachFace.WALL) {
+                    double stepX = SignRotation.horizontalStepX(rotation, false);
+                    double stepZ = SignRotation.horizontalStepZ(rotation, false);
+                    double targetX = 0.5 + stepX * (size - 1) * 0.5;
+                    double targetZ = 0.5 + stepZ * (size - 1) * 0.5;
+                    glyphShape = centerShapeAt(glyphShape, targetX + (master.hasBackplate() ? normalX * plateClearance : 0.0),
+                            targetZ + (master.hasBackplate() ? normalZ * plateClearance : 0.0));
+                    if (master.hasBackplate()) plateShape = centerShapeAt(plateShape, targetX, targetZ);
+                }
+                VoxelShape finalShape = master.hasBackplate() ? Shapes.or(glyphShape, plateShape) : glyphShape;
+                finalShape = sliceShape(finalShape, relativePos);
+                return finalShape;
             } else if (master.hasBackplate()) {
-                if (face == AttachFace.WALL) {
-                    VoxelShape plateShape = switch (dir) {
+                plateShape = face == AttachFace.WALL
+                        ? switch (dir) {
                         case SOUTH -> BP_WALL_SOUTH;
                         case EAST  -> BP_WALL_EAST;
                         case WEST  -> BP_WALL_WEST;
                         default    -> BP_WALL_NORTH;
-                    };
-                    double offX = dir.getStepX() * 0.0625;
-                    double offZ = dir.getStepZ() * 0.0625;
-                    finalShape = Shapes.or(letterShape.move(offX, 0, offZ), plateShape);
-                } else {
-                    VoxelShape plateShape = switch (dir) {
+                    }
+                        : switch (dir) {
                         case NORTH -> BP_FLOOR_NORTH;
                         case SOUTH -> BP_FLOOR_SOUTH;
                         case EAST  -> BP_FLOOR_EAST;
                         default    -> BP_FLOOR_WEST;
                     };
-                    finalShape = Shapes.or(letterShape, plateShape);
-                }
-            } else {
-                finalShape = letterShape;
             }
 
-            if (master.isPressed() && face == AttachFace.WALL) {
-                VoxelShape pressedShape = Shapes.empty();
-                for (AABB aabb : finalShape.toAabbs()) {
-                    double minX = aabb.minX, minY = aabb.minY, minZ = aabb.minZ;
-                    double maxX = aabb.maxX, maxY = aabb.maxY, maxZ = aabb.maxZ;
-                    switch (dir) {
-                        case NORTH -> minZ = Math.min(maxZ, minZ + 0.0625);
-                        case SOUTH -> maxZ = Math.max(minZ, maxZ - 0.0625);
-                        case WEST  -> minX = Math.min(maxX, minX + 0.0625);
-                        case EAST  -> maxX = Math.max(minX, maxX - 0.0625);
-                        default -> {}
+            if (master.getSize() == 1) {
+                if (master.isPressed() && face == AttachFace.WALL) {
+                    glyphShape = compressPressedShape(glyphShape, dir, 0.0625);
+                    if (master.hasBackplate()) plateShape = compressPressedShape(plateShape, dir, 0.0625);
+                }
+                glyphShape = SignRotation.rotateAroundBlockCenter(glyphShape, rotationDelta);
+                if (master.hasBackplate()) plateShape = SignRotation.rotateAroundBlockCenter(plateShape, rotationDelta);
+                if (master.hasBackplate()) glyphShape = glyphShape.move(normalX * plateClearance, 0.0, normalZ * plateClearance);
+                if (face != AttachFace.WALL) {
+                    glyphShape = centerShapeAt(glyphShape, 0.5 + (master.hasBackplate() ? normalX * plateClearance : 0.0),
+                            0.5 + (master.hasBackplate() ? normalZ * plateClearance : 0.0));
+                    if (master.hasBackplate()) {
+                        plateShape = centerShapeAt(plateShape, 0.5, 0.5);
+                        plateShape = SignRotation.widenAlongTangent(plateShape, rotation, Math.sqrt(2.0));
                     }
-                    pressedShape = Shapes.or(pressedShape, Shapes.create(minX, minY, minZ, maxX, maxY, maxZ));
                 }
-                finalShape = pressedShape;
+                return master.hasBackplate() ? Shapes.or(glyphShape, plateShape) : glyphShape;
             }
-
-            return finalShape;
         }
         return letterShape;
     }
 
+    private static VoxelShape centerShapeAt(VoxelShape shape, double targetX, double targetZ) {
+        AABB bounds = shape.bounds();
+        double centerX = (bounds.minX + bounds.maxX) * 0.5;
+        double centerZ = (bounds.minZ + bounds.maxZ) * 0.5;
+        return shape.move(targetX - centerX, 0.0, targetZ - centerZ);
+    }
+
+    private static double getMultiblockOffsetX(AttachFace face, Direction facing, int size) {
+        if (face == AttachFace.WALL) {
+            if (size == 3) return facing == Direction.NORTH || facing == Direction.WEST ? -2.0 : 0.0;
+            return facing == Direction.NORTH || facing == Direction.WEST ? -1.0 : 0.0;
+        }
+        if (size == 3) {
+            return facing == Direction.NORTH ? -1.375 : facing == Direction.SOUTH ? -0.625 : facing == Direction.EAST ? -2.0 : 0.0;
+        }
+        return facing == Direction.NORTH ? -0.6875 : facing == Direction.SOUTH ? -0.3125 : facing == Direction.EAST ? -1.0 : 0.0;
+    }
+
+    private static double getMultiblockOffsetZ(AttachFace face, Direction facing, int size) {
+        if (face == AttachFace.WALL) {
+            if (size == 3) return facing == Direction.NORTH || facing == Direction.EAST ? -2.0 : 0.0;
+            return facing == Direction.NORTH || facing == Direction.EAST ? -1.0 : 0.0;
+        }
+        if (size == 3) {
+            return facing == Direction.EAST ? -1.375 : facing == Direction.WEST ? -0.625 : facing == Direction.SOUTH ? -2.0 : 0.0;
+        }
+        return facing == Direction.EAST ? -0.6875 : facing == Direction.WEST ? -0.3125 : facing == Direction.SOUTH ? -1.0 : 0.0;
+    }
+
+    private static VoxelShape scaleAndOffsetShape(VoxelShape shape, int scale, double offsetX, double offsetZ) {
+        VoxelShape result = Shapes.empty();
+
+        for (AABB box : shape.toAabbs()) {
+            result = Shapes.or(result, Shapes.create(
+                    box.minX * scale + offsetX,
+                    box.minY * scale,
+                    box.minZ * scale + offsetZ,
+                    box.maxX * scale + offsetX,
+                    box.maxY * scale,
+                    box.maxZ * scale + offsetZ));
+        }
+        return result;
+    }
+
+    private static VoxelShape sliceShape(VoxelShape shape, BlockPos relativePos) {
+        VoxelShape result = Shapes.empty();
+        for (AABB box : shape.toAabbs()) {
+            double minX = Math.max(0.0, box.minX - relativePos.getX());
+            double minY = Math.max(0.0, box.minY - relativePos.getY());
+            double minZ = Math.max(0.0, box.minZ - relativePos.getZ());
+            double maxX = Math.min(1.0, box.maxX - relativePos.getX());
+            double maxY = Math.min(1.0, box.maxY - relativePos.getY());
+            double maxZ = Math.min(1.0, box.maxZ - relativePos.getZ());
+
+            if (minX < maxX && minY < maxY && minZ < maxZ) {
+                result = Shapes.or(result, Shapes.create(minX, minY, minZ, maxX, maxY, maxZ));
+            }
+        }
+        return result;
+    }
+
+    private static VoxelShape compressPressedShape(VoxelShape shape, Direction facing, double amount) {
+        VoxelShape result = Shapes.empty();
+        for (AABB box : shape.toAabbs()) {
+            double minX = box.minX;
+            double minZ = box.minZ;
+            double maxX = box.maxX;
+            double maxZ = box.maxZ;
+            switch (facing) {
+                case NORTH -> minZ = Math.min(maxZ, minZ + amount);
+                case SOUTH -> maxZ = Math.max(minZ, maxZ - amount);
+                case WEST -> minX = Math.min(maxX, minX + amount);
+                case EAST -> maxX = Math.max(minX, maxX - amount);
+                default -> { }
+            }
+            if (minX < maxX && minZ < maxZ) {
+                result = Shapes.or(result, Shapes.create(minX, box.minY, minZ, maxX, box.maxY, maxZ));
+            }
+        }
+        return result;
+    }
+
     public static LetterBlockEntity findMaster(BlockGetter level, BlockPos pos, LetterBlockEntity entity) {
         if (entity.getSize() > 1 && !entity.isDummy()) {
-            return entity;
-        }
-        if (!entity.isDummy()) {
             return entity;
         }
 
@@ -534,25 +539,34 @@ public class LetterBlock extends Block implements EntityBlock {
             }
         }
 
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dy = -2; dy <= 2; dy++) {
-                for (int dz = -2; dz <= 2; dz++) {
-                    BlockPos p = pos.offset(dx, dy, dz);
-                    BlockEntity be = level.getBlockEntity(p);
-                    if (be instanceof LetterBlockEntity lbe && lbe.getSize() > 1 && !lbe.isDummy()) {
-                        BlockState mState = level.getBlockState(p);
-                        if (mState.hasProperty(FACING)) {
-                            BlockPos[] positions = (lbe.getSize() == 3)
-                                    ? get3x3BlockPositions(p, mState)
-                                    : getBigBlockPositions(p, mState);
+        int rotation = entity.getFacingRotation();
+        BlockState currentState = level.getBlockState(pos);
+        boolean wall = !currentState.hasProperty(FACE) || currentState.getValue(FACE) == AttachFace.WALL;
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
+        for (int dx = 0; dx < 3; dx++) {
+            for (int dy = 0; dy < 3; dy++) {
+                BlockPos masterPos = pos.offset(-rightX * dx, -dy, -rightZ * dx);
+                BlockEntity be = level.getBlockEntity(masterPos);
+                if (!(be instanceof LetterBlockEntity master)
+                        || master.getSize() <= 1
+                        || master.isDummy()
+                        || master.getFacingRotation() != rotation) {
+                    continue;
+                }
 
-                            for (BlockPos bp : positions) {
-                                if (bp.equals(pos)) {
-                                    entity.setMasterPos(p);
-                                    return lbe;
-                                }
-                            }
-                        }
+                BlockState masterState = level.getBlockState(masterPos);
+                if (!masterState.hasProperty(FACING)) {
+                    continue;
+                }
+
+                BlockPos[] positions = master.getSize() == 3
+                        ? get3x3BlockPositions(masterPos, masterState, rotation)
+                        : getBigBlockPositions(masterPos, masterState, rotation);
+                for (BlockPos coveredPos : positions) {
+                    if (coveredPos.equals(pos)) {
+                        entity.setMultiblockDummy(masterPos);
+                        return master;
                     }
                 }
             }
@@ -561,25 +575,35 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     public static BlockPos[] getBigBlockPositions(BlockPos masterPos, BlockState masterState) {
-        Direction facing = masterState.getValue(FACING);
-        Direction right = facing.getCounterClockWise();
+        return getBigBlockPositions(masterPos, masterState, SignRotation.fromDirection(masterState.getValue(FACING)));
+    }
+
+    public static BlockPos[] getBigBlockPositions(BlockPos masterPos, BlockState masterState, int rotation) {
+        boolean wall = !masterState.hasProperty(FACE) || masterState.getValue(FACE) == AttachFace.WALL;
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
 
         return new BlockPos[] {
                 masterPos,
-                masterPos.relative(right, 1),
+                masterPos.offset(rightX, 0, rightZ),
                 masterPos.relative(Direction.UP, 1),
-                masterPos.relative(right, 1).relative(Direction.UP, 1)
+                masterPos.offset(rightX, 1, rightZ)
         };
     }
 
     public static BlockPos[] get3x3BlockPositions(BlockPos masterPos, BlockState masterState) {
-        Direction facing = masterState.getValue(FACING);
-        Direction right = facing.getCounterClockWise();
+        return get3x3BlockPositions(masterPos, masterState, SignRotation.fromDirection(masterState.getValue(FACING)));
+    }
+
+    public static BlockPos[] get3x3BlockPositions(BlockPos masterPos, BlockState masterState, int rotation) {
+        boolean wall = !masterState.hasProperty(FACE) || masterState.getValue(FACE) == AttachFace.WALL;
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
         BlockPos[] positions = new BlockPos[9];
         int idx = 0;
         for (int dy = 0; dy < 3; dy++) {
             for (int dx = 0; dx < 3; dx++) {
-                positions[idx++] = masterPos.relative(right, dx).relative(Direction.UP, dy);
+                positions[idx++] = masterPos.offset(rightX * dx, dy, rightZ * dx);
             }
         }
         return positions;
@@ -587,8 +611,8 @@ public class LetterBlock extends Block implements EntityBlock {
 
     public static void updateAllEntitiesBackplate(Level level, BlockPos masterPos, BlockState masterState, int size, boolean hasBackplate, SignMaterial fMat, SignMaterial bMat, int fCol, int bCol, boolean fRain, boolean bRain) {
         BlockPos[] targets = (size == 3)
-                ? get3x3BlockPositions(masterPos, masterState)
-                : (size == 2 ? getBigBlockPositions(masterPos, masterState) : new BlockPos[] { masterPos });
+                ? get3x3BlockPositions(masterPos, masterState, getMasterRotation(level, masterPos, masterState))
+                : (size == 2 ? getBigBlockPositions(masterPos, masterState, getMasterRotation(level, masterPos, masterState)) : new BlockPos[] { masterPos });
 
         for (BlockPos p : targets) {
             BlockEntity be = level.getBlockEntity(p);
@@ -608,6 +632,11 @@ public class LetterBlock extends Block implements EntityBlock {
         }
     }
 
+    private static int getMasterRotation(Level level, BlockPos pos, BlockState state) {
+        BlockEntity be = level.getBlockEntity(pos);
+        return be instanceof LetterBlockEntity letter ? letter.getFacingRotation() : SignRotation.fromDirection(state.getValue(FACING));
+    }
+
     public static boolean tryDetachBackplate(Level level, BlockPos clickedPos, Player player) {
         BlockEntity rawBe = level.getBlockEntity(clickedPos);
         if (!(rawBe instanceof LetterBlockEntity rawLetter)) return false;
@@ -622,6 +651,8 @@ public class LetterBlock extends Block implements EntityBlock {
 
         if (!level.isClientSide()) {
             ItemStack droppedItem = BackplateBlock.getDroppedBackplateItemStack(master);
+            ItemStack backGlyph = master.getBackGlyph().copy();
+            master.setBackGlyph(ItemStack.EMPTY);
 
             updateAllEntitiesBackplate(level, mPos, mState, size, false, SignMaterial.DEFAULT, SignMaterial.DEFAULT, 0xFFFFFF, 0xFFFFFF, false, false);
 
@@ -631,18 +662,22 @@ public class LetterBlock extends Block implements EntityBlock {
                 if (!player.getInventory().add(refund)) {
                     player.drop(refund, false);
                 }
+                if (!backGlyph.isEmpty() && !player.getInventory().add(backGlyph)) {
+                    player.drop(backGlyph, false);
+                }
             }
 
             level.playSound(null, clickedPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
         } else {
+            int rotation = master.getFacingRotation();
             dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
                 com.boran.signbuilder.client.ClientHooks.setBlocksDirty(mPos);
                 if (size == 3) {
-                    for (BlockPos p : get3x3BlockPositions(mPos, mState)) {
+                    for (BlockPos p : get3x3BlockPositions(mPos, mState, rotation)) {
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                     }
                 } else if (size == 2) {
-                    for (BlockPos p : getBigBlockPositions(mPos, mState)) {
+                    for (BlockPos p : getBigBlockPositions(mPos, mState, rotation)) {
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                     }
                 }
@@ -725,6 +760,23 @@ public class LetterBlock extends Block implements EntityBlock {
         int size = master.getSize();
         int cost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
 
+        if (held.getItem() instanceof BlockItem blockItem
+                && blockItem.getBlock() instanceof LetterBlock
+                && master.hasBackplate()
+                && state.hasProperty(FACE)
+                && state.getValue(FACE) != AttachFace.WALL
+                && isOnBackSide(player, pos, state, master.getFacingRotation())) {
+            if (!master.getBackGlyph().isEmpty()) {
+                return InteractionResult.FAIL;
+            }
+            if (!level.isClientSide()) {
+                master.setBackGlyph(held);
+                if (!player.isCreative()) held.shrink(1);
+                level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
         if (held.is(ModBlocks.BACKPLATE_ITEM.get())) {
             if (master.hasBackplate()) {
                 return InteractionResult.PASS;
@@ -756,14 +808,15 @@ public class LetterBlock extends Block implements EntityBlock {
 
                 level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             } else {
+                int rotation = master.getFacingRotation();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(mPos);
                     if (size == 3) {
-                        for (BlockPos p : get3x3BlockPositions(mPos, mState)) {
+                        for (BlockPos p : get3x3BlockPositions(mPos, mState, rotation)) {
                             com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                         }
                     } else if (size == 2) {
-                        for (BlockPos p : getBigBlockPositions(mPos, mState)) {
+                        for (BlockPos p : getBigBlockPositions(mPos, mState, rotation)) {
                             com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                         }
                     }
@@ -796,6 +849,11 @@ public class LetterBlock extends Block implements EntityBlock {
             if (beTag != null) {
                 lbe.load(beTag);
             }
+            if (state.getValue(FACE) == AttachFace.WALL) {
+                lbe.setFacingRotation(SignRotation.fromDirection(state.getValue(FACING)));
+            } else if (placer != null && (beTag == null || !beTag.contains("FacingRotation"))) {
+                lbe.setFacingRotation(SignRotation.fromPlacement(state, placer.getYRot()));
+            }
             lbe.setSize(1);
             lbe.setDummy(false);
             lbe.setMasterPos(null);
@@ -817,26 +875,33 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     private void checkAndFormMultiblock(Level level, BlockPos placedPos, BlockState placedState) {
+        BlockEntity be = level.getBlockEntity(placedPos);
+        if (!(be instanceof LetterBlockEntity letter)) return;
+        int rotation = letter.getFacingRotation();
+        if ((rotation & 1) != 0) return;
+        boolean wall = !placedState.hasProperty(FACE) || placedState.getValue(FACE) == AttachFace.WALL;
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
         Direction facing = placedState.getValue(FACING);
-        Direction rightDir = facing.getCounterClockWise();
 
-        if (scan3x3(level, placedPos, placedState.getBlock(), rightDir, facing)) return;
-        if (scan3x3(level, placedPos, placedState.getBlock(), facing.getClockWise(), facing)) return;
-        if (scan3x3(level, placedPos, placedState.getBlock(), Direction.EAST, facing)) return;
-        if (scan3x3(level, placedPos, placedState.getBlock(), Direction.SOUTH, facing)) return;
-
-        if (scan2x2(level, placedPos, placedState.getBlock(), rightDir, facing)) return;
-        if (scan2x2(level, placedPos, placedState.getBlock(), facing.getClockWise(), facing)) return;
-        if (scan2x2(level, placedPos, placedState.getBlock(), Direction.EAST, facing)) return;
-        scan2x2(level, placedPos, placedState.getBlock(), Direction.SOUTH, facing);
+        if (scan3x3(level, placedPos, placedState.getBlock(), rightX, rightZ, facing, rotation)) return;
+        scan2x2(level, placedPos, placedState.getBlock(), rightX, rightZ, facing, rotation);
     }
 
-    private boolean scan3x3(Level level, BlockPos placedPos, Block blockType, Direction horizontalStep, Direction finalFacing) {
-        Direction upStep = Direction.UP;
+    private static boolean isOnBackSide(Player player, BlockPos pos, BlockState state, int rotation) {
+        int normalRotation = state.hasProperty(FACE) && state.getValue(FACE) == AttachFace.WALL
+                ? rotation
+                : Math.floorMod(rotation - 2, 8);
+        double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(normalRotation)
+                + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(normalRotation);
+        return side < 0.0;
+    }
+
+    private boolean scan3x3(Level level, BlockPos placedPos, Block blockType, int rightX, int rightZ, Direction finalFacing, int rotation) {
         for (int oy = -2; oy <= 0; oy++) {
-            for (int ox = -2; ox <= 0; ox++) {
-                BlockPos b00 = placedPos.relative(horizontalStep, ox).relative(upStep, oy);
-                if (tryMerge9(level, b00, blockType, finalFacing, horizontalStep)) {
+            for (int ox = 0; ox <= 2; ox++) {
+                BlockPos b00 = placedPos.offset(-rightX * ox, oy, -rightZ * ox);
+                if (tryMerge9(level, b00, blockType, finalFacing, rightX, rightZ, rotation)) {
                     return true;
                 }
             }
@@ -844,10 +909,17 @@ public class LetterBlock extends Block implements EntityBlock {
         return false;
     }
 
-    private boolean tryMerge9(Level level, BlockPos b00, Block expectedBlock, Direction finalFacing, Direction horizontalStep) {
+    private boolean tryMerge9(Level level, BlockPos b00, Block expectedBlock, Direction finalFacing, int rightX, int rightZ, int rotation) {
         BlockPos[] positions = new BlockPos[9];
         LetterBlockEntity[] entities = new LetterBlockEntity[9];
         int idx = 0;
+
+        for (int dy = 0; dy < 3; dy++) {
+            for (int dx = 0; dx < 3; dx++) {
+                positions[idx++] = b00.offset(rightX * dx, dy, rightZ * dx);
+            }
+        }
+        idx = 0;
 
         BlockState mState00 = level.getBlockState(b00);
         if (!mState00.hasProperty(FACE)) return false;
@@ -855,25 +927,31 @@ public class LetterBlock extends Block implements EntityBlock {
 
         for (int dy = 0; dy < 3; dy++) {
             for (int dx = 0; dx < 3; dx++) {
-                BlockPos p = b00.relative(horizontalStep, dx).relative(Direction.UP, dy);
+                BlockPos p = positions[idx];
                 BlockState s = level.getBlockState(p);
                 if (s.getBlock() != expectedBlock) return false;
                 if (!s.hasProperty(FACE) || s.getValue(FACE) != commonFace) return false;
+                if (!s.hasProperty(FACING) || s.getValue(FACING) != mState00.getValue(FACING)) return false;
 
                 BlockEntity be = level.getBlockEntity(p);
                 if (!(be instanceof LetterBlockEntity lbe)) return false;
+                if (lbe.getFacingRotation() != rotation) return false;
                 if (lbe.getSize() == 3) return false;
 
                 if (lbe.getSize() == 2 && !lbe.isDummy()) {
-                    BlockPos[] p2x2 = getBigBlockPositions(p, s);
+                    BlockPos[] p2x2 = getBigBlockPositions(p, s, lbe.getFacingRotation());
                     for (BlockPos cp : p2x2) {
-                        int rdx = (horizontalStep.getAxis() == Direction.Axis.X) ? (cp.getX() - b00.getX()) * horizontalStep.getStepX() : (cp.getZ() - b00.getZ()) * horizontalStep.getStepZ();
-                        int rdy = cp.getY() - b00.getY();
-                        if (rdx < 0 || rdx > 2 || rdy < 0 || rdy > 2) return false;
+                        boolean inside = false;
+                        for (BlockPos position : positions) {
+                            if (position != null && position.equals(cp)) {
+                                inside = true;
+                                break;
+                            }
+                        }
+                        if (!inside) return false;
                     }
                 }
 
-                positions[idx] = p;
                 entities[idx] = lbe;
                 idx++;
             }
@@ -907,11 +985,7 @@ public class LetterBlock extends Block implements EntityBlock {
         LetterBlockEntity master = (LetterBlockEntity) level.getBlockEntity(b00);
         if (master == null) return false;
 
-        master.setSize(3);
-        master.setDummy(false);
-        master.setMasterPos(null);
-        master.setChanged();
-        master.sync();
+        master.setMultiblockMaster(3);
 
         for (int i = 1; i < 9; i++) {
             LetterBlockEntity dummy = (LetterBlockEntity) level.getBlockEntity(positions[i]);
@@ -932,28 +1006,27 @@ public class LetterBlock extends Block implements EntityBlock {
         return true;
     }
 
-    private boolean scan2x2(Level level, BlockPos placedPos, Block blockType, Direction horizontalStep, Direction finalFacing) {
-        Direction upStep = Direction.UP;
+    private boolean scan2x2(Level level, BlockPos placedPos, Block blockType, int rightX, int rightZ, Direction finalFacing, int rotation) {
         int[][] cornerOffsets = { {0, 0}, {-1, 0}, {0, -1}, {-1, -1} };
 
         for (int[] offset : cornerOffsets) {
-            BlockPos b00 = placedPos.relative(horizontalStep, offset[0]).relative(upStep, offset[1]);
-            BlockPos b10 = b00.relative(horizontalStep, 1);
-            BlockPos b01 = b00.relative(upStep, 1);
-            BlockPos b11 = b00.relative(horizontalStep, 1).relative(upStep, 1);
+            BlockPos b00 = placedPos.offset(rightX * offset[0], offset[1], rightZ * offset[0]);
+            BlockPos b10 = b00.offset(rightX, 0, rightZ);
+            BlockPos b01 = b00.relative(Direction.UP, 1);
+            BlockPos b11 = b00.offset(rightX, 1, rightZ);
 
-            if (tryMerge4(level, b00, b10, b01, b11, blockType, finalFacing)) {
+            if (tryMerge4(level, b00, b10, b01, b11, blockType, finalFacing, rotation)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean tryMerge4(Level level, BlockPos b00, BlockPos b10, BlockPos b01, BlockPos b11, Block expectedBlock, Direction finalFacing) {
-        if (isValidSingle(level, b00, expectedBlock) &&
-                isValidSingle(level, b10, expectedBlock) &&
-                isValidSingle(level, b01, expectedBlock) &&
-                isValidSingle(level, b11, expectedBlock)) {
+    private boolean tryMerge4(Level level, BlockPos b00, BlockPos b10, BlockPos b01, BlockPos b11, Block expectedBlock, Direction finalFacing, int rotation) {
+        if (isValidSingle(level, b00, expectedBlock, rotation) &&
+                isValidSingle(level, b10, expectedBlock, rotation) &&
+                isValidSingle(level, b01, expectedBlock, rotation) &&
+                isValidSingle(level, b11, expectedBlock, rotation)) {
 
             LetterBlockEntity master = (LetterBlockEntity) level.getBlockEntity(b00);
             LetterBlockEntity e10 = (LetterBlockEntity) level.getBlockEntity(b10);
@@ -963,6 +1036,14 @@ public class LetterBlock extends Block implements EntityBlock {
             if (master != null && e10 != null && e01 != null && e11 != null) {
                 BlockState mState = level.getBlockState(b00);
                 AttachFace commonFace = mState.getValue(FACE);
+                if (level.getBlockState(b10).getValue(FACE) != commonFace
+                        || level.getBlockState(b01).getValue(FACE) != commonFace
+                        || level.getBlockState(b11).getValue(FACE) != commonFace
+                        || level.getBlockState(b10).getValue(FACING) != mState.getValue(FACING)
+                        || level.getBlockState(b01).getValue(FACING) != mState.getValue(FACING)
+                        || level.getBlockState(b11).getValue(FACING) != mState.getValue(FACING)) {
+                    return false;
+                }
 
                 boolean hasAnyBackplate = master.hasBackplate() || e10.hasBackplate() || e01.hasBackplate() || e11.hasBackplate();
                 SignMaterial fMat = master.hasBackplate() ? master.getBackplateFrontMaterial() : (e10.hasBackplate() ? e10.getBackplateFrontMaterial() : (e01.hasBackplate() ? e01.getBackplateFrontMaterial() : e11.getBackplateFrontMaterial()));
@@ -983,11 +1064,7 @@ public class LetterBlock extends Block implements EntityBlock {
                 LetterBlockEntity actual11 = (LetterBlockEntity) level.getBlockEntity(b11);
 
                 if (actualMaster != null && actual10 != null && actual01 != null && actual11 != null) {
-                    actualMaster.setSize(2);
-                    actualMaster.setDummy(false);
-                    actualMaster.setMasterPos(null);
-                    actualMaster.setChanged();
-                    actualMaster.sync();
+                    actualMaster.setMultiblockMaster(2);
 
                     setupDummy(actual10, b00);
                     setupDummy(actual01, b00);
@@ -1010,22 +1087,18 @@ public class LetterBlock extends Block implements EntityBlock {
         return false;
     }
 
-    private boolean isValidSingle(Level level, BlockPos pos, Block expectedBlock) {
+    private boolean isValidSingle(Level level, BlockPos pos, Block expectedBlock, int rotation) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() != expectedBlock) return false;
 
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof LetterBlockEntity lbe)) return false;
 
-        return lbe.getSize() == 1 && !lbe.isDummy();
+        return lbe.getSize() == 1 && !lbe.isDummy() && lbe.getFacingRotation() == rotation;
     }
 
     private void setupDummy(LetterBlockEntity dummy, BlockPos masterPos) {
-        dummy.setDummy(true);
-        dummy.setSize(1);
-        dummy.setMasterPos(masterPos);
-        dummy.setChanged();
-        dummy.sync();
+        dummy.setMultiblockDummy(masterPos);
     }
 
     @Override
@@ -1036,20 +1109,31 @@ public class LetterBlock extends Block implements EntityBlock {
                 LetterBlockEntity master = findMaster(level, pos, rawLbe);
                 BlockPos mPos = master.getBlockPos();
                 BlockState mState = level.getBlockState(mPos);
+                int size = master.getSize();
 
-                if (master.getSize() == 3) {
-                    if (!player.isCreative()) {
-                        spawnLetterDrops(level, mPos, mState, master, 9, player.getMainHandItem());
+                if (size == 1) {
+                    BlockPos inferredMasterPos = findUnmerged2x2Master(level, pos, state, master.getFacingRotation());
+                    if (inferredMasterPos != null && level.getBlockEntity(inferredMasterPos) instanceof LetterBlockEntity inferredMaster) {
+                        master = inferredMaster;
+                        mPos = inferredMasterPos;
+                        mState = level.getBlockState(mPos);
+                        size = 2;
                     }
-                    destroyAll9Blocks(level, mPos, mState, pos);
-                } else if (master.getSize() == 2) {
+                }
+
+                if (size == 3) {
                     if (!player.isCreative()) {
-                        spawnLetterDrops(level, mPos, mState, master, 4, player.getMainHandItem());
+                        spawnLetterDrops(level, mPos, mState, master, 9, 3, player.getMainHandItem());
                     }
-                    destroyAll4Blocks(level, mPos, mState, pos);
+                    destroyAll9Blocks(level, mPos, mState, pos, master.getFacingRotation());
+                } else if (size == 2) {
+                    if (!player.isCreative()) {
+                        spawnLetterDrops(level, mPos, mState, master, 4, 2, player.getMainHandItem());
+                    }
+                    destroyAll4Blocks(level, mPos, mState, pos, master.getFacingRotation());
                 } else if (!rawLbe.isDummy()) {
                     if (!player.isCreative()) {
-                        spawnLetterDrops(level, pos, state, rawLbe, 1, player.getMainHandItem());
+                        spawnLetterDrops(level, pos, state, rawLbe, 1, 1, player.getMainHandItem());
                     }
                 }
             }
@@ -1057,8 +1141,8 @@ public class LetterBlock extends Block implements EntityBlock {
         super.playerWillDestroy(level, pos, state, player);
     }
 
-    private static void destroyAll4Blocks(Level level, BlockPos masterPos, BlockState masterState, BlockPos triggeredPos) {
-        BlockPos[] positions = getBigBlockPositions(masterPos, masterState);
+    private static void destroyAll4Blocks(Level level, BlockPos masterPos, BlockState masterState, BlockPos triggeredPos, int rotation) {
+        BlockPos[] positions = getBigBlockPositions(masterPos, masterState, rotation);
 
         for (BlockPos p : positions) {
             BlockEntity be = level.getBlockEntity(p);
@@ -1092,8 +1176,8 @@ public class LetterBlock extends Block implements EntityBlock {
         }
     }
 
-    private static void destroyAll9Blocks(Level level, BlockPos masterPos, BlockState masterState, BlockPos triggeredPos) {
-        BlockPos[] positions = get3x3BlockPositions(masterPos, masterState);
+    private static void destroyAll9Blocks(Level level, BlockPos masterPos, BlockState masterState, BlockPos triggeredPos, int rotation) {
+        BlockPos[] positions = get3x3BlockPositions(masterPos, masterState, rotation);
 
         for (BlockPos p : positions) {
             BlockEntity be = level.getBlockEntity(p);
@@ -1127,16 +1211,41 @@ public class LetterBlock extends Block implements EntityBlock {
         }
     }
 
-    private void spawnLetterDrops(Level level, BlockPos dropPos, BlockState dropState, LetterBlockEntity lbe, int multiplier, ItemStack tool) {
+    private void spawnLetterDrops(Level level, BlockPos dropPos, BlockState dropState, LetterBlockEntity lbe, int multiplier, int groupSize, ItemStack tool) {
         boolean hasSilkTouch = !tool.isEmpty() && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
+        LetterBlockEntity backplateSource = findBackplateSource(level, dropPos, dropState, lbe, groupSize);
 
         if (hasSilkTouch) {
+            ItemStack backGlyph = lbe.getBackGlyph().copy();
             ItemStack letterStack = lbe.getDroppedItemStack(dropState);
+            CompoundTag itemTag = letterStack.getTag();
+            if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
+                CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
+                beTag.remove("BackGlyph");
+                beTag.remove("HasBackplate");
+                beTag.remove("BPFrontMat");
+                beTag.remove("BPBackMat");
+                beTag.remove("BPFrontColor");
+                beTag.remove("BPBackColor");
+                beTag.remove("BPFrontRainbow");
+                beTag.remove("BPBackRainbow");
+                beTag.remove("BackplateFrontMaterial");
+                beTag.remove("BackplateBackMaterial");
+                beTag.remove("BackplateFrontColor");
+                beTag.remove("BackplateBackColor");
+                beTag.remove("BackplateFrontRainbow");
+                beTag.remove("BackplateBackRainbow");
+                if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
+            }
             letterStack.setCount(multiplier);
             popResource(level, dropPos, letterStack);
 
-            if (lbe.hasBackplate()) {
-                ItemStack bp = BackplateBlock.getDroppedBackplateItemStack(lbe);
+            if (!backGlyph.isEmpty()) {
+                popResource(level, dropPos, backGlyph);
+            }
+
+            if (backplateSource != null) {
+                ItemStack bp = BackplateBlock.getDroppedBackplateItemStack(backplateSource);
                 bp.setCount(multiplier);
                 popResource(level, dropPos, bp);
             }
@@ -1155,10 +1264,23 @@ public class LetterBlock extends Block implements EntityBlock {
                 popResource(level, dropPos, new ItemStack(Items.GLOWSTONE_DUST, multiplier));
             }
 
-            if (lbe.hasBackplate()) {
+            ItemStack backGlyph = lbe.getBackGlyph();
+            if (!backGlyph.isEmpty()) {
                 popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
-                SignMaterial fMat = lbe.getBackplateFrontMaterial();
-                SignMaterial bMat = lbe.getBackplateBackMaterial();
+                SignMaterial backGlyphMaterial = getBackGlyphMaterial(backGlyph);
+                if (backGlyphMaterial != SignMaterial.DEFAULT) {
+                    ItemStack backGlyphMaterialStack = BackplateBlock.getItemForMaterial(backGlyphMaterial);
+                    if (!backGlyphMaterialStack.isEmpty()) {
+                        backGlyphMaterialStack.setCount(multiplier);
+                        popResource(level, dropPos, backGlyphMaterialStack);
+                    }
+                }
+            }
+
+            if (backplateSource != null) {
+                popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+                SignMaterial fMat = backplateSource.getBackplateFrontMaterial();
+                SignMaterial bMat = backplateSource.getBackplateBackMaterial();
 
                 if (fMat != SignMaterial.DEFAULT) {
                     ItemStack fStack = BackplateBlock.getItemForMaterial(fMat);
@@ -1178,23 +1300,102 @@ public class LetterBlock extends Block implements EntityBlock {
         }
     }
 
+    private static SignMaterial getBackGlyphMaterial(ItemStack glyph) {
+        CompoundTag blockEntityTag = glyph.getTagElement("BlockEntityTag");
+        if (blockEntityTag != null && blockEntityTag.contains("SavedMaterial")) {
+            String value = blockEntityTag.getString("SavedMaterial");
+            for (SignMaterial material : SignMaterial.values()) {
+                if (material.name().equalsIgnoreCase(value) || material.getSerializedName().equals(value)) {
+                    return material;
+                }
+            }
+        }
+
+        CompoundTag stateTag = glyph.getTagElement("BlockStateTag");
+        if (stateTag != null && stateTag.contains("material")) {
+            String value = stateTag.getString("material");
+            for (SignMaterial material : SignMaterial.values()) {
+                if (material.getSerializedName().equals(value) || material.name().equalsIgnoreCase(value)) {
+                    return material;
+                }
+            }
+        }
+        return SignMaterial.DEFAULT;
+    }
+
+    @Nullable
+    private LetterBlockEntity findBackplateSource(Level level, BlockPos masterPos, BlockState masterState, LetterBlockEntity master, int groupSize) {
+        if (master.hasBackplate()) return master;
+
+        BlockPos[] positions = groupSize == 3
+                ? get3x3BlockPositions(masterPos, masterState, master.getFacingRotation())
+                : groupSize == 2
+                ? getBigBlockPositions(masterPos, masterState, master.getFacingRotation())
+                : new BlockPos[] { masterPos };
+
+        for (BlockPos position : positions) {
+            BlockEntity blockEntity = level.getBlockEntity(position);
+            if (blockEntity instanceof LetterBlockEntity letter && letter.hasBackplate()) {
+                return letter;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static BlockPos findUnmerged2x2Master(Level level, BlockPos pos, BlockState state, int rotation) {
+        if ((rotation & 1) != 0) return null;
+
+        boolean wall = !state.hasProperty(FACE) || state.getValue(FACE) == AttachFace.WALL;
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
+        int[][] cornerOffsets = {{0, 0}, {-1, 0}, {0, -1}, {-1, -1}};
+
+        for (int[] offset : cornerOffsets) {
+            BlockPos candidate = pos.offset(rightX * offset[0], offset[1], rightZ * offset[0]);
+            BlockState candidateState = level.getBlockState(candidate);
+            if (candidateState.getBlock() != state.getBlock()) continue;
+
+            BlockPos[] positions = getBigBlockPositions(candidate, candidateState, rotation);
+            boolean complete = true;
+            for (BlockPos position : positions) {
+                BlockState partState = level.getBlockState(position);
+                BlockEntity partEntity = level.getBlockEntity(position);
+                if (partState.getBlock() != state.getBlock()
+                        || !partState.hasProperty(FACE)
+                        || partState.getValue(FACE) != state.getValue(FACE)
+                        || !partState.hasProperty(FACING)
+                        || partState.getValue(FACING) != state.getValue(FACING)
+                        || !(partEntity instanceof LetterBlockEntity letter)
+                        || letter.getSize() != 1
+                        || letter.isDummy()
+                        || letter.getFacingRotation() != rotation) {
+                    complete = false;
+                    break;
+                }
+            }
+            if (complete) return candidate;
+        }
+        return null;
+    }
+
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof LetterBlockEntity lbe) {
                 if (lbe.getSize() == 3) {
-                    destroyAll9Blocks(level, pos, state, pos);
+                    destroyAll9Blocks(level, pos, state, pos, lbe.getFacingRotation());
                 } else if (lbe.getSize() == 2) {
-                    destroyAll4Blocks(level, pos, state, pos);
+                    destroyAll4Blocks(level, pos, state, pos, lbe.getFacingRotation());
                 } else if (lbe.isDummy() && lbe.getMasterPos() != null) {
                     BlockPos mPos = lbe.getMasterPos();
                     BlockEntity mBe = level.getBlockEntity(mPos);
                     if (mBe instanceof LetterBlockEntity masterLbe) {
                         if (masterLbe.getSize() == 3) {
-                            destroyAll9Blocks(level, mPos, level.getBlockState(mPos), pos);
+                            destroyAll9Blocks(level, mPos, level.getBlockState(mPos), pos, masterLbe.getFacingRotation());
                         } else if (masterLbe.getSize() == 2) {
-                            destroyAll4Blocks(level, mPos, level.getBlockState(mPos), pos);
+                            destroyAll4Blocks(level, mPos, level.getBlockState(mPos), pos, masterLbe.getFacingRotation());
                         }
                     }
                 }

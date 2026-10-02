@@ -76,11 +76,11 @@ public class BackplateItem extends BlockItem {
                         dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
                             com.boran.signbuilder.client.ClientHooks.setBlocksDirty(mPos);
                             if (size == 3) {
-                                for (BlockPos p : LetterBlock.get3x3BlockPositions(mPos, mState)) {
+                                for (BlockPos p : LetterBlock.get3x3BlockPositions(mPos, mState, letter.getFacingRotation())) {
                                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                                 }
                             } else if (size == 2) {
-                                for (BlockPos p : LetterBlock.getBigBlockPositions(mPos, mState)) {
+                                for (BlockPos p : LetterBlock.getBigBlockPositions(mPos, mState, letter.getFacingRotation())) {
                                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(p);
                                 }
                             }

@@ -2,6 +2,7 @@ package com.boran.signbuilder.client.render;
 
 import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.item.SignBlueprintItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -35,6 +36,21 @@ public class BlueprintPreviewRenderer {
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final RandomSource RANDOM = RandomSource.create();
     private static final BlockPos.MutableBlockPos SCRATCH_POS = new BlockPos.MutableBlockPos();
+    private static final double[] OFFSET_ZERO = {0.0, 0.0};
+    private static final double[] OFFSET_NEG_1_NEG_1 = {-1.0, -1.0};
+    private static final double[] OFFSET_NEG_1_ZERO = {-1.0, 0.0};
+    private static final double[] OFFSET_ZERO_NEG_1 = {0.0, -1.0};
+    private static final double[] OFFSET_NEG_1_NEG_06875 = {-1.0, -0.6875};
+    private static final double[] OFFSET_NEG_06875_ZERO = {-0.6875, 0.0};
+    private static final double[] OFFSET_NEG_03125_NEG_1 = {-0.3125, -1.0};
+    private static final double[] OFFSET_ZERO_NEG_03125 = {0.0, -0.3125};
+    private static final double[] OFFSET_NEG_2_NEG_2 = {-2.0, -2.0};
+    private static final double[] OFFSET_ZERO_NEG_2 = {0.0, -2.0};
+    private static final double[] OFFSET_NEG_2_ZERO = {-2.0, 0.0};
+    private static final double[] OFFSET_NEG_2_NEG_1375 = {-2.0, -1.375};
+    private static final double[] OFFSET_NEG_1375_ZERO = {-1.375, 0.0};
+    private static final double[] OFFSET_NEG_0625_NEG_2 = {-0.625, -2.0};
+    private static final double[] OFFSET_ZERO_NEG_0625 = {0.0, -0.625};
 
     public static void render(PoseStack poseStack) {
         Minecraft mc = Minecraft.getInstance();
@@ -72,7 +88,14 @@ public class BlueprintPreviewRenderer {
         BlockPos startPos = blockHit.getBlockPos().relative(clickedFace);
 
         Direction playerFacing = player.getDirection();
-        Direction rightDir = playerFacing.getClockWise();
+        boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
+        int rotation = wall
+                ? SignRotation.fromDirection(clickedFace)
+                : size > 1
+                    ? SignRotation.fromDirection(playerFacing.getCounterClockWise())
+                    : SignRotation.fromYaw(player.getYRot(), -2);
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
 
         int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
 
@@ -108,7 +131,7 @@ public class BlueprintPreviewRenderer {
 
             BlockPos basePos;
             if (!isVertical) {
-                basePos = startPos.relative(rightDir, effectiveIdx * size);
+                basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * size);
             } else {
                 int baseY = (stepDirY == 1)
                         ? startPos.getY() + (effectiveIdx * size)
@@ -119,7 +142,7 @@ public class BlueprintPreviewRenderer {
             boolean canPlace = true;
             for (int dy = 0; dy < size; dy++) {
                 for (int dx = 0; dx < size; dx++) {
-                    SCRATCH_POS.set(basePos).move(rightDir, dx).move(Direction.UP, dy);
+                    SCRATCH_POS.set(basePos).move(rightX * dx, dy, rightZ * dx);
                     if (!level.getBlockState(SCRATCH_POS).canBeReplaced()) {
                         canPlace = false;
                         break;
@@ -149,65 +172,62 @@ public class BlueprintPreviewRenderer {
             double posY = basePos.getY() - camY;
             double posZ = basePos.getZ() - camZ;
 
-            if (isFloor) {
-                if (playerFacing == Direction.SOUTH) {
-                    posX -= (size - 1);
-                } else if (playerFacing == Direction.WEST) {
-                    posZ -= (size - 1);
-                }
-            }
-
             poseStack.translate(posX, posY, posZ);
 
-            if (size == 3) {
-                if (attachFace == AttachFace.WALL) {
-                    switch (facing) {
-                        case NORTH -> poseStack.translate(-2.0, 0.0, -2.0);
-                        case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
-                        case EAST  -> poseStack.translate(0.0, 0.0, -2.0);
-                        case WEST  -> poseStack.translate(-2.0, 0.0, 0.0);
-                    }
-                } else {
-                    switch (facing) {
-                        case EAST  -> poseStack.translate(0.0, 0.0, -1.375);
-                        case NORTH -> poseStack.translate(-1.375, 0.0, 0.0);
-                        case SOUTH -> poseStack.translate(-0.625, 0.0, 0.0);
-                        case WEST  -> poseStack.translate(0.0, 0.0, -0.625);
-                    }
+            int rotationDelta = SignRotation.deltaDegrees(rotation, facing);
+            if (size == 1) {
+                if (rotationDelta != 0) {
+                    poseStack.translate(0.5, 0.0, 0.5);
+                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDelta));
+                    poseStack.translate(-0.5, 0.0, -0.5);
                 }
-                poseStack.scale(3.0F, 3.0F, 3.0F);
-            } else if (size == 2) {
-                if (attachFace == AttachFace.WALL) {
-                    switch (facing) {
-                        case NORTH -> poseStack.translate(-1.0, 0.0, -1.0);
-                        case SOUTH -> poseStack.translate(0.0, 0.0, 0.0);
-                        case EAST  -> poseStack.translate(0.0, 0.0, -1.0);
-                        case WEST  -> poseStack.translate(-1.0, 0.0, 0.0);
-                    }
-                } else {
-                    switch (facing) {
-                        case EAST  -> poseStack.translate(0.0, 0.0, -0.6875);
-                        case NORTH -> poseStack.translate(-0.6875, 0.0, 0.0);
-                        case SOUTH -> poseStack.translate(-0.3125, 0.0, 0.0);
-                        case WEST  -> poseStack.translate(0.0, 0.0, -0.3125);
-                    }
-                }
-                poseStack.scale(2.0F, 2.0F, 2.0F);
+            } else if (rotationDelta != 0) {
+                poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDelta));
             }
 
+            double[] offsets = getRenderOffsets(attachFace, facing, size);
+            double offsetX = offsets[0];
+            double offsetZ = offsets[1];
+            poseStack.translate(offsetX, 0.0, offsetZ);
+            if (size > 1) poseStack.scale((float) size, (float) size, (float) size);
+
+            int normalRotation = attachFace == AttachFace.WALL ? rotation : Math.floorMod(rotation - 2, 8);
+            double normalX = SignRotation.facingX(normalRotation);
+            double normalZ = SignRotation.facingZ(normalRotation);
+            double normalLength = Math.sqrt(normalX * normalX + normalZ * normalZ);
+            if (normalLength == 0.0) normalLength = 1.0;
+            normalX /= normalLength;
+            normalZ /= normalLength;
+            double groupCenterX = 0.5 + rightX * (size - 1) * 0.5;
+            double groupCenterZ = 0.5 + rightZ * (size - 1) * 0.5;
+            int modelScale = size;
+
             if (withBackplate) {
-                Direction plateFacing = (attachFace == AttachFace.FLOOR) ? facing.getCounterClockWise() : facing;
+                Direction plateFacing = (attachFace != AttachFace.WALL) ? facing.getCounterClockWise() : facing;
                 BlockState bpState = ModBlocks.BACKPLATE.get().defaultBlockState()
                         .setValue(BackplateBlock.FACING, plateFacing)
                         .setValue(BackplateBlock.FACE, attachFace);
 
                 BakedModel bpModel = mc.getBlockRenderer().getBlockModel(bpState);
+                poseStack.pushPose();
+                if (attachFace != AttachFace.WALL) {
+                    ModelCentering.centerPose(poseStack, bpModel, bpState, rotationDelta, size == 1, modelScale, offsetX, offsetZ, groupCenterX, groupCenterZ);
+                    ModelCentering.widenDiagonalPose(poseStack, plateFacing, rotation);
+                }
                 renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
-            }
+                poseStack.popPose();
 
-            if (withBackplate && attachFace == AttachFace.WALL) {
-                float onePixel = 0.0625f;
-                poseStack.translate(facing.getStepX() * onePixel, 0, facing.getStepZ() * onePixel);
+                double plateClearance = attachFace == AttachFace.WALL ? 1.0 / 16.0 : 2.0 / 16.0;
+                if (attachFace != AttachFace.WALL) {
+                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ,
+                            groupCenterX + normalX * plateClearance, groupCenterZ + normalZ * plateClearance);
+                } else {
+                    poseStack.translate(normalX * plateClearance / modelScale, 0.0, normalZ * plateClearance / modelScale);
+                }
+            } else {
+                if (attachFace != AttachFace.WALL) {
+                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ, groupCenterX, groupCenterZ);
+                }
             }
 
             renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
@@ -217,6 +237,50 @@ public class BlueprintPreviewRenderer {
         }
 
         bufferSource.endBatch(RenderType.translucent());
+    }
+
+    private static BlockPos offsetRight(BlockPos pos, int rightX, int rightZ, int distance) {
+        return pos.offset(rightX * distance, 0, rightZ * distance);
+    }
+
+    private static double[] getRenderOffsets(AttachFace face, Direction facing, int size) {
+        if (size == 3) {
+            if (face == AttachFace.WALL) {
+                return switch (facing) {
+                    case NORTH -> OFFSET_NEG_2_NEG_2;
+                    case SOUTH -> OFFSET_ZERO;
+                    case EAST -> OFFSET_ZERO_NEG_2;
+                    case WEST -> OFFSET_NEG_2_ZERO;
+                    default -> OFFSET_ZERO;
+                };
+            }
+            return switch (facing) {
+                case EAST -> OFFSET_NEG_2_NEG_1375;
+                case NORTH -> OFFSET_NEG_1375_ZERO;
+                case SOUTH -> OFFSET_NEG_0625_NEG_2;
+                case WEST -> OFFSET_ZERO_NEG_0625;
+                default -> OFFSET_ZERO;
+            };
+        }
+        if (size == 2) {
+            if (face == AttachFace.WALL) {
+                return switch (facing) {
+                    case NORTH -> OFFSET_NEG_1_NEG_1;
+                    case SOUTH -> OFFSET_ZERO;
+                    case EAST -> OFFSET_ZERO_NEG_1;
+                    case WEST -> OFFSET_NEG_1_ZERO;
+                    default -> OFFSET_ZERO;
+                };
+            }
+            return switch (facing) {
+                case EAST -> OFFSET_NEG_1_NEG_06875;
+                case NORTH -> OFFSET_NEG_06875_ZERO;
+                case SOUTH -> OFFSET_NEG_03125_NEG_1;
+                case WEST -> OFFSET_ZERO_NEG_03125;
+                default -> OFFSET_ZERO;
+            };
+        }
+        return OFFSET_ZERO;
     }
 
     private static void renderGhostModel(PoseStack poseStack, VertexConsumer consumer, BakedModel model, BlockState state, float r, float g, float b, float a, int light) {

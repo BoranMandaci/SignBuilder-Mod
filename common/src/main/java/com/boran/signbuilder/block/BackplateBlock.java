@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -93,6 +94,7 @@ public class BackplateBlock extends Block implements EntityBlock {
 
             SignMaterial fMat = letterBe != null ? letterBe.getBackplateFrontMaterial() : SignMaterial.DEFAULT;
             SignMaterial bMat = letterBe != null ? letterBe.getBackplateBackMaterial() : SignMaterial.DEFAULT;
+            int facingRotation = letterBe != null ? letterBe.getFacingRotation() : SignRotation.fromDirection(state.getValue(FACING));
             if (fMat == SignMaterial.DEFAULT && state.hasProperty(MATERIAL)) {
                 fMat = state.getValue(MATERIAL);
             }
@@ -104,7 +106,15 @@ public class BackplateBlock extends Block implements EntityBlock {
 
             AttachFace face = state.getValue(FACE);
             Direction facing = state.getValue(FACING);
-            Direction letterFacing = (face == AttachFace.FLOOR) ? facing.getClockWise() : facing;
+            boolean backSide = isOnBackSide(player, pos, facingRotation);
+            if (face == AttachFace.WALL && backSide) {
+                return InteractionResult.FAIL;
+            }
+            Direction sideFacing = backSide ? facing.getOpposite() : facing;
+            int sideRotation = Math.floorMod(facingRotation + (backSide ? 4 : 0), 8);
+            Direction letterFacing = (face != AttachFace.WALL) ? sideFacing.getClockWise() : sideFacing;
+            int letterRotation = Math.floorMod(sideRotation + (face != AttachFace.WALL ? 2 : 0), 8);
+            CompoundTag blockEntityTag = held.getTagElement("BlockEntityTag");
 
             BlockState newLetterState = letterBlock.defaultBlockState()
                     .setValue(LetterBlock.FACING, letterFacing)
@@ -117,10 +127,10 @@ public class BackplateBlock extends Block implements EntityBlock {
                 level.setBlock(pos, newLetterState, 3);
                 BlockEntity newBe = level.getBlockEntity(pos);
                 if (newBe instanceof LetterBlockEntity newLetter) {
-                    CompoundTag blockEntityTag = held.getTagElement("BlockEntityTag");
                     if (blockEntityTag != null) {
                         newLetter.load(blockEntityTag);
                     }
+                    newLetter.setFacingRotation(letterRotation);
                     newLetter.setHasBackplate(true);
                     newLetter.setBackplateFrontMaterial(fMat);
                     newLetter.setBackplateBackMaterial(bMat);
@@ -137,10 +147,10 @@ public class BackplateBlock extends Block implements EntityBlock {
                 level.setBlock(pos, newLetterState, 11);
                 BlockEntity newBe = level.getBlockEntity(pos);
                 if (newBe instanceof LetterBlockEntity newLetter) {
-                    CompoundTag blockEntityTag = held.getTagElement("BlockEntityTag");
                     if (blockEntityTag != null) {
                         newLetter.load(blockEntityTag);
                     }
+                    newLetter.setFacingRotation(letterRotation);
                     newLetter.setHasBackplate(true);
                     newLetter.setBackplateFrontMaterial(fMat);
                     newLetter.setBackplateBackMaterial(bMat);
@@ -159,6 +169,12 @@ public class BackplateBlock extends Block implements EntityBlock {
         return super.use(state, level, pos, player, hand, hit);
     }
 
+    private static boolean isOnBackSide(Player player, BlockPos pos, int rotation) {
+        double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
+                + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
+        return side < 0.0;
+    }
+
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
@@ -175,6 +191,11 @@ public class BackplateBlock extends Block implements EntityBlock {
                             com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
                     );
                 }
+            }
+            if (state.getValue(FACE) == AttachFace.WALL) {
+                lbe.setFacingRotation(SignRotation.fromDirection(state.getValue(FACING)));
+            } else if (placer != null && (beTag == null || !beTag.contains("FacingRotation"))) {
+                lbe.setFacingRotation(SignRotation.fromBackplatePlacement(placer.getYRot()));
             }
             level.sendBlockUpdated(pos, state, level.getBlockState(pos), 3);
         }
@@ -232,7 +253,6 @@ public class BackplateBlock extends Block implements EntityBlock {
         int bCol = lbe.getBackplateBackColor();
         boolean fRain = lbe.isBackplateFrontRainbow();
         boolean bRain = lbe.isBackplateBackRainbow();
-
         boolean isDefault = (fMat == null || fMat == SignMaterial.DEFAULT)
                 && (bMat == null || bMat == SignMaterial.DEFAULT)
                 && (fCol == 0xFFFFFF || fCol == 0)
@@ -272,6 +292,9 @@ public class BackplateBlock extends Block implements EntityBlock {
 
     public static void applyBackplateTagToEntity(LetterBlockEntity entity, CompoundTag beTag) {
         entity.setHasBackplate(true);
+        if (beTag.contains("FacingRotation")) {
+            entity.setFacingRotation(beTag.getInt("FacingRotation"));
+        }
 
         if (beTag.contains("BackplateFrontMaterial")) {
             try { entity.setBackplateFrontMaterial(SignMaterial.valueOf(beTag.getString("BackplateFrontMaterial"))); } catch (Exception ignored) {}
@@ -372,20 +395,34 @@ public class BackplateBlock extends Block implements EntityBlock {
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         AttachFace face = state.getValue(FACE);
         Direction dir = state.getValue(FACING);
+        VoxelShape shape;
         if (face == AttachFace.WALL) {
-            return switch (dir) {
+            shape = switch (dir) {
                 case SOUTH -> WALL_SOUTH;
                 case EAST  -> WALL_EAST;
                 case WEST  -> WALL_WEST;
                 default    -> WALL_NORTH;
             };
+        } else {
+            shape = switch (dir) {
+                case SOUTH -> FLOOR_SOUTH;
+                case EAST  -> FLOOR_EAST;
+                case WEST  -> FLOOR_WEST;
+                default    -> FLOOR_NORTH;
+            };
         }
-        return switch (dir) {
-            case SOUTH -> FLOOR_SOUTH;
-            case EAST  -> FLOOR_EAST;
-            case WEST  -> FLOOR_WEST;
-            default    -> FLOOR_NORTH;
-        };
+        BlockEntity be = level.getBlockEntity(pos);
+        LetterBlockEntity letter = be instanceof LetterBlockEntity lbe ? lbe : null;
+        if (letter != null) {
+            shape = SignRotation.rotateAroundBlockCenter(shape, SignRotation.deltaDegrees(letter.getFacingRotation(), dir));
+        }
+        if (face != AttachFace.WALL) {
+            AABB bounds = shape.bounds();
+            shape = shape.move(0.5 - (bounds.minX + bounds.maxX) * 0.5, 0.0,
+                    0.5 - (bounds.minZ + bounds.maxZ) * 0.5);
+            if (letter != null) shape = SignRotation.widenAlongTangent(shape, letter.getFacingRotation(), Math.sqrt(2.0));
+        }
+        return shape;
     }
 
     @Nullable

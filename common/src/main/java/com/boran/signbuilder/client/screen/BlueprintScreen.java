@@ -5,25 +5,34 @@ import com.boran.signbuilder.network.BlueprintTextC2SPacket;
 import com.boran.signbuilder.network.BlueprintUndoC2SPacket;
 import com.boran.signbuilder.network.ModMessages;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 public class BlueprintScreen extends Screen {
+    private static final int PANEL_WIDTH = 520;
+    private static final int PANEL_HEIGHT = 218;
+    private static final int SYMBOL_SIZE = 20;
+    private static final int SYMBOL_GAP = 2;
+
     private EditBox textField;
     private final String initialText;
     private int size = 1;
     private boolean isVertical;
     private boolean withBackplate;
-
-    private Button sizeToggleButton;
-    private Button dirToggleButton;
-    private Button backplateToggleButton;
+    private int panelX;
+    private int panelY;
+    private int panelWidth;
+    private int panelHeight;
+    private int symbolSize;
+    private float layoutScaleY = 1.0F;
 
     public BlueprintScreen(String initialText) {
         super(Component.literal("Sign Blueprint"));
@@ -45,8 +54,11 @@ public class BlueprintScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        int centerX = this.width / 2;
-        int centerY = this.height / 2;
+        this.panelWidth = Math.min(PANEL_WIDTH, Math.max(0, this.width - 32));
+        this.layoutScaleY = Math.max(0.35F, Math.min(1.0F, (this.height - 24.0F) / PANEL_HEIGHT));
+        this.panelHeight = scaledY(PANEL_HEIGHT);
+        this.panelX = (this.width - this.panelWidth) / 2;
+        this.panelY = (this.height - this.panelHeight) / 2;
 
         if (this.minecraft != null && this.minecraft.player != null) {
             ItemStack stack = this.minecraft.player.getMainHandItem();
@@ -66,11 +78,10 @@ public class BlueprintScreen extends Screen {
             }
         }
 
-        int btnWidth = 18;
-        int btnHeight = 18;
+        int contentWidth = Math.max(0, this.panelWidth - 28);
+        this.symbolSize = Math.min(scaledY(SYMBOL_SIZE), Math.max(8, (contentWidth - 40) / 21));
 
         String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<"};
-        String[] row1Display = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<"};
         String[] row1Tooltips = {
                 "block.signbuilder.arrow_up", "block.signbuilder.arrow_down", "block.signbuilder.arrow_left",
                 "block.signbuilder.arrow_right", "block.signbuilder.arrow_left_up", "block.signbuilder.arrow_right_up",
@@ -101,68 +112,136 @@ public class BlueprintScreen extends Screen {
                 "block.signbuilder.symbol_dollar", "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl"
         };
 
-        int maxRowLength = Math.max(row1Insert.length, Math.max(row2Insert.length, row3Insert.length));
-        int totalGridWidth = maxRowLength * btnWidth;
-        int startX = centerX - (totalGridWidth / 2);
-
-        this.textField = new EditBox(this.font, startX, centerY - 58, totalGridWidth, 20, Component.literal("Word"));
+        int inputX = this.panelX + 14;
+        int inputWidth = Math.max(0, this.panelWidth - 28);
+        int inputY = this.panelY + scaledY(47);
+        this.textField = new EditBox(this.font, inputX + 7, inputY + scaledY(2), Math.max(0, inputWidth - 14), scaledY(20), Component.literal("Word"));
         this.textField.setMaxLength(32);
         this.textField.setValue(this.initialText);
+        this.textField.setBordered(false);
+        this.textField.setTextColor(SignBuilderUi.TEXT);
+        this.textField.setTextColorUneditable(SignBuilderUi.MUTED);
         this.addRenderableWidget(this.textField);
         this.setInitialFocus(this.textField);
 
-        int row1StartX = centerX - (row1Insert.length * btnWidth / 2);
+        int row1X = this.width / 2 - getSymbolRowWidth(row1Insert.length) / 2;
         for (int i = 0; i < row1Insert.length; i++) {
-            String insert = row1Insert[i];
-            Button.Builder btn = Button.builder(Component.literal(row1Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(row1StartX + (i * btnWidth), centerY - 32, btnWidth, btnHeight)
-                    .tooltip(Tooltip.create(Component.translatable(row1Tooltips[i])));
-            this.addRenderableWidget(btn.build());
+            this.addRenderableWidget(new SymbolButton(row1X + i * (this.symbolSize + SYMBOL_GAP), this.panelY + scaledY(82), this.symbolSize, scaledY(SYMBOL_SIZE), row1Insert[i], row1Tooltips[i]));
         }
 
-        int row2StartX = centerX - (row2Insert.length * btnWidth / 2);
+        int row2X = this.width / 2 - getSymbolRowWidth(row2Insert.length) / 2;
         for (int i = 0; i < row2Insert.length; i++) {
-            String insert = row2Insert[i];
-            Button.Builder btn = Button.builder(Component.literal(row2Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(row2StartX + (i * btnWidth), centerY - 12, btnWidth, btnHeight)
-                    .tooltip(Tooltip.create(Component.translatable(row2Tooltips[i])));
-            this.addRenderableWidget(btn.build());
+            this.addRenderableWidget(new SymbolButton(row2X + i * (this.symbolSize + SYMBOL_GAP), this.panelY + scaledY(107), this.symbolSize, scaledY(SYMBOL_SIZE), row2Insert[i], row2Display[i], row2Tooltips[i]));
         }
 
-        int row3StartX = centerX - (row3Insert.length * btnWidth / 2);
+        int row3X = this.width / 2 - getSymbolRowWidth(row3Insert.length) / 2;
         for (int i = 0; i < row3Insert.length; i++) {
-            String insert = row3Insert[i];
-            Button.Builder btn = Button.builder(Component.literal(row3Display[i]), b -> this.textField.insertText(insert))
-                    .bounds(row3StartX + (i * btnWidth), centerY + 8, btnWidth, btnHeight)
-                    .tooltip(Tooltip.create(Component.translatable(row3Tooltips[i])));
-            this.addRenderableWidget(btn.build());
+            this.addRenderableWidget(new SymbolButton(row3X + i * (this.symbolSize + SYMBOL_GAP), this.panelY + scaledY(132), this.symbolSize, scaledY(SYMBOL_SIZE), row3Insert[i], row3Display[i], row3Tooltips[i]));
         }
 
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.signbuilder.blueprint.undo").withStyle(ChatFormatting.RED), button -> {
+        int buttonY = this.panelY + scaledY(178);
+        int buttonGap = Math.min(5, Math.max(2, contentWidth / 100));
+        Component undoText = Component.translatable("gui.signbuilder.blueprint.undo").withStyle(ChatFormatting.RED);
+        Component sizeText = getSizeButtonText();
+        Component dirText = getDirButtonText();
+        Component backplateText = getBackplateButtonText();
+        Component saveText = Component.translatable("gui.signbuilder.blueprint.save");
+        int[] buttonWidths = {
+                Math.max(42, this.font.width(undoText) + 14),
+                Math.max(50, this.font.width(sizeText) + 16),
+                Math.max(72, this.font.width(dirText) + 18),
+                Math.max(92, this.font.width(backplateText) + 18),
+                Math.max(54, this.font.width(saveText) + 16)
+        };
+        int[] minimumButtonWidths = {36, 42, 58, 74, 42};
+        int[] preferredButtonWidths = {78, 72, 112, 140, 104};
+        int availableButtonWidth = Math.max(0, contentWidth - buttonGap * 4);
+        int totalButtonWidth = 0;
+        for (int width : buttonWidths) totalButtonWidth += width;
+        while (totalButtonWidth > availableButtonWidth) {
+            boolean reduced = false;
+            for (int i = 0; i < buttonWidths.length && totalButtonWidth > availableButtonWidth; i++) {
+                if (buttonWidths[i] > minimumButtonWidths[i]) {
+                    buttonWidths[i]--;
+                    totalButtonWidth--;
+                    reduced = true;
+                }
+            }
+            if (!reduced) break;
+        }
+        while (totalButtonWidth < availableButtonWidth) {
+            boolean expanded = false;
+            for (int i = 0; i < buttonWidths.length && totalButtonWidth < availableButtonWidth; i++) {
+                if (buttonWidths[i] < preferredButtonWidths[i]) {
+                    buttonWidths[i]++;
+                    totalButtonWidth++;
+                    expanded = true;
+                }
+            }
+            if (!expanded) break;
+        }
+        int buttonX = this.panelX + (this.panelWidth - totalButtonWidth - buttonGap * 4) / 2;
+
+        BlueprintActionButton undoButton = new BlueprintActionButton(buttonX, buttonY, buttonWidths[0], undoText, 0xFFE06A70, false, () -> {
             ModMessages.sendToServer(new BlueprintUndoC2SPacket());
             this.onClose();
-        }).bounds(startX, centerY + 34, 42, 20).build());
+        });
+        this.addRenderableWidget(undoButton);
 
-        this.sizeToggleButton = Button.builder(getSizeButtonText(), button -> {
+        buttonX += buttonWidths[0] + buttonGap;
+        BlueprintActionButton sizeButton = new BlueprintActionButton(buttonX, buttonY, buttonWidths[1], sizeText, getSizeAccent(), true, () -> {
             this.size = (this.size % 3) + 1;
-            button.setMessage(getSizeButtonText());
-        }).bounds(startX + 45, centerY + 34, 48, 20).build();
-        this.addRenderableWidget(this.sizeToggleButton);
+            sizeButtonRefresh();
+        });
+        this.addRenderableWidget(sizeButton);
 
-        this.dirToggleButton = Button.builder(getDirButtonText(), button -> {
+        buttonX += buttonWidths[1] + buttonGap;
+        BlueprintActionButton dirButton = new BlueprintActionButton(buttonX, buttonY, buttonWidths[2], dirText, getDirAccent(), this.isVertical, () -> {
             this.isVertical = !this.isVertical;
-            button.setMessage(getDirButtonText());
-        }).bounds(startX + 96, centerY + 34, 76, 20).build();
-        this.addRenderableWidget(this.dirToggleButton);
+            dirButtonRefresh();
+        });
+        this.addRenderableWidget(dirButton);
 
-        this.backplateToggleButton = Button.builder(getBackplateButtonText(), button -> {
+        buttonX += buttonWidths[2] + buttonGap;
+        BlueprintActionButton backplateButton = new BlueprintActionButton(buttonX, buttonY, buttonWidths[3], backplateText, getBackplateAccent(), this.withBackplate, () -> {
             this.withBackplate = !this.withBackplate;
-            button.setMessage(getBackplateButtonText());
-        }).bounds(startX + 175, centerY + 34, 72, 20).tooltip(Tooltip.create(Component.translatable("tooltip.signbuilder.blueprint.backplate_desc"))).build();
-        this.addRenderableWidget(this.backplateToggleButton);
+            backplateButtonRefresh();
+        });
+        backplateButton.setTooltip(Tooltip.create(Component.translatable("tooltip.signbuilder.blueprint.backplate_desc")));
+        this.addRenderableWidget(backplateButton);
 
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.signbuilder.blueprint.save"), button -> this.onClose())
-                .bounds(startX + 250, centerY + 34, totalGridWidth - 250, 20).build());
+        buttonX += buttonWidths[3] + buttonGap;
+        BlueprintActionButton saveButton = new BlueprintActionButton(buttonX, buttonY, buttonWidths[4], saveText, SignBuilderUi.ACCENT, true, this::onClose);
+        this.addRenderableWidget(saveButton);
+
+        this.sizeButton = sizeButton;
+        this.dirButton = dirButton;
+        this.backplateButton = backplateButton;
+    }
+
+    private BlueprintActionButton sizeButton;
+    private BlueprintActionButton dirButton;
+    private BlueprintActionButton backplateButton;
+
+    private void sizeButtonRefresh() {
+        this.sizeButton.setMessage(getSizeButtonText());
+        this.sizeButton.setAccentColor(getSizeAccent());
+    }
+
+    private void dirButtonRefresh() {
+        this.dirButton.setMessage(getDirButtonText());
+        this.dirButton.setAccentColor(getDirAccent());
+        this.dirButton.setActive(this.isVertical);
+    }
+
+    private void backplateButtonRefresh() {
+        this.backplateButton.setMessage(getBackplateButtonText());
+        this.backplateButton.setAccentColor(getBackplateAccent());
+        this.backplateButton.setActive(this.withBackplate);
+    }
+
+    private int getSymbolRowWidth(int count) {
+        return count * this.symbolSize + Math.max(0, count - 1) * SYMBOL_GAP;
     }
 
     private Component getSizeButtonText() {
@@ -179,22 +258,65 @@ public class BlueprintScreen extends Screen {
         return Component.literal(label).withStyle(color);
     }
 
+    private int getSizeAccent() {
+        return switch (this.size) {
+            case 3 -> 0xFFCE8AF1;
+            case 2 -> 0xFFFFC857;
+            default -> 0xFF57C8D9;
+        };
+    }
+
     private Component getDirButtonText() {
         return Component.literal(this.isVertical ? "↓ " : "→ ")
                 .withStyle(this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN)
                 .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal"));
     }
 
+    private int getDirAccent() {
+        return this.isVertical ? 0xFFE5C85E : 0xFF79D67D;
+    }
+
     private Component getBackplateButtonText() {
-        return Component.literal("🛡 ")
+        return Component.translatable("block.signbuilder.backplate")
+                .append(Component.literal(": "))
                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY));
+    }
+
+    private int getBackplateAccent() {
+        return this.withBackplate ? 0xFF79D67D : 0xFF778391;
+    }
+
+    private Component getHeaderDetail() {
+        return Component.literal((this.size == 3 ? "3x3" : this.size == 2 ? "2x2" : "1x1") + "  ·  ")
+                .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal"))
+                .append(Component.literal("  ·  "))
+                .append(Component.translatable("block.signbuilder.backplate"))
+                .append(Component.literal(": "))
+                .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off"));
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.blueprint.prompt"), this.width / 2, this.height / 2 - 74, 0x00FFFF);
+        SignBuilderUi.drawPanel(guiGraphics, this.panelX, this.panelY, this.panelWidth, this.panelHeight);
+        SignBuilderUi.drawHeader(guiGraphics, this.font, this.panelX + 1, this.panelY + 1, this.panelWidth - 2, this.title, getHeaderDetail());
+
+        int contentX = this.panelX + 14;
+        int contentWidth = Math.max(0, this.panelWidth - 28);
+        Component prompt = Component.translatable("gui.signbuilder.blueprint.prompt");
+        SignBuilderUi.drawSectionLabel(guiGraphics, this.font, prompt, contentX, this.panelY + scaledY(31), contentWidth);
+
+        String characterCount = this.textField.getValue().length() + "/32";
+        guiGraphics.drawString(this.font, characterCount, contentX + contentWidth - this.font.width(characterCount), this.panelY + scaledY(31), SignBuilderUi.MUTED, false);
+
+        int inputX = contentX;
+        int inputY = this.panelY + scaledY(47);
+        guiGraphics.fillGradient(inputX, inputY, inputX + contentWidth, inputY + scaledY(24), 0xFF141A22, 0xFF1B232D);
+        guiGraphics.renderOutline(inputX, inputY, contentWidth, scaledY(24), this.textField.isFocused() ? SignBuilderUi.ACCENT : 0xFF596675);
+        guiGraphics.renderOutline(inputX + 2, inputY + scaledY(2), contentWidth - 4, scaledY(20), 0x443F4B5A);
+
+        guiGraphics.fill(contentX, this.panelY + scaledY(164), contentX + contentWidth, this.panelY + scaledY(165), 0x553B4654);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
@@ -243,7 +365,7 @@ public class BlueprintScreen extends Screen {
                                 .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                                         .withStyle(this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
-                                .append(Component.literal("[🛡 ").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal("[▣ ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))
                                 .append(Component.literal("]").withStyle(ChatFormatting.GRAY)),
@@ -258,5 +380,91 @@ public class BlueprintScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    private int scaledY(int value) {
+        return Math.max(1, Math.round(value * this.layoutScaleY));
+    }
+
+    private class SymbolButton extends AbstractButton {
+        private final String insert;
+
+        private SymbolButton(int x, int y, int width, int height, String insert, String tooltipKey) {
+            this(x, y, width, height, insert, insert, tooltipKey);
+        }
+
+        private SymbolButton(int x, int y, int width, int height, String insert, String display, String tooltipKey) {
+            super(x, y, width, height, Component.literal(display));
+            this.insert = insert;
+            this.setTooltip(Tooltip.create(Component.translatable(tooltipKey)));
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            int x = this.getX();
+            int y = this.getY();
+            boolean hovered = this.isHoveredOrFocused();
+            graphics.fillGradient(x, y, x + this.width, y + this.height,
+                    hovered ? 0xFF465260 : 0xFF303844,
+                    hovered ? 0xFF29323D : 0xFF1C222A);
+            graphics.renderOutline(x, y, this.width, this.height, hovered ? SignBuilderUi.ACCENT : 0xFF657181);
+            graphics.drawCenteredString(BlueprintScreen.this.font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+        }
+
+        @Override
+        public void onPress() {
+            BlueprintScreen.this.textField.insertText(this.insert);
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            this.defaultButtonNarrationText(output);
+        }
+    }
+
+    private class BlueprintActionButton extends AbstractButton {
+        private final Runnable action;
+        private int accentColor;
+        private boolean active;
+
+        private BlueprintActionButton(int x, int y, int width, Component label, int accentColor, boolean active, Runnable action) {
+            super(x, y, width, BlueprintScreen.this.scaledY(24), label);
+            this.action = action;
+            this.accentColor = accentColor;
+            this.active = active;
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            int x = this.getX();
+            int y = this.getY();
+            boolean highlighted = this.isHoveredOrFocused() || this.active;
+            graphics.fillGradient(x, y, x + this.width, y + this.height,
+                    this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844,
+                    0xFF1C222A);
+            graphics.renderOutline(x, y, this.width, this.height, highlighted ? this.accentColor : 0xFF657181);
+            if (this.active || this.isHoveredOrFocused()) {
+                graphics.fill(x + 1, y + 1, x + 3, y + this.height - 1, this.accentColor);
+            }
+            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+        }
+
+        private void setAccentColor(int accentColor) {
+            this.accentColor = accentColor;
+        }
+
+        private void setActive(boolean active) {
+            this.active = active;
+        }
+
+        @Override
+        public void onPress() {
+            this.action.run();
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            this.defaultButtonNarrationText(output);
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.boran.signbuilder.item;
 import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
+import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -123,10 +124,15 @@ public class PaintBrushItem extends Item {
         BlockState targetState = level.getBlockState(targetPos);
 
         Direction clickedFace = context.getClickedFace();
-        boolean isBackFace = determineIfBackFace(targetState, clickedFace, player);
+        boolean isBackFace = determineIfBackFace(targetState, clickedFace, player, letterEntity.getFacingRotation());
+        boolean targetBackGlyph = isLetterBlock
+                && letterEntity.hasBackplate()
+                && isBackFace
+                && (player == null || !player.isShiftKeyDown())
+                && !letterEntity.getBackGlyph().isEmpty();
 
         boolean targetBackplate = isBackplateBlock;
-        if (isLetterBlock && letterEntity.hasBackplate()) {
+        if (isLetterBlock && letterEntity.hasBackplate() && !targetBackGlyph) {
             if (player != null && player.isShiftKeyDown()) {
                 targetBackplate = true;
             } else if (isBackFace) {
@@ -152,7 +158,9 @@ public class PaintBrushItem extends Item {
         SignMaterial newMaterial = hasMaterial ? parseMaterial(tag.getString("SelectedMaterial")) : null;
 
         SignMaterial currentMat;
-        if (targetBackplate) {
+        if (targetBackGlyph) {
+            currentMat = getBackGlyphMaterial(letterEntity.getBackGlyph());
+        } else if (targetBackplate) {
             currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
         } else {
             currentMat = letterEntity.getSavedMaterial();
@@ -163,7 +171,7 @@ public class PaintBrushItem extends Item {
         }
 
         if (isSmartFill) {
-            applyColorToConnected(level, targetPos, player, stack, context.getHand(), selectedColor, newMaterial, hasMaterial, targetBackplate, isBackFace);
+            applyColorToConnected(level, targetPos, player, stack, context.getHand(), selectedColor, newMaterial, hasMaterial, targetBackplate, targetBackGlyph, isBackFace);
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
@@ -178,22 +186,27 @@ public class PaintBrushItem extends Item {
         }
 
         BlockState newState = targetState;
-        if (!targetBackplate && hasMaterial && targetState.hasProperty(LetterBlock.MATERIAL)) {
+        if (!targetBackplate && !targetBackGlyph && hasMaterial && targetState.hasProperty(LetterBlock.MATERIAL)) {
             newState = targetState.setValue(LetterBlock.MATERIAL, newMaterial);
         }
 
         BlockPos[] affectedPositions = (size == 3)
-                ? LetterBlock.get3x3BlockPositions(targetPos, targetState)
-                : (size == 2 ? LetterBlock.getBigBlockPositions(targetPos, targetState) : new BlockPos[] { targetPos });
+                ? LetterBlock.get3x3BlockPositions(targetPos, targetState, letterEntity.getFacingRotation())
+                : (size == 2 ? LetterBlock.getBigBlockPositions(targetPos, targetState, letterEntity.getFacingRotation()) : new BlockPos[] { targetPos });
 
         if (!level.isClientSide()) {
-            for (BlockPos p : affectedPositions) {
-                if (newState != targetState) level.setBlock(p, newState, 3);
-                BlockEntity be = level.getBlockEntity(p);
-                if (be instanceof LetterBlockEntity lbe) {
-                    applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+            if (targetBackGlyph) {
+                applyToBackGlyph(letterEntity, newMaterial, selectedColor);
+                level.sendBlockUpdated(targetPos, targetState, targetState, 3);
+            } else {
+                for (BlockPos p : affectedPositions) {
+                    if (newState != targetState) level.setBlock(p, newState, 3);
+                    BlockEntity be = level.getBlockEntity(p);
+                    if (be instanceof LetterBlockEntity lbe) {
+                        applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+                    }
+                    level.sendBlockUpdated(p, targetState, newState, 3);
                 }
-                level.sendBlockUpdated(p, targetState, newState, 3);
             }
 
             if (player != null) {
@@ -210,26 +223,20 @@ public class PaintBrushItem extends Item {
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    private boolean determineIfBackFace(BlockState state, Direction clickedFace, @Nullable Player player) {
-        Direction plateFrontNormal;
-        if (state.getBlock() instanceof BackplateBlock) {
-            plateFrontNormal = state.getValue(BackplateBlock.FACING);
-        } else {
+    private boolean determineIfBackFace(BlockState state, Direction clickedFace, @Nullable Player player, int rotation) {
+        int frontRotation = rotation;
+        if (!(state.getBlock() instanceof BackplateBlock)) {
             AttachFace face = state.hasProperty(LetterBlock.FACE) ? state.getValue(LetterBlock.FACE) : AttachFace.WALL;
-            Direction facing = state.hasProperty(LetterBlock.FACING) ? state.getValue(LetterBlock.FACING) : Direction.NORTH;
-            plateFrontNormal = (face == AttachFace.FLOOR) ? facing.getCounterClockWise() : facing;
+            if (face != AttachFace.WALL) {
+                frontRotation = Math.floorMod(rotation - 2, 8);
+            }
         }
-
-        if (clickedFace == plateFrontNormal) {
-            return false;
-        }
-        if (clickedFace == plateFrontNormal.getOpposite()) {
-            return true;
-        }
-
+        Direction frontDirection = SignRotation.cardinalDirection(frontRotation);
+        if (frontDirection != null && clickedFace == frontDirection) return false;
+        if (frontDirection != null && clickedFace == frontDirection.getOpposite()) return true;
         if (player != null) {
             Vec3 look = player.getLookAngle();
-            double dot = look.x * plateFrontNormal.getStepX() + look.z * plateFrontNormal.getStepZ();
+            double dot = look.x * SignRotation.facingX(frontRotation) + look.z * SignRotation.facingZ(frontRotation);
             return dot >= 0;
         }
         return false;
@@ -279,7 +286,38 @@ public class PaintBrushItem extends Item {
         entity.sync();
     }
 
-    private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, @Nullable SignMaterial newMaterial, boolean hasMaterial, boolean targetBackplate, boolean isBackFace) {
+    private SignMaterial getBackGlyphMaterial(ItemStack glyph) {
+        CompoundTag blockEntityTag = glyph.getTagElement("BlockEntityTag");
+        if (blockEntityTag != null && blockEntityTag.contains("SavedMaterial")) {
+            return parseMaterial(blockEntityTag.getString("SavedMaterial"));
+        }
+        CompoundTag stateTag = glyph.getTagElement("BlockStateTag");
+        return stateTag != null && stateTag.contains("material") ? parseMaterial(stateTag.getString("material")) : SignMaterial.DEFAULT;
+    }
+
+    private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
+        ItemStack glyph = entity.getBackGlyph().copy();
+        if (glyph.isEmpty()) return;
+
+        CompoundTag blockEntityTag = glyph.getOrCreateTagElement("BlockEntityTag");
+        if (newMaterial != null) {
+            blockEntityTag.putString("SavedMaterial", newMaterial.name());
+            CompoundTag stateTag = glyph.getOrCreateTagElement("BlockStateTag");
+            if (newMaterial == SignMaterial.DEFAULT) stateTag.remove("material");
+            else stateTag.putString("material", newMaterial.getSerializedName());
+        }
+        if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+            if (selectedColor == -1) {
+                blockEntityTag.putBoolean("IsRainbow", true);
+            } else {
+                blockEntityTag.putBoolean("IsRainbow", false);
+                blockEntityTag.putInt("RGBColor", getActualHexColor(selectedColor));
+            }
+        }
+        entity.setBackGlyph(glyph);
+    }
+
+    private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, @Nullable SignMaterial newMaterial, boolean hasMaterial, boolean targetBackplate, boolean targetBackGlyph, boolean isBackFace) {
         List<BlockPos> targets = new ArrayList<>();
         Queue<BlockPos> queue = new LinkedList<>();
         Set<BlockPos> visited = new HashSet<>();
@@ -330,7 +368,10 @@ public class PaintBrushItem extends Item {
             BlockState currentState = level.getBlockState(effectivePos);
 
             SignMaterial currentMat;
-            if (targetBackplate) {
+            if (targetBackGlyph) {
+                if (letterEntity.getBackGlyph().isEmpty()) continue;
+                currentMat = getBackGlyphMaterial(letterEntity.getBackGlyph());
+            } else if (targetBackplate) {
                 currentMat = isBackFace ? letterEntity.getBackplateBackMaterial() : letterEntity.getBackplateFrontMaterial();
             } else {
                 currentMat = letterEntity.getSavedMaterial();
@@ -351,22 +392,27 @@ public class PaintBrushItem extends Item {
             }
 
             BlockState newState = currentState;
-            if (!targetBackplate && hasMaterial && currentState.hasProperty(LetterBlock.MATERIAL)) {
+            if (!targetBackplate && !targetBackGlyph && hasMaterial && currentState.hasProperty(LetterBlock.MATERIAL)) {
                 newState = currentState.setValue(LetterBlock.MATERIAL, newMaterial);
             }
 
             BlockPos[] multiPositions = (size == 3)
-                    ? LetterBlock.get3x3BlockPositions(effectivePos, currentState)
-                    : (size == 2 ? LetterBlock.getBigBlockPositions(effectivePos, currentState) : new BlockPos[] { effectivePos });
+                    ? LetterBlock.get3x3BlockPositions(effectivePos, currentState, letterEntity.getFacingRotation())
+                    : (size == 2 ? LetterBlock.getBigBlockPositions(effectivePos, currentState, letterEntity.getFacingRotation()) : new BlockPos[] { effectivePos });
 
             if (!level.isClientSide()) {
-                for (BlockPos p : multiPositions) {
-                    if (newState != currentState) level.setBlock(p, newState, 3);
-                    BlockEntity be = level.getBlockEntity(p);
-                    if (be instanceof LetterBlockEntity lbe) {
-                        applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+                if (targetBackGlyph) {
+                    applyToBackGlyph(letterEntity, newMaterial, selectedColor);
+                    level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
+                } else {
+                    for (BlockPos p : multiPositions) {
+                        if (newState != currentState) level.setBlock(p, newState, 3);
+                        BlockEntity be = level.getBlockEntity(p);
+                        if (be instanceof LetterBlockEntity lbe) {
+                            applyToEntity(lbe, targetBackplate, isBackFace, newMaterial, selectedColor);
+                        }
+                        level.sendBlockUpdated(p, currentState, newState, 3);
                     }
-                    level.sendBlockUpdated(p, currentState, newState, 3);
                 }
                 blocksPainted++;
             } else {

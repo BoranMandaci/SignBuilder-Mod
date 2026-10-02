@@ -1,6 +1,7 @@
 package com.boran.signbuilder.block.entity;
 
 import com.boran.signbuilder.block.LetterBlock;
+import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,6 +23,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -50,9 +53,12 @@ public class LetterBlockEntity extends BlockEntity {
     private int backplateBackColor = 0xFFFFFF;
     private boolean backplateFrontRainbow = false;
     private boolean backplateBackRainbow = false;
+    private ItemStack backGlyph = ItemStack.EMPTY;
 
     private int size = 1;
+    private int facingRotation = -1;
     private boolean isDummy = false;
+    private long lastMasterLookupTime = Long.MIN_VALUE;
     @Nullable
     private BlockPos masterPos = null;
 
@@ -74,6 +80,63 @@ public class LetterBlockEntity extends BlockEntity {
 
     public int getSize() { return this.size; }
     public void setSize(int size) { this.size = size; setChanged(); sync(); }
+
+    public int getFacingRotation() {
+        BlockState state = getBlockState();
+        if (state != null
+                && state.hasProperty(BlockStateProperties.ATTACH_FACE)
+                && state.getValue(BlockStateProperties.ATTACH_FACE) == AttachFace.WALL
+                && state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            return SignRotation.fromDirection(state.getValue(BlockStateProperties.HORIZONTAL_FACING));
+        }
+        if (this.facingRotation >= 0) {
+            return this.facingRotation;
+        }
+        return state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)
+                ? SignRotation.fromDirection(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING))
+                : 0;
+    }
+
+    public void setFacingRotation(int rotation) {
+        int normalized = Math.floorMod(rotation, 8);
+        if (this.facingRotation != normalized) {
+            this.facingRotation = normalized;
+            setChanged();
+            sync();
+        }
+    }
+
+    public void setMultiblockMaster(int size) {
+        this.size = size;
+        this.isDummy = false;
+        this.masterPos = null;
+        setChanged();
+        sync();
+    }
+
+    public void setMultiblockDummy(BlockPos masterPos) {
+        this.size = 1;
+        this.isDummy = true;
+        this.masterPos = masterPos.immutable();
+        setChanged();
+        sync();
+    }
+
+    public boolean isLinkedMultiblockPart() {
+        if (this.isDummy || this.masterPos != null) {
+            return true;
+        }
+        if (this.level == null || this.size != 1) {
+            return false;
+        }
+
+        long gameTime = this.level.getGameTime();
+        if (this.lastMasterLookupTime != Long.MIN_VALUE && gameTime < this.lastMasterLookupTime + 20) {
+            return false;
+        }
+        this.lastMasterLookupTime = gameTime;
+        return LetterBlock.findMaster(this.level, this.worldPosition, this) != this;
+    }
 
     public boolean isBig() { return this.size == 2; }
     public void setBig(boolean big) { this.size = big ? 2 : 1; setChanged(); sync(); }
@@ -123,6 +186,13 @@ public class LetterBlockEntity extends BlockEntity {
 
     public boolean hasBackplate() { return this.hasBackplate; }
     public void setHasBackplate(boolean hasBackplate) { this.hasBackplate = hasBackplate; setChanged(); sync(); }
+
+    public ItemStack getBackGlyph() { return this.backGlyph; }
+    public void setBackGlyph(ItemStack stack) {
+        this.backGlyph = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        setChanged();
+        sync();
+    }
 
     public SignMaterial getBackplateFrontMaterial() { return backplateFrontMaterial; }
     public void setBackplateFrontMaterial(SignMaterial mat) { this.backplateFrontMaterial = mat; setChanged(); sync(); }
@@ -324,8 +394,8 @@ public class LetterBlockEntity extends BlockEntity {
 
             if (this.size > 1) {
                 BlockPos[] positions = (this.size == 3)
-                        ? LetterBlock.get3x3BlockPositions(this.worldPosition, getBlockState())
-                        : LetterBlock.getBigBlockPositions(this.worldPosition, getBlockState());
+                        ? LetterBlock.get3x3BlockPositions(this.worldPosition, getBlockState(), getFacingRotation())
+                        : LetterBlock.getBigBlockPositions(this.worldPosition, getBlockState(), getFacingRotation());
 
                 for (BlockPos p : positions) {
                     if (!p.equals(this.worldPosition)) {
@@ -399,8 +469,10 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putInt("BPBackColor", this.backplateBackColor);
         tag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
         tag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
+        if (!this.backGlyph.isEmpty()) tag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
 
         tag.putInt("Size", this.size);
+        if (this.facingRotation >= 0) tag.putInt("FacingRotation", this.facingRotation);
         tag.putBoolean("IsBig", this.size == 2);
         tag.putBoolean("IsDummy", this.isDummy);
         if (this.masterPos != null) {
@@ -441,6 +513,7 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("BPBackColor")) this.backplateBackColor = tag.getInt("BPBackColor");
         if (tag.contains("BPFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BPFrontRainbow");
         if (tag.contains("BPBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BPBackRainbow");
+        this.backGlyph = tag.contains("BackGlyph", 10) ? ItemStack.of(tag.getCompound("BackGlyph")) : ItemStack.EMPTY;
 
         if (tag.contains("Size")) {
             this.size = tag.getInt("Size");
@@ -449,8 +522,12 @@ public class LetterBlockEntity extends BlockEntity {
         } else {
             this.size = 1;
         }
+        this.facingRotation = tag.contains("FacingRotation")
+                ? Math.floorMod(tag.getInt("FacingRotation"), 8)
+                : -1;
 
-        this.isDummy = tag.getBoolean("IsDummy");
+        this.isDummy = tag.getBoolean("IsDummy") || tag.contains("MasterPos");
+        this.lastMasterLookupTime = Long.MIN_VALUE;
         if (tag.contains("MasterPos")) {
             this.masterPos = NbtUtils.readBlockPos(tag.getCompound("MasterPos"));
         } else {
@@ -495,15 +572,18 @@ public class LetterBlockEntity extends BlockEntity {
                 || this.detectsAnimals
                 || (this.savedMaterial != SignMaterial.DEFAULT)
                 || this.hasBackplate
+                || !this.backGlyph.isEmpty()
                 || (this.buttonMode != 0)
                 || this.syncWord
-                || !this.pinCode.isEmpty();
+                || !this.pinCode.isEmpty()
+                || isDiagonalFacing(state);
 
         if (!isCustomized) {
             return stack;
         }
 
         CompoundTag beTag = new CompoundTag();
+        if (isDiagonalFacing(state)) beTag.putInt("FacingRotation", getFacingRotation());
 
         if (this.rgbColor != 0xFFFFFF) beTag.putInt("RGBColor", this.rgbColor);
         if (this.isRainbow) beTag.putBoolean("IsRainbow", this.isRainbow);
@@ -524,6 +604,7 @@ public class LetterBlockEntity extends BlockEntity {
             if (this.backplateBackColor != 0xFFFFFF) beTag.putInt("BPBackColor", this.backplateBackColor);
             if (this.backplateFrontRainbow) beTag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
             if (this.backplateBackRainbow) beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
+            if (!this.backGlyph.isEmpty()) beTag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
         }
 
         if (this.buttonMode != 0) beTag.putInt("ButtonMode", this.buttonMode);
@@ -541,6 +622,14 @@ public class LetterBlockEntity extends BlockEntity {
         return stack;
     }
 
+    private boolean isDiagonalFacing(BlockState state) {
+        if (!state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            return false;
+        }
+        int cardinalRotation = SignRotation.fromDirection(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING));
+        return getFacingRotation() != cardinalRotation;
+    }
+
     public static int getActualHexColor(int colorValue) {
         if (colorValue > 15 || colorValue < -1) return colorValue;
         return switch (colorValue) {
@@ -552,6 +641,10 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
+        if (entity.isDummy()) {
+            return;
+        }
+
         if (!level.isClientSide()) {
             if (entity.pressTicks > 0) {
                 entity.pressTicks--;
@@ -621,7 +714,7 @@ public class LetterBlockEntity extends BlockEntity {
                     case 3: shouldGlow = Math.sin((time / 6.0) - ((pos.getX() + pos.getY() + pos.getZ()) * 0.8)) > 0.0; break;
                     case 4: shouldGlow = (time % 60) < 30; break;
                     case 5:
-                        if (time % 10 == 0) {
+                        if (Math.floorMod(time + pos.asLong(), 10L) == 0) {
                             AABB bounds = new AABB(pos).inflate(entity.getSize() == 3 ? 10.0 : (entity.getSize() == 2 ? 8.0 : 6.0));
                             shouldGlow = !level.getEntitiesOfClass(LivingEntity.class, bounds,
                                     t -> t instanceof Player ||
@@ -630,7 +723,7 @@ public class LetterBlockEntity extends BlockEntity {
                         } else shouldGlow = isCurrentlyGlowing; break;
                     case 6: shouldGlow = (time % 20 == 0) ? level.isNight() : isCurrentlyGlowing; break;
                     case 7:
-                        if (time % 10 == 0) {
+                        if (Math.floorMod(time + pos.asLong(), 10L) == 0) {
                             entity.isAudioPlaying = false;
                             for (BlockPos p : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
                                 if (level.getBlockEntity(p) instanceof JukeboxBlockEntity jbe) {
@@ -642,7 +735,7 @@ public class LetterBlockEntity extends BlockEntity {
                         break;
                     case 8: shouldGlow = (time % 6) < 3; break;
                     case 9:
-                        if (time % 5 == 0) {
+                        if (Math.floorMod(time + pos.asLong(), 5L) == 0) {
                             AABB bounds = new AABB(pos);
                             if (entity.getSize() == 3) bounds = bounds.inflate(2.0);
                             else if (entity.getSize() == 2) bounds = bounds.inflate(1.0);

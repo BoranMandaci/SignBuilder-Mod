@@ -18,9 +18,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MaterialBakedModel implements BakedModel {
     private final BakedModel originalModel;
@@ -28,7 +29,14 @@ public class MaterialBakedModel implements BakedModel {
     private final SignMaterial backMat;
     private final boolean isLetter;
 
-    private static final Map<String, List<BakedQuad>> GLOBAL_QUAD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<QuadCacheKey, List<BakedQuad>> GLOBAL_QUAD_CACHE = Collections.synchronizedMap(new LinkedHashMap<>(128, 0.75F, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<QuadCacheKey, List<BakedQuad>> eldest) {
+            return size() > 1024;
+        }
+    });
+
+    private record QuadCacheKey(BakedModel model, SignMaterial front, SignMaterial back, Direction direction, boolean letter) {}
 
     public MaterialBakedModel(BakedModel originalModel) {
         this(originalModel, SignMaterial.DEFAULT, SignMaterial.DEFAULT, false);
@@ -47,6 +55,10 @@ public class MaterialBakedModel implements BakedModel {
         this.frontMat = frontMat;
         this.backMat = backMat;
         this.isLetter = isLetter;
+    }
+
+    BakedModel originalModel() {
+        return originalModel;
     }
 
     @Override
@@ -71,10 +83,7 @@ public class MaterialBakedModel implements BakedModel {
             return originalQuads;
         }
 
-        String cacheKey = System.identityHashCode(originalModel) + "_"
-                + currentFMat.ordinal() + "_" + currentBMat.ordinal() + "_"
-                + (direction != null ? direction.get3DDataValue() : -1);
-
+        QuadCacheKey cacheKey = new QuadCacheKey(originalModel, currentFMat, currentBMat, direction, isLetter);
         SignMaterial activeFront = currentFMat;
         return GLOBAL_QUAD_CACHE.computeIfAbsent(cacheKey, k -> remapQuads(originalQuads, activeFront, currentBMat));
     }

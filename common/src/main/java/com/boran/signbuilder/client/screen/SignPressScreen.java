@@ -167,14 +167,10 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        guiGraphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFF222427);
+        SignBuilderUi.drawPanel(guiGraphics, leftPos, topPos, imageWidth, imageHeight);
 
-        guiGraphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + 2, 0xFFFFCC00);
-        guiGraphics.fill(leftPos, topPos + imageHeight - 2, leftPos + imageWidth, topPos + imageHeight, 0xFFFFCC00);
-        guiGraphics.fill(leftPos, topPos, leftPos + 2, topPos + imageHeight, 0xFFFFCC00);
-        guiGraphics.fill(leftPos + imageWidth - 2, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFFFFCC00);
-
-        guiGraphics.fill(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + 14, 0xFF141517);
+        guiGraphics.fillGradient(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + 14, 0xFF343F4E, 0xFF252D38);
+        guiGraphics.fill(leftPos + 4, topPos + 4, leftPos + 6, topPos + 14, SignBuilderUi.ACCENT);
 
         drawDarkSlot(guiGraphics, leftPos + 25, topPos + 34, 18, 18);
         drawDarkSlot(guiGraphics, leftPos + 138, topPos + 29, 26, 26);
@@ -193,15 +189,15 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                 String blockName = allBlocks.get(blockIndex);
 
                 if (blockName.equals(this.selectedBlock)) {
-                    guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0x60FFCC00);
-                    guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF141517);
+                    guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0x88FFC857);
+                    guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF1B222B);
                 }
 
                 ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
                 guiGraphics.renderItem(itemStack, slotX + 1, slotY + 1);
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {
-                    guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0x40FFFFFF);
+                    guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0x38FFFFFF);
                 }
             }
         }
@@ -209,17 +205,17 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
         int scrollX = leftPos + 122;
         int scrollY = topPos + 16;
 
-        guiGraphics.fill(scrollX, scrollY, scrollX + 6, scrollY + 54, 0xFF111214);
+        guiGraphics.fill(scrollX, scrollY, scrollX + 6, scrollY + 54, 0xFF111820);
 
         if (this.isScrollBarActive()) {
             int thumbHeight = 15;
             int thumbY = scrollY + (int) ((54 - thumbHeight) * this.scrollOffs);
 
-            guiGraphics.fill(scrollX, thumbY, scrollX + 6, thumbY + thumbHeight, 0xFF8B8B8B);
-            guiGraphics.fill(scrollX, thumbY, scrollX + 5, thumbY + 1, 0xFFD4D4D4);
-            guiGraphics.fill(scrollX, thumbY, scrollX + 1, thumbY + thumbHeight, 0xFFD4D4D4);
-            guiGraphics.fill(scrollX + 5, thumbY + 1, scrollX + 6, thumbY + thumbHeight, 0xFF373737);
-            guiGraphics.fill(scrollX + 1, thumbY + thumbHeight - 1, scrollX + 6, thumbY + thumbHeight, 0xFF373737);
+            guiGraphics.fill(scrollX, thumbY, scrollX + 6, thumbY + thumbHeight, 0xFFB88C3F);
+            guiGraphics.fill(scrollX, thumbY, scrollX + 5, thumbY + 1, 0xFFFFDE91);
+            guiGraphics.fill(scrollX, thumbY, scrollX + 1, thumbY + thumbHeight, 0xFFFFDE91);
+            guiGraphics.fill(scrollX + 5, thumbY + 1, scrollX + 6, thumbY + thumbHeight, 0xFF674D24);
+            guiGraphics.fill(scrollX + 1, thumbY + thumbHeight - 1, scrollX + 6, thumbY + thumbHeight, 0xFF674D24);
 
             guiGraphics.fill(scrollX + 2, thumbY + 5, scrollX + 5, thumbY + 6, 0xFF4A4D53);
             guiGraphics.fill(scrollX + 2, thumbY + 7, scrollX + 5, thumbY + 8, 0xFF4A4D53);
@@ -237,16 +233,16 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
     }
 
     private void drawDarkSlot(GuiGraphics guiGraphics, int x, int y, int width, int height) {
-        guiGraphics.fill(x, y, x + width, y + height, 0xFF111214);
-        guiGraphics.fill(x, y, x + width, y + 1, 0xFF050505);
-        guiGraphics.fill(x, y, x + 1, y + height, 0xFF050505);
-        guiGraphics.fill(x, y + height - 1, x + width, y + height, 0xFF4A4D53);
-        guiGraphics.fill(x + width - 1, y, x + width, y + height, 0xFF4A4D53);
+        guiGraphics.fill(x, y, x + width, y + height, 0xFF171D25);
+        guiGraphics.fill(x, y, x + width, y + 1, 0xFF0C1015);
+        guiGraphics.fill(x, y, x + 1, y + height, 0xFF0C1015);
+        guiGraphics.fill(x, y + height - 1, x + width, y + height, 0xFF566273);
+        guiGraphics.fill(x + width - 1, y, x + width, y + height, 0xFF566273);
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, this.title, 8, 6, 0xFFFFCC00, false);
-        guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 73, 0xFFAAAAAA, false);
+        guiGraphics.drawString(this.font, this.title, 8, 6, SignBuilderUi.TEXT, false);
+        guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 73, SignBuilderUi.MUTED, false);
     }
 }

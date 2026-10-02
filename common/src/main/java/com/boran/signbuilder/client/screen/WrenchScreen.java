@@ -42,6 +42,7 @@ public class WrenchScreen extends Screen {
     private int panelWidth = 236;
     private int rowHeight = 18;
     private int panelHeight;
+    private float redstoneScale = 1.0F;
 
     public WrenchScreen(int currentMode, boolean detectsMonsters, boolean detectsAnimals) {
         super(Component.translatable("gui.signbuilder.wrench.title"));
@@ -54,14 +55,17 @@ public class WrenchScreen extends Screen {
     protected void init() {
         super.init();
 
+        panelWidth = Math.min(236, Math.max(0, this.width - 24));
         rowHeight = 18;
         panelHeight = 26 + ((MOD_KEYS.length + 1) * rowHeight) + 10;
-        int maxAvailableHeight = this.height - 35;
+        int maxAvailableHeight = this.height - 54;
 
-        while (panelHeight > maxAvailableHeight && rowHeight > 12) {
+        while (panelHeight > maxAvailableHeight && rowHeight > 8) {
             rowHeight--;
             panelHeight = 26 + ((MOD_KEYS.length + 1) * rowHeight) + 10;
         }
+        redstoneScale = Math.max(0.45F, Math.min(1.0F, (this.height - 64.0F) / 156.0F));
+        panelHeight = Math.max(panelHeight, 24 + scaledRedstone(156));
 
         if (this.minecraft != null && this.minecraft.player != null) {
             ItemStack mainItem = this.minecraft.player.getMainHandItem();
@@ -84,10 +88,10 @@ public class WrenchScreen extends Screen {
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);
-        int startY = Math.max(18, (this.height - panelHeight) / 2);
+        int startY = getPanelTop();
         int contentStartY = startY + 24;
 
-        this.pinInput = new EditBox(this.font, startX + 12, contentStartY + 104, panelWidth - 64, 16, Component.translatable("gui.signbuilder.wrench.pin.title"));
+        this.pinInput = new EditBox(this.font, startX + 12, contentStartY + scaledRedstone(104), Math.max(24, panelWidth - 64), scaledRedstone(16), Component.translatable("gui.signbuilder.wrench.pin.title"));
         this.pinInput.setMaxLength(16);
         this.pinInput.setValue(this.pinCode);
         this.pinInput.setResponder(text -> {
@@ -104,10 +108,10 @@ public class WrenchScreen extends Screen {
             this.pinInput.setVisible(visible);
             this.pinInput.setEditable(visible);
             int startX = (this.width - panelWidth) / 2;
-            int startY = Math.max(18, (this.height - panelHeight) / 2);
+            int startY = getPanelTop();
             int contentStartY = startY + 24;
             this.pinInput.setX(startX + 12);
-            this.pinInput.setY(contentStartY + 104);
+            this.pinInput.setY(contentStartY + scaledRedstone(104));
         }
     }
 
@@ -135,15 +139,11 @@ public class WrenchScreen extends Screen {
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);
-        int startY = Math.max(18, (this.height - panelHeight) / 2);
+        int startY = getPanelTop();
 
-        int titleY = Math.max(4, startY - 14);
-        guiGraphics.drawCenteredString(this.font, this.title, centerX, titleY, 0xFFD700);
-
-        guiGraphics.fill(startX, startY, startX + panelWidth, startY + panelHeight, 0xEE1A1A1A);
-
-        int borderColor = 0x88FFFFFF;
-        guiGraphics.renderOutline(startX - 1, startY - 1, panelWidth + 2, panelHeight + 2, borderColor);
+        SignBuilderUi.drawPanel(guiGraphics, startX, startY, panelWidth, panelHeight);
+        SignBuilderUi.drawHeader(guiGraphics, this.font, startX, Math.max(2, startY - 25), panelWidth, this.title,
+                Component.translatable(activeTab == 0 ? "gui.signbuilder.wrench.tab.neon" : "gui.signbuilder.wrench.tab.redstone"));
 
         drawSmartFillIndicator(guiGraphics, startX + panelWidth - 12, startY + 8, mouseX, mouseY);
 
@@ -178,14 +178,14 @@ public class WrenchScreen extends Screen {
         boolean neonHover = mouseX >= neonX && mouseX <= neonX + tabWidth && mouseY >= tabY && mouseY <= tabY + tabHeight;
         boolean redstoneHover = mouseX >= redstoneX && mouseX <= redstoneX + tabWidth && mouseY >= tabY && mouseY <= tabY + tabHeight;
 
-        int neonBg = (activeTab == 0) ? 0xFF005577 : (neonHover ? 0xFF333333 : 0xFF222222);
-        int neonBorder = (activeTab == 0) ? 0xFF00FFFF : 0xFF444444;
+        int neonBg = (activeTab == 0) ? 0xFF244A52 : (neonHover ? 0xFF38414D : 0xFF222A34);
+        int neonBorder = (activeTab == 0) ? 0xFF52DBC8 : 0xFF485463;
         guiGraphics.fill(neonX, tabY, neonX + tabWidth, tabY + tabHeight, neonBg);
         guiGraphics.renderOutline(neonX, tabY, tabWidth, tabHeight, neonBorder);
         guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.tab.neon"), neonX + tabWidth / 2, tabY + 4, activeTab == 0 ? 0x00FFFF : 0xAAAAAA);
 
-        int redstoneBg = (activeTab == 1) ? 0xFF772200 : (redstoneHover ? 0xFF333333 : 0xFF222222);
-        int redstoneBorder = (activeTab == 1) ? 0xFFFF5500 : 0xFF444444;
+        int redstoneBg = (activeTab == 1) ? 0xFF654624 : (redstoneHover ? 0xFF38414D : 0xFF222A34);
+        int redstoneBorder = (activeTab == 1) ? SignBuilderUi.ACCENT : 0xFF485463;
         guiGraphics.fill(redstoneX, tabY, redstoneX + tabWidth, tabY + tabHeight, redstoneBg);
         guiGraphics.renderOutline(redstoneX, tabY, tabWidth, tabHeight, redstoneBorder);
         guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.tab.redstone"), redstoneX + tabWidth / 2, tabY + 4, activeTab == 1 ? 0xFFAA00 : 0xAAAAAA);
@@ -199,15 +199,22 @@ public class WrenchScreen extends Screen {
             int rowY = contentStartY + (i * rowHeight);
             boolean isHovered = mouseX >= startX + 4 && mouseX <= startX + panelWidth - 4 && mouseY >= rowY && mouseY < rowY + rowHeight;
 
+            if (i == currentMode) {
+                guiGraphics.fill(startX + 6, rowY + 1, startX + panelWidth - 6, rowY + rowHeight - 1, 0x3348CDBA);
+                guiGraphics.fill(startX + 6, rowY + 1, startX + 8, rowY + rowHeight - 1, 0xFF52DBC8);
+            } else if ((i & 1) == 0) {
+                guiGraphics.fill(startX + 6, rowY + 1, startX + panelWidth - 6, rowY + rowHeight - 1, 0x11FFFFFF);
+            }
+
             if (isHovered && tooltipToRender == null) {
-                guiGraphics.fill(startX + 4, rowY, startX + panelWidth - 4, rowY + rowHeight, 0x44FFFFFF);
+                guiGraphics.fill(startX + 4, rowY, startX + panelWidth - 4, rowY + rowHeight, 0x22FFFFFF);
                 tooltipToRender = Component.translatable(MOD_KEYS[i] + ".desc");
             }
 
             if (i == 5) {
-                int toggleSize = 13;
-                int monsterToggleX = startX + panelWidth - 20;
-                int animalToggleX = startX + panelWidth - 36;
+                int toggleSize = getToggleSize();
+                int monsterToggleX = getMonsterToggleX(startX);
+                int animalToggleX = getAnimalToggleX(startX);
                 int toggleY = rowY + (rowHeight - toggleSize) / 2;
 
                 drawCreeperIcon(guiGraphics, monsterToggleX, toggleY, toggleSize, this.detectsMonsters);
@@ -243,7 +250,7 @@ public class WrenchScreen extends Screen {
 
             int textXOffset = (i == currentMode) ? 26 : 30;
             int textY = rowY + (rowHeight - 8) / 2;
-            guiGraphics.drawString(this.font, displayText, startX + textXOffset, textY, 0x00FFFF);
+            guiGraphics.drawString(this.font, displayText, startX + textXOffset, textY, i == currentMode ? SignBuilderUi.TEXT : 0xFF78DCCF);
         }
 
         int turnOffY = contentStartY + (MOD_KEYS.length * rowHeight);
@@ -265,7 +272,7 @@ public class WrenchScreen extends Screen {
     private Component renderRedstoneTab(GuiGraphics guiGraphics, int startX, int contentStartY, int mouseX, int mouseY, float partialTick) {
         Component tooltip = null;
 
-        guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.section.button_mode"), startX + 10, contentStartY + 2, 0xFFD700);
+        SignBuilderUi.drawSectionLabel(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.section.button_mode"), startX + 10, contentStartY + scaledRedstone(2), panelWidth - 20);
 
         String[] btnModes = {
                 "gui.signbuilder.wrench.btn.disabled",
@@ -276,56 +283,66 @@ public class WrenchScreen extends Screen {
         int[] btnColors = { 0xAAAAAA, 0x55FF55, 0x55FFFF, 0xFFAA00 };
 
         for (int i = 0; i < 4; i++) {
-            int rowY = contentStartY + 16 + (i * 18);
-            boolean isHovered = mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= rowY && mouseY < rowY + 16;
+            int rowY = contentStartY + scaledRedstone(16) + (i * scaledRedstone(18));
+            int rowHeight = scaledRedstone(16);
+            boolean isHovered = mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= rowY && mouseY < rowY + rowHeight;
             if (isHovered) {
-                guiGraphics.fill(startX + 8, rowY, startX + panelWidth - 8, rowY + 16, 0x33FFFFFF);
+                guiGraphics.fill(startX + 8, rowY, startX + panelWidth - 8, rowY + rowHeight, 0x33FFFFFF);
                 tooltip = Component.translatable(btnModes[i] + ".desc");
             }
 
             int checkColor = (buttonMode == i) ? 0xFF00FF00 : 0xFF444444;
-            guiGraphics.renderOutline(startX + 12, rowY + 2, 11, 11, checkColor);
+            int checkSize = scaledRedstone(11);
+            guiGraphics.renderOutline(startX + 12, rowY + scaledRedstone(2), checkSize, checkSize, checkColor);
             if (buttonMode == i) {
-                guiGraphics.fill(startX + 14, rowY + 4, startX + 21, rowY + 11, 0xFF00FF00);
+                int inset = Math.max(1, scaledRedstone(2));
+                guiGraphics.fill(startX + 12 + inset, rowY + scaledRedstone(2) + inset,
+                        startX + 12 + checkSize - inset, rowY + scaledRedstone(2) + checkSize - inset, 0xFF00FF00);
             }
 
-            guiGraphics.drawString(this.font, Component.translatable(btnModes[i]), startX + 28, rowY + 4, btnColors[i]);
+            guiGraphics.drawString(this.font, Component.translatable(btnModes[i]), startX + 28, rowY + scaledRedstone(4), btnColors[i]);
         }
 
         if (this.buttonMode == 3) {
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.pin.title"), startX + 10, contentStartY + 92, 0xFFD700);
+            SignBuilderUi.drawSectionLabel(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.pin.title"), startX + 10, contentStartY + scaledRedstone(92), panelWidth - 20);
             if (this.pinInput != null) {
                 this.pinInput.render(guiGraphics, mouseX, mouseY, partialTick);
             }
 
             int recX = startX + panelWidth - 48;
-            int recY = contentStartY + 104;
-            boolean isRecHovered = mouseX >= recX && mouseX <= recX + 36 && mouseY >= recY && mouseY <= recY + 16;
-            guiGraphics.fill(recX, recY, recX + 36, recY + 16, isRecHovered ? 0xFF992222 : 0xFF661111);
-            guiGraphics.renderOutline(recX, recY, 36, 16, isRecHovered ? 0xFFFF6666 : 0xFFFF3333);
-            guiGraphics.drawCenteredString(this.font, "⏺ REC", recX + 18, recY + 4, 0xFFFFFF);
+            int recWidth = scaledRedstone(36);
+            int recHeight = scaledRedstone(16);
+            int recY = contentStartY + scaledRedstone(104);
+            boolean isRecHovered = mouseX >= recX && mouseX <= recX + recWidth && mouseY >= recY && mouseY <= recY + recHeight;
+            guiGraphics.fill(recX, recY, recX + recWidth, recY + recHeight, isRecHovered ? 0xFF992222 : 0xFF661111);
+            guiGraphics.renderOutline(recX, recY, recWidth, recHeight, isRecHovered ? 0xFFFF6666 : 0xFFFF3333);
+            guiGraphics.drawCenteredString(this.font, "⏺ REC", recX + recWidth / 2, recY + scaledRedstone(4), 0xFFFFFF);
 
             if (isRecHovered) {
                 tooltip = Component.translatable("gui.signbuilder.wrench.pin.rec_tooltip");
             }
         }
 
-        int scopeTitleY = (this.buttonMode == 3) ? (contentStartY + 126) : (contentStartY + 92);
-        guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.scope.title"), startX + 10, scopeTitleY, 0xFFD700);
+        int scopeTitleY = contentStartY + scaledRedstone(this.buttonMode == 3 ? 126 : 92);
+        SignBuilderUi.drawSectionLabel(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.scope.title"), startX + 10, scopeTitleY, panelWidth - 20);
 
-        int scopeRowY = (this.buttonMode == 3) ? (contentStartY + 140) : (contentStartY + 106);
-        boolean isScopeHovered = mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= scopeRowY && mouseY < scopeRowY + 16;
+        int scopeRowY = contentStartY + scaledRedstone(this.buttonMode == 3 ? 140 : 106);
+        int scopeRowHeight = scaledRedstone(16);
+        boolean isScopeHovered = mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= scopeRowY && mouseY < scopeRowY + scopeRowHeight;
         if (isScopeHovered) {
-            guiGraphics.fill(startX + 8, scopeRowY, startX + panelWidth - 8, scopeRowY + 16, 0x33FFFFFF);
+            guiGraphics.fill(startX + 8, scopeRowY, startX + panelWidth - 8, scopeRowY + scopeRowHeight, 0x33FFFFFF);
             tooltip = Component.translatable("gui.signbuilder.wrench.scope.desc");
         }
 
         int scopeCheckColor = syncWord ? 0xFF00FF00 : 0xFF444444;
-        guiGraphics.renderOutline(startX + 12, scopeRowY + 2, 11, 11, scopeCheckColor);
+        int scopeCheckSize = scaledRedstone(11);
+        guiGraphics.renderOutline(startX + 12, scopeRowY + scaledRedstone(2), scopeCheckSize, scopeCheckSize, scopeCheckColor);
         if (syncWord) {
-            guiGraphics.fill(startX + 14, scopeRowY + 4, startX + 21, scopeRowY + 11, 0xFF00FF00);
+            int inset = Math.max(1, scaledRedstone(2));
+            guiGraphics.fill(startX + 12 + inset, scopeRowY + scaledRedstone(2) + inset,
+                    startX + 12 + scopeCheckSize - inset, scopeRowY + scaledRedstone(2) + scopeCheckSize - inset, 0xFF00FF00);
         }
-        guiGraphics.drawString(this.font, Component.translatable(syncWord ? "gui.signbuilder.wrench.scope.word" : "gui.signbuilder.wrench.scope.single"), startX + 28, scopeRowY + 4, syncWord ? 0x55FF55 : 0xAAAAAA);
+        guiGraphics.drawString(this.font, Component.translatable(syncWord ? "gui.signbuilder.wrench.scope.word" : "gui.signbuilder.wrench.scope.single"), startX + 28, scopeRowY + scaledRedstone(4), syncWord ? 0x55FF55 : 0xAAAAAA);
 
         return tooltip;
     }
@@ -414,7 +431,7 @@ public class WrenchScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             int startX = (this.width - panelWidth) / 2;
-            int startY = Math.max(18, (this.height - panelHeight) / 2);
+            int startY = getPanelTop();
 
             int tabY = startY + 4;
             int tabWidth = (panelWidth - 28) / 2;
@@ -449,9 +466,9 @@ public class WrenchScreen extends Screen {
                     int rowY = contentStartY + (i * rowHeight);
 
                     if (i == 5) {
-                        int toggleSize = 13;
-                        int monsterToggleX = startX + panelWidth - 20;
-                        int animalToggleX = startX + panelWidth - 36;
+                        int toggleSize = getToggleSize();
+                        int monsterToggleX = getMonsterToggleX(startX);
+                        int animalToggleX = getAnimalToggleX(startX);
                         int toggleY = rowY + (rowHeight - toggleSize) / 2;
 
                         if (mouseX >= animalToggleX && mouseX <= animalToggleX + toggleSize && mouseY >= toggleY && mouseY <= toggleY + toggleSize) {
@@ -509,8 +526,9 @@ public class WrenchScreen extends Screen {
                 }
             } else {
                 for (int i = 0; i < 4; i++) {
-                    int rowY = contentStartY + 16 + (i * 18);
-                    if (mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= rowY && mouseY < rowY + 16) {
+                    int rowY = contentStartY + scaledRedstone(16) + (i * scaledRedstone(18));
+                    int redstoneRowHeight = scaledRedstone(16);
+                    if (mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= rowY && mouseY < rowY + redstoneRowHeight) {
                         this.buttonMode = i;
                         updatePinVisibility();
                         sendSyncPacket(false);
@@ -523,8 +541,10 @@ public class WrenchScreen extends Screen {
 
                 if (this.buttonMode == 3) {
                     int recX = startX + panelWidth - 48;
-                    int recY = contentStartY + 104;
-                    if (mouseX >= recX && mouseX <= recX + 36 && mouseY >= recY && mouseY <= recY + 16) {
+                    int recY = contentStartY + scaledRedstone(104);
+                    int recWidth = scaledRedstone(36);
+                    int recHeight = scaledRedstone(16);
+                    if (mouseX >= recX && mouseX <= recX + recWidth && mouseY >= recY && mouseY <= recY + recHeight) {
                         sendSyncPacket(true);
                         if (this.minecraft != null && this.minecraft.player != null) {
                             this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
@@ -536,8 +556,9 @@ public class WrenchScreen extends Screen {
                     }
                 }
 
-                int scopeRowY = (this.buttonMode == 3) ? (contentStartY + 140) : (contentStartY + 106);
-                if (mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= scopeRowY && mouseY < scopeRowY + 16) {
+                int scopeRowY = contentStartY + scaledRedstone(this.buttonMode == 3 ? 140 : 106);
+                int scopeRowHeight = scaledRedstone(16);
+                if (mouseX >= startX + 8 && mouseX <= startX + panelWidth - 8 && mouseY >= scopeRowY && mouseY < scopeRowY + scopeRowHeight) {
                     this.syncWord = !this.syncWord;
                     sendSyncPacket(false);
                     if (this.minecraft != null && this.minecraft.player != null) {
@@ -553,5 +574,25 @@ public class WrenchScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    private int getPanelTop() {
+        return Math.max(28, (this.height - panelHeight) / 2);
+    }
+
+    private int scaledRedstone(int value) {
+        return Math.max(1, Math.round(value * redstoneScale));
+    }
+
+    private int getToggleSize() {
+        return Math.min(13, Math.max(8, rowHeight - 2));
+    }
+
+    private int getMonsterToggleX(int startX) {
+        return startX + panelWidth - 8 - getToggleSize();
+    }
+
+    private int getAnimalToggleX(int startX) {
+        return getMonsterToggleX(startX) - 4 - getToggleSize();
     }
 }
