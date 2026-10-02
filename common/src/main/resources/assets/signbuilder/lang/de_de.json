@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Billboard",
   "advancements.signbuilder.billboard.description": "Platziere erfolgreich deinen ersten riesigen 3x3-Buchstabenblock.",
   "advancements.signbuilder.mounting_panel.title": "Montageplatte",
-  "advancements.signbuilder.mounting_panel.description": "Platziere eine Platte an einem Block."
+  "advancements.signbuilder.mounting_panel.description": "Platziere eine Platte an einem Block.",
+  "block.signbuilder.symbol_tilde": "Tilde-Symbol",
+  "block.signbuilder.symbol_key": "Schlüssel-Symbol",
+  "block.signbuilder.symbol_lock": "Schloss-Symbol",
+  "block.signbuilder.symbol_trophy": "Pokal-Symbol",
+  "block.signbuilder.symbol_lightning": "Blitz-Symbol",
+  "block.signbuilder.symbol_bitcoin": "Bitcoin-Symbol"
 }

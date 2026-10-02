@@ -176,6 +176,12 @@ public class LetterBlock extends Block implements EntityBlock {
             case "symbol_divide" -> "÷";
             case "symbol_apostrophe" -> "'";
             case "symbol_quotes" -> "\"";
+            case "symbol_tilde" -> "~";
+            case "symbol_bitcoin" -> "₿";
+            case "symbol_key" -> "🗝";
+            case "symbol_lightning" -> "⚡";
+            case "symbol_lock" -> "🔒";
+            case "symbol_trophy" -> "🏆";
             default -> {
                 if (path.startsWith("letter_")) {
                     String[] parts = path.split("_");
@@ -357,7 +363,7 @@ public class LetterBlock extends Block implements EntityBlock {
             if (normalLength == 0.0) normalLength = 1.0;
             double normalX = SignRotation.facingX(normalRotation) / normalLength;
             double normalZ = SignRotation.facingZ(normalRotation) / normalLength;
-            double plateClearance = face == AttachFace.WALL ? 1.0 / 16.0 : 2.0 / 16.0;
+            double plateClearance = (face == AttachFace.WALL ? 1.0 : 2.0) * master.getSize() / 16.0;
             VoxelShape glyphShape = letterShape;
             VoxelShape plateShape = Shapes.empty();
 
@@ -369,17 +375,17 @@ public class LetterBlock extends Block implements EntityBlock {
                 if (master.hasBackplate()) {
                     plateShape = face == AttachFace.WALL
                             ? switch (dir) {
-                                case SOUTH -> BP_WALL_SOUTH;
-                                case EAST -> BP_WALL_EAST;
-                                case WEST -> BP_WALL_WEST;
-                                default -> BP_WALL_NORTH;
-                            }
+                        case SOUTH -> BP_WALL_SOUTH;
+                        case EAST -> BP_WALL_EAST;
+                        case WEST -> BP_WALL_WEST;
+                        default -> BP_WALL_NORTH;
+                    }
                             : switch (dir) {
-                                case NORTH -> BP_FLOOR_NORTH;
-                                case SOUTH -> BP_FLOOR_SOUTH;
-                                case EAST -> BP_FLOOR_EAST;
-                                default -> BP_FLOOR_WEST;
-                            };
+                        case NORTH -> BP_FLOOR_NORTH;
+                        case SOUTH -> BP_FLOOR_SOUTH;
+                        case EAST -> BP_FLOOR_EAST;
+                        default -> BP_FLOOR_WEST;
+                    };
                 }
 
                 glyphShape = scaleAndOffsetShape(glyphShape, size, offsetX, offsetZ);
@@ -410,17 +416,17 @@ public class LetterBlock extends Block implements EntityBlock {
             } else if (master.hasBackplate()) {
                 plateShape = face == AttachFace.WALL
                         ? switch (dir) {
-                        case SOUTH -> BP_WALL_SOUTH;
-                        case EAST  -> BP_WALL_EAST;
-                        case WEST  -> BP_WALL_WEST;
-                        default    -> BP_WALL_NORTH;
-                    }
+                    case SOUTH -> BP_WALL_SOUTH;
+                    case EAST  -> BP_WALL_EAST;
+                    case WEST  -> BP_WALL_WEST;
+                    default    -> BP_WALL_NORTH;
+                }
                         : switch (dir) {
-                        case NORTH -> BP_FLOOR_NORTH;
-                        case SOUTH -> BP_FLOOR_SOUTH;
-                        case EAST  -> BP_FLOOR_EAST;
-                        default    -> BP_FLOOR_WEST;
-                    };
+                    case NORTH -> BP_FLOOR_NORTH;
+                    case SOUTH -> BP_FLOOR_SOUTH;
+                    case EAST  -> BP_FLOOR_EAST;
+                    default    -> BP_FLOOR_WEST;
+                };
             }
 
             if (master.getSize() == 1) {

@@ -321,5 +321,11 @@
   "advancements.signbuilder.billboard.title": "Billboard",
   "advancements.signbuilder.billboard.description": "İlk 3x3 dev harf bloğunuzu başarıyla yerleştirin.",
   "advancements.signbuilder.mounting_panel.title": "Montaj Paneli",
-  "advancements.signbuilder.mounting_panel.description": "Bir bloğa plaka yerleştirin."
+  "advancements.signbuilder.mounting_panel.description": "Bir bloğa plaka yerleştirin.",
+  "block.signbuilder.symbol_tilde": "Tilde Sembolü",
+  "block.signbuilder.symbol_key": "Anahtar Sembolü",
+  "block.signbuilder.symbol_lock": "Kilit Sembolü",
+  "block.signbuilder.symbol_trophy": "Kupa Sembolü",
+  "block.signbuilder.symbol_lightning": "Yıldırım Sembolü",
+  "block.signbuilder.symbol_bitcoin": "Bitcoin Sembolü"
 }

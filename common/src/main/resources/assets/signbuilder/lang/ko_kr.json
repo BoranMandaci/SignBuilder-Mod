@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "빌보드",
   "advancements.signbuilder.billboard.description": "첫 3x3 거대 글자 블록을 성공적으로 배치하세요.",
   "advancements.signbuilder.mounting_panel.title": "장착 패널",
-  "advancements.signbuilder.mounting_panel.description": "블록에 백플레이트를 장착하세요."
+  "advancements.signbuilder.mounting_panel.description": "블록에 백플레이트를 장착하세요.",
+  "block.signbuilder.symbol_tilde": "물결표 기호",
+  "block.signbuilder.symbol_key": "열쇠 기호",
+  "block.signbuilder.symbol_lock": "자물쇠 기호",
+  "block.signbuilder.symbol_trophy": "트로피 기호",
+  "block.signbuilder.symbol_lightning": "번개 기호",
+  "block.signbuilder.symbol_bitcoin": "비트코인 기호"
 }

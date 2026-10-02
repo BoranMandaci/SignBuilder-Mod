@@ -79,15 +79,15 @@ public class BlueprintScreen extends Screen {
         }
 
         int contentWidth = Math.max(0, this.panelWidth - 28);
-        this.symbolSize = Math.min(scaledY(SYMBOL_SIZE), Math.max(8, (contentWidth - 40) / 21));
+        this.symbolSize = Math.min(scaledY(SYMBOL_SIZE), Math.max(8, (contentWidth - 40) / 26));
 
-        String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<"};
+        String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<", "~"};
         String[] row1Tooltips = {
                 "block.signbuilder.arrow_up", "block.signbuilder.arrow_down", "block.signbuilder.arrow_left",
                 "block.signbuilder.arrow_right", "block.signbuilder.arrow_left_up", "block.signbuilder.arrow_right_up",
                 "block.signbuilder.arrow_left_down", "block.signbuilder.arrow_right_down", "block.signbuilder.symbol_plus",
                 "block.signbuilder.symbol_minus", "block.signbuilder.symbol_cross", "block.signbuilder.symbol_divide", "block.signbuilder.symbol_equals",
-                "block.signbuilder.symbol_percent", "block.signbuilder.symbol_greater_than", "block.signbuilder.symbol_less_than"
+                "block.signbuilder.symbol_percent", "block.signbuilder.symbol_greater_than", "block.signbuilder.symbol_less_than", "block.signbuilder.symbol_tilde"
         };
 
         String[] row2Insert = {"«", "•", "»", ",", "?", "!", ":", ";", "'", "\"", "/", "\\", "(", ")", "|"};
@@ -100,8 +100,8 @@ public class BlueprintScreen extends Screen {
                 "block.signbuilder.symbol_bracket_left", "block.signbuilder.symbol_bracket_right", "block.signbuilder.symbol_bracket_double"
         };
 
-        String[] row3Insert = {"[", "]", "¦", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "$", "€", "£", "¥", "₺"};
-        String[] row3Display = {"[", "]", "][", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "$", "€", "£", "¥", "₺"};
+        String[] row3Insert = {"[", "]", "¦", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "🗝", "🔒", "🏆", "⚡", "$", "€", "£", "¥", "₺", "₿"};
+        String[] row3Display = {"[", "]", "][", "#", "♥", "★", "@", "&", "*", "✓", "∞", "○", "◆", "♪", "♫", "☠", "🗝", "🔒", "🏆", "⚡", "$", "€", "£", "¥", "₺", "₿"};
         String[] row3Tooltips = {
                 "block.signbuilder.symbol_square_bracket_left", "block.signbuilder.symbol_square_bracket_right", "block.signbuilder.symbol_square_bracket_double",
                 "block.signbuilder.symbol_hashtag", "block.signbuilder.symbol_heart", "block.signbuilder.symbol_star",
@@ -109,13 +109,17 @@ public class BlueprintScreen extends Screen {
                 "block.signbuilder.symbol_checkmark", "block.signbuilder.symbol_infinity",
                 "block.signbuilder.symbol_circle", "block.signbuilder.symbol_diamond",
                 "block.signbuilder.symbol_note", "block.signbuilder.symbol_note_double", "block.signbuilder.symbol_skull",
-                "block.signbuilder.symbol_dollar", "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl"
+                "block.signbuilder.symbol_key", "block.signbuilder.symbol_lock", "block.signbuilder.symbol_trophy", "block.signbuilder.symbol_lightning",
+                "block.signbuilder.symbol_dollar", "block.signbuilder.symbol_euro", "block.signbuilder.symbol_pound", "block.signbuilder.symbol_yen", "block.signbuilder.symbol_tl",
+                "block.signbuilder.symbol_bitcoin"
         };
 
         int inputX = this.panelX + 14;
         int inputWidth = Math.max(0, this.panelWidth - 28);
         int inputY = this.panelY + scaledY(47);
-        this.textField = new EditBox(this.font, inputX + 7, inputY + scaledY(2), Math.max(0, inputWidth - 14), scaledY(20), Component.literal("Word"));
+        int inputHeight = scaledY(24);
+        int textOffsetY = Math.max(0, (inputHeight - this.font.lineHeight) / 2);
+        this.textField = new EditBox(this.font, inputX + 7, inputY + textOffsetY, Math.max(0, inputWidth - 14), Math.max(1, inputHeight - textOffsetY), Component.literal("Word"));
         this.textField.setMaxLength(32);
         this.textField.setValue(this.initialText);
         this.textField.setBordered(false);

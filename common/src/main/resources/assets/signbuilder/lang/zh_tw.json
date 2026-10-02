@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "廣告牌",
   "advancements.signbuilder.billboard.description": "成功放置你的第一個 3x3 巨型字母方塊。",
   "advancements.signbuilder.mounting_panel.title": "安裝面板",
-  "advancements.signbuilder.mounting_panel.description": "在方塊上放置背板。"
+  "advancements.signbuilder.mounting_panel.description": "在方塊上放置背板。",
+  "block.signbuilder.symbol_tilde": "波浪號符號",
+  "block.signbuilder.symbol_key": "鑰匙符號",
+  "block.signbuilder.symbol_lock": "鎖頭符號",
+  "block.signbuilder.symbol_trophy": "獎盃符號",
+  "block.signbuilder.symbol_lightning": "閃電符號",
+  "block.signbuilder.symbol_bitcoin": "比特幣符號"
 }

@@ -26,7 +26,8 @@
               "signbuilder:symbol_dollar",
               "signbuilder:symbol_pound",
               "signbuilder:symbol_tl",
-              "signbuilder:symbol_yen"
+              "signbuilder:symbol_yen",
+              "signbuilder:symbol_bitcoin"
             ]
           }
         ]

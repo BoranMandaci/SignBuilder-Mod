@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class SignBlueprintItem extends Item {
 
-    private static final Map<Character, Block> CHAR_BLOCK_CACHE = new HashMap<>(128);
+    private static final Map<Integer, Block> CHAR_BLOCK_CACHE = new HashMap<>(128);
 
     public SignBlueprintItem(Properties pProperties) {
         super(pProperties.durability(32));
@@ -106,11 +106,11 @@ public class SignBlueprintItem extends Item {
 
                 if (size == 1 && !isVert) {
                     nextSize = 1; nextVert = true;
-                } else if (size == 1 && isVert) {
+                } else if (size == 1) {
                     nextSize = 2; nextVert = false;
                 } else if (size == 2 && !isVert) {
                     nextSize = 2; nextVert = true;
-                } else if (size == 2 && isVert) {
+                } else if (size == 2) {
                     nextSize = 3; nextVert = false;
                 } else if (size == 3 && !isVert) {
                     nextSize = 3; nextVert = true;
@@ -182,9 +182,10 @@ public class SignBlueprintItem extends Item {
             Map<Item, Integer> requiredItems = new HashMap<>();
             int totalBackplatesNeeded = 0;
 
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                if (c == ' ') continue;
+            for (int i = 0; i < text.length(); ) {
+                int c = text.codePointAt(i);
+                i += Character.charCount(c);
+                if (c == ' ' || c == 0xFE0F) continue;
                 Block blockForChar = getBlockForChar(c);
                 if (blockForChar != null) {
                     Item itemForChar = blockForChar.asItem();
@@ -231,8 +232,8 @@ public class SignBlueprintItem extends Item {
         int rotation = wall
                 ? SignRotation.fromDirection(clickedFace)
                 : size > 1
-                    ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
-                    : SignRotation.fromYaw(player.getYRot(), -2);
+                ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
+                : SignRotation.fromYaw(player.getYRot(), -2);
         int rightX = SignRotation.horizontalStepX(rotation, wall);
         int rightZ = SignRotation.horizontalStepZ(rotation, wall);
 
@@ -241,9 +242,10 @@ public class SignBlueprintItem extends Item {
         List<Long> placedPositions = new ArrayList<>();
 
         int effectiveIdx = 0;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == ' ') continue;
+        for (int i = 0; i < text.length(); ) {
+            int c = text.codePointAt(i);
+            i += Character.charCount(c);
+            if (c == ' ' || c == 0xFE0F) continue;
 
             Block blockToPlace = getBlockForChar(c);
             if (blockToPlace == null) continue;
@@ -258,17 +260,16 @@ public class SignBlueprintItem extends Item {
                     placedPositions.add(currentPos.asLong());
                 } else if (size == 2) {
                     BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 2);
-                    BlockPos p00 = basePos;
                     BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
                     BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
-                    if (!level.getBlockState(p00).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
+                    if (!level.getBlockState(basePos).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
                             !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
                         break;
                     }
 
-                    BlockPos[] quad = {p00, p10, p01, p11};
+                    BlockPos[] quad = {basePos, p10, p01, p11};
                     for (BlockPos p : quad) {
                         placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
@@ -317,17 +318,16 @@ public class SignBlueprintItem extends Item {
                             : startPos.getY() - 1 - (effectiveIdx * 2);
 
                     BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
-                    BlockPos p00 = basePos;
                     BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
                     BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
-                    if (!level.getBlockState(p00).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
+                    if (!level.getBlockState(basePos).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
                             !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
                         break;
                     }
 
-                    BlockPos[] quad = {p00, p10, p01, p11};
+                    BlockPos[] quad = {basePos, p10, p01, p11};
                     for (BlockPos p : quad) {
                         placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
                         placedPositions.add(p.asLong());
@@ -442,6 +442,10 @@ public class SignBlueprintItem extends Item {
     }
 
     public static Block getBlockForChar(char c) {
+        return getBlockForChar((int) c);
+    }
+
+    public static Block getBlockForChar(int c) {
         Block cached = CHAR_BLOCK_CACHE.get(c);
         if (cached != null) return cached;
 
@@ -490,10 +494,14 @@ public class SignBlueprintItem extends Item {
             case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
             case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
             case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
+            case 0x1F5DD -> "symbol_key";        // 🗝
+            case 0x1F512 -> "symbol_lock";       // 🔒
+            case 0x1F3C6 -> "symbol_trophy";     // 🏆
+            case '⚡' -> "symbol_lightning";
             case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
-            case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
+            case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '₿' -> "symbol_bitcoin"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
             case ',' -> "symbol_comma"; case '%' -> "symbol_percent";
-            case '<' -> "symbol_less_than"; case '>' -> "symbol_greater_than";
+            case '<' -> "symbol_less_than"; case '>' -> "symbol_greater_than"; case '~' -> "symbol_tilde";
             case '«' -> "symbol_dot_left"; case '•' -> "symbol_dot_center"; case '»' -> "symbol_dot_right";
             case '(' -> "symbol_bracket_left"; case ')' -> "symbol_bracket_right"; case '|' -> "symbol_bracket_double";
             case '[' -> "symbol_square_bracket_left"; case ']' -> "symbol_square_bracket_right"; case '¦' -> "symbol_square_bracket_double";

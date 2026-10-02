@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Outdoor",
   "advancements.signbuilder.billboard.description": "Coloque com sucesso seu primeiro bloco de letra gigante 3x3.",
   "advancements.signbuilder.mounting_panel.title": "Painel de Montagem",
-  "advancements.signbuilder.mounting_panel.description": "Coloque uma placa traseira em um bloco."
+  "advancements.signbuilder.mounting_panel.description": "Coloque uma placa traseira em um bloco.",
+  "block.signbuilder.symbol_tilde": "Símbolo de til",
+  "block.signbuilder.symbol_key": "Símbolo de chave",
+  "block.signbuilder.symbol_lock": "Símbolo de cadeado",
+  "block.signbuilder.symbol_trophy": "Símbolo de troféu",
+  "block.signbuilder.symbol_lightning": "Símbolo de raio",
+  "block.signbuilder.symbol_bitcoin": "Símbolo de bitcoin"
 }

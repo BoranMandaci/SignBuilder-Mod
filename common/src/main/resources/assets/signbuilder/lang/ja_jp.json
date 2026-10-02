@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "ビルボード",
   "advancements.signbuilder.billboard.description": "最初の3x3巨大文字ブロックの設置に成功する。",
   "advancements.signbuilder.mounting_panel.title": "取り付けパネル",
-  "advancements.signbuilder.mounting_panel.description": "ブロックにバックプレートを設置する。"
+  "advancements.signbuilder.mounting_panel.description": "ブロックにバックプレートを設置する。",
+  "block.signbuilder.symbol_tilde": "チルダ記号",
+  "block.signbuilder.symbol_key": "鍵の記号",
+  "block.signbuilder.symbol_lock": "南京錠の記号",
+  "block.signbuilder.symbol_trophy": "トロフィーの記号",
+  "block.signbuilder.symbol_lightning": "稲妻の記号",
+  "block.signbuilder.symbol_bitcoin": "ビットコインの記号"
 }

@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Billboard",
   "advancements.signbuilder.billboard.description": "Pomyślnie postaw swój pierwszy gigantyczny blok literowy 3x3.",
   "advancements.signbuilder.mounting_panel.title": "Panel montażowy",
-  "advancements.signbuilder.mounting_panel.description": "Umieść płytę montażową na bloku."
+  "advancements.signbuilder.mounting_panel.description": "Umieść płytę montażową na bloku.",
+  "block.signbuilder.symbol_tilde": "Symbol tyldy",
+  "block.signbuilder.symbol_key": "Symbol klucza",
+  "block.signbuilder.symbol_lock": "Symbol kłódki",
+  "block.signbuilder.symbol_trophy": "Symbol pucharu",
+  "block.signbuilder.symbol_lightning": "Symbol błyskawicy",
+  "block.signbuilder.symbol_bitcoin": "Symbol bitcoin"
 }

@@ -119,9 +119,10 @@ public class BlueprintPreviewRenderer {
         int effectiveIdx = 0;
         int textLen = text.length();
 
-        for (int i = 0; i < textLen; i++) {
-            char c = text.charAt(i);
-            if (c == ' ') continue;
+        for (int i = 0; i < textLen; ) {
+            int c = text.codePointAt(i);
+            i += Character.charCount(c);
+            if (c == ' ' || c == 0xFE0F) continue;
 
             Block block = SignBlueprintItem.getBlockForChar(c);
             if (block == null) {
@@ -217,7 +218,7 @@ public class BlueprintPreviewRenderer {
                 renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
                 poseStack.popPose();
 
-                double plateClearance = attachFace == AttachFace.WALL ? 1.0 / 16.0 : 2.0 / 16.0;
+                double plateClearance = (attachFace == AttachFace.WALL ? 1.0 : 2.0) * size / 16.0;
                 if (attachFace != AttachFace.WALL) {
                     ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ,
                             groupCenterX + normalX * plateClearance, groupCenterZ + normalZ * plateClearance);

@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Билборд",
   "advancements.signbuilder.billboard.description": "Успешно установите свой первый гигантский буквенный блок 3x3.",
   "advancements.signbuilder.mounting_panel.title": "Монтажная панель",
-  "advancements.signbuilder.mounting_panel.description": "Установите панель на блок."
+  "advancements.signbuilder.mounting_panel.description": "Установите панель на блок.",
+  "block.signbuilder.symbol_tilde": "Символ тильды",
+  "block.signbuilder.symbol_key": "Символ ключа",
+  "block.signbuilder.symbol_lock": "Символ замка",
+  "block.signbuilder.symbol_trophy": "Символ кубка",
+  "block.signbuilder.symbol_lightning": "Символ молнии",
+  "block.signbuilder.symbol_bitcoin": "Символ биткоина"
 }

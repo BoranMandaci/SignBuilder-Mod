@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Cartellone",
   "advancements.signbuilder.billboard.description": "Posiziona con successo il tuo primo blocco di lettere gigante 3x3.",
   "advancements.signbuilder.mounting_panel.title": "Pannello di montaggio",
-  "advancements.signbuilder.mounting_panel.description": "Posiziona una piastra su un blocco."
+  "advancements.signbuilder.mounting_panel.description": "Posiziona una piastra su un blocco.",
+  "block.signbuilder.symbol_tilde": "Simbolo tilde",
+  "block.signbuilder.symbol_key": "Simbolo chiave",
+  "block.signbuilder.symbol_lock": "Simbolo lucchetto",
+  "block.signbuilder.symbol_trophy": "Simbolo trofeo",
+  "block.signbuilder.symbol_lightning": "Simbolo fulmine",
+  "block.signbuilder.symbol_bitcoin": "Simbolo bitcoin"
 }

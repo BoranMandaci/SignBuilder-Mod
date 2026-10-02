@@ -159,7 +159,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         double stepZ = SignRotation.horizontalStepZ(entity.getFacingRotation(), wall);
         double groupCenterX = 0.5 + stepX * (size - 1) * 0.5;
         double groupCenterZ = 0.5 + stepZ * (size - 1) * 0.5;
-        double plateClearance = wall ? 1.0 / 16.0 : 2.0 / 16.0;
+        double plateClearance = (wall ? 1.0 : 2.0) * size / 16.0;
 
         poseStack.pushPose();
         applyRotation(poseStack, state, entity, entity.getSize() <= 1);

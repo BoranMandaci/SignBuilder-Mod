@@ -97,6 +97,12 @@
     "signbuilder:symbol_note",
     "signbuilder:symbol_note_double",
     "signbuilder:symbol_skull",
+    "signbuilder:symbol_bitcoin",
+    "signbuilder:symbol_key",
+    "signbuilder:symbol_lightning",
+    "signbuilder:symbol_lock",
+    "signbuilder:symbol_tilde",
+    "signbuilder:symbol_trophy",
     "signbuilder:sign_press",
     "signbuilder:backplate"
   ]

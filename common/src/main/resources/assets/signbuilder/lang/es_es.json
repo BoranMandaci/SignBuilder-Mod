@@ -327,5 +327,11 @@
   "advancements.signbuilder.billboard.title": "Valla publicitaria",
   "advancements.signbuilder.billboard.description": "Coloca con éxito tu primer bloque de letras gigante de 3x3.",
   "advancements.signbuilder.mounting_panel.title": "Panel de montaje",
-  "advancements.signbuilder.mounting_panel.description": "Coloca una placa en un bloque."
+  "advancements.signbuilder.mounting_panel.description": "Coloca una placa en un bloque.",
+  "block.signbuilder.symbol_tilde": "Símbolo de virgulilla",
+  "block.signbuilder.symbol_key": "Símbolo de llave",
+  "block.signbuilder.symbol_lock": "Símbolo de candado",
+  "block.signbuilder.symbol_trophy": "Símbolo de trofeo",
+  "block.signbuilder.symbol_lightning": "Símbolo de rayo",
+  "block.signbuilder.symbol_bitcoin": "Símbolo de bitcoin"
 }
