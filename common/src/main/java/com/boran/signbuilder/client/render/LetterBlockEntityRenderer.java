@@ -207,6 +207,11 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         ModelCentering.Center letterTarget = entity.hasBackplate() && !wall
                 ? new ModelCentering.Center(groupCenterX + normalX * plateClearance, groupCenterZ + normalZ * plateClearance)
                 : new ModelCentering.Center(groupCenterX, groupCenterZ);
+        if (!wall && LetterBlock.isLateralDot(state)) {
+            ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalLetterModel, state, rotationDegrees,
+                    size <= 1, modelScale, offsetX, offsetZ);
+            letterTarget = ModelCentering.centerAlongNormal(currentCenter, letterTarget.x(), letterTarget.z(), normalX, normalZ);
+        }
 
         poseStack.pushPose();
         if (!wall) {
@@ -261,6 +266,11 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             ModelCentering.Center backTarget = entity.hasBackplate() && !wall
                     ? new ModelCentering.Center(groupCenterX - normalX * plateClearance, groupCenterZ - normalZ * plateClearance)
                     : new ModelCentering.Center(groupCenterX - normalX * 2.0 * 1.0 / 16.0, groupCenterZ - normalZ * 2.0 * 1.0 / 16.0);
+            if (LetterBlock.isLateralDot(backState)) {
+                ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalBackModel, backState, backRotationDegrees,
+                        size <= 1, modelScale, offsetX, offsetZ);
+                backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
+            }
 
             poseStack.pushPose();
             if (!wall) {

@@ -283,10 +283,10 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.0, 8.0, 14.0, 15.0);
             private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 0.0, 8.0, 15.0, 14.0, 11.0);
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 17.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 17.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 17.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 17.0, 15.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -471,10 +471,10 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> createSlashBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 15.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 14.0, 8.0);
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 16.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 16.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 16.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 16.0, 8.0);
             private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 16.0, 3.0);
             private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 16.0, 13.0);
@@ -573,8 +573,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 15.0, 14.0, 8.0);
             private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 1.0, 13.0, 15.0, 16.0, 16.0);
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 15.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 15.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.0, 3.0, 16.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 16.0, 15.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -615,14 +615,14 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> createMinusBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 5.0, 1.5, 11.5, 8.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 5.0, 1.0, 8.0, 8.0, 15.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 5.0, 8.0, 15.0, 8.0, 11.5);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 5.0, 4.5, 15.0, 8.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 6.0, 13.0, 15.0, 9.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 6.0, 0.0, 15.0, 9.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 6.0, 1.0, 3.0, 9.0, 15.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 6.0, 1.0, 16.0, 9.0, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 5.5, 1.5, 11.5, 8.5, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(4.5, 5.5, 1.0, 8.0, 8.5, 15.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.0, 5.5, 8.0, 15.0, 8.5, 11.5);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 5.5, 4.5, 15.0, 8.5, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.0, 6.5, 13.0, 15.0, 9.5, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 6.5, 0.0, 15.0, 9.5, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 6.5, 1.0, 3.0, 9.5, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 6.5, 1.0, 16.0, 9.5, 15.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -829,6 +829,30 @@ public class ModBlocks {
         });
     }
 
+    private static RegistrySupplier<Block> createPercentBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 0.5, 11.0, 16.0, 15.5);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 0.5, 8.0, 16.0, 15.5);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(0.5, 0.0, 8.0, 15.5, 16.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(0.5, 0.0, 5.0, 15.5, 16.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(0.5, 0.0, 13.0, 15.5, 16.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.5, 0.0, 0.0, 15.5, 16.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 0.5, 3.0, 16.0, 15.5);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 0.0, 0.5, 16.0, 16.0, 15.5);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                VoxelShape baseShape = (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                        ? switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }
+                        : switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; };
+                return LetterBlock.calculateHitbox(state, level, pos, baseShape);
+            }
+        });
+    }
+
     private static RegistrySupplier<Block> createDoubleBracketBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
             private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.0, 11.0, 14.0, 15.0);
@@ -885,8 +909,8 @@ public class ModBlocks {
             private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.0, 0.0, 5.0, 14.0, 14.0, 8.0);
             private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.0, 1.0, 13.0, 15.0, 15.0, 16.0);
             private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.0, 1.0, 0.0, 14.0, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 0.0, 3.0, 15.0, 13.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.0, 3.0, 15.0, 15.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.0, 16.0, 15.0, 14.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -1069,16 +1093,40 @@ public class ModBlocks {
         });
     }
 
+    private static RegistrySupplier<Block> createInequalityBlock(String name) {
+        return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 3.0, 11.0, 13.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 3.0, 8.0, 13.0, 13.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(3.0, 0.0, 8.0, 13.0, 13.0, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(3.0, 0.0, 5.0, 13.0, 13.0, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(3.0, 1.0, 13.0, 13.0, 15.0, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(3.0, 1.0, 0.0, 13.0, 15.0, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 3.0, 3.0, 15.0, 13.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 3.0, 16.0, 15.0, 13.0);
+            { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
+            @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
+            @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
+            @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+                net.minecraft.world.level.block.state.properties.AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
+                Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                VoxelShape baseShape = (face == net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                        ? switch (direction) { case EAST -> SHAPE_WALL_EAST; case WEST -> SHAPE_WALL_WEST; case SOUTH -> SHAPE_WALL_SOUTH; default -> SHAPE_WALL_NORTH; }
+                        : switch (direction) { case EAST -> SHAPE_FLOOR_EAST; case WEST -> SHAPE_FLOOR_WEST; case SOUTH -> SHAPE_FLOOR_SOUTH; default -> SHAPE_FLOOR_NORTH; };
+                return LetterBlock.calculateHitbox(state, level, pos, baseShape);
+            }
+        });
+    }
+
     private static RegistrySupplier<Block> createNoteBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.5, 11.0, 15.0, 13.5);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.5, 8.0, 15.0, 13.5);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.5, 0.0, 8.0, 13.5, 15.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.5, 0.0, 5.0, 13.5, 15.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.5, 1.0, 13.0, 13.5, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.5, 1.0, 0.0, 13.5, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.5, 3.0, 16.0, 13.5);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.5, 16.0, 16.0, 13.5);
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 2.5, 11.0, 14.5, 13.5);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 2.5, 8.0, 14.5, 13.5);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(2.5, 0.0, 8.0, 13.5, 14.5, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(2.5, 0.0, 5.0, 13.5, 14.5, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(2.5, 1.0, 13.0, 13.5, 15.5, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(2.5, 1.0, 0.0, 13.5, 15.5, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 2.5, 3.0, 15.5, 13.5);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 2.5, 16.0, 15.5, 13.5);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -1095,14 +1143,14 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> createDoubleNoteBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 0.0, 11.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 0.0, 8.0, 15.0, 16.0);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(0.0, 0.0, 8.0, 16.0, 15.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(0.0, 0.0, 5.0, 16.0, 15.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(0.0, 1.0, 13.0, 16.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 1.0, 0.0, 16.0, 16.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 0.0, 3.0, 16.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 0.0, 16.0, 16.0, 16.0);
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 0.0, 11.0, 14.5, 16.0);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 0.0, 8.0, 14.5, 16.0);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(0.0, 0.0, 8.0, 16.0, 14.5, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(0.0, 0.0, 5.0, 16.0, 14.5, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(0.0, 1.0, 13.0, 16.0, 15.5, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(0.0, 1.0, 0.0, 16.0, 15.5, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 0.0, 3.0, 15.5, 16.0);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 0.0, 16.0, 15.5, 16.0);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -1191,14 +1239,14 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> createTrophyBlock(String name) {
         return registerLetterBlock(name, () -> new LetterBlock(createLetterProperties()) {
-            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.5, 11.0, 14.0, 14.5);
-            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.5, 8.0, 14.0, 14.5);
-            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.5, 0.0, 8.0, 14.5, 14.0, 11.0);
-            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.5, 0.0, 5.0, 14.5, 14.0, 8.0);
-            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.5, 1.0, 13.0, 14.5, 15.0, 16.0);
-            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.5, 1.0, 0.0, 14.5, 15.0, 3.0);
-            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.5, 3.0, 15.0, 14.5);
-            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.5, 16.0, 15.0, 14.5);
+            private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 1.5, 11.0, 12.5, 14.5);
+            private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 1.5, 8.0, 12.5, 14.5);
+            private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(1.5, 0.0, 8.0, 14.5, 12.5, 11.0);
+            private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(1.5, 0.0, 5.0, 14.5, 12.5, 8.0);
+            private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(1.5, 1.0, 13.0, 14.5, 13.5, 16.0);
+            private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(1.5, 1.0, 0.0, 14.5, 13.5, 3.0);
+            private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 1.0, 1.5, 3.0, 13.5, 14.5);
+            private static final VoxelShape SHAPE_WALL_WEST   = Block.box(13.0, 1.0, 1.5, 16.0, 13.5, 14.5);
             { this.registerDefaultState(this.stateDefinition.any().setValue(LetterBlock.MATERIAL, SignMaterial.DEFAULT).setValue(LetterBlock.LIGHT_MODE, 0)); }
             @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE, LetterBlock.MATERIAL, LetterBlock.LIGHT_MODE); }
             @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return getStandardPlacementState(context, this.defaultBlockState()); }
@@ -1410,7 +1458,7 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_POUND = createLetterBlock("symbol_pound");
     public static final RegistrySupplier<Block> SYMBOL_AT = createStarBlock("symbol_at");
     public static final RegistrySupplier<Block> SYMBOL_AMPERSAND = createAmpersandBlock("symbol_ampersand");
-    public static final RegistrySupplier<Block> SYMBOL_PERCENT = createAmpersandBlock("symbol_percent");
+    public static final RegistrySupplier<Block> SYMBOL_PERCENT = createPercentBlock("symbol_percent");
 
     public static final RegistrySupplier<Block> SYMBOL_COLON = createColonBlock("symbol_colon");
     public static final RegistrySupplier<Block> SYMBOL_SEMICOLON = createSemicolonBlock("symbol_semicolon");
@@ -1419,7 +1467,7 @@ public class ModBlocks {
         private static final VoxelShape SHAPE_FLOOR_NORTH = Block.box(8.0, 0.0, 6.5, 11.0, 16.0, 9.5);
         private static final VoxelShape SHAPE_FLOOR_SOUTH = Block.box(5.0, 0.0, 6.5, 8.0, 16.0, 9.5);
         private static final VoxelShape SHAPE_FLOOR_EAST  = Block.box(6.5, 0.0, 8.0, 9.5, 16.0, 11.0);
-        private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.5, 0.0, 5.0, 9.5, 18.0, 8.0);
+        private static final VoxelShape SHAPE_FLOOR_WEST  = Block.box(6.5, 0.0, 5.0, 9.5, 16.0, 8.0);
         private static final VoxelShape SHAPE_WALL_NORTH  = Block.box(6.5, 0.0, 13.0, 9.5, 16.0, 16.0);
         private static final VoxelShape SHAPE_WALL_SOUTH  = Block.box(6.5, 0.0, 0.0, 9.5, 16.0, 3.0);
         private static final VoxelShape SHAPE_WALL_EAST   = Block.box(0.0, 0.0, 6.5, 3.0, 16.0, 9.5);
@@ -1442,8 +1490,8 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_DIVIDE = createDivideBlock("symbol_divide");
     public static final RegistrySupplier<Block> SYMBOL_APOSTROPHE = createApostropheBlock("symbol_apostrophe");
     public static final RegistrySupplier<Block> SYMBOL_QUOTES = createQuotesBlock("symbol_quotes");
-    public static final RegistrySupplier<Block> SYMBOL_GREATER_THAN = createLetterBlock("symbol_greater_than");
-    public static final RegistrySupplier<Block> SYMBOL_LESS_THAN = createLetterBlock("symbol_less_than");
+    public static final RegistrySupplier<Block> SYMBOL_GREATER_THAN = createInequalityBlock("symbol_greater_than");
+    public static final RegistrySupplier<Block> SYMBOL_LESS_THAN = createInequalityBlock("symbol_less_than");
 
     public static final RegistrySupplier<Block> SYMBOL_ASTERISK = createAsteriskBlock("symbol_asterisk");
     public static final RegistrySupplier<Block> SYMBOL_CHECKMARK = createCheckmarkBlock("symbol_checkmark");

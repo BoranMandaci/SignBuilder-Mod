@@ -1,6 +1,7 @@
 package com.boran.signbuilder.client.render;
 
 import com.boran.signbuilder.block.BackplateBlock;
+import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.item.SignBlueprintItem;
@@ -220,14 +221,31 @@ public class BlueprintPreviewRenderer {
 
                 double plateClearance = (attachFace == AttachFace.WALL ? 1.0 : 2.0) * size / 16.0;
                 if (attachFace != AttachFace.WALL) {
-                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ,
-                            groupCenterX + normalX * plateClearance, groupCenterZ + normalZ * plateClearance);
+                    double targetX = groupCenterX + normalX * plateClearance;
+                    double targetZ = groupCenterZ + normalZ * plateClearance;
+                    if (LetterBlock.isLateralDot(stateToPlace)) {
+                        ModelCentering.Center currentCenter = ModelCentering.transformedCenter(model, stateToPlace, rotationDelta,
+                                size == 1, modelScale, offsetX, offsetZ);
+                        ModelCentering.Center targetCenter = ModelCentering.centerAlongNormal(currentCenter, targetX, targetZ, normalX, normalZ);
+                        targetX = targetCenter.x();
+                        targetZ = targetCenter.z();
+                    }
+                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ, targetX, targetZ);
                 } else {
                     poseStack.translate(normalX * plateClearance / modelScale, 0.0, normalZ * plateClearance / modelScale);
                 }
             } else {
                 if (attachFace != AttachFace.WALL) {
-                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ, groupCenterX, groupCenterZ);
+                    double targetX = groupCenterX;
+                    double targetZ = groupCenterZ;
+                    if (LetterBlock.isLateralDot(stateToPlace)) {
+                        ModelCentering.Center currentCenter = ModelCentering.transformedCenter(model, stateToPlace, rotationDelta,
+                                size == 1, modelScale, offsetX, offsetZ);
+                        ModelCentering.Center targetCenter = ModelCentering.centerAlongNormal(currentCenter, targetX, targetZ, normalX, normalZ);
+                        targetX = targetCenter.x();
+                        targetZ = targetCenter.z();
+                    }
+                    ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ, targetX, targetZ);
                 }
             }
 

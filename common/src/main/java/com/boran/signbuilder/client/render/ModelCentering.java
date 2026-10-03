@@ -69,6 +69,18 @@ public final class ModelCentering {
         return new Center(normalPosition * nx + tangentPosition * tx, normalPosition * nz + tangentPosition * tz);
     }
 
+    public static Center centerAlongNormal(Center current, double targetX, double targetZ, double normalX, double normalZ) {
+        double length = Math.sqrt(normalX * normalX + normalZ * normalZ);
+        if (length == 0.0) return new Center(targetX, targetZ);
+        double nx = normalX / length;
+        double nz = normalZ / length;
+        double tx = -nz;
+        double tz = nx;
+        double normalPosition = targetX * nx + targetZ * nz;
+        double tangentPosition = current.x() * tx + current.z() * tz;
+        return new Center(normalPosition * nx + tangentPosition * tx, normalPosition * nz + tangentPosition * tz);
+    }
+
     private static ModelCenters findCenters(BakedModel model, BlockState state) {
         double[] minOriginX = new double[8];
         double[] minOriginZ = new double[8];

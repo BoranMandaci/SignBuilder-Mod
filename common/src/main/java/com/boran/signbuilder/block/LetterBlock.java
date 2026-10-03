@@ -406,8 +406,11 @@ public class LetterBlock extends Block implements EntityBlock {
                     double stepZ = SignRotation.horizontalStepZ(rotation, false);
                     double targetX = 0.5 + stepX * (size - 1) * 0.5;
                     double targetZ = 0.5 + stepZ * (size - 1) * 0.5;
-                    glyphShape = centerShapeAt(glyphShape, targetX + (master.hasBackplate() ? normalX * plateClearance : 0.0),
-                            targetZ + (master.hasBackplate() ? normalZ * plateClearance : 0.0));
+                    double glyphTargetX = targetX + (master.hasBackplate() ? normalX * plateClearance : 0.0);
+                    double glyphTargetZ = targetZ + (master.hasBackplate() ? normalZ * plateClearance : 0.0);
+                    glyphShape = isLateralDot(state)
+                            ? centerShapeAlongNormal(glyphShape, glyphTargetX, glyphTargetZ, normalX, normalZ)
+                            : centerShapeAt(glyphShape, glyphTargetX, glyphTargetZ);
                     if (master.hasBackplate()) plateShape = centerShapeAt(plateShape, targetX, targetZ);
                 }
                 VoxelShape finalShape = master.hasBackplate() ? Shapes.or(glyphShape, plateShape) : glyphShape;
@@ -438,8 +441,11 @@ public class LetterBlock extends Block implements EntityBlock {
                 if (master.hasBackplate()) plateShape = SignRotation.rotateAroundBlockCenter(plateShape, rotationDelta);
                 if (master.hasBackplate()) glyphShape = glyphShape.move(normalX * plateClearance, 0.0, normalZ * plateClearance);
                 if (face != AttachFace.WALL) {
-                    glyphShape = centerShapeAt(glyphShape, 0.5 + (master.hasBackplate() ? normalX * plateClearance : 0.0),
-                            0.5 + (master.hasBackplate() ? normalZ * plateClearance : 0.0));
+                    double glyphTargetX = 0.5 + (master.hasBackplate() ? normalX * plateClearance : 0.0);
+                    double glyphTargetZ = 0.5 + (master.hasBackplate() ? normalZ * plateClearance : 0.0);
+                    glyphShape = isLateralDot(state)
+                            ? centerShapeAlongNormal(glyphShape, glyphTargetX, glyphTargetZ, normalX, normalZ)
+                            : centerShapeAt(glyphShape, glyphTargetX, glyphTargetZ);
                     if (master.hasBackplate()) {
                         plateShape = centerShapeAt(plateShape, 0.5, 0.5);
                         plateShape = SignRotation.widenAlongTangent(plateShape, rotation, Math.sqrt(2.0));
@@ -456,6 +462,26 @@ public class LetterBlock extends Block implements EntityBlock {
         double centerX = (bounds.minX + bounds.maxX) * 0.5;
         double centerZ = (bounds.minZ + bounds.maxZ) * 0.5;
         return shape.move(targetX - centerX, 0.0, targetZ - centerZ);
+    }
+
+    private static VoxelShape centerShapeAlongNormal(VoxelShape shape, double targetX, double targetZ, double normalX, double normalZ) {
+        AABB bounds = shape.bounds();
+        double centerX = (bounds.minX + bounds.maxX) * 0.5;
+        double centerZ = (bounds.minZ + bounds.maxZ) * 0.5;
+        double tangentX = -normalZ;
+        double tangentZ = normalX;
+        double targetNormal = targetX * normalX + targetZ * normalZ;
+        double currentTangent = centerX * tangentX + centerZ * tangentZ;
+        double targetCenterX = targetNormal * normalX + currentTangent * tangentX;
+        double targetCenterZ = targetNormal * normalZ + currentTangent * tangentZ;
+        return shape.move(targetCenterX - centerX, 0.0, targetCenterZ - centerZ);
+    }
+
+    public static boolean isLateralDot(BlockState state) {
+        var blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        return blockId != null
+                && blockId.getNamespace().equals("signbuilder")
+                && (blockId.getPath().equals("symbol_dot_left") || blockId.getPath().equals("symbol_dot_right"));
     }
 
     private static double getMultiblockOffsetX(AttachFace face, Direction facing, int size) {
