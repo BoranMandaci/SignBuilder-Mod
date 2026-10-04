@@ -111,7 +111,7 @@ public class WrenchItem extends Item {
         }
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.brush.smart_fill").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)));
-        super.appendHoverText(pStack, context, pTooltipComponents, pIsAdvanced);
+        
     }
 
     private void finishPinRecording(ItemStack stack, Player player, Level level) {

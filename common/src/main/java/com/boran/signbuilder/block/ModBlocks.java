@@ -33,7 +33,7 @@ public class ModBlocks {
     public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
 
     private static BlockBehaviour.Properties createLetterProperties() {
-        return BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE)
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
                 .noOcclusion()
                 .lightLevel(state -> {
                     if (!state.hasProperty(LetterBlock.LIGHT_MODE)) return 0;
@@ -73,7 +73,7 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> registerLetterBlock(String name, Supplier<Block> supplier) {
         RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
-        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties().useBlockDescriptionPrefix()));
+        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
 
         ALL_SIGN_BLOCKS.add(blockReg);
         if (name.startsWith("letter_")) LETTER_ITEMS.add(itemReg);
@@ -1510,20 +1510,20 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_TROPHY = createTrophyBlock("symbol_trophy");
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
-            () -> new BackplateBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CONCRETE)
+            () -> new BackplateBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
-            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties().useBlockDescriptionPrefix()));
+            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
-            () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+            () -> new SignPressBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                     .strength(5.0f, 6.0f)
                     .requiresCorrectToolForDrops()
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
-            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties().useBlockDescriptionPrefix()));
+            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
 
     public static void register() {
         BLOCKS.register();

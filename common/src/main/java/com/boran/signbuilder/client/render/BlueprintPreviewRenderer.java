@@ -66,7 +66,7 @@ public class BlueprintPreviewRenderer {
         }
         if (!(stack.getItem() instanceof SignBlueprintItem)) return;
 
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (tag == null || !tag.contains("BlueprintText")) return;
 
         String text = tag.getString("BlueprintText");
@@ -354,12 +354,12 @@ public class BlueprintPreviewRenderer {
                 nz = dir.getStepZ();
             }
 
-            consumer.vertex(poseMatrix, x, y, z)
-                    .color(red, green, blue, alpha)
-                    .uv(u, v)
-                    .uv2(light)
-                    .normal(normalMatrix, nx, ny, nz)
-                    .endVertex();
+            consumer.addVertex(poseMatrix, x, y, z)
+                    .setColor(red, green, blue, alpha)
+                    .setUv(u, v)
+                    .setLight(light)
+                    .setNormal(nx, ny, nz)
+                    ;
         }
     }
 }

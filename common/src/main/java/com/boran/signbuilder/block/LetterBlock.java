@@ -13,6 +13,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -762,26 +764,26 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionResult.PASS;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof WrenchItem || held.getItem() instanceof SignBlueprintItem) {
-            return InteractionResult.PASS;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         if (player.isShiftKeyDown()) {
             if (tryDetachBackplate(level, pos, player)) {
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
-            return InteractionResult.PASS;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         BlockEntity rawBe = level.getBlockEntity(pos);
         if (!(rawBe instanceof LetterBlockEntity rawLetter)) {
-            return super.use(state, level, pos, player, hand, hit);
+            return super.useItemOn(stack, state, level, pos, player, hand, hit);
         }
 
         LetterBlockEntity master = findMaster(level, pos, rawLetter);
@@ -797,27 +799,27 @@ public class LetterBlock extends Block implements EntityBlock {
                 && state.getValue(FACE) != AttachFace.WALL
                 && isOnBackSide(player, pos, state, master.getFacingRotation())) {
             if (!master.getBackGlyph().isEmpty()) {
-                return InteractionResult.FAIL;
+                return net.minecraft.world.ItemInteractionResult.FAIL;
             }
             if (!level.isClientSide()) {
                 master.setBackGlyph(held);
                 if (!player.isCreative()) held.shrink(1);
                 level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
         if (held.is(ModBlocks.BACKPLATE_ITEM.get())) {
             if (master.hasBackplate()) {
-                return InteractionResult.PASS;
+                return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             }
 
             if (!player.isCreative() && held.getCount() < cost) {
-                return InteractionResult.FAIL;
+                return net.minecraft.world.ItemInteractionResult.FAIL;
             }
 
             if (!level.isClientSide()) {
-                CompoundTag beTag = held.getTagElement("BlockEntityTag");
+                CompoundTag beTag = held.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
                 LetterBlockEntity temp = new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), mPos, mState);
                 if (beTag != null) {
                     BackplateBlock.applyBackplateTagToEntity(temp, beTag);
@@ -852,13 +854,13 @@ public class LetterBlock extends Block implements EntityBlock {
                     }
                 });
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
         AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
         if (face == AttachFace.WALL && master.getButtonMode() != 0) {
             if (master.getButtonMode() == 4) {
-                return InteractionResult.CONSUME;
+                return net.minecraft.world.ItemInteractionResult.CONSUME;
             }
             if (!level.isClientSide()) {
                 if (master.isSyncWord() && master.getButtonMode() != 3) {
@@ -867,10 +869,10 @@ public class LetterBlock extends Block implements EntityBlock {
                     master.triggerPress(player);
                 }
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        return super.use(state, level, pos, player, hand, hit);
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     @Override
@@ -878,9 +880,9 @@ public class LetterBlock extends Block implements EntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof LetterBlockEntity lbe) {
-            CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+            CompoundTag beTag = stack.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
             if (beTag != null) {
-                lbe.load(beTag);
+                lbe.loadWithComponents(beTag, level.registryAccess());
             }
             if (state.getValue(FACE) == AttachFace.WALL) {
                 lbe.setFacingRotation(SignRotation.fromDirection(state.getValue(FACING)));
@@ -1135,7 +1137,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof LetterBlockEntity rawLbe) {
@@ -1172,6 +1174,7 @@ public class LetterBlock extends Block implements EntityBlock {
             }
         }
         super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     private static void destroyAll4Blocks(Level level, BlockPos masterPos, BlockState masterState, BlockPos triggeredPos, int rotation) {
@@ -1245,13 +1248,13 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     private void spawnLetterDrops(Level level, BlockPos dropPos, BlockState dropState, LetterBlockEntity lbe, int multiplier, int groupSize, ItemStack tool) {
-        boolean hasSilkTouch = !tool.isEmpty() && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
+        boolean hasSilkTouch = !tool.isEmpty() && EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
         LetterBlockEntity backplateSource = findBackplateSource(level, dropPos, dropState, lbe, groupSize);
 
         if (hasSilkTouch) {
             ItemStack backGlyph = lbe.getBackGlyph().copy();
             ItemStack letterStack = lbe.getDroppedItemStack(dropState);
-            CompoundTag itemTag = letterStack.getTag();
+            CompoundTag itemTag = letterStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
             if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
                 CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
                 beTag.remove("BackGlyph");
@@ -1334,7 +1337,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     private static SignMaterial getBackGlyphMaterial(ItemStack glyph) {
-        CompoundTag blockEntityTag = glyph.getTagElement("BlockEntityTag");
+        CompoundTag blockEntityTag = glyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (blockEntityTag != null && blockEntityTag.contains("SavedMaterial")) {
             String value = blockEntityTag.getString("SavedMaterial");
             for (SignMaterial material : SignMaterial.values()) {
@@ -1344,7 +1347,7 @@ public class LetterBlock extends Block implements EntityBlock {
             }
         }
 
-        CompoundTag stateTag = glyph.getTagElement("BlockStateTag");
+        CompoundTag stateTag = glyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY).properties().isEmpty() ? null : new net.minecraft.nbt.CompoundTag();
         if (stateTag != null && stateTag.contains("material")) {
             String value = stateTag.getString("material");
             for (SignMaterial material : SignMaterial.values()) {

@@ -578,7 +578,6 @@ public class LetterBlockEntity extends BlockEntity {
         }
     }
 
-    @Override
     protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putInt("RGBColor", this.rgbColor);
@@ -626,8 +625,8 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
-        super.load(tag, registries);
+    protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.contains("IsRainbow")) this.isRainbow = tag.getBoolean("IsRainbow");
         if (tag.contains("RGBColor") && !this.isRainbow) this.rgbColor = tag.getInt("RGBColor");
         if (tag.contains("SavedMaterial")) {
@@ -776,19 +775,19 @@ public class LetterBlockEntity extends BlockEntity {
             if (this.backplateBackColor != 0xFFFFFF) beTag.putInt("BPBackColor", this.backplateBackColor);
             if (this.backplateFrontRainbow) beTag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
             if (this.backplateBackRainbow) beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
-            if (!this.backGlyph.isEmpty()) beTag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+            if (!this.backGlyph.isEmpty()) beTag.put("BackGlyph", this.backGlyph.save(this.level.registryAccess()));
         }
 
         if (this.buttonMode != 0) beTag.putInt("ButtonMode", this.buttonMode);
         if (this.syncWord) beTag.putBoolean("SyncWord", this.syncWord);
         if (!this.pinCode.isEmpty()) beTag.putString("PinCode", this.pinCode);
 
-        stack.getOrCreateTag().put("BlockEntityTag", beTag);
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, stack, t -> t.merge(beTag));
 
         if (this.savedMaterial != SignMaterial.DEFAULT) {
             CompoundTag stateTag = new CompoundTag();
             stateTag.putString("material", this.savedMaterial.name().toLowerCase());
-            stack.getOrCreateTag().put("BlockStateTag", stateTag);
+            stack.set(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY);
         }
 
         return stack;
@@ -914,7 +913,7 @@ public class LetterBlockEntity extends BlockEntity {
                             entity.isAudioPlaying = false;
                             for (BlockPos p : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
                                 if (level.getBlockEntity(p) instanceof JukeboxBlockEntity jbe) {
-                                    if (jbe.isRecordPlaying()) { entity.isAudioPlaying = true; break; }
+                                    if (jbe.getSongPlayer().isPlaying()) { entity.isAudioPlaying = true; break; }
                                 }
                             }
                         }

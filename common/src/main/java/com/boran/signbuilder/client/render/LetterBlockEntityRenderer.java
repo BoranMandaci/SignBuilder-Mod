@@ -243,10 +243,10 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             BlockState backState = backBlock.defaultBlockState()
                     .setValue(LetterBlock.FACE, face)
                     .setValue(LetterBlock.FACING, facing.getOpposite());
-            CompoundTag backTag = backGlyph.getTagElement("BlockEntityTag");
+            CompoundTag backTag = backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
             SignMaterial backMaterial = readMaterial(backTag, "SavedMaterial");
             if (backState.hasProperty(LetterBlock.MATERIAL)) {
-                CompoundTag stateTag = backGlyph.getTagElement("BlockStateTag");
+                CompoundTag stateTag = backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY).properties().isEmpty() ? null : new net.minecraft.nbt.CompoundTag();
                 if (stateTag != null && stateTag.contains("material")) {
                     try {
                         backState = backState.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase()));
@@ -346,7 +346,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     }
 
     private static boolean isBackGlyphRainbow(ItemStack stack) {
-        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         return tag != null && tag.getBoolean("IsRainbow");
     }
 

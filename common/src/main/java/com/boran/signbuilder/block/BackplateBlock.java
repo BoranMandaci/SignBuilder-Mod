@@ -12,6 +12,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -81,11 +83,11 @@ public class BackplateBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
 
         if (held.getItem() instanceof PaintBrushItem) {
-            return InteractionResult.PASS;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
@@ -108,13 +110,13 @@ public class BackplateBlock extends Block implements EntityBlock {
             Direction facing = state.getValue(FACING);
             boolean backSide = isOnBackSide(player, pos, facingRotation);
             if (face == AttachFace.WALL && backSide) {
-                return InteractionResult.FAIL;
+                return net.minecraft.world.ItemInteractionResult.FAIL;
             }
             Direction sideFacing = backSide ? facing.getOpposite() : facing;
             int sideRotation = Math.floorMod(facingRotation + (backSide ? 4 : 0), 8);
             Direction letterFacing = (face != AttachFace.WALL) ? sideFacing.getClockWise() : sideFacing;
             int letterRotation = Math.floorMod(sideRotation + (face != AttachFace.WALL ? 2 : 0), 8);
-            CompoundTag blockEntityTag = held.getTagElement("BlockEntityTag");
+            CompoundTag blockEntityTag = held.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
 
             BlockState newLetterState = letterBlock.defaultBlockState()
                     .setValue(LetterBlock.FACING, letterFacing)
@@ -128,7 +130,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 BlockEntity newBe = level.getBlockEntity(pos);
                 if (newBe instanceof LetterBlockEntity newLetter) {
                     if (blockEntityTag != null) {
-                        newLetter.load(blockEntityTag);
+                        newLetter.loadWithComponents(blockEntityTag, level.registryAccess());
                     }
                     newLetter.setFacingRotation(letterRotation);
                     newLetter.setHasBackplate(true);
@@ -148,7 +150,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 BlockEntity newBe = level.getBlockEntity(pos);
                 if (newBe instanceof LetterBlockEntity newLetter) {
                     if (blockEntityTag != null) {
-                        newLetter.load(blockEntityTag);
+                        newLetter.loadWithComponents(blockEntityTag, level.registryAccess());
                     }
                     newLetter.setFacingRotation(letterRotation);
                     newLetter.setHasBackplate(true);
@@ -163,10 +165,10 @@ public class BackplateBlock extends Block implements EntityBlock {
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
                 );
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        return super.use(state, level, pos, player, hand, hit);
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     private static boolean isOnBackSide(Player player, BlockPos pos, int rotation) {
@@ -180,7 +182,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof LetterBlockEntity lbe) {
-            CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+            CompoundTag beTag = stack.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
             if (beTag != null) {
                 applyBackplateTagToEntity(lbe, beTag);
                 lbe.setChanged();
@@ -208,7 +210,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         BlockEntity be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
 
-        boolean hasSilkTouch = tool != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
+        boolean hasSilkTouch = tool != null && EnchantmentHelper.getItemEnchantmentLevel(params.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
 
         if (be instanceof LetterBlockEntity lbe) {
             if (hasSilkTouch) {
@@ -286,7 +288,7 @@ public class BackplateBlock extends Block implements EntityBlock {
             beTag.putBoolean("BackplateBackRainbow", true);
         }
 
-        stack.addTagElement("BlockEntityTag", beTag);
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, stack, t -> t.merge(beTag));
         return stack;
     }
 

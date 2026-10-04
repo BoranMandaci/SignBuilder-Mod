@@ -85,15 +85,14 @@ public class SignPressBlockEntity extends BlockEntity implements MenuProvider, C
         this.inventory.clear();
     }
 
-    @Override
     protected void saveAdditional(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider registries) {
         super.saveAdditional(nbt, registries);
         ContainerHelper.saveAllItems(nbt, this.inventory, registries);
     }
 
     @Override
-    public void load(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider registries) {
-        super.load(nbt, registries);
+    protected void loadAdditional(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
         this.inventory.clear();
         ContainerHelper.loadAllItems(nbt, this.inventory, registries);
     }
