@@ -258,10 +258,7 @@ public class LetterBlock extends Block implements EntityBlock {
     public static void updateLightLevel(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
         if (level.isClientSide()) return;
 
-        int targetMode = 0;
-        if (entity.isActive()) {
-            targetMode = (entity.getWrenchMode() == 10) ? 1 : 2;
-        }
+        int targetMode = entity.getEmittedLightMode();
 
         if (entity.getSize() > 1) {
             BlockPos[] positions = (entity.getSize() == 3)
@@ -723,6 +720,7 @@ public class LetterBlock extends Block implements EntityBlock {
         if (!(startBe instanceof LetterBlockEntity startRaw)) return;
         LetterBlockEntity originMaster = findMaster(level, startPos, startRaw);
         if (originMaster.getButtonMode() == 0) return;
+        if (originMaster.getButtonMode() == 4) return;
 
         boolean isPulse = (originMaster.getButtonMode() == 1);
         if (isPulse && originMaster.isPressed()) return;
@@ -859,6 +857,9 @@ public class LetterBlock extends Block implements EntityBlock {
 
         AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
         if (face == AttachFace.WALL && master.getButtonMode() != 0) {
+            if (master.getButtonMode() == 4) {
+                return InteractionResult.CONSUME;
+            }
             if (!level.isClientSide()) {
                 if (master.isSyncWord() && master.getButtonMode() != 3) {
                     triggerWord(level, mPos, player);

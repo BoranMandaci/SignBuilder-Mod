@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ModMessages {
     public static final ResourceLocation BRUSH_COLOR = new ResourceLocation("signbuilder", "brush_color");
     public static final ResourceLocation WRENCH_MODE = new ResourceLocation("signbuilder", "wrench_mode");
+    public static final ResourceLocation WRENCH_HOLD = new ResourceLocation("signbuilder", "wrench_hold");
     public static final ResourceLocation BLUEPRINT_TEXT = new ResourceLocation("signbuilder", "blueprint_text");
     public static final ResourceLocation SIGN_PRESS_CRAFT = new ResourceLocation("signbuilder", "sign_press_craft");
     public static final ResourceLocation BLUEPRINT_UNDO = new ResourceLocation("signbuilder", "blueprint_undo");
@@ -20,6 +21,11 @@ public class ModMessages {
 
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, WRENCH_MODE, (buf, context) -> {
             WrenchModeC2SPacket packet = new WrenchModeC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, WRENCH_HOLD, (buf, context) -> {
+            WrenchHoldC2SPacket packet = new WrenchHoldC2SPacket(buf);
             context.queue(() -> packet.handle(context));
         });
 
@@ -48,6 +54,9 @@ public class ModMessages {
         } else if (message instanceof WrenchModeC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(WRENCH_MODE, buf);
+        } else if (message instanceof WrenchHoldC2SPacket packet) {
+            packet.toBytes(buf);
+            NetworkManager.sendToServer(WRENCH_HOLD, buf);
         } else if (message instanceof BlueprintTextC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(BLUEPRINT_TEXT, buf);

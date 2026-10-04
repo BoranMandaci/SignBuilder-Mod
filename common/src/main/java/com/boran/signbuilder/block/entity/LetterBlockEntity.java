@@ -36,6 +36,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
 
 public class LetterBlockEntity extends BlockEntity {
     private int rgbColor = 0xFFFFFF;
@@ -63,11 +65,26 @@ public class LetterBlockEntity extends BlockEntity {
     private BlockPos masterPos = null;
 
     private boolean isAudioPlaying = false;
+    private int customLightOnTicks = 10;
+    private int customLightOffTicks = 10;
+    private int customLightType = 0;
+    private int customLightRange = 8;
+    private int customLightOffRange = 8;
+    private int customLightCloseDelayTicks = 0;
+    private int customLightCloseDelayRemaining = 0;
+    private boolean customLightCloseDelayPending = false;
+    private boolean customLightNightOnly = true;
+    private boolean customLightPlayers = true;
+    private boolean customLightLowPower = false;
+    private boolean customLightLookOnly = true;
 
     private int buttonMode = 0;
     private boolean syncWord = false;
     private boolean isPressed = false;
     private int pressTicks = 0;
+    private int holdTimeoutTicks = 0;
+    @Nullable
+    private UUID holdOwner;
     private String pinCode = "";
     private String enteredBuffer = "";
     private int pinResetTicks = 0;
@@ -173,6 +190,70 @@ public class LetterBlockEntity extends BlockEntity {
 
     public void setWrenchMode(int mode) { this.wrenchMode = mode; setChanged(); sync(); }
     public int getWrenchMode() { return this.wrenchMode; }
+    public int getCustomLightOnTicks() { return this.customLightOnTicks; }
+    public int getCustomLightOffTicks() { return this.customLightOffTicks; }
+    public int getCustomLightType() { return this.customLightType; }
+    public int getCustomLightRange() { return this.customLightRange; }
+    public int getCustomLightOffRange() { return this.customLightOffRange; }
+    public int getCustomLightCloseDelayTicks() { return this.customLightCloseDelayTicks; }
+    public boolean isCustomLightNightOnly() { return this.customLightNightOnly; }
+    public boolean doesCustomLightDetectPlayers() { return this.customLightPlayers; }
+    public boolean isCustomLightLowPower() { return this.customLightLowPower; }
+    public boolean isCustomLightLookOnly() { return this.customLightLookOnly; }
+    public int getEmittedLightMode() {
+        if (!this.isActive) return 0;
+        return this.wrenchMode == 10 || (this.wrenchMode == 11 && this.customLightLowPower) ? 1 : 2;
+    }
+    public void setLightConfiguration(int mode, boolean active, boolean detectsMonsters, boolean detectsAnimals, int onTicks, int offTicks, int customType, int customRange, int customOffRange, int customCloseDelayTicks, boolean customNightOnly, boolean customPlayers, boolean customLowPower, boolean customLookOnly) {
+        int clampedOn = Math.max(1, Math.min(1200, onTicks));
+        int clampedOff = Math.max(1, Math.min(1200, offTicks));
+        int clampedType = Math.max(0, Math.min(3, customType));
+        int clampedRange = Math.max(1, Math.min(32, customRange));
+        int clampedOffRange = Math.max(clampedRange, Math.min(32, customOffRange));
+        int clampedCloseDelay = Math.max(0, Math.min(100, customCloseDelayTicks));
+        boolean configuredActive = active && !(mode == 11 && clampedType == 1);
+        boolean usesDetectionFilters = mode == 5 || (mode == 11 && clampedType == 1);
+        boolean detectorSettingsMatch = !usesDetectionFilters
+                || (this.detectsMonsters == detectsMonsters && this.detectsAnimals == detectsAnimals);
+        boolean customSettingsMatch = mode != 11 || (this.customLightType == clampedType
+                && this.customLightLowPower == customLowPower
+                && switch (clampedType) {
+            case 1 -> this.customLightRange == clampedRange && this.customLightOffRange == clampedOffRange && this.customLightCloseDelayTicks == clampedCloseDelay && this.customLightPlayers == customPlayers;
+            case 2 -> this.customLightNightOnly == customNightOnly;
+            case 3 -> this.customLightLookOnly == customLookOnly;
+            default -> this.customLightOnTicks == clampedOn && this.customLightOffTicks == clampedOff;
+        });
+        if (this.wrenchMode == mode && this.isActive == configuredActive && detectorSettingsMatch && customSettingsMatch) return;
+        this.wrenchMode = mode;
+        this.isActive = configuredActive;
+        if (mode == 5 || (mode == 11 && clampedType == 1)) {
+            this.detectsMonsters = detectsMonsters;
+            this.detectsAnimals = detectsAnimals;
+        }
+        if (mode == 11) {
+            this.customLightType = clampedType;
+            this.customLightLowPower = customLowPower;
+            this.customLightCloseDelayPending = false;
+            this.customLightCloseDelayRemaining = 0;
+            if (clampedType == 0) {
+                this.customLightOnTicks = clampedOn;
+                this.customLightOffTicks = clampedOff;
+            } else if (clampedType == 1) {
+                this.customLightRange = clampedRange;
+                this.customLightOffRange = clampedOffRange;
+                this.customLightCloseDelayTicks = clampedCloseDelay;
+                this.customLightPlayers = customPlayers;
+                this.detectsMonsters = detectsMonsters;
+                this.detectsAnimals = detectsAnimals;
+            } else if (clampedType == 2) {
+                this.customLightNightOnly = customNightOnly;
+            } else {
+                this.customLightLookOnly = customLookOnly;
+            }
+        }
+        setChanged();
+        sync();
+    }
     public void setDetectsMonsters(boolean detects) { this.detectsMonsters = detects; setChanged(); sync(); }
     public boolean doesDetectMonsters() { return this.detectsMonsters; }
     public void setDetectsAnimals(boolean detects) { this.detectsAnimals = detects; setChanged(); sync(); }
@@ -213,7 +294,16 @@ public class LetterBlockEntity extends BlockEntity {
     public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; setChanged(); sync(); }
 
     public int getButtonMode() { return this.buttonMode; }
-    public void setButtonMode(int mode) { this.buttonMode = mode; setChanged(); sync(); }
+    public void setButtonMode(int mode) {
+        if (this.buttonMode == 4 && mode != 4 && this.isPressed) {
+            this.holdOwner = null;
+            this.holdTimeoutTicks = 0;
+            applyPressedState(false, 0);
+        }
+        this.buttonMode = mode;
+        setChanged();
+        sync();
+    }
 
     public boolean isSyncWord() { return this.syncWord; }
     public void setSyncWord(boolean sync) { this.syncWord = sync; setChanged(); sync(); }
@@ -266,6 +356,44 @@ public class LetterBlockEntity extends BlockEntity {
         } else if (this.buttonMode == 3) {
             handlePinInput(player);
         }
+    }
+
+    public void setHoldPressed(UUID playerId, boolean pressed) {
+        LetterBlockEntity master = getEffectiveMaster();
+        if (master != this) {
+            master.setHoldPressed(playerId, pressed);
+            return;
+        }
+        if (this.level == null || this.level.isClientSide() || (pressed && this.buttonMode != 4)) return;
+
+        List<LetterBlockEntity> targets = (pressed && this.syncWord) || (!pressed && this.holdOwner != null)
+                ? collectConnectedWord()
+                : List.of(this);
+        boolean changed = false;
+        for (LetterBlockEntity target : targets) {
+            BlockState state = target.getBlockState();
+            if (state.hasProperty(LetterBlock.FACE) && state.getValue(LetterBlock.FACE) == AttachFace.WALL) {
+                changed |= target.updateHoldState(playerId, pressed);
+            }
+        }
+        if (changed) this.playPressSound(pressed);
+    }
+
+    private boolean updateHoldState(UUID playerId, boolean pressed) {
+        if (pressed) {
+            if (this.buttonMode != 4 || (this.holdOwner != null && !this.holdOwner.equals(playerId))) return false;
+            this.holdOwner = playerId;
+            this.holdTimeoutTicks = 60;
+            if (this.isPressed) return false;
+            applyPressedState(true, 0);
+            return true;
+        }
+        if (!playerId.equals(this.holdOwner)) return false;
+        this.holdOwner = null;
+        this.holdTimeoutTicks = 0;
+        if (!this.isPressed) return false;
+        applyPressedState(false, 0);
+        return true;
     }
 
     private void handlePinInput(@Nullable Player player) {
@@ -461,6 +589,16 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putBoolean("DetectsMonsters", this.detectsMonsters);
         tag.putBoolean("DetectsAnimals", this.detectsAnimals);
         tag.putString("SavedMaterial", this.savedMaterial.name());
+        if (this.customLightOnTicks != 10) tag.putInt("CustomLightOnTicks", this.customLightOnTicks);
+        if (this.customLightOffTicks != 10) tag.putInt("CustomLightOffTicks", this.customLightOffTicks);
+        if (this.customLightType != 0) tag.putInt("CustomLightType", this.customLightType);
+        if (this.customLightRange != 8) tag.putInt("CustomLightRange", this.customLightRange);
+        if (this.customLightOffRange != this.customLightRange) tag.putInt("CustomLightOffRange", this.customLightOffRange);
+        if (this.customLightCloseDelayTicks != 0) tag.putInt("CustomLightCloseDelayTicks", this.customLightCloseDelayTicks);
+        if (!this.customLightNightOnly) tag.putBoolean("CustomLightNightOnly", false);
+        if (!this.customLightPlayers) tag.putBoolean("CustomLightPlayers", false);
+        if (this.customLightLowPower) tag.putBoolean("CustomLightLowPower", true);
+        if (!this.customLightLookOnly) tag.putBoolean("CustomLightLookOnly", false);
 
         tag.putBoolean("HasBackplate", this.hasBackplate);
         tag.putString("BPFrontMat", this.backplateFrontMaterial.name());
@@ -501,6 +639,18 @@ public class LetterBlockEntity extends BlockEntity {
 
         if (tag.contains("DetectsMonsters")) this.detectsMonsters = tag.getBoolean("DetectsMonsters");
         if (tag.contains("DetectsAnimals")) this.detectsAnimals = tag.getBoolean("DetectsAnimals");
+        this.customLightOnTicks = tag.contains("CustomLightOnTicks") ? Math.max(1, Math.min(1200, tag.getInt("CustomLightOnTicks"))) : 10;
+        this.customLightOffTicks = tag.contains("CustomLightOffTicks") ? Math.max(1, Math.min(1200, tag.getInt("CustomLightOffTicks"))) : 10;
+        this.customLightType = tag.contains("CustomLightType") ? Math.max(0, Math.min(3, tag.getInt("CustomLightType"))) : 0;
+        this.customLightRange = tag.contains("CustomLightRange") ? Math.max(1, Math.min(32, tag.getInt("CustomLightRange"))) : 8;
+        this.customLightOffRange = tag.contains("CustomLightOffRange") ? Math.max(this.customLightRange, Math.min(32, tag.getInt("CustomLightOffRange"))) : this.customLightRange;
+        this.customLightCloseDelayTicks = tag.contains("CustomLightCloseDelayTicks") ? Math.max(0, Math.min(100, tag.getInt("CustomLightCloseDelayTicks"))) : 0;
+        this.customLightCloseDelayRemaining = 0;
+        this.customLightCloseDelayPending = false;
+        this.customLightNightOnly = !tag.contains("CustomLightNightOnly") || tag.getBoolean("CustomLightNightOnly");
+        this.customLightPlayers = !tag.contains("CustomLightPlayers") || tag.getBoolean("CustomLightPlayers");
+        this.customLightLowPower = tag.getBoolean("CustomLightLowPower");
+        this.customLightLookOnly = !tag.contains("CustomLightLookOnly") || tag.getBoolean("CustomLightLookOnly");
 
         if (tag.contains("HasBackplate")) this.hasBackplate = tag.getBoolean("HasBackplate");
         if (tag.contains("BPFrontMat")) {
@@ -538,6 +688,8 @@ public class LetterBlockEntity extends BlockEntity {
         this.syncWord = tag.getBoolean("SyncWord");
         this.isPressed = tag.getBoolean("IsPressed");
         this.pressTicks = tag.getInt("PressTicks");
+        this.holdTimeoutTicks = 0;
+        this.holdOwner = null;
         this.pinCode = tag.contains("PinCode") ? tag.getString("PinCode") : "";
         this.isPinPowered = tag.getBoolean("IsPinPowered");
 
@@ -567,6 +719,16 @@ public class LetterBlockEntity extends BlockEntity {
         boolean isCustomized = (this.rgbColor != 0xFFFFFF)
                 || this.isRainbow
                 || (this.wrenchMode != 0)
+                || this.customLightOnTicks != 10
+                || this.customLightOffTicks != 10
+                || this.customLightType != 0
+                || this.customLightRange != 8
+                || this.customLightOffRange != this.customLightRange
+                || this.customLightCloseDelayTicks != 0
+                || !this.customLightNightOnly
+                || !this.customLightPlayers
+                || this.customLightLowPower
+                || !this.customLightLookOnly
                 || this.isActive
                 || !this.detectsMonsters
                 || this.detectsAnimals
@@ -592,6 +754,16 @@ public class LetterBlockEntity extends BlockEntity {
             beTag.putBoolean("IsActive", this.isActive);
             beTag.putBoolean("Glowing", this.isActive);
         }
+        if (this.customLightOnTicks != 10) beTag.putInt("CustomLightOnTicks", this.customLightOnTicks);
+        if (this.customLightOffTicks != 10) beTag.putInt("CustomLightOffTicks", this.customLightOffTicks);
+        if (this.customLightType != 0) beTag.putInt("CustomLightType", this.customLightType);
+        if (this.customLightRange != 8) beTag.putInt("CustomLightRange", this.customLightRange);
+        if (this.customLightOffRange != this.customLightRange) beTag.putInt("CustomLightOffRange", this.customLightOffRange);
+        if (this.customLightCloseDelayTicks != 0) beTag.putInt("CustomLightCloseDelayTicks", this.customLightCloseDelayTicks);
+        if (!this.customLightNightOnly) beTag.putBoolean("CustomLightNightOnly", false);
+        if (!this.customLightPlayers) beTag.putBoolean("CustomLightPlayers", false);
+        if (this.customLightLowPower) beTag.putBoolean("CustomLightLowPower", true);
+        if (!this.customLightLookOnly) beTag.putBoolean("CustomLightLookOnly", false);
         if (!this.detectsMonsters) beTag.putBoolean("DetectsMonsters", this.detectsMonsters);
         if (this.detectsAnimals) beTag.putBoolean("DetectsAnimals", this.detectsAnimals);
         if (this.savedMaterial != SignMaterial.DEFAULT) beTag.putString("SavedMaterial", this.savedMaterial.name());
@@ -646,11 +818,26 @@ public class LetterBlockEntity extends BlockEntity {
         }
 
         if (!level.isClientSide()) {
+            if (entity.getWrenchMode() == 11 && entity.customLightType == 1 && entity.customLightCloseDelayPending) {
+                if (entity.customLightCloseDelayRemaining > 0) {
+                    entity.customLightCloseDelayRemaining--;
+                }
+            }
             if (entity.pressTicks > 0) {
                 entity.pressTicks--;
                 if (entity.pressTicks == 0) {
                     entity.releaseButton();
                 }
+            }
+            if (entity.holdTimeoutTicks > 0) {
+                entity.holdTimeoutTicks--;
+                if (entity.holdTimeoutTicks == 0 && entity.isPressed) {
+                    entity.holdOwner = null;
+                    entity.applyPressedState(false, 0);
+                    entity.playPressSound(false);
+                }
+            } else if (entity.buttonMode == 4 && entity.isPressed) {
+                entity.applyPressedState(false, 0);
             }
             if (entity.pinResetTicks > 0) {
                 entity.pinResetTicks--;
@@ -696,7 +883,7 @@ public class LetterBlockEntity extends BlockEntity {
 
         if (!level.isClientSide()) {
             if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {
-                int expectedMode = entity.isActive() ? (entity.getWrenchMode() == 10 ? 1 : 2) : 0;
+                int expectedMode = entity.getEmittedLightMode();
                 if (state.hasProperty(LetterBlock.LIGHT_MODE) && state.getValue(LetterBlock.LIGHT_MODE) != expectedMode) {
                     LetterBlock.updateLightLevel(level, pos, state, entity);
                 }
@@ -755,13 +942,99 @@ public class LetterBlockEntity extends BlockEntity {
                             shouldGlow = isCurrentlyGlowing;
                         }
                         break;
+                    case 11:
+                        if (entity.customLightType == 1) {
+                            if (Math.floorMod(time + pos.asLong(), 10L) == 0) {
+                                boolean hasSelectedTargets = entity.customLightPlayers || entity.doesDetectMonsters() || entity.doesDetectAnimals();
+                                if (!hasSelectedTargets) {
+                                    entity.customLightCloseDelayPending = false;
+                                    entity.customLightCloseDelayRemaining = 0;
+                                    shouldGlow = false;
+                                } else {
+                                    int threshold = isCurrentlyGlowing ? entity.customLightOffRange : entity.customLightRange;
+                                    AABB customBounds = new AABB(pos).inflate(threshold);
+                                    double thresholdSquared = threshold * (double) threshold;
+                                    double centerX = pos.getX() + 0.5;
+                                    double centerY = pos.getY() + 0.5;
+                                    double centerZ = pos.getZ() + 0.5;
+                                    Predicate<LivingEntity> inRange = target -> target.distanceToSqr(centerX, centerY, centerZ) <= thresholdSquared;
+                                    List<? extends LivingEntity> targets;
+                                    if (entity.customLightPlayers && !entity.doesDetectMonsters() && !entity.doesDetectAnimals()) {
+                                        targets = level.getEntitiesOfClass(Player.class, customBounds, inRange);
+                                    } else if (!entity.customLightPlayers && entity.doesDetectMonsters() && !entity.doesDetectAnimals()) {
+                                        targets = level.getEntitiesOfClass(Monster.class, customBounds, inRange);
+                                    } else if (!entity.customLightPlayers && !entity.doesDetectMonsters() && entity.doesDetectAnimals()) {
+                                        targets = level.getEntitiesOfClass(Animal.class, customBounds, inRange);
+                                    } else {
+                                        targets = level.getEntitiesOfClass(LivingEntity.class, customBounds,
+                                                target -> ((target instanceof Player && entity.customLightPlayers) ||
+                                                        (entity.doesDetectMonsters() && target instanceof Monster) ||
+                                                        (entity.doesDetectAnimals() && target instanceof Animal)) && inRange.test(target));
+                                    }
+                                    if (!targets.isEmpty()) {
+                                        entity.customLightCloseDelayPending = false;
+                                        entity.customLightCloseDelayRemaining = 0;
+                                        shouldGlow = true;
+                                    } else if (isCurrentlyGlowing && entity.customLightCloseDelayTicks > 0) {
+                                        if (!entity.customLightCloseDelayPending) {
+                                            entity.customLightCloseDelayPending = true;
+                                            entity.customLightCloseDelayRemaining = entity.customLightCloseDelayTicks;
+                                            shouldGlow = true;
+                                        } else {
+                                            shouldGlow = entity.customLightCloseDelayRemaining > 0;
+                                            if (!shouldGlow) {
+                                                entity.customLightCloseDelayPending = false;
+                                                entity.customLightCloseDelayRemaining = 0;
+                                            }
+                                        }
+                                    } else {
+                                        entity.customLightCloseDelayPending = false;
+                                        entity.customLightCloseDelayRemaining = 0;
+                                        shouldGlow = false;
+                                    }
+                                }
+                            } else {
+                                shouldGlow = isCurrentlyGlowing;
+                            }
+                        } else if (entity.customLightType == 2) {
+                            if (Math.floorMod(time + pos.asLong(), 20L) == 0) {
+                                shouldGlow = level.isNight() == entity.customLightNightOnly;
+                            } else {
+                                shouldGlow = isCurrentlyGlowing;
+                            }
+                        } else if (entity.customLightType == 3) {
+                            if (Math.floorMod(time + pos.asLong(), 10L) == 0) {
+                                AABB lookBounds = new AABB(pos);
+                                if (entity.getSize() == 3) lookBounds = lookBounds.inflate(2.0);
+                                else if (entity.getSize() == 2) lookBounds = lookBounds.inflate(1.0);
+                                boolean lookedAt = false;
+                                for (Player player : level.players()) {
+                                    if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 256.0) {
+                                        Vec3 eye = player.getEyePosition();
+                                        Vec3 look = player.getLookAngle();
+                                        Vec3 end = eye.add(look.x * 16.0, look.y * 16.0, look.z * 16.0);
+                                        if (lookBounds.clip(eye, end).isPresent()) {
+                                            lookedAt = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                shouldGlow = entity.customLightLookOnly == lookedAt;
+                            } else {
+                                shouldGlow = isCurrentlyGlowing;
+                            }
+                        } else {
+                            int cycleLength = entity.customLightOnTicks + entity.customLightOffTicks;
+                            shouldGlow = Math.floorMod(time, cycleLength) < entity.customLightOnTicks;
+                        }
+                        break;
                 }
             }
             if (shouldGlow != isCurrentlyGlowing) {
                 entity.setActive(shouldGlow);
                 LetterBlock.updateLightLevel(level, pos, state, entity);
             } else {
-                int expectedMode = entity.isActive() ? (entity.getWrenchMode() == 10 ? 1 : 2) : 0;
+                int expectedMode = entity.getEmittedLightMode();
                 if (state.hasProperty(LetterBlock.LIGHT_MODE) && state.getValue(LetterBlock.LIGHT_MODE) != expectedMode) {
                     LetterBlock.updateLightLevel(level, pos, state, entity);
                 }

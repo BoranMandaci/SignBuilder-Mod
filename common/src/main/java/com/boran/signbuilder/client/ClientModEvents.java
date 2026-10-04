@@ -8,6 +8,7 @@ import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.screen.SignPressScreen;
 import com.boran.signbuilder.menu.ModMenuTypes;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.rendering.BlockEntityRendererRegistry;
 import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
 import dev.architectury.registry.menu.MenuRegistry;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ClientModEvents {
 
     public static void init() {
+        ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
         ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
             MenuRegistry.registerScreenFactory(ModMenuTypes.SIGN_PRESS_MENU.get(), SignPressScreen::new);
 

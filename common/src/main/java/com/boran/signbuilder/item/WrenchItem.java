@@ -34,15 +34,23 @@ import java.util.Set;
 
 public class WrenchItem extends Item {
 
-    public static final String[] MOD_KEYS = {
-            "gui.signbuilder.wrench.mode.normal", "gui.signbuilder.wrench.mode.blink", "gui.signbuilder.wrench.mode.flicker",
-            "gui.signbuilder.wrench.mode.wave", "gui.signbuilder.wrench.mode.breathing", "gui.signbuilder.wrench.mode.proximity",
-            "gui.signbuilder.wrench.mode.night_shift", "gui.signbuilder.wrench.mode.audio_sync", "gui.signbuilder.wrench.mode.disco",
-            "gui.signbuilder.wrench.mode.eye_contact", "gui.signbuilder.wrench.mode.low_power"
-    };
-
     public WrenchItem(Properties pProperties) {
         super(pProperties);
+    }
+
+    private static String getModeTranslationKey(int mode) {
+        return switch (mode) {
+            case 0 -> "gui.signbuilder.wrench.mode.normal";
+            case 1 -> "gui.signbuilder.wrench.mode.blink";
+            case 2 -> "gui.signbuilder.wrench.mode.flicker";
+            case 3 -> "gui.signbuilder.wrench.mode.wave";
+            case 4 -> "gui.signbuilder.wrench.mode.breathing";
+            case 7 -> "gui.signbuilder.wrench.mode.audio_sync";
+            case 8 -> "gui.signbuilder.wrench.mode.disco";
+            case 10 -> "gui.signbuilder.wrench.mode.low_power";
+            case 11 -> "gui.signbuilder.wrench.mode.custom";
+            default -> "gui.signbuilder.wrench.mode.legacy";
+        };
     }
 
     @Override
@@ -74,8 +82,8 @@ public class WrenchItem extends Item {
         }
 
         if (activeTab == 0) {
-            if (currentMode >= 0 && currentMode < MOD_KEYS.length) {
-                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.wrench.current_mode").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(MOD_KEYS[currentMode]).withStyle(ChatFormatting.AQUA)));
+            if (currentMode >= 0) {
+                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.wrench.current_mode").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(getModeTranslationKey(currentMode)).withStyle(ChatFormatting.AQUA)));
                 if (currentMode == 5) {
                     pTooltipComponents.add(Component.translatable(detectsMonsters ? "gui.signbuilder.wrench.monster_toggle_on" : "gui.signbuilder.wrench.monster_toggle_off").withStyle(detectsMonsters ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY));
                     pTooltipComponents.add(Component.translatable(detectsAnimals ? "gui.signbuilder.wrench.animal_toggle_on" : "gui.signbuilder.wrench.animal_toggle_off").withStyle(detectsAnimals ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.DARK_GRAY));
@@ -88,6 +96,7 @@ public class WrenchItem extends Item {
                 case 1 -> "gui.signbuilder.wrench.btn.pulse";
                 case 2 -> "gui.signbuilder.wrench.btn.toggle";
                 case 3 -> "gui.signbuilder.wrench.btn.pin";
+                case 4 -> "gui.signbuilder.wrench.btn.hold";
                 default -> "gui.signbuilder.wrench.btn.disabled";
             };
             pTooltipComponents.add(Component.translatable("gui.signbuilder.wrench.section.button_mode").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(btnKey).withStyle(ChatFormatting.YELLOW)));
@@ -217,8 +226,18 @@ public class WrenchItem extends Item {
                     stack.getOrCreateTag().putInt("ButtonMode", letterEntity.getButtonMode());
                     stack.getOrCreateTag().putBoolean("SyncWord", letterEntity.isSyncWord());
                     stack.getOrCreateTag().putString("PinCode", letterEntity.getPinCode());
+                    stack.getOrCreateTag().putInt("CustomLightOnTicks", letterEntity.getCustomLightOnTicks());
+                    stack.getOrCreateTag().putInt("CustomLightOffTicks", letterEntity.getCustomLightOffTicks());
+                    stack.getOrCreateTag().putInt("CustomLightType", letterEntity.getCustomLightType());
+                    stack.getOrCreateTag().putInt("CustomLightRange", letterEntity.getCustomLightRange());
+                    stack.getOrCreateTag().putInt("CustomLightOffRange", letterEntity.getCustomLightOffRange());
+                    stack.getOrCreateTag().putInt("CustomLightCloseDelayTicks", letterEntity.getCustomLightCloseDelayTicks());
+                    stack.getOrCreateTag().putBoolean("CustomLightNightOnly", letterEntity.isCustomLightNightOnly());
+                    stack.getOrCreateTag().putBoolean("CustomLightPlayers", letterEntity.doesCustomLightDetectPlayers());
+                    stack.getOrCreateTag().putBoolean("CustomLightLowPower", letterEntity.isCustomLightLowPower());
+                    stack.getOrCreateTag().putBoolean("CustomLightLookOnly", letterEntity.isCustomLightLookOnly());
 
-                    player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(MOD_KEYS[copiedMode]).withStyle(ChatFormatting.AQUA)), true);
+                    player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(getModeTranslationKey(copiedMode)).withStyle(ChatFormatting.AQUA)), true);
                     level.playSound(null, targetPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide());
@@ -227,6 +246,9 @@ public class WrenchItem extends Item {
             if (!level.isClientSide()) {
                 int mode = 0; boolean isSmartFill = false; boolean detectsMonsters = true; boolean detectsAnimals = false;
                 int buttonMode = 0; boolean syncWord = false; int activeTab = 0;
+                int customLightOnTicks = 10; int customLightOffTicks = 10;
+                int customLightType = 0; int customLightRange = 8; int customLightOffRange = 8; int customLightCloseDelayTicks = 0; boolean customLightNightOnly = true;
+                boolean customLightPlayers = true; boolean customLightLowPower = false; boolean customLightLookOnly = true;
                 String pinCode = "";
 
                 CompoundTag tag = stack.getTag();
@@ -239,53 +261,53 @@ public class WrenchItem extends Item {
                     if (tag.contains("SyncWord")) syncWord = tag.getBoolean("SyncWord");
                     if (tag.contains("ActiveTab")) activeTab = tag.getInt("ActiveTab");
                     if (tag.contains("PinCode")) pinCode = tag.getString("PinCode");
+                    if (tag.contains("CustomLightOnTicks")) customLightOnTicks = Math.max(1, Math.min(1200, tag.getInt("CustomLightOnTicks")));
+                    if (tag.contains("CustomLightOffTicks")) customLightOffTicks = Math.max(1, Math.min(1200, tag.getInt("CustomLightOffTicks")));
+                    if (tag.contains("CustomLightType")) customLightType = Math.max(0, Math.min(3, tag.getInt("CustomLightType")));
+                    if (tag.contains("CustomLightRange")) customLightRange = Math.max(1, Math.min(32, tag.getInt("CustomLightRange")));
+                    if (tag.contains("CustomLightOffRange")) customLightOffRange = Math.max(customLightRange, Math.min(32, tag.getInt("CustomLightOffRange")));
+                    else customLightOffRange = customLightRange;
+                    if (tag.contains("CustomLightCloseDelayTicks")) customLightCloseDelayTicks = Math.max(0, Math.min(100, tag.getInt("CustomLightCloseDelayTicks")));
+                    if (tag.contains("CustomLightNightOnly")) customLightNightOnly = tag.getBoolean("CustomLightNightOnly");
+                    if (tag.contains("CustomLightPlayers")) customLightPlayers = tag.getBoolean("CustomLightPlayers");
+                    if (tag.contains("CustomLightLowPower")) customLightLowPower = tag.getBoolean("CustomLightLowPower");
+                    if (tag.contains("CustomLightLookOnly")) customLightLookOnly = tag.getBoolean("CustomLightLookOnly");
                 }
 
                 if (activeTab == 0) {
                     boolean wasActive = letterEntity.isActive();
+                    boolean wasConfigured = letterEntity.getWrenchMode() != 0 || wasActive;
                     boolean targetActive = (mode != -1);
 
-                    boolean noChange = (mode == -1 ? (!wasActive && letterEntity.getWrenchMode() == 0) : (wasActive && letterEntity.getWrenchMode() == mode))
-                            && (mode != 5 || (letterEntity.doesDetectMonsters() == detectsMonsters && letterEntity.doesDetectAnimals() == detectsAnimals));
+                    boolean noChange = (mode == -1 ? (!wasConfigured && letterEntity.getWrenchMode() == 0) : (wasConfigured && letterEntity.getWrenchMode() == mode))
+                            && (mode != 5 || (letterEntity.doesDetectMonsters() == detectsMonsters && letterEntity.doesDetectAnimals() == detectsAnimals))
+                            && (mode != 11 || customLightConfigurationMatches(letterEntity, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
 
                     if (noChange && !isSmartFill) {
                         return InteractionResult.sidedSuccess(level.isClientSide());
                     }
 
                     if (isSmartFill) {
-                        applyLightModeToConnected(level, targetPos, player, stack, pContext.getHand(), mode, targetActive, detectsMonsters, detectsAnimals);
+                        applyLightModeToConnected(level, targetPos, player, stack, pContext.getHand(), mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
                     } else {
                         int dustCost = (letterEntity.getSize() == 3) ? 9 : (letterEntity.getSize() == 2 ? 4 : 1);
 
                         if (player != null && !player.isCreative()) {
-                            if (!wasActive && targetActive) {
+                            if (!wasConfigured && targetActive) {
                                 if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
                                 else {
                                     player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
                                     player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
                                     return InteractionResult.FAIL;
                                 }
-                            } else if (wasActive && !targetActive) {
+                            } else if (wasConfigured && !targetActive) {
                                 ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
                                 if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
                             }
                             stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
                         }
 
-                        if (mode == -1) {
-                            letterEntity.setWrenchMode(0);
-                            letterEntity.setActive(false);
-                        } else {
-                            letterEntity.setWrenchMode(mode);
-                            letterEntity.setActive(true);
-                            if (mode == 5) {
-                                letterEntity.setDetectsMonsters(detectsMonsters);
-                                letterEntity.setDetectsAnimals(detectsAnimals);
-                            }
-                        }
-
-                        letterEntity.setChanged();
-                        letterEntity.sync();
+                        letterEntity.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
                         LetterBlock.updateLightLevel(level, targetPos, targetState, letterEntity);
                         level.sendBlockUpdated(targetPos, targetState, targetState, 3);
                     }
@@ -327,7 +349,7 @@ public class WrenchItem extends Item {
         return InteractionResult.PASS;
     }
 
-    private void applyLightModeToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int mode, boolean targetActive, boolean detectsMonsters, boolean detectsAnimals) {
+    private void applyLightModeToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int mode, boolean targetActive, boolean detectsMonsters, boolean detectsAnimals, int customLightOnTicks, int customLightOffTicks, int customLightType, int customLightRange, int customLightOffRange, int customLightCloseDelayTicks, boolean customLightNightOnly, boolean customLightPlayers, boolean customLightLowPower, boolean customLightLookOnly) {
         List<BlockPos> targets = getConnectedBlocks(level, startPos);
         int blocksModified = 0; int failedMaterial = 0; int failedDurability = 0;
         int currentDamage = stack.getDamageValue(); int maxDamage = stack.getMaxDamage();
@@ -345,44 +367,49 @@ public class WrenchItem extends Item {
             BlockState currentState = level.getBlockState(effectivePos);
 
             boolean wasActive = letter.isActive();
+            boolean wasConfigured = letter.getWrenchMode() != 0 || wasActive;
 
-            boolean blockNoChange = (mode == -1 ? (!wasActive && letter.getWrenchMode() == 0) : (wasActive && letter.getWrenchMode() == mode))
-                    && (mode != 5 || (letter.doesDetectMonsters() == detectsMonsters && letter.doesDetectAnimals() == detectsAnimals));
+            boolean blockNoChange = (mode == -1 ? (!wasConfigured && letter.getWrenchMode() == 0) : (wasConfigured && letter.getWrenchMode() == mode))
+                    && (mode != 5 || (letter.doesDetectMonsters() == detectsMonsters && letter.doesDetectAnimals() == detectsAnimals))
+                    && (mode != 11 || customLightConfigurationMatches(letter, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
 
             if (blockNoChange) continue;
 
             int dustCost = (letter.getSize() == 3) ? 9 : (letter.getSize() == 2 ? 4 : 1);
 
             if (player != null && !player.isCreative()) {
-                if (!wasActive && targetActive) {
+                if (!wasConfigured && targetActive) {
                     if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
                     else { failedMaterial++; continue; }
-                } else if (wasActive && !targetActive) {
+                } else if (wasConfigured && !targetActive) {
                     ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
                     if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
                 }
             }
 
-            if (mode == -1) {
-                letter.setWrenchMode(0);
-                letter.setActive(false);
-            } else {
-                letter.setWrenchMode(mode);
-                letter.setActive(true);
-                if (mode == 5) {
-                    letter.setDetectsMonsters(detectsMonsters);
-                    letter.setDetectsAnimals(detectsAnimals);
-                }
-            }
-
-            letter.setChanged();
-            letter.sync();
+            letter.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
             LetterBlock.updateLightLevel(level, effectivePos, currentState, letter);
             level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
             blocksModified++;
         }
 
         handleSmartFillFeedback(level, player, stack, hand, blocksModified, failedMaterial, failedDurability);
+    }
+
+    private static boolean customLightConfigurationMatches(LetterBlockEntity letter, int onTicks, int offTicks, int type, int range, int offRange, int closeDelayTicks, boolean nightOnly, boolean players, boolean lowPower, boolean lookOnly, boolean detectsMonsters, boolean detectsAnimals) {
+        if (letter.getCustomLightType() != type) return false;
+        if (letter.isCustomLightLowPower() != lowPower) return false;
+        return switch (type) {
+            case 1 -> letter.getCustomLightRange() == range
+                    && letter.getCustomLightOffRange() == offRange
+                    && letter.getCustomLightCloseDelayTicks() == closeDelayTicks
+                    && letter.doesCustomLightDetectPlayers() == players
+                    && letter.doesDetectMonsters() == detectsMonsters
+                    && letter.doesDetectAnimals() == detectsAnimals;
+            case 2 -> letter.isCustomLightNightOnly() == nightOnly;
+            case 3 -> letter.isCustomLightLookOnly() == lookOnly;
+            default -> letter.getCustomLightOnTicks() == onTicks && letter.getCustomLightOffTicks() == offTicks;
+        };
     }
 
     private void applyButtonModeToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int buttonMode, boolean syncWord, String pinCode) {
