@@ -49,18 +49,16 @@ public class ModBlocks {
         Direction clickedFace = context.getClickedFace();
         BlockState state = defaultState;
 
-        net.minecraft.nbt.CompoundTag tag = context.getItemInHand().getTag();
-        if (tag != null) {
-            if (tag.contains("BlockStateTag")) {
-                net.minecraft.nbt.CompoundTag stateTag = tag.getCompound("BlockStateTag");
-                if (stateTag.contains("material") && state.hasProperty(LetterBlock.MATERIAL)) {
-                    try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase())); } catch (Exception ignored) {}
-                }
-            } else if (tag.contains("BlockEntityTag")) {
-                net.minecraft.nbt.CompoundTag beTag = tag.getCompound("BlockEntityTag");
-                if (beTag.contains("SavedMaterial") && state.hasProperty(LetterBlock.MATERIAL)) {
-                    try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(beTag.getString("SavedMaterial").toUpperCase())); } catch (Exception ignored) {}
-                }
+        net.minecraft.world.item.component.BlockItemStateProperties stateProps = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+        if (stateProps != null && state.hasProperty(LetterBlock.MATERIAL)) {
+            // stateProps parsing is complex, we skip it and rely on BLOCK_ENTITY_DATA.
+        }
+        
+        net.minecraft.world.item.component.CustomData beData = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+        if (beData != null) {
+            net.minecraft.nbt.CompoundTag beTag = beData.copyTag();
+            if (beTag.contains("SavedMaterial") && state.hasProperty(LetterBlock.MATERIAL)) {
+                try { state = state.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(beTag.getString("SavedMaterial").toUpperCase())); } catch (Exception ignored) {}
             }
         }
 

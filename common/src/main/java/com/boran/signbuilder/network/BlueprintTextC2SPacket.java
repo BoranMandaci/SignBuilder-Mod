@@ -62,11 +62,13 @@ public class BlueprintTextC2SPacket {
             }
 
             if (stack.getItem() instanceof SignBlueprintItem) {
-                stack.getOrCreateTag().putString("BlueprintText", this.text);
-                stack.getOrCreateTag().putInt("Size", this.size);
-                stack.getOrCreateTag().putBoolean("Is2x2", this.is2x2);
-                stack.getOrCreateTag().putBoolean("IsVertical", this.isVertical);
-                stack.getOrCreateTag().putBoolean("WithBackplate", this.withBackplate);
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                    t.putString("BlueprintText", this.text);
+                    t.putInt("Size", this.size);
+                    t.putBoolean("Is2x2", this.is2x2);
+                    t.putBoolean("IsVertical", this.isVertical);
+                    t.putBoolean("WithBackplate", this.withBackplate);
+                });
             }
         }
     }

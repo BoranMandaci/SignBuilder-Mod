@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +36,15 @@ public class BlueprintUndoC2SPacket {
         ItemStack stack = player.getMainHandItem();
         InteractionHand hand = InteractionHand.MAIN_HAND;
 
-        if (!stack.hasTag() || !stack.getTag().contains("UndoHistory")) {
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (tag.isEmpty() || !tag.contains("UndoHistory")) {
             stack = player.getOffhandItem();
             hand = InteractionHand.OFF_HAND;
+            tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         }
 
-        if (stack.hasTag() && stack.getTag().contains("UndoHistory")) {
-            long[] history = stack.getTag().getLongArray("UndoHistory");
+        if (!tag.isEmpty() && tag.contains("UndoHistory")) {
+            long[] history = tag.getLongArray("UndoHistory");
             Level level = player.level();
 
             List<ItemStack> itemsToRefund = new ArrayList<>();
@@ -83,13 +86,13 @@ public class BlueprintUndoC2SPacket {
                     }
 
                     final InteractionHand finalHand = hand;
-                    stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(finalHand));
+                    stack.hurtAndBreak(1, player, finalHand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
                 }
 
-                stack.getTag().remove("UndoHistory");
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.remove("UndoHistory"));
 
                 if (player.getServer() != null) {
-                    Advancement adv = player.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "ctrl_z"));
+                    net.minecraft.advancements.AdvancementHolder adv = player.getServer().getAdvancements().get(ResourceLocation.fromNamespaceAndPath("signbuilder", "ctrl_z"));
                     if (adv != null) {
                         player.getAdvancements().award(adv, "undo_used");
                     }

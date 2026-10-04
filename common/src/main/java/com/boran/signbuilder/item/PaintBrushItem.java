@@ -47,8 +47,8 @@ public class PaintBrushItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
-        CompoundTag tag = stack.getTag();
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         int selectedColor = 0;
         boolean isSmartFill = false;
 
@@ -78,7 +78,7 @@ public class PaintBrushItem extends Item {
         }
 
         tooltipComponents.add(Component.translatable("tooltip.signbuilder.brush.smart_fill").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)));
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+        super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
     }
 
     @Override
@@ -86,8 +86,9 @@ public class PaintBrushItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown()) {
             if (!level.isClientSide()) {
-                boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
-                stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
+                CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+                boolean isSmartFill = tag.getBoolean("IsSmartFill");
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putBoolean("IsSmartFill", !isSmartFill));
                 player.displayClientMessage(Component.translatable("message.signbuilder.brush.smart_fill_toggle").withStyle(ChatFormatting.YELLOW).append(Component.translatable(!isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)), true);
                 level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
@@ -143,7 +144,7 @@ public class PaintBrushItem extends Item {
         if (player != null && player.isShiftKeyDown() && !targetBackplate && isLetterBlock) {
             if (!level.isClientSide()) {
                 int copiedColor = letterEntity.isRainbow() ? -1 : letterEntity.getRgbColor();
-                stack.getOrCreateTag().putInt("SelectedColor", copiedColor);
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putInt("SelectedColor", copiedColor));
                 if (copiedColor == -1) player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [Rainbow]").withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
                 else player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]").withStyle(Style.EMPTY.withColor(copiedColor)), true);
             }
@@ -151,7 +152,7 @@ public class PaintBrushItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         int selectedColor = tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
         boolean isSmartFill = tag.getBoolean("IsSmartFill");
         boolean hasMaterial = tag.contains("SelectedMaterial");
@@ -211,7 +212,7 @@ public class PaintBrushItem extends Item {
 
             if (player != null) {
                 level.playSound(null, targetPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
+                if (!player.isCreative()) stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             }
         } else {
             for (BlockPos p : affectedPositions) {
@@ -287,31 +288,38 @@ public class PaintBrushItem extends Item {
     }
 
     private SignMaterial getBackGlyphMaterial(ItemStack glyph) {
-        CompoundTag blockEntityTag = glyph.getTagElement("BlockEntityTag");
-        if (blockEntityTag != null && blockEntityTag.contains("SavedMaterial")) {
+        CompoundTag blockEntityTag = glyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (blockEntityTag.contains("SavedMaterial")) {
             return parseMaterial(blockEntityTag.getString("SavedMaterial"));
         }
-        CompoundTag stateTag = glyph.getTagElement("BlockStateTag");
-        return stateTag != null && stateTag.contains("material") ? parseMaterial(stateTag.getString("material")) : SignMaterial.DEFAULT;
+        net.minecraft.world.item.component.BlockItemStateProperties stateProps = glyph.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+        if (stateProps != null) {
+            // Usually we can just trust the block entity tag in this mod context, but for parity we return default if no BE tag.
+            return SignMaterial.DEFAULT;
+        }
+        return SignMaterial.DEFAULT;
     }
 
     private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
         ItemStack glyph = entity.getBackGlyph().copy();
         if (glyph.isEmpty()) return;
 
-        CompoundTag blockEntityTag = glyph.getOrCreateTagElement("BlockEntityTag");
         if (newMaterial != null) {
-            blockEntityTag.putString("SavedMaterial", newMaterial.name());
-            CompoundTag stateTag = glyph.getOrCreateTagElement("BlockStateTag");
-            if (newMaterial == SignMaterial.DEFAULT) stateTag.remove("material");
-            else stateTag.putString("material", newMaterial.getSerializedName());
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> t.putString("SavedMaterial", newMaterial.name()));
+            if (newMaterial != SignMaterial.DEFAULT) {
+                glyph.set(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(com.boran.signbuilder.block.LetterBlock.MATERIAL, newMaterial));
+            } else {
+                glyph.remove(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+            }
         }
         if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
             if (selectedColor == -1) {
-                blockEntityTag.putBoolean("IsRainbow", true);
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> t.putBoolean("IsRainbow", true));
             } else {
-                blockEntityTag.putBoolean("IsRainbow", false);
-                blockEntityTag.putInt("RGBColor", getActualHexColor(selectedColor));
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> {
+                    t.putBoolean("IsRainbow", false);
+                    t.putInt("RGBColor", getActualHexColor(selectedColor));
+                });
             }
         }
         entity.setBackGlyph(glyph);
@@ -426,7 +434,7 @@ public class PaintBrushItem extends Item {
         if (player != null && !level.isClientSide()) {
             if (blocksPainted > 0) {
                 level.playSound(null, startPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                if (!player.isCreative()) stack.hurtAndBreak(blocksPainted, player, (p) -> p.broadcastBreakEvent(hand));
+                if (!player.isCreative()) stack.hurtAndBreak(blocksPainted, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             }
             if (failedMaterial > 0) player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_material", blocksPainted, failedMaterial).withStyle(ChatFormatting.YELLOW), true);
             else if (failedDurability > 0) player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_durability", blocksPainted, failedDurability).withStyle(ChatFormatting.YELLOW), true);

@@ -122,27 +122,31 @@ public class WrenchModeC2SPacket {
             ItemStack stack = player.getMainHandItem();
             if (!(stack.getItem() instanceof com.boran.signbuilder.item.WrenchItem)) stack = player.getOffhandItem();
             if (stack.getItem() instanceof com.boran.signbuilder.item.WrenchItem) {
-                stack.getOrCreateTag().putInt("WrenchMode", mode);
-                stack.getOrCreateTag().putBoolean("DetectsMonsters", detectsMonsters);
-                stack.getOrCreateTag().putBoolean("DetectsAnimals", detectsAnimals);
-                stack.getOrCreateTag().putInt("ButtonMode", buttonMode);
-                stack.getOrCreateTag().putBoolean("SyncWord", syncWord);
-                stack.getOrCreateTag().putInt("ActiveTab", activeTab);
-                stack.getOrCreateTag().putString("PinCode", pinCode);
-                stack.getOrCreateTag().putInt("CustomLightOnTicks", customLightOnTicks);
-                stack.getOrCreateTag().putInt("CustomLightOffTicks", customLightOffTicks);
-                stack.getOrCreateTag().putInt("CustomLightType", customLightType);
-                stack.getOrCreateTag().putInt("CustomLightRange", customLightRange);
-                stack.getOrCreateTag().putInt("CustomLightOffRange", customLightOffRange);
-                stack.getOrCreateTag().putInt("CustomLightCloseDelayTicks", customLightCloseDelayTicks);
-                stack.getOrCreateTag().putBoolean("CustomLightNightOnly", customLightNightOnly);
-                stack.getOrCreateTag().putBoolean("CustomLightPlayers", customLightPlayers);
-                stack.getOrCreateTag().putBoolean("CustomLightLowPower", customLightLowPower);
-                stack.getOrCreateTag().putBoolean("CustomLightLookOnly", customLightLookOnly);
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                    t.putInt("WrenchMode", mode);
+                    t.putBoolean("DetectsMonsters", detectsMonsters);
+                    t.putBoolean("DetectsAnimals", detectsAnimals);
+                    t.putInt("ButtonMode", buttonMode);
+                    t.putBoolean("SyncWord", syncWord);
+                    t.putInt("ActiveTab", activeTab);
+                    t.putString("PinCode", pinCode);
+                    t.putInt("CustomLightOnTicks", customLightOnTicks);
+                    t.putInt("CustomLightOffTicks", customLightOffTicks);
+                    t.putInt("CustomLightType", customLightType);
+                    t.putInt("CustomLightRange", customLightRange);
+                    t.putInt("CustomLightOffRange", customLightOffRange);
+                    t.putInt("CustomLightCloseDelayTicks", customLightCloseDelayTicks);
+                    t.putBoolean("CustomLightNightOnly", customLightNightOnly);
+                    t.putBoolean("CustomLightPlayers", customLightPlayers);
+                    t.putBoolean("CustomLightLowPower", customLightLowPower);
+                    t.putBoolean("CustomLightLookOnly", customLightLookOnly);
+                });
 
                 if (startPinRecording) {
-                    stack.getOrCreateTag().putBoolean("IsRecordingPin", true);
-                    stack.getOrCreateTag().putString("RecordingPin", "");
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                        t.putBoolean("IsRecordingPin", true);
+                        t.putString("RecordingPin", "");
+                    });
                     player.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.record_start").withStyle(ChatFormatting.GOLD), true);
                     player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.5F);
                 }

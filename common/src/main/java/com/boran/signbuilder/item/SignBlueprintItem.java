@@ -48,13 +48,13 @@ public class SignBlueprintItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
+    public void appendHoverText(@NotNull ItemStack pStack, @NotNull net.minecraft.world.item.Item.TooltipContext pContext, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         String currentText = "";
         int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
-        CompoundTag tag = pStack.getTag();
-        if (tag != null) {
+        CompoundTag tag = pStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (!tag.isEmpty()) {
             if (tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
             if (tag.contains("Size")) size = tag.getInt("Size");
             else if (tag.getBoolean("Is2x2")) size = 2;
@@ -86,7 +86,7 @@ public class SignBlueprintItem extends Item {
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, pContext, pTooltipComponents, pIsAdvanced);
     }
 
     @Override
@@ -95,11 +95,12 @@ public class SignBlueprintItem extends Item {
 
         if (pPlayer.isShiftKeyDown()) {
             if (!pLevel.isClientSide()) {
+                CompoundTag currentTag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
                 int size = 1;
-                if (stack.getOrCreateTag().contains("Size")) size = stack.getOrCreateTag().getInt("Size");
-                else if (stack.getOrCreateTag().getBoolean("Is2x2")) size = 2;
+                if (currentTag.contains("Size")) size = currentTag.getInt("Size");
+                else if (currentTag.getBoolean("Is2x2")) size = 2;
 
-                boolean isVert = stack.getOrCreateTag().getBoolean("IsVertical");
+                boolean isVert = currentTag.getBoolean("IsVertical");
 
                 int nextSize;
                 boolean nextVert;
@@ -118,9 +119,11 @@ public class SignBlueprintItem extends Item {
                     nextSize = 1; nextVert = false;
                 }
 
-                stack.getOrCreateTag().putInt("Size", nextSize);
-                stack.getOrCreateTag().putBoolean("Is2x2", nextSize == 2);
-                stack.getOrCreateTag().putBoolean("IsVertical", nextVert);
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                    t.putInt("Size", nextSize);
+                    t.putBoolean("Is2x2", nextSize == 2);
+                    t.putBoolean("IsVertical", nextVert);
+                });
 
                 String sizeStr = (nextSize == 3) ? "3x3" : (nextSize == 2 ? "2x2" : "1x1");
                 ChatFormatting color = (nextSize == 3) ? ChatFormatting.LIGHT_PURPLE : (nextSize == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
@@ -141,8 +144,8 @@ public class SignBlueprintItem extends Item {
         if (pLevel.isClientSide()) {
             pPlayer.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
             String currentText = "";
-            CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
+            CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            if (!tag.isEmpty() && tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
             String finalCurrentText = currentText;
 
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openBlueprintScreen(finalCurrentText));
@@ -162,7 +165,7 @@ public class SignBlueprintItem extends Item {
         int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (tag != null) {
             if (tag.contains("BlueprintText")) text = tag.getString("BlueprintText");
             if (tag.contains("Size")) size = tag.getInt("Size");
@@ -369,23 +372,23 @@ public class SignBlueprintItem extends Item {
         if (blocksPlaced > 0) {
             level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
-            stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putLongArray("UndoHistory", posArray));
 
             if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
                 if (size == 2) {
-                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "wide_format"));
+                    net.minecraft.advancements.AdvancementHolder adv = serverPlayer.getServer().getAdvancements().get(ResourceLocation.fromNamespaceAndPath("signbuilder", "wide_format"));
                     if (adv != null) {
                         serverPlayer.getAdvancements().award(adv, "placed_2x2");
                     }
                 } else if (size == 3) {
-                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "billboard"));
+                    net.minecraft.advancements.AdvancementHolder adv = serverPlayer.getServer().getAdvancements().get(ResourceLocation.fromNamespaceAndPath("signbuilder", "billboard"));
                     if (adv != null) {
                         serverPlayer.getAdvancements().award(adv, "placed_3x3");
                     }
                 }
             }
 
-            if (!player.isCreative()) stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
+            if (!player.isCreative()) stack.hurtAndBreak(1, player, pContext.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
         }
         return InteractionResult.SUCCESS;
     }
@@ -400,7 +403,7 @@ public class SignBlueprintItem extends Item {
         level.setBlock(pos, stateToPlace, 3);
         ItemStack placedStack = new ItemStack(blockToPlace);
         if (size > 1) {
-            placedStack.getOrCreateTagElement("BlockEntityTag").putInt("FacingRotation", rotation);
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, placedStack, t -> t.putInt("FacingRotation", rotation));
         }
         blockToPlace.setPlacedBy(level, pos, stateToPlace, player, placedStack);
 

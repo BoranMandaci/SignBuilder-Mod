@@ -63,34 +63,36 @@ public class BrushColorPacket {
         if (player != null) {
             ItemStack stack = player.getMainHandItem();
             if (stack.getItem() instanceof PaintBrushItem) {
-                CompoundTag tag = stack.getOrCreateTag();
-
                 if (!materialTexture.isEmpty()) {
-                    tag.putString("SelectedMaterial", materialTexture);
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putString("SelectedMaterial", materialTexture));
                     return;
                 }
 
                 if (isRemovingCustom) {
-                    if (tag.contains("CustomColors")) {
-                        int[] oldColors = tag.getIntArray("CustomColors");
+                    CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+                    if (tagData.contains("CustomColors")) {
+                        int[] oldColors = tagData.getIntArray("CustomColors");
                         List<Integer> colorList = new ArrayList<>();
                         boolean removed = false;
                         for (int c : oldColors) {
                             if (!removed && c == color) { removed = true; continue; }
                             colorList.add(c);
                         }
-                        tag.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
+                        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray()));
                     }
                 } else if (isAddingCustom) {
-                    tag.putInt("SelectedColor", color);
-                    int[] oldColors = tag.contains("CustomColors") ? tag.getIntArray("CustomColors") : new int[0];
+                    CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+                    int[] oldColors = tagData.contains("CustomColors") ? tagData.getIntArray("CustomColors") : new int[0];
                     List<Integer> colorList = new ArrayList<>();
                     for (int c : oldColors) { if (c != color) colorList.add(c); }
                     colorList.add(0, color);
                     while (colorList.size() > 14) { colorList.remove(colorList.size() - 1); }
-                    tag.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                        t.putInt("SelectedColor", color);
+                        t.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
+                    });
                 } else {
-                    tag.putInt("SelectedColor", color);
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putInt("SelectedColor", color));
                 }
             }
         }

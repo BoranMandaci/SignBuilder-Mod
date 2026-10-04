@@ -54,7 +54,7 @@ public class WrenchItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
+    public void appendHoverText(@NotNull ItemStack pStack, @NotNull net.minecraft.world.item.Item.TooltipContext pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         int currentMode = 0;
         boolean isSmartFill = false;
         boolean detectsMonsters = true;
@@ -64,7 +64,7 @@ public class WrenchItem extends Item {
         int activeTab = 0;
         String pinCode = "";
 
-        CompoundTag tag = pStack.getTag();
+        CompoundTag tag = pStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (tag != null) {
             if (tag.contains("WrenchMode")) currentMode = tag.getInt("WrenchMode");
             if (tag.contains("IsSmartFill")) isSmartFill = tag.getBoolean("IsSmartFill");
@@ -111,15 +111,20 @@ public class WrenchItem extends Item {
         }
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.brush.smart_fill").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)));
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, pContext, pTooltipComponents, pIsAdvanced);
     }
 
     private void finishPinRecording(ItemStack stack, Player player, Level level) {
-        stack.getOrCreateTag().putBoolean("IsRecordingPin", false);
-        String recorded = stack.getOrCreateTag().getString("RecordingPin");
-        stack.getOrCreateTag().remove("RecordingPin");
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putBoolean("IsRecordingPin", false));
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        String recorded = tag.getString("RecordingPin");
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+            t.remove("RecordingPin");
+            if (!recorded.isEmpty()) {
+                t.putString("PinCode", recorded);
+            }
+        });
         if (!recorded.isEmpty()) {
-            stack.getOrCreateTag().putString("PinCode", recorded);
             player.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.record_saved", recorded).withStyle(ChatFormatting.GREEN), true);
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6F, 1.2F);
         } else {
@@ -132,7 +137,8 @@ public class WrenchItem extends Item {
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
 
-        if (stack.getOrCreateTag().getBoolean("IsRecordingPin")) {
+        CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (tagData.getBoolean("IsRecordingPin")) {
             if (pPlayer.isShiftKeyDown()) {
                 if (!pLevel.isClientSide()) {
                     finishPinRecording(stack, pPlayer, pLevel);
@@ -140,7 +146,7 @@ public class WrenchItem extends Item {
                 return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
             } else {
                 if (!pLevel.isClientSide()) {
-                    String current = stack.getOrCreateTag().getString("RecordingPin");
+                    String current = tagData.getString("RecordingPin");
                     pPlayer.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.recording_hint", current).withStyle(ChatFormatting.YELLOW), true);
                 }
                 return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
@@ -149,8 +155,8 @@ public class WrenchItem extends Item {
 
         if (pPlayer.isShiftKeyDown()) {
             if (!pLevel.isClientSide()) {
-                boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
-                stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
+                boolean isSmartFill = tagData.getBoolean("IsSmartFill");
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putBoolean("IsSmartFill", !isSmartFill));
                 pPlayer.displayClientMessage(Component.translatable("message.signbuilder.wrench.smart_fill_toggle").withStyle(ChatFormatting.YELLOW).append(Component.translatable(!isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)), true);
                 pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
@@ -159,7 +165,7 @@ public class WrenchItem extends Item {
 
         if (pLevel.isClientSide()) {
             int cMode = 0; boolean dMonsters = true; boolean dAnimals = false;
-            CompoundTag tag = stack.getTag();
+            CompoundTag tag = tagData;
             if (tag != null) {
                 if (tag.contains("WrenchMode")) cMode = tag.getInt("WrenchMode");
                 if (tag.contains("DetectsMonsters")) dMonsters = tag.getBoolean("DetectsMonsters");
@@ -181,7 +187,8 @@ public class WrenchItem extends Item {
         Player player = pContext.getPlayer();
         ItemStack stack = pContext.getItemInHand();
 
-        if (stack.getOrCreateTag().getBoolean("IsRecordingPin")) {
+        CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (tagData.getBoolean("IsRecordingPin")) {
             if (player != null && player.isShiftKeyDown()) {
                 if (!level.isClientSide()) {
                     finishPinRecording(stack, player, level);
@@ -192,10 +199,11 @@ public class WrenchItem extends Item {
             if (clickedBlock.getBlock() instanceof LetterBlock) {
                 if (!level.isClientSide()) {
                     String symbol = LetterBlock.getCharacterFromBlock(clickedBlock.getBlock());
-                    String current = stack.getOrCreateTag().getString("RecordingPin");
+                    String current = tagData.getString("RecordingPin");
                     if (current.length() < 16) {
                         current += symbol;
-                        stack.getOrCreateTag().putString("RecordingPin", current);
+                        final String finalCurrent = current;
+                        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> t.putString("RecordingPin", finalCurrent));
                         level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.6F, 1.6F);
                         if (player != null) {
                             player.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.recorded_char", symbol, current).withStyle(ChatFormatting.GOLD), true);
@@ -220,22 +228,24 @@ public class WrenchItem extends Item {
             if (player != null && player.isShiftKeyDown()) {
                 if (!level.isClientSide()) {
                     int copiedMode = letterEntity.getWrenchMode();
-                    stack.getOrCreateTag().putInt("WrenchMode", copiedMode);
-                    stack.getOrCreateTag().putBoolean("DetectsMonsters", letterEntity.doesDetectMonsters());
-                    stack.getOrCreateTag().putBoolean("DetectsAnimals", letterEntity.doesDetectAnimals());
-                    stack.getOrCreateTag().putInt("ButtonMode", letterEntity.getButtonMode());
-                    stack.getOrCreateTag().putBoolean("SyncWord", letterEntity.isSyncWord());
-                    stack.getOrCreateTag().putString("PinCode", letterEntity.getPinCode());
-                    stack.getOrCreateTag().putInt("CustomLightOnTicks", letterEntity.getCustomLightOnTicks());
-                    stack.getOrCreateTag().putInt("CustomLightOffTicks", letterEntity.getCustomLightOffTicks());
-                    stack.getOrCreateTag().putInt("CustomLightType", letterEntity.getCustomLightType());
-                    stack.getOrCreateTag().putInt("CustomLightRange", letterEntity.getCustomLightRange());
-                    stack.getOrCreateTag().putInt("CustomLightOffRange", letterEntity.getCustomLightOffRange());
-                    stack.getOrCreateTag().putInt("CustomLightCloseDelayTicks", letterEntity.getCustomLightCloseDelayTicks());
-                    stack.getOrCreateTag().putBoolean("CustomLightNightOnly", letterEntity.isCustomLightNightOnly());
-                    stack.getOrCreateTag().putBoolean("CustomLightPlayers", letterEntity.doesCustomLightDetectPlayers());
-                    stack.getOrCreateTag().putBoolean("CustomLightLowPower", letterEntity.isCustomLightLowPower());
-                    stack.getOrCreateTag().putBoolean("CustomLightLookOnly", letterEntity.isCustomLightLookOnly());
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                        t.putInt("WrenchMode", copiedMode);
+                        t.putBoolean("DetectsMonsters", letterEntity.doesDetectMonsters());
+                        t.putBoolean("DetectsAnimals", letterEntity.doesDetectAnimals());
+                        t.putInt("ButtonMode", letterEntity.getButtonMode());
+                        t.putBoolean("SyncWord", letterEntity.isSyncWord());
+                        t.putString("PinCode", letterEntity.getPinCode());
+                        t.putInt("CustomLightOnTicks", letterEntity.getCustomLightOnTicks());
+                        t.putInt("CustomLightOffTicks", letterEntity.getCustomLightOffTicks());
+                        t.putInt("CustomLightType", letterEntity.getCustomLightType());
+                        t.putInt("CustomLightRange", letterEntity.getCustomLightRange());
+                        t.putInt("CustomLightOffRange", letterEntity.getCustomLightOffRange());
+                        t.putInt("CustomLightCloseDelayTicks", letterEntity.getCustomLightCloseDelayTicks());
+                        t.putBoolean("CustomLightNightOnly", letterEntity.isCustomLightNightOnly());
+                        t.putBoolean("CustomLightPlayers", letterEntity.doesCustomLightDetectPlayers());
+                        t.putBoolean("CustomLightLowPower", letterEntity.isCustomLightLowPower());
+                        t.putBoolean("CustomLightLookOnly", letterEntity.isCustomLightLookOnly());
+                    });
 
                     player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(getModeTranslationKey(copiedMode)).withStyle(ChatFormatting.AQUA)), true);
                     level.playSound(null, targetPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
@@ -251,7 +261,7 @@ public class WrenchItem extends Item {
                 boolean customLightPlayers = true; boolean customLightLowPower = false; boolean customLightLookOnly = true;
                 String pinCode = "";
 
-                CompoundTag tag = stack.getTag();
+                CompoundTag tag = tagData;
                 if (tag != null) {
                     if (tag.contains("WrenchMode")) mode = tag.getInt("WrenchMode");
                     if (tag.contains("IsSmartFill")) isSmartFill = tag.getBoolean("IsSmartFill");
