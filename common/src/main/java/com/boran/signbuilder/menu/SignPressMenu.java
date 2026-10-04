@@ -3,7 +3,7 @@ package com.boran.signbuilder.menu;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.SignPressBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -26,7 +26,7 @@ public class SignPressMenu extends AbstractContainerMenu {
     private boolean craftMax = false;
     private boolean isQuickCrafting = false;
 
-    public SignPressMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
+    public SignPressMenu(int id, Inventory inv, net.minecraft.network.RegistryFriendlyByteBuf extraData) {
         this(id, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
@@ -79,7 +79,7 @@ public class SignPressMenu extends AbstractContainerMenu {
         if (!this.selectedBlock.isEmpty() && input.getItem() == Items.WHITE_CONCRETE && input.getCount() >= 4) {
             Item resultItem = this.selectedBlock.equals("backplate")
                     ? ModBlocks.BACKPLATE_ITEM.get()
-                    : BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", this.selectedBlock));
+                    : BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("signbuilder", this.selectedBlock));
 
             if (resultItem != null && resultItem != Items.AIR) {
                 int amountToCraft = 1;

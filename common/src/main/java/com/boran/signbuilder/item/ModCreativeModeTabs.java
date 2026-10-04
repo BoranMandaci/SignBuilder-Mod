@@ -19,16 +19,19 @@ public class ModCreativeModeTabs {
             DeferredRegister.create("signbuilder", Registries.CREATIVE_MODE_TAB);
 
     public static final RegistrySupplier<CreativeModeTab> LETTERS_TAB = CREATIVE_MODE_TABS.register("letters_tab",
-            () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_letters"),
-                    () -> new ItemStack(ModBlocks.LETTER_A.get())));
+            () -> CreativeTabRegistry.create(builder -> builder
+                    .title(Component.translatable("creativetab.signbuilder_letters"))
+                    .icon(() -> new ItemStack(ModBlocks.LETTER_A.get()))));
 
     public static final RegistrySupplier<CreativeModeTab> NUMBERS_TAB = CREATIVE_MODE_TABS.register("numbers_tab",
-            () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_numbers"),
-                    () -> new ItemStack(ModBlocks.NUMBER_0.get())));
+            () -> CreativeTabRegistry.create(builder -> builder
+                    .title(Component.translatable("creativetab.signbuilder_numbers"))
+                    .icon(() -> new ItemStack(ModBlocks.NUMBER_0.get()))));
 
     public static final RegistrySupplier<CreativeModeTab> SYMBOLS_TAB = CREATIVE_MODE_TABS.register("symbols_tab",
-            () -> CreativeTabRegistry.create(Component.translatable("creativetab.signbuilder_symbols"),
-                    () -> new ItemStack(ModBlocks.SYMBOL_PLUS.get())));
+            () -> CreativeTabRegistry.create(builder -> builder
+                    .title(Component.translatable("creativetab.signbuilder_symbols"))
+                    .icon(() -> new ItemStack(ModBlocks.SYMBOL_PLUS.get()))));
 
     public static void register() {
         CREATIVE_MODE_TABS.register();
@@ -51,7 +54,7 @@ public class ModCreativeModeTabs {
             };
 
             for (String name : letterOrder) {
-                ResourceLocation id = new ResourceLocation("signbuilder", name);
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath("signbuilder", name);
                 if (BuiltInRegistries.ITEM.containsKey(id)) {
                     Item item = BuiltInRegistries.ITEM.get(id);
                     if (item != Items.AIR) {
@@ -87,7 +90,7 @@ public class ModCreativeModeTabs {
             };
 
             for (String name : symbolOrder) {
-                ResourceLocation id = new ResourceLocation("signbuilder", name);
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath("signbuilder", name);
                 if (BuiltInRegistries.ITEM.containsKey(id)) {
                     Item item = BuiltInRegistries.ITEM.get(id);
                     if (item != Items.AIR) {

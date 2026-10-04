@@ -75,7 +75,7 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> registerLetterBlock(String name, Supplier<Block> supplier) {
         RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
-        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
+        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties().useBlockDescriptionPrefix()));
 
         ALL_SIGN_BLOCKS.add(blockReg);
         if (name.startsWith("letter_")) LETTER_ITEMS.add(itemReg);
@@ -1516,7 +1516,7 @@ public class ModBlocks {
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
-            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties()));
+            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties().useBlockDescriptionPrefix()));
 
     public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
             () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
@@ -1525,7 +1525,7 @@ public class ModBlocks {
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
-            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
+            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties().useBlockDescriptionPrefix()));
 
     public static void register() {
         BLOCKS.register();

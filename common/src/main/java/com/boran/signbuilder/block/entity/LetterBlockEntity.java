@@ -579,8 +579,8 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putInt("RGBColor", this.rgbColor);
         tag.putBoolean("IsRainbow", this.isRainbow);
         tag.putInt("WrenchMode", this.wrenchMode);
@@ -607,14 +607,14 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putInt("BPBackColor", this.backplateBackColor);
         tag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
         tag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
-        if (!this.backGlyph.isEmpty()) tag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+        if (!this.backGlyph.isEmpty()) tag.put("BackGlyph", this.backGlyph.save(registries, new CompoundTag()));
 
         tag.putInt("Size", this.size);
         if (this.facingRotation >= 0) tag.putInt("FacingRotation", this.facingRotation);
         tag.putBoolean("IsBig", this.size == 2);
         tag.putBoolean("IsDummy", this.isDummy);
         if (this.masterPos != null) {
-            tag.put("MasterPos", NbtUtils.writeBlockPos(this.masterPos));
+            tag.put("MasterPos", net.minecraft.nbt.NbtUtils.writeBlockPos(this.masterPos));
         }
 
         if (this.buttonMode != 0) tag.putInt("ButtonMode", this.buttonMode);
@@ -626,8 +626,8 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void load(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        super.load(tag, registries);
         if (tag.contains("IsRainbow")) this.isRainbow = tag.getBoolean("IsRainbow");
         if (tag.contains("RGBColor") && !this.isRainbow) this.rgbColor = tag.getInt("RGBColor");
         if (tag.contains("SavedMaterial")) {
@@ -663,7 +663,7 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("BPBackColor")) this.backplateBackColor = tag.getInt("BPBackColor");
         if (tag.contains("BPFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BPFrontRainbow");
         if (tag.contains("BPBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BPBackRainbow");
-        this.backGlyph = tag.contains("BackGlyph", 10) ? ItemStack.of(tag.getCompound("BackGlyph")) : ItemStack.EMPTY;
+        this.backGlyph = tag.contains("BackGlyph", 10) ? net.minecraft.world.item.ItemStack.parse(registries, tag.getCompound("BackGlyph")).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
 
         if (tag.contains("Size")) {
             this.size = tag.getInt("Size");
@@ -679,7 +679,7 @@ public class LetterBlockEntity extends BlockEntity {
         this.isDummy = tag.getBoolean("IsDummy") || tag.contains("MasterPos");
         this.lastMasterLookupTime = Long.MIN_VALUE;
         if (tag.contains("MasterPos")) {
-            this.masterPos = NbtUtils.readBlockPos(tag.getCompound("MasterPos"));
+            this.masterPos = net.minecraft.nbt.NbtUtils.readBlockPos(tag.getCompound("MasterPos"), "MasterPos").orElse(null);
         } else {
             this.masterPos = null;
         }
@@ -701,9 +701,9 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
-        this.saveAdditional(tag);
+        this.saveAdditional(tag, registries);
         return tag;
     }
 

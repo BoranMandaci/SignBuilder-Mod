@@ -160,7 +160,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {
                     String blockName = allBlocks.get(blockIndex);
-                    ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
+                    ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("signbuilder", blockName)));
                     guiGraphics.renderTooltip(this.font, itemStack, mouseX, mouseY);
                 }
             }
@@ -195,7 +195,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                     guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF1B222B);
                 }
 
-                ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
+                ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("signbuilder", blockName)));
                 guiGraphics.renderItem(itemStack, slotX + 1, slotY + 1);
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {

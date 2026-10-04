@@ -373,12 +373,12 @@ public class SignBlueprintItem extends Item {
 
             if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
                 if (size == 2) {
-                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "wide_format"));
+                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "wide_format"));
                     if (adv != null) {
                         serverPlayer.getAdvancements().award(adv, "placed_2x2");
                     }
                 } else if (size == 3) {
-                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "billboard"));
+                    Advancement adv = serverPlayer.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "billboard"));
                     if (adv != null) {
                         serverPlayer.getAdvancements().award(adv, "placed_3x3");
                     }
@@ -514,7 +514,7 @@ public class SignBlueprintItem extends Item {
         };
 
         if (blockId != null) {
-            Block targetBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", blockId));
+            Block targetBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", blockId));
             if (targetBlock != Blocks.AIR) {
                 CHAR_BLOCK_CACHE.put(c, targetBlock);
                 return targetBlock;

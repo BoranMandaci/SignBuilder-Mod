@@ -480,7 +480,7 @@ public class PaintBrushItem extends Item {
             case MOSSY_STONE_BRICKS -> "minecraft:mossy_stone_bricks";
             default -> "minecraft:white_concrete";
         };
-        return BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
+        return BuiltInRegistries.ITEM.get(ResourceLocation.parse(regName));
     }
 
     private int countItemInInventory(Player player, Item item) {

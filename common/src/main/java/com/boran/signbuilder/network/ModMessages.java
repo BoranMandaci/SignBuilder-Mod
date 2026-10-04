@@ -6,12 +6,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public class ModMessages {
-    public static final ResourceLocation BRUSH_COLOR = new ResourceLocation("signbuilder", "brush_color");
-    public static final ResourceLocation WRENCH_MODE = new ResourceLocation("signbuilder", "wrench_mode");
-    public static final ResourceLocation WRENCH_HOLD = new ResourceLocation("signbuilder", "wrench_hold");
-    public static final ResourceLocation BLUEPRINT_TEXT = new ResourceLocation("signbuilder", "blueprint_text");
-    public static final ResourceLocation SIGN_PRESS_CRAFT = new ResourceLocation("signbuilder", "sign_press_craft");
-    public static final ResourceLocation BLUEPRINT_UNDO = new ResourceLocation("signbuilder", "blueprint_undo");
+    public static final ResourceLocation BRUSH_COLOR = ResourceLocation.fromNamespaceAndPath("signbuilder", "brush_color");
+    public static final ResourceLocation WRENCH_MODE = ResourceLocation.fromNamespaceAndPath("signbuilder", "wrench_mode");
+    public static final ResourceLocation WRENCH_HOLD = ResourceLocation.fromNamespaceAndPath("signbuilder", "wrench_hold");
+    public static final ResourceLocation BLUEPRINT_TEXT = ResourceLocation.fromNamespaceAndPath("signbuilder", "blueprint_text");
+    public static final ResourceLocation SIGN_PRESS_CRAFT = ResourceLocation.fromNamespaceAndPath("signbuilder", "sign_press_craft");
+    public static final ResourceLocation BLUEPRINT_UNDO = ResourceLocation.fromNamespaceAndPath("signbuilder", "blueprint_undo");
 
     public static void register() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BRUSH_COLOR, (buf, context) -> {

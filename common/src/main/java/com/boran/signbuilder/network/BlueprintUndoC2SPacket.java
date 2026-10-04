@@ -89,7 +89,7 @@ public class BlueprintUndoC2SPacket {
                 stack.getTag().remove("UndoHistory");
 
                 if (player.getServer() != null) {
-                    Advancement adv = player.getServer().getAdvancements().getAdvancement(new ResourceLocation("signbuilder", "ctrl_z"));
+                    Advancement adv = player.getServer().getAdvancements().getAdvancement(ResourceLocation.fromNamespaceAndPath("signbuilder", "ctrl_z"));
                     if (adv != null) {
                         player.getAdvancements().award(adv, "undo_used");
                     }

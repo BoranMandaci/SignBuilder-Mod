@@ -336,7 +336,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     public static ItemStack getItemForMaterial(SignMaterial material) {
         if (material == null || material == SignMaterial.DEFAULT) return ItemStack.EMPTY;
         String regName = getRegistryNameForMaterial(material);
-        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(regName));
         if (item != null && item != Items.AIR) {
             return new ItemStack(item, 1);
         }

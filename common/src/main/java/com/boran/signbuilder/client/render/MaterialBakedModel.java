@@ -185,7 +185,7 @@ public class MaterialBakedModel implements BakedModel {
             case MOSSY_STONE_BRICKS -> "block/mossy_stone_bricks";
             default -> "block/white_concrete";
         };
-        return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", path));
+        return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath("minecraft", path));
     }
 
     @Override public boolean useAmbientOcclusion() { return originalModel.useAmbientOcclusion(); }
