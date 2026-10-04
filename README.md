@@ -17,12 +17,14 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 ## ✨ Key Features
 
 *   🏢 **Giant 2x2 & 3x3 Multi-Block Signs** — Need massive signage? Placing four matching sign blocks in a 2x2 square creates a 2.0x display, while a 3x3 square automatically forms a towering **3.0x giant blocks**! Features synchronized multi-block destruction, scaled material drops (4x / 9x), dynamic hitboxes, off-screen FOV rendering protection, master-dummy data sync, and multi-block backplates across wall, floor, and ceiling orientations.
-*   🔴 **Interactive Buttons & Redstone Automation** — Turn any character into an interactive mechanism! Using the Wrench, configure signs as **Momentary Pulse Buttons** or **Toggle Switches (Levers)**:
+*   🔴 **Interactive Buttons & Redstone Automation** — Turn any character into an interactive mechanism! Using the Wrench, configure signs as **Momentary Pulse Buttons**, **Toggle Switches (Levers)**, or continuous **Hold-to-Activate** controls:
+    *   **Hold-to-Activate Mode:** Keeps power output active continuously while holding interaction, powered by robust client/server held-state synchronization.
     *   **Directional Output:** Emits full Redstone power (signal strength 15) strictly from the back attachment face.
     *   **Material-Aware Timing:** Wooden signs stay depressed for 1.5 seconds (30 ticks), while metal/stone materials reset after 1.0 second (20 ticks), complete with unique physical audio profiles.
     *   **Word-Wide Synchronization:** Configure letters to press independently or trigger the entire connected word simultaneously via flood-fill logic.
     *   **Ranged Triggering:** Shoot wall buttons with arrows, tridents, or snowballs to activate them from a distance!
     *   **Analog Comparator Support:** Number blocks (0–9) output their literal numerical value (signal strength 0–9) directly into Redstone Comparators.
+*   💡 **Dynamic Lighting & Custom Behaviors** — Signs feature real in-game light emission (up to level 15) configurable with the Wrench. Choose dynamic presets (Static, Wave, Breathing, Disco, Audio Sync) or build **fully custom lighting behaviors** directly in-game using timed cycles, proximity detection, day/night schedules, or eye contact triggers with customizable entity filters and detection ranges.
 *   🔐 **PIN Keypad Security System** — Turn text into secret passcode locks!
     *   **Sequence Locking:** Characters latch inward as you press them. Entering the correct sequence emits a 2-second redstone pulse across all entered blocks; entering an invalid sequence immediately resets the lock with audio feedback.
     *   **Touch-to-Record ("REC"):** Effortlessly configure PINs directly in the world! Tap the "REC" button in the Wrench GUI, click the blocks in order, and Shift + Right-Click to save.
@@ -30,7 +32,7 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 *   🧱 **40 Dynamic Materials & 2-Page GUI Layout** — Signs are no longer just concrete! Customize your text with 40 distinct materials—including Copper, Amethyst, Coal, Deepslate Bricks, Mud Bricks, Nether Bricks, Crimson & Warped Planks, Redstone, Netherite, Quartz, Emerald, woods, and minerals. Browse them effortlessly in the Paint Brush screen with a balanced 20-item-per-page grid (`<` / `>`).
 *   🎒 **Survival Ready & Realistic Loot** — Breaking a sign normally drops its crafted components (3x White Concrete, Base Materials, Glowstone Dust). Drops dynamically scale with multiblock size (4x for 2x2s, 9x for 3x3 billboards). Mining with a **Silk Touch** tool flawlessly retains all custom NBT data (colors, materials, glowing states, PIN codes, animations) directly on the dropped item!
 *   🏗️ **Expansive 3D Models & International Symbols** — Redesigned 3D character sets with pixel-perfect hitboxes: Latin letters (A-Z), German & Turkish special letters (`Ä`, `ß`, `Ç`, `Ğ`, `İ`, `Ö`, `Ş`, `Ü`), numbers, cardinal and diagonal arrows, currency symbols (€, $, ₺, ¥, £, **₿**), mathematical operators, and an extensive symbol roster: Tilde (`~`), Key (`🗝`), Lock (`🔒`), Trophy (`🏆`), Lightning (`⚡`), Bitcoin (`₿`), Cross (`✗`), Circle (`○`), Diamond (`◆`), Musical Notes (`♪`, `♫`), Skull (`☠`), Heart (`♥`), Star (`★`), Checkmark (`✓`), Infinity (`∞`), brackets, and punctuation.
-*   🗜️ **The Sign Press** — A dedicated survival crafting station. Stamp your white concrete into specific letters, symbols, and backplates cleanly and efficiently with a refreshed, scrollable interface. Fully compatible with hoppers for automated workflows.
+*   🗜️ **The Sign Press** — A dedicated survival crafting station featuring a refreshed 3D workstation model. Stamp your white concrete into specific letters, symbols, and backplates cleanly and efficiently with a scrollable interface. Fully compatible with hoppers for automated workflows.
 *   🗺️ **Holographic Blueprint, Diagonal Angles & Undo** — Type your text into the modernized Blueprint GUI with direct symbol buttons, full GUI scale support, and Unicode handling. Enjoy real-time **translucent 3D ghost previews** directly in the world, dynamically shifting between **green** (valid) and **red** (obstructed). Features horizontal, 45-degree diagonal (1x1), and Y-axis locked **vertical placement**, 3-way size cycling (**1x1**, **2x2**, **3x3**), and an **automatic backplate toggle**. The one-click Undo system cleanly removes misplaced constructions and refunds all blocks and backplates.
 *   🎨 **The Paint Brush & Custom Palette** — Right-click in the air to open a responsive GUI. Mix your own RGB/Hex codes and save up to 14 custom colors in your personal palette, or apply material textures directly to sign faces and backplates across multiple pages.
 *   🌈 **Smart Fill & Rainbow Mode** — Sneak + Right-click in the air to toggle "Smart Fill", featuring intuitive circular HUD indicators. Instantly paint, light, or animate entire connected words at once with zero visual delay.
@@ -46,7 +48,7 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 
 **Tools**
 *   🧊 **Blockbench** — Custom 3D modeling and texturing for all character, backplate, and tool blocks.
-*   🐘 **Gradle** — Build automation and dependency management.
+*   🐘 **Gradle** — Derleme otomasyonu ve bağımlılık yönetimi.
 
 ## 🚀 Getting Started
 
