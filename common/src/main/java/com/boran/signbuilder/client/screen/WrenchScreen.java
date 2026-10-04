@@ -97,8 +97,8 @@ public class WrenchScreen extends Screen {
             ItemStack mainItem = this.minecraft.player.getMainHandItem();
             ItemStack offItem = this.minecraft.player.getOffhandItem();
 
-            CompoundTag mainTag = mainItem.getTag();
-            CompoundTag offTag = offItem.getTag();
+            CompoundTag mainTag = mainItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            CompoundTag offTag = offItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
 
             this.isSmartFillEnabled = (mainTag != null && mainTag.getBoolean("IsSmartFill")) ||
                     (offTag != null && offTag.getBoolean("IsSmartFill"));
@@ -371,7 +371,7 @@ public class WrenchScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);

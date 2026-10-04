@@ -14,34 +14,28 @@ public class ModMessages {
     public static final ResourceLocation BLUEPRINT_UNDO = ResourceLocation.fromNamespaceAndPath("signbuilder", "blueprint_undo");
 
     public static void register() {
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BRUSH_COLOR, (buf, context) -> {
-            BrushColorPacket packet = new BrushColorPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BrushColorPacket.TYPE, BrushColorPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, WRENCH_MODE, (buf, context) -> {
-            WrenchModeC2SPacket packet = new WrenchModeC2SPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, WrenchModeC2SPacket.TYPE, WrenchModeC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, WRENCH_HOLD, (buf, context) -> {
-            WrenchHoldC2SPacket packet = new WrenchHoldC2SPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, WrenchHoldC2SPacket.TYPE, WrenchHoldC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BLUEPRINT_TEXT, (buf, context) -> {
-            BlueprintTextC2SPacket packet = new BlueprintTextC2SPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BlueprintTextC2SPacket.TYPE, BlueprintTextC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SIGN_PRESS_CRAFT, (buf, context) -> {
-            SignPressCraftC2SPacket packet = new SignPressCraftC2SPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SignPressCraftC2SPacket.TYPE, SignPressCraftC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BLUEPRINT_UNDO, (buf, context) -> {
-            BlueprintUndoC2SPacket packet = new BlueprintUndoC2SPacket(buf);
-            context.queue(() -> packet.handle(context));
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BlueprintUndoC2SPacket.TYPE, BlueprintUndoC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
         });
     }
 
@@ -49,23 +43,17 @@ public class ModMessages {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 
         if (message instanceof BrushColorPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(BRUSH_COLOR, buf);
+            NetworkManager.sendToServer(packet);
         } else if (message instanceof WrenchModeC2SPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(WRENCH_MODE, buf);
+            NetworkManager.sendToServer(packet);
         } else if (message instanceof WrenchHoldC2SPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(WRENCH_HOLD, buf);
+            NetworkManager.sendToServer(packet);
         } else if (message instanceof BlueprintTextC2SPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(BLUEPRINT_TEXT, buf);
+            NetworkManager.sendToServer(packet);
         } else if (message instanceof SignPressCraftC2SPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(SIGN_PRESS_CRAFT, buf);
+            NetworkManager.sendToServer(packet);
         } else if (message instanceof BlueprintUndoC2SPacket packet) {
-            packet.toBytes(buf);
-            NetworkManager.sendToServer(BLUEPRINT_UNDO, buf);
+            NetworkManager.sendToServer(packet);
         }
     }
 }

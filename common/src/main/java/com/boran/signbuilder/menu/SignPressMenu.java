@@ -26,7 +26,7 @@ public class SignPressMenu extends AbstractContainerMenu {
     private boolean craftMax = false;
     private boolean isQuickCrafting = false;
 
-    public SignPressMenu(int id, Inventory inv, net.minecraft.network.RegistryFriendlyByteBuf extraData) {
+    public SignPressMenu(int id, Inventory inv, net.minecraft.network.FriendlyByteBuf extraData) {
         this(id, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
@@ -85,7 +85,7 @@ public class SignPressMenu extends AbstractContainerMenu {
                 int amountToCraft = 1;
                 if (this.craftMax) {
                     amountToCraft = input.getCount() / 4;
-                    amountToCraft = Math.min(amountToCraft, resultItem.getMaxStackSize());
+                    amountToCraft = Math.min(amountToCraft, resultItem.getDefaultMaxStackSize());
                 }
 
                 this.resultContainer.setItem(0, new ItemStack(resultItem, amountToCraft));

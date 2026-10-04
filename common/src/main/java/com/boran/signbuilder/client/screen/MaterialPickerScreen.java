@@ -151,7 +151,7 @@ public class MaterialPickerScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
 
         int pad = 10;
         int panelLeft = startX - pad;

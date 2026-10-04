@@ -32,7 +32,7 @@ public class ColorPickerScreen extends Screen {
         this.brushStack = brushStack;
         this.parentScreen = parentScreen;
 
-        CompoundTag tag = brushStack.getOrCreateTag();
+        CompoundTag tag = brushStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (tag.contains("SelectedColor")) {
             int savedColor = tag.getInt("SelectedColor");
             if (savedColor > 15) {
@@ -177,7 +177,7 @@ public class ColorPickerScreen extends Screen {
         if (this.minecraft == null || this.minecraft.player == null) return;
 
         ItemStack currentBrush = this.minecraft.player.getMainHandItem();
-        net.minecraft.nbt.CompoundTag tag = currentBrush.getOrCreateTag();
+        net.minecraft.nbt.CompoundTag tag = currentBrush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
 
         int[] oldColors = tag.contains("CustomColors") ? tag.getIntArray("CustomColors") : new int[0];
         java.util.List<Integer> colorList = new java.util.ArrayList<>();
@@ -254,7 +254,7 @@ public class ColorPickerScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
         int centerX = this.width / 2;
         int centerY = this.height / 2;

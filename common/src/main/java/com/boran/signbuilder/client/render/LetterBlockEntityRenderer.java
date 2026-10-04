@@ -404,7 +404,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             float r = ((color >> 16) & 0xFF) / 255.0f;
             float g = ((color >> 8) & 0xFF) / 255.0f;
             float b = (color & 0xFF) / 255.0f;
-            buffer.putBulkData(pose, quad, r, g, b, light, overlay);
+            buffer.putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
         }
     }
 }

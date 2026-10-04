@@ -10,7 +10,18 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BrushColorPacket {
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+
+public class BrushColorPacket implements CustomPacketPayload {
+    public static final Type<BrushColorPacket> TYPE = new Type<>(com.boran.signbuilder.network.ModMessages.BRUSH_COLOR);
+    public static final StreamCodec<RegistryFriendlyByteBuf, BrushColorPacket> STREAM_CODEC = StreamCodec.ofMember(BrushColorPacket::toBytes, BrushColorPacket::new);
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
     private final int color;
     private final boolean isAddingCustom;
     private final boolean isRemovingCustom;
@@ -44,14 +55,14 @@ public class BrushColorPacket {
         this.materialTexture = materialTexture;
     }
 
-    public BrushColorPacket(FriendlyByteBuf buf) {
+    public BrushColorPacket(RegistryFriendlyByteBuf buf) {
         this.color = buf.readInt();
         this.isAddingCustom = buf.readBoolean();
         this.isRemovingCustom = buf.readBoolean();
         this.materialTexture = buf.readUtf(256);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    public void toBytes(RegistryFriendlyByteBuf buf) {
         buf.writeInt(color);
         buf.writeBoolean(isAddingCustom);
         buf.writeBoolean(isRemovingCustom);

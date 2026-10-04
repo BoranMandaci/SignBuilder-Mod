@@ -5,6 +5,9 @@ import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,7 +18,15 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class WrenchHoldC2SPacket {
+public class WrenchHoldC2SPacket implements CustomPacketPayload {
+    public static final Type<WrenchHoldC2SPacket> TYPE = new Type<>(com.boran.signbuilder.network.ModMessages.WRENCH_HOLD);
+    public static final StreamCodec<RegistryFriendlyByteBuf, WrenchHoldC2SPacket> STREAM_CODEC = StreamCodec.ofMember(WrenchHoldC2SPacket::toBytes, WrenchHoldC2SPacket::new);
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     private final BlockPos pos;
     private final boolean pressed;
 
@@ -24,12 +35,12 @@ public class WrenchHoldC2SPacket {
         this.pressed = pressed;
     }
 
-    public WrenchHoldC2SPacket(FriendlyByteBuf buf) {
+    public WrenchHoldC2SPacket(RegistryFriendlyByteBuf buf) {
         this.pos = buf.readBlockPos();
         this.pressed = buf.readBoolean();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    public void toBytes(RegistryFriendlyByteBuf buf) {
         buf.writeBlockPos(this.pos);
         buf.writeBoolean(this.pressed);
     }

@@ -7,6 +7,9 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,13 +24,21 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlueprintUndoC2SPacket {
+public class BlueprintUndoC2SPacket implements CustomPacketPayload {
+    public static final Type<BlueprintUndoC2SPacket> TYPE = new Type<>(com.boran.signbuilder.network.ModMessages.BLUEPRINT_UNDO);
+    public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintUndoC2SPacket> STREAM_CODEC = StreamCodec.ofMember(BlueprintUndoC2SPacket::toBytes, BlueprintUndoC2SPacket::new);
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
 
     public BlueprintUndoC2SPacket() {}
 
-    public BlueprintUndoC2SPacket(FriendlyByteBuf buf) {}
+    public BlueprintUndoC2SPacket(RegistryFriendlyByteBuf buf) {}
 
-    public void toBytes(FriendlyByteBuf buf) {}
+    public void toBytes(RegistryFriendlyByteBuf buf) {}
 
     public void handle(NetworkManager.PacketContext context) {
         ServerPlayer player = (ServerPlayer) context.getPlayer();

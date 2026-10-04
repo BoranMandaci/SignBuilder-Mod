@@ -52,10 +52,10 @@ public class BackplateItem extends BlockItem {
                         return InteractionResult.FAIL;
                     }
 
-                    CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+                    net.minecraft.world.item.component.CustomData beTag = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
                     LetterBlockEntity temp = new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), mPos, mState);
                     if (beTag != null) {
-                        BackplateBlock.applyBackplateTagToEntity(temp, beTag);
+                        BackplateBlock.applyBackplateTagToEntity(temp, beTag.copyTag());
                     }
 
                     SignMaterial fMat = temp.getBackplateFrontMaterial();

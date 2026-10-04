@@ -39,8 +39,8 @@ public class PaintBrushScreen extends Screen {
         if (this.minecraft != null && this.minecraft.player != null) {
             ItemStack mainItem = this.minecraft.player.getMainHandItem();
             ItemStack offItem = this.minecraft.player.getOffhandItem();
-            this.isSmartFillEnabled = (mainItem.hasTag() && mainItem.getTag().getBoolean("IsSmartFill")) ||
-                    (offItem.hasTag() && offItem.getTag().getBoolean("IsSmartFill"));
+            this.isSmartFillEnabled = (!mainItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).isEmpty() && mainItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("IsSmartFill")) ||
+                    (!offItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).isEmpty() && offItem.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("IsSmartFill"));
         }
 
         String[] colorNames = {
@@ -56,8 +56,8 @@ public class PaintBrushScreen extends Screen {
 
         ItemStack brush = this.minecraft.player.getMainHandItem();
         int[] customColors = new int[0];
-        if (brush.hasTag() && brush.getTag().contains("CustomColors")) {
-            customColors = brush.getTag().getIntArray("CustomColors");
+        if (!brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).isEmpty() && brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().contains("CustomColors")) {
+            customColors = brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getIntArray("CustomColors");
         }
 
         int totalElements = 16 + 1 + customColors.length + 1;
@@ -127,7 +127,7 @@ public class PaintBrushScreen extends Screen {
 
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pGuiGraphics);
+        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
         int panelLeft = Math.min(startX, matBtnX) - dynamicPadding;
         int panelRight = Math.max(startX + gridWidth, matBtnX + matBtnWidth) + dynamicPadding;
@@ -246,14 +246,14 @@ public class PaintBrushScreen extends Screen {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) return;
             ItemStack brush = mc.player.getMainHandItem();
-            if (brush.hasTag() && brush.getTag().contains("CustomColors")) {
+            if (!brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).isEmpty() && brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().contains("CustomColors")) {
                 List<Integer> newColors = new ArrayList<>();
                 boolean removed = false;
-                for (int c : brush.getTag().getIntArray("CustomColors")) {
+                for (int c : brush.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getIntArray("CustomColors")) {
                     if (!removed && c == this.colorHex) { removed = true; continue; }
                     newColors.add(c);
                 }
-                brush.getTag().putIntArray("CustomColors", newColors.stream().mapToInt(i -> i).toArray());
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, brush, t -> t.putIntArray("CustomColors", newColors.stream().mapToInt(i -> i).toArray()));
                 com.boran.signbuilder.network.ModMessages.sendToServer(new com.boran.signbuilder.network.BrushColorPacket(this.colorHex, false, true));
                 parentScreen.rebuildWidgets();
             }

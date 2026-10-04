@@ -111,7 +111,7 @@ public class WrenchItem extends Item {
         }
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.brush.smart_fill").withStyle(ChatFormatting.GRAY).append(": ").append(Component.translatable(isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)));
-        super.appendHoverText(pStack, pContext, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, context, pTooltipComponents, pIsAdvanced);
     }
 
     private void finishPinRecording(ItemStack stack, Player player, Level level) {
@@ -314,7 +314,7 @@ public class WrenchItem extends Item {
                                 ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
                                 if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
                             }
-                            stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
+                            stack.hurtAndBreak(1, player, pContext.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
                         }
 
                         letterEntity.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
@@ -341,7 +341,7 @@ public class WrenchItem extends Item {
                         }
 
                         if (player != null && !player.isCreative()) {
-                            stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
+                            stack.hurtAndBreak(1, player, pContext.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
                         }
                         letterEntity.setButtonMode(buttonMode);
                         letterEntity.setSyncWord(syncWord);
@@ -501,7 +501,7 @@ public class WrenchItem extends Item {
 
     private void handleSmartFillFeedback(Level level, Player player, ItemStack stack, InteractionHand hand, int blocksModified, int failedMaterial, int failedDurability) {
         if (player != null && !level.isClientSide()) {
-            if (blocksModified > 0 && !player.isCreative()) stack.hurtAndBreak(blocksModified, player, (p) -> p.broadcastBreakEvent(hand));
+            if (blocksModified > 0 && !player.isCreative()) stack.hurtAndBreak(blocksModified, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
 
             if (failedMaterial > 0) {
                 player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_material", blocksModified, failedMaterial).withStyle(ChatFormatting.YELLOW), true);

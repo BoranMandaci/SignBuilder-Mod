@@ -65,16 +65,16 @@ public class BlueprintScreen extends Screen {
             if (!(stack.getItem() instanceof SignBlueprintItem)) {
                 stack = this.minecraft.player.getOffhandItem();
             }
-            if (stack.getItem() instanceof SignBlueprintItem && stack.getTag() != null) {
-                if (stack.getTag().contains("Size")) {
-                    this.size = stack.getTag().getInt("Size");
-                } else if (stack.getTag().getBoolean("Is2x2")) {
+            if (stack.getItem() instanceof SignBlueprintItem && stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag() != null) {
+                if (stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().contains("Size")) {
+                    this.size = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getInt("Size");
+                } else if (stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("Is2x2")) {
                     this.size = 2;
                 } else {
                     this.size = 1;
                 }
-                this.isVertical = stack.getTag().getBoolean("IsVertical");
-                this.withBackplate = stack.getTag().getBoolean("WithBackplate");
+                this.isVertical = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("IsVertical");
+                this.withBackplate = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("WithBackplate");
             }
         }
 
@@ -302,7 +302,7 @@ public class BlueprintScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         SignBuilderUi.drawPanel(guiGraphics, this.panelX, this.panelY, this.panelWidth, this.panelHeight);
         SignBuilderUi.drawHeader(guiGraphics, this.font, this.panelX + 1, this.panelY + 1, this.panelWidth - 2, this.title, getHeaderDetail());
 

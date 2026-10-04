@@ -36,7 +36,7 @@ public class ModColorHandlers {
     }
 
     public static int getItemColor(ItemStack stack, int tintIndex) {
-        CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+        net.minecraft.nbt.CompoundTag beTag = stack.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (beTag == null || beTag.isEmpty()) {
             return 0xFFFFFF;
         }

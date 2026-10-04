@@ -3,13 +3,24 @@ package com.boran.signbuilder.network;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 
-public class WrenchModeC2SPacket {
+public class WrenchModeC2SPacket implements CustomPacketPayload {
+    public static final Type<WrenchModeC2SPacket> TYPE = new Type<>(com.boran.signbuilder.network.ModMessages.WRENCH_MODE);
+    public static final StreamCodec<RegistryFriendlyByteBuf, WrenchModeC2SPacket> STREAM_CODEC = StreamCodec.ofMember(WrenchModeC2SPacket::toBytes, WrenchModeC2SPacket::new);
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     private final int mode;
     private final boolean detectsMonsters;
     private final boolean detectsAnimals;
@@ -74,7 +85,7 @@ public class WrenchModeC2SPacket {
         this(mode, detectsMonsters, detectsAnimals, buttonMode, syncWord, activeTab, pinCode, false, 10, 10);
     }
 
-    public WrenchModeC2SPacket(FriendlyByteBuf buf) {
+    public WrenchModeC2SPacket(RegistryFriendlyByteBuf buf) {
         this.mode = buf.readInt();
         this.detectsMonsters = buf.readBoolean();
         this.detectsAnimals = buf.readBoolean();
@@ -95,7 +106,7 @@ public class WrenchModeC2SPacket {
         this.customLightLookOnly = buf.readBoolean();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    public void toBytes(RegistryFriendlyByteBuf buf) {
         buf.writeInt(mode);
         buf.writeBoolean(detectsMonsters);
         buf.writeBoolean(detectsAnimals);
