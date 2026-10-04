@@ -5,7 +5,6 @@ import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
-import dev.architectury.platform.neoforge.EventBuses;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -18,7 +17,6 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod("signbuilder")
 public class SignBuilderNeoForge {
     public SignBuilderNeoForge(IEventBus modEventBus) {
-        EventBuses.registerModEventBus("signbuilder", modEventBus);
         SignBuilder.init();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
