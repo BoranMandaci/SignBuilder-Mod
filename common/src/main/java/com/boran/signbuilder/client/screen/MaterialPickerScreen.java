@@ -149,9 +149,16 @@ public class MaterialPickerScreen extends Screen {
         this.addRenderableWidget(new FlatBackButton(startX, backBtnY, gridWidth, 18, this.parentScreen));
     }
 
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Leave empty to prevent double rendering
+    }
+
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTick);
+        // this.renderBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.fill(0, 0, this.width, this.height, 0xAA000000);
 
         int pad = 10;
         int panelLeft = startX - pad;
@@ -164,11 +171,11 @@ public class MaterialPickerScreen extends Screen {
         int titleY = Math.max(5, panelTop - 12);
         graphics.fillGradient(panelLeft + 28, titleY - 4, panelRight - 28, titleY + 14, 0xEE343F4E, 0xEE252D38);
         graphics.fill(panelLeft + 28, titleY - 4, panelLeft + 30, titleY + 14, SignBuilderUi.ACCENT);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, titleY + 1, SignBuilderUi.TEXT);
+        SignBuilderUi.drawCenteredStringNoShadow(graphics, this.font, this.title, this.width / 2, titleY + 1, SignBuilderUi.TEXT);
 
         int maxPages = (int) Math.ceil((double) ALL_MATERIALS.length / itemsPerPage);
         int navY = startY + gridHeight + 11;
-        graphics.drawCenteredString(this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, SignBuilderUi.MUTED);
+        SignBuilderUi.drawCenteredStringNoShadow(graphics, this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, SignBuilderUi.MUTED);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -187,7 +194,7 @@ public class MaterialPickerScreen extends Screen {
                     this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
             int outlineColor = this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181;
             graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, outlineColor);
-            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         }
 
         @Override

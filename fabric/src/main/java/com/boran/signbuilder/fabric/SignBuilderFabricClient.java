@@ -14,7 +14,10 @@ import net.minecraft.client.renderer.RenderType;
 public class SignBuilderFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        com.boran.signbuilder.client.ClientModEvents.init();
         ModColorHandlers.register();
+        
+        net.minecraft.client.gui.screens.MenuScreens.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
 
         BlockEntityRendererRegistry.register(
                 ModBlockEntities.LETTER_BLOCK_ENTITY.get(),

@@ -78,7 +78,7 @@ public class WrenchScreen extends Screen {
     private float redstoneScale = 1.0F;
 
     public WrenchScreen(int currentMode, boolean detectsMonsters, boolean detectsAnimals) {
-        super(Component.translatable("gui.signbuilder.wrench.title"));
+        super(Component.literal("WRENCH MODES"));
         this.currentMode = currentMode;
         this.detectsMonsters = detectsMonsters;
         this.detectsAnimals = detectsAnimals;
@@ -369,9 +369,16 @@ public class WrenchScreen extends Screen {
         return null;
     }
 
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Leave empty to prevent double rendering
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);
@@ -394,7 +401,7 @@ public class WrenchScreen extends Screen {
         }
 
         int promptY = Math.min(this.height - 10, startY + panelHeight + 6);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.close_prompt"), centerX, promptY, 0x888888);
+        SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.close_prompt"), centerX, promptY, 0x888888);
 
         if (tooltipToRender != null) {
             guiGraphics.renderTooltip(this.font, tooltipToRender, mouseX, mouseY);
@@ -418,13 +425,13 @@ public class WrenchScreen extends Screen {
         int neonBorder = (activeTab == 0) ? 0xFF52DBC8 : 0xFF485463;
         guiGraphics.fill(neonX, tabY, neonX + tabWidth, tabY + tabHeight, neonBg);
         guiGraphics.renderOutline(neonX, tabY, tabWidth, tabHeight, neonBorder);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.tab.neon"), neonX + tabWidth / 2, tabY + 4, activeTab == 0 ? 0x00FFFF : 0xAAAAAA);
+        SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.tab.neon"), neonX + tabWidth / 2, tabY + 4, activeTab == 0 ? 0x00FFFF : 0xAAAAAA);
 
         int redstoneBg = (activeTab == 1) ? 0xFF654624 : (redstoneHover ? 0xFF38414D : 0xFF222A34);
         int redstoneBorder = (activeTab == 1) ? SignBuilderUi.ACCENT : 0xFF485463;
         guiGraphics.fill(redstoneX, tabY, redstoneX + tabWidth, tabY + tabHeight, redstoneBg);
         guiGraphics.renderOutline(redstoneX, tabY, tabWidth, tabHeight, redstoneBorder);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.tab.redstone"), redstoneX + tabWidth / 2, tabY + 4, activeTab == 1 ? 0xFFAA00 : 0xAAAAAA);
+        SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.tab.redstone"), redstoneX + tabWidth / 2, tabY + 4, activeTab == 1 ? 0xFFAA00 : 0xAAAAAA);
     }
 
     private Component renderNeonTab(GuiGraphics guiGraphics, int startX, int contentStartY, int mouseX, int mouseY) {
@@ -472,7 +479,7 @@ public class WrenchScreen extends Screen {
 
             int textXOffset = (mode == currentMode) ? 26 : 30;
             int textY = rowY + (rowHeight - 8) / 2;
-            guiGraphics.drawString(this.font, displayText, startX + textXOffset, textY, mode == currentMode ? SignBuilderUi.TEXT : 0xFF78DCCF);
+            guiGraphics.drawString(this.font, displayText, startX + textXOffset, textY, mode == currentMode ? SignBuilderUi.TEXT : 0xFF78DCCF, true);
         }
 
         int turnOffY = contentStartY + (MOD_KEYS.length * rowHeight);
@@ -486,7 +493,7 @@ public class WrenchScreen extends Screen {
         Component offDisplay = (currentMode == -1) ? Component.literal("> ").append(offText) : offText;
         int offTextOffset = (currentMode == -1) ? 26 : 30;
         int offTextY = turnOffY + (rowHeight - 8) / 2;
-        guiGraphics.drawString(this.font, offDisplay, startX + offTextOffset, offTextY, 0xFF5555);
+        guiGraphics.drawString(this.font, offDisplay, startX + offTextOffset, offTextY, 0xFF5555, true);
 
         return tooltipToRender;
     }
@@ -498,8 +505,8 @@ public class WrenchScreen extends Screen {
         if (customLightType == 0) {
             int onY = contentStartY + scaledRedstone(62);
             int offY = contentStartY + scaledRedstone(84);
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.on"), startX + 12, onY + scaledRedstone(4), SignBuilderUi.TEXT);
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.off"), startX + 12, offY + scaledRedstone(4), SignBuilderUi.TEXT);
+            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.on"), startX + 12, onY + scaledRedstone(4), SignBuilderUi.TEXT, true);
+            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.off"), startX + 12, offY + scaledRedstone(4), SignBuilderUi.TEXT, true);
             drawCycleControl(guiGraphics, startX, onY, customLightOnTicks, mouseX, mouseY);
             drawCycleControl(guiGraphics, startX, offY, customLightOffTicks, mouseX, mouseY);
             drawCompactHint(guiGraphics, Component.translatable("gui.signbuilder.wrench.custom_cycle.hint"), startX, contentStartY + scaledRedstone(108));
@@ -507,9 +514,9 @@ public class WrenchScreen extends Screen {
             int openRangeY = contentStartY + scaledRedstone(58);
             int closeRangeY = contentStartY + scaledRedstone(78);
             int closeDelayY = contentStartY + scaledRedstone(98);
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.open_range"), startX + 12, openRangeY + scaledRedstone(4), SignBuilderUi.TEXT);
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.close_range"), startX + 12, closeRangeY + scaledRedstone(4), SignBuilderUi.TEXT);
-            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.close_delay"), startX + 12, closeDelayY + scaledRedstone(4), SignBuilderUi.TEXT);
+            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.open_range"), startX + 12, openRangeY + scaledRedstone(4), SignBuilderUi.TEXT, true);
+            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.close_range"), startX + 12, closeRangeY + scaledRedstone(4), SignBuilderUi.TEXT, true);
+            guiGraphics.drawString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.close_delay"), startX + 12, closeDelayY + scaledRedstone(4), SignBuilderUi.TEXT, true);
             drawRangeControl(guiGraphics, startX, openRangeY, mouseX, mouseY);
             drawRangeControl(guiGraphics, startX, closeRangeY, mouseX, mouseY);
             drawCycleControl(guiGraphics, startX, closeDelayY, customLightCloseDelayTicks, mouseX, mouseY);
@@ -529,7 +536,7 @@ public class WrenchScreen extends Screen {
             boolean dayHovered = mouseX >= dayX && mouseX <= dayX + choiceWidth && mouseY >= choiceY && mouseY <= choiceY + choiceHeight;
             drawEditorButton(guiGraphics, nightX, choiceY, choiceWidth, choiceHeight, Component.translatable("gui.signbuilder.wrench.custom_cycle.night"), nightHovered, customLightNightOnly);
             drawEditorButton(guiGraphics, dayX, choiceY, choiceWidth, choiceHeight, Component.translatable("gui.signbuilder.wrench.custom_cycle.day"), dayHovered, !customLightNightOnly);
-            guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.schedule_hint"), startX + panelWidth / 2, contentStartY + scaledRedstone(106), 0xFF9AA8B8);
+            SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.schedule_hint"), startX + panelWidth / 2, contentStartY + scaledRedstone(106), 0xFF9AA8B8);
         } else {
             int choiceY = contentStartY + scaledRedstone(72);
             int gap = scaledRedstone(8);
@@ -541,7 +548,7 @@ public class WrenchScreen extends Screen {
             boolean notLookHovered = mouseX >= notLookX && mouseX <= notLookX + choiceWidth && mouseY >= choiceY && mouseY <= choiceY + choiceHeight;
             drawEditorButton(guiGraphics, lookX, choiceY, choiceWidth, choiceHeight, Component.translatable("gui.signbuilder.wrench.custom_cycle.looked_at"), lookHovered, customLightLookOnly);
             drawEditorButton(guiGraphics, notLookX, choiceY, choiceWidth, choiceHeight, Component.translatable("gui.signbuilder.wrench.custom_cycle.not_looked_at"), notLookHovered, !customLightLookOnly);
-            guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.eye_contact_hint"), startX + panelWidth / 2, contentStartY + scaledRedstone(106), 0xFF9AA8B8);
+            SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.custom_cycle.eye_contact_hint"), startX + panelWidth / 2, contentStartY + scaledRedstone(106), 0xFF9AA8B8);
         }
 
         int lowPowerY = contentStartY + scaledRedstone(customLightType == 1 ? 136 : 120);
@@ -581,7 +588,7 @@ public class WrenchScreen extends Screen {
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(startX + panelWidth / 2.0F, y, 0.0F);
         guiGraphics.pose().scale(scale, scale, 1.0F);
-        guiGraphics.drawCenteredString(this.font, hint, 0, 0, 0xFF9AA8B8);
+        SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, hint, 0, 0, 0xFF9AA8B8);
         guiGraphics.pose().popPose();
     }
 
@@ -627,7 +634,7 @@ public class WrenchScreen extends Screen {
             int inset = Math.max(1, scaledRedstone(2));
             guiGraphics.fill(x + inset, y + scaledRedstone(2) + inset, x + checkSize - inset, y + scaledRedstone(2) + checkSize - inset, 0xFF55FF55);
         }
-        guiGraphics.drawString(this.font, label, x + scaledRedstone(16), y + scaledRedstone(4), enabled ? 0xFF55FF55 : 0xFFAAAAAA);
+        guiGraphics.drawString(this.font, label, x + scaledRedstone(16), y + scaledRedstone(4), enabled ? 0xFF55FF55 : 0xFFAAAAAA, true);
     }
 
     private int getCustomFilterWidth(Component label) {
@@ -686,7 +693,7 @@ public class WrenchScreen extends Screen {
     private void drawEditorButton(GuiGraphics guiGraphics, int x, int y, int width, int height, Component label, boolean hovered, boolean primary) {
         guiGraphics.fill(x, y, x + width, y + height, primary ? (hovered ? 0xFF385A4D : 0xFF263D35) : (hovered ? 0xFF38414D : 0xFF222A34));
         guiGraphics.renderOutline(x, y, width, height, primary ? SignBuilderUi.ACCENT : 0xFF485463);
-        guiGraphics.drawCenteredString(this.font, label, x + width / 2, y + Math.max(0, (height - 8) / 2), primary ? SignBuilderUi.TEXT : 0xFFCCCCCC);
+        SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, label, x + width / 2, y + Math.max(0, (height - 8) / 2), primary ? SignBuilderUi.TEXT : 0xFFCCCCCC);
     }
 
     private Component renderRedstoneTab(GuiGraphics guiGraphics, int startX, int contentStartY, int mouseX, int mouseY, float partialTick) {
@@ -713,7 +720,7 @@ public class WrenchScreen extends Screen {
                         startX + 12 + checkSize - inset, rowY + scaledRedstone(2) + checkSize - inset, 0xFF00FF00);
             }
 
-            guiGraphics.drawString(this.font, Component.translatable(BUTTON_MODE_KEYS[i]), startX + 28, rowY + scaledRedstone(4), BUTTON_MODE_COLORS[i]);
+            guiGraphics.drawString(this.font, Component.translatable(BUTTON_MODE_KEYS[i]), startX + 28, rowY + scaledRedstone(4), BUTTON_MODE_COLORS[i], true);
         }
 
         if (this.buttonMode == 3) {
@@ -729,7 +736,7 @@ public class WrenchScreen extends Screen {
             boolean isRecHovered = mouseX >= recX && mouseX <= recX + recWidth && mouseY >= recY && mouseY <= recY + recHeight;
             guiGraphics.fill(recX, recY, recX + recWidth, recY + recHeight, isRecHovered ? 0xFF992222 : 0xFF661111);
             guiGraphics.renderOutline(recX, recY, recWidth, recHeight, isRecHovered ? 0xFFFF6666 : 0xFFFF3333);
-            guiGraphics.drawCenteredString(this.font, "⏺ REC", recX + recWidth / 2, recY + scaledRedstone(4), 0xFFFFFF);
+            SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, "⏺ REC", recX + recWidth / 2, recY + scaledRedstone(4), 0xFFFFFF);
 
             if (isRecHovered) {
                 tooltip = Component.translatable("gui.signbuilder.wrench.pin.rec_tooltip");
@@ -755,7 +762,7 @@ public class WrenchScreen extends Screen {
             guiGraphics.fill(startX + 12 + inset, scopeRowY + scaledRedstone(2) + inset,
                     startX + 12 + scopeCheckSize - inset, scopeRowY + scaledRedstone(2) + scopeCheckSize - inset, 0xFF00FF00);
         }
-        guiGraphics.drawString(this.font, Component.translatable(syncWord ? "gui.signbuilder.wrench.scope.word" : "gui.signbuilder.wrench.scope.single"), startX + 28, scopeRowY + scaledRedstone(4), syncWord ? 0x55FF55 : 0xAAAAAA);
+        guiGraphics.drawString(this.font, Component.translatable(syncWord ? "gui.signbuilder.wrench.scope.word" : "gui.signbuilder.wrench.scope.single"), startX + 28, scopeRowY + scaledRedstone(4), syncWord ? 0x55FF55 : 0xAAAAAA, true);
 
         return tooltip;
     }
@@ -1179,8 +1186,6 @@ public class WrenchScreen extends Screen {
                 : Math.max(neonHeight, 24 + scaledRedstone(176));
     }
 
-    private int scaledRedstone(int value) {
-        return Math.max(1, Math.round(value * redstoneScale));
-    }
+    private int scaledRedstone(int value) { return value; }
 
 }

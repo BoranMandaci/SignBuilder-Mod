@@ -62,4 +62,16 @@ public class SignPressBlock extends BaseEntityBlock {
         }
         return net.minecraft.world.ItemInteractionResult.SUCCESS;
     }
+
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide()) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof MenuProvider menuProvider) {
+                MenuRegistry.openExtendedMenu((net.minecraft.server.level.ServerPlayer) player, menuProvider, buf -> buf.writeBlockPos(pos));
+            }
+        }
+        return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
 }

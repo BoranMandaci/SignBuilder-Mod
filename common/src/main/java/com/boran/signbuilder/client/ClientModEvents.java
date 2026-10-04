@@ -22,9 +22,9 @@ public class ClientModEvents {
 
     public static void init() {
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
-        ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
-            MenuRegistry.registerScreenFactory(ModMenuTypes.SIGN_PRESS_MENU.get(), SignPressScreen::new);
 
+        ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
+            
             BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
 
             ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {

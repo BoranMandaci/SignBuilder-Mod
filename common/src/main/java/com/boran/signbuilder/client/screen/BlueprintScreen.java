@@ -300,9 +300,15 @@ public class BlueprintScreen extends Screen {
                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off"));
     }
 
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Leave empty to prevent double rendering
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         SignBuilderUi.drawPanel(guiGraphics, this.panelX, this.panelY, this.panelWidth, this.panelHeight);
         SignBuilderUi.drawHeader(guiGraphics, this.font, this.panelX + 1, this.panelY + 1, this.panelWidth - 2, this.title, getHeaderDetail());
 
@@ -312,7 +318,7 @@ public class BlueprintScreen extends Screen {
         SignBuilderUi.drawSectionLabel(guiGraphics, this.font, prompt, contentX, this.panelY + scaledY(31), contentWidth);
 
         String characterCount = this.textField.getValue().length() + "/32";
-        guiGraphics.drawString(this.font, characterCount, contentX + contentWidth - this.font.width(characterCount), this.panelY + scaledY(31), SignBuilderUi.MUTED, false);
+        guiGraphics.drawString(this.font, characterCount, contentX + contentWidth - this.font.width(characterCount), this.panelY + scaledY(31), SignBuilderUi.MUTED, true);
 
         int inputX = contentX;
         int inputY = this.panelY + scaledY(47);
@@ -386,9 +392,7 @@ public class BlueprintScreen extends Screen {
         return false;
     }
 
-    private int scaledY(int value) {
-        return Math.max(1, Math.round(value * this.layoutScaleY));
-    }
+    private int scaledY(int value) { return value; }
 
     private class SymbolButton extends AbstractButton {
         private final String insert;
@@ -412,7 +416,7 @@ public class BlueprintScreen extends Screen {
                     hovered ? 0xFF465260 : 0xFF303844,
                     hovered ? 0xFF29323D : 0xFF1C222A);
             graphics.renderOutline(x, y, this.width, this.height, hovered ? SignBuilderUi.ACCENT : 0xFF657181);
-            graphics.drawCenteredString(BlueprintScreen.this.font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, BlueprintScreen.this.font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
         }
 
         @Override
@@ -450,7 +454,7 @@ public class BlueprintScreen extends Screen {
             if (this.active || this.isHoveredOrFocused()) {
                 graphics.fill(x + 1, y + 1, x + 3, y + this.height - 1, this.accentColor);
             }
-            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
         }
 
         private void setAccentColor(int accentColor) {

@@ -252,9 +252,15 @@ public class ColorPickerScreen extends Screen {
         updateInputFieldsFromPicker();
     }
 
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Leave empty to prevent double rendering
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
         int centerX = this.width / 2;
         int centerY = this.height / 2;
@@ -312,10 +318,10 @@ public class ColorPickerScreen extends Screen {
         }
         int hexInputY = getHexInputY(centerY);
         guiGraphics.fillGradient(centerX + scaled(46), hexInputY - scaled(3), centerX + scaled(98), hexInputY + rgbInputHeight + scaled(3), 0xFF303844, 0xFF1C222A);
-        guiGraphics.drawString(this.font, "R:", centerX + scaled(40), getRgbLabelY(centerY, 0), SignBuilderUi.ACCENT, false);
-        guiGraphics.drawString(this.font, "G:", centerX + scaled(40), getRgbLabelY(centerY, 1), SignBuilderUi.ACCENT, false);
-        guiGraphics.drawString(this.font, "B:", centerX + scaled(40), getRgbLabelY(centerY, 2), SignBuilderUi.ACCENT, false);
-        guiGraphics.drawString(this.font, "#", centerX + scaled(38), hexInputY + (rgbInputHeight - 8) / 2, SignBuilderUi.ACCENT, false);
+        guiGraphics.drawString(this.font, "R:", centerX + scaled(40), getRgbLabelY(centerY, 0), SignBuilderUi.ACCENT, true);
+        guiGraphics.drawString(this.font, "G:", centerX + scaled(40), getRgbLabelY(centerY, 1), SignBuilderUi.ACCENT, true);
+        guiGraphics.drawString(this.font, "B:", centerX + scaled(40), getRgbLabelY(centerY, 2), SignBuilderUi.ACCENT, true);
+        guiGraphics.drawString(this.font, "#", centerX + scaled(38), hexInputY + (rgbInputHeight - 8) / 2, SignBuilderUi.ACCENT, true);
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
@@ -325,9 +331,7 @@ public class ColorPickerScreen extends Screen {
         return false;
     }
 
-    private int scaled(int value) {
-        return Math.max(1, Math.round(value * this.layoutScale));
-    }
+    private int scaled(int value) { return value; }
 
     private int getRgbInputHeight() {
         return Math.max(12, scaled(16));

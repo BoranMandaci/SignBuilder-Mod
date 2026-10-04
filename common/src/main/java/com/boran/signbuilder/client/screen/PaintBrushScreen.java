@@ -125,9 +125,17 @@ public class PaintBrushScreen extends Screen {
         this.addRenderableWidget(new FlatMaterialButton(matBtnX, matBtnY, matBtnWidth, 20, this));
     }
 
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Leave empty to prevent double rendering
+    }
+
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        super.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         int panelLeft = Math.min(startX, matBtnX) - dynamicPadding;
         int panelRight = Math.max(startX + gridWidth, matBtnX + matBtnWidth) + dynamicPadding;
@@ -143,7 +151,7 @@ public class PaintBrushScreen extends Screen {
         drawSmartFillIndicator(pGuiGraphics, panelRight - 20, panelTop + 5, pMouseX, pMouseY);
 
         int escY = Math.min(this.height - 15, panelBottom + (dynamicPadding > 10 ? 10 : 4));
-        pGuiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, escY, 0x666666);
+        SignBuilderUi.drawCenteredStringNoShadow(pGuiGraphics, this.font, Component.translatable("gui.signbuilder.press_esc"), this.width / 2, escY, 0x666666);
     }
 
     private void drawSmartFillIndicator(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
@@ -177,7 +185,7 @@ public class PaintBrushScreen extends Screen {
                     this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
             graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2,
                     this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181);
-            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, SignBuilderUi.TEXT);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, SignBuilderUi.TEXT);
         }
         @Override
         public void onPress() { Minecraft.getInstance().setScreen(new MaterialPickerScreen(parent)); }
@@ -212,7 +220,7 @@ public class PaintBrushScreen extends Screen {
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             float hue = (Minecraft.getInstance().level.getGameTime() % 120) / 120f;
             renderColorButton(graphics, this.getX(), this.getY(), this.width, this.height, java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF, this.isHoveredOrFocused());
-            graphics.drawCenteredString(Minecraft.getInstance().font, "R", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, "R", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         }
         @Override
         public void onPress() {
@@ -281,7 +289,7 @@ public class PaintBrushScreen extends Screen {
                 graphics.fillGradient(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1, 0x60FFFFFF, 0x10FFFFFF);
                 graphics.renderOutline(this.getX() - 2, this.getY() - 2, this.width + 4, this.height + 4, 0xCCFFFFFF);
             }
-            graphics.drawCenteredString(Minecraft.getInstance().font, "+", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+            SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, "+", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         }
         @Override
         public void onPress() { Minecraft.getInstance().setScreen(new ColorPickerScreen(Minecraft.getInstance().player.getMainHandItem(), parentScreen)); }

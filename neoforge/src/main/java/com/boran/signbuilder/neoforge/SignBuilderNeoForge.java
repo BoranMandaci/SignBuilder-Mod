@@ -20,8 +20,10 @@ public class SignBuilderNeoForge {
         SignBuilder.init();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
+            com.boran.signbuilder.client.ClientModEvents.init();
             modEventBus.addListener(this::onClientSetup);
             modEventBus.addListener(this::registerRenderers);
+            modEventBus.addListener(this::registerScreens);
             NeoForge.EVENT_BUS.addListener(this::onRenderLevelStage);
         }
     }
@@ -32,6 +34,10 @@ public class SignBuilderNeoForge {
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
+    }
+
+    private void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
     }
 
     private void onRenderLevelStage(RenderLevelStageEvent event) {
