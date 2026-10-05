@@ -8,11 +8,11 @@
 
 A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs. Decorate your cities, build interactive redstone keypad locks, and construct glowing neon shop fronts or towering billboards with a highly detailed, dynamic building system perfectly balanced for Survival mode.
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Introduction
 
-Sign Builder is a cross-platform Minecraft mod built from the ground up for both Fabric and Forge using the Architectury API. It introduces a comprehensive workflow for creating highly detailed 3D text in your world. Rather than relying on simple vanilla signs, this mod provides physical blocks for letters, numbers, symbols, and modular backplates, coupled with custom tools to construct, paint, texture, automate, and illuminate them dynamically.
+Sign Builder is a cross-platform Minecraft mod built from the ground up for Fabric, Forge, and NeoForge using the Architectury API. It introduces a comprehensive workflow for creating highly detailed 3D text in your world. Rather than relying on simple vanilla signs, this mod provides physical blocks for letters, numbers, symbols, and modular backplates, coupled with custom tools to construct, paint, texture, automate, and illuminate them dynamically.
 
 ## ✨ Key Features
 
@@ -29,8 +29,8 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
     *   **Sequence Locking:** Characters latch inward as you press them. Entering the correct sequence emits a 2-second redstone pulse across all entered blocks; entering an invalid sequence immediately resets the lock with audio feedback.
     *   **Touch-to-Record ("REC"):** Effortlessly configure PINs directly in the world! Tap the "REC" button in the Wrench GUI, click the blocks in order, and Shift + Right-Click to save.
 *   🛡️ **Double-Sided Modular Backplates** — Give your signage depth and contrast or create free-standing signs! Mount signs onto pre-placed backplates or snap a backplate directly onto existing single, 2x2, or 3x3 signs. **Signs can be placed on both the front and back faces of a backplate.** Front and back surfaces can be textured and dyed independently. Shift + Right-Click with an empty hand safely detaches the plate while refunding materials.
-*   🧱 **40 Dynamic Materials & 2-Page GUI Layout** — Signs are no longer just concrete! Customize your text with 40 distinct materials—including Copper, Amethyst, Coal, Deepslate Bricks, Mud Bricks, Nether Bricks, Crimson & Warped Planks, Redstone, Netherite, Quartz, Emerald, woods, and minerals. Browse them effortlessly in the Paint Brush screen with a balanced 20-item-per-page grid (`<` / `>`).
-*   🎒 **Survival Ready & Realistic Loot** — Breaking a sign normally drops its crafted components (3x White Concrete, Base Materials, Glowstone Dust). Drops dynamically scale with multiblock size (4x for 2x2s, 9x for 3x3 billboards). Mining with a **Silk Touch** tool flawlessly retains all custom NBT data (colors, materials, glowing states, PIN codes, animations) directly on the dropped item!
+*   🧱 **40 Dynamic Materials & Balanced Costs** — Signs are no longer just concrete! Customize your text with 40 distinct materials. Fully balanced for survival: painting with precious materials like Emerald, Diamond, Gold, Iron, Copper, Lapis, Coal, Redstone, and Amethyst now requires their standard ingots, gems, or dusts instead of full blocks. Browse them effortlessly in the Paint Brush screen with a balanced 20-item-per-page grid (`<` / `>`).
+*   🎒 **Survival Ready & Realistic Loot** — Breaking a sign normally drops its crafted components (3x White Concrete, Base Materials like Gold Ingot or Diamond, Glowstone Dust). Drops dynamically scale with multiblock size (4x for 2x2s, 9x for 3x3 billboards). Mining with a **Silk Touch** tool flawlessly retains all custom NBT data (colors, materials, glowing states, PIN codes, animations) directly on the dropped item!
 *   🏗️ **Expansive 3D Models & International Symbols** — Redesigned 3D character sets with pixel-perfect hitboxes: Latin letters (A-Z), German & Turkish special letters (`Ä`, `ß`, `Ç`, `Ğ`, `İ`, `Ö`, `Ş`, `Ü`), numbers, cardinal and diagonal arrows, currency symbols (€, $, ₺, ¥, £, **₿**), mathematical operators, and an extensive symbol roster: Tilde (`~`), Key (`🗝`), Lock (`🔒`), Trophy (`🏆`), Lightning (`⚡`), Bitcoin (`₿`), Cross (`✗`), Circle (`○`), Diamond (`◆`), Musical Notes (`♪`, `♫`), Skull (`☠`), Heart (`♥`), Star (`★`), Checkmark (`✓`), Infinity (`∞`), brackets, and punctuation.
 *   🗜️ **The Sign Press** — A dedicated survival crafting station featuring a refreshed 3D workstation model. Stamp your white concrete into specific letters, symbols, and backplates cleanly and efficiently with a scrollable interface. Fully compatible with hoppers for automated workflows.
 *   🗺️ **Holographic Blueprint, Diagonal Angles & Undo** — Type your text into the modernized Blueprint GUI with direct symbol buttons, full GUI scale support, and Unicode handling. Enjoy real-time **translucent 3D ghost previews** directly in the world, dynamically shifting between **green** (valid) and **red** (obstructed). Features horizontal, 45-degree diagonal (1x1), and Y-axis locked **vertical placement**, 3-way size cycling (**1x1**, **2x2**, **3x3**), and an **automatic backplate toggle**. The one-click Undo system cleanly removes misplaced constructions and refunds all blocks and backplates.
@@ -43,18 +43,18 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for both
 
 **Modding API & Languages**
 *   ☕ **Java** — Core logic and backend.
-*   🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge and Fabric development.
-*   🦊 **Fabric** / 🔨 **Forge** — Mod loaders.
+*   🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge, NeoForge, and Fabric development.
+*   🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Mod loaders.
 
 **Tools**
 *   🧊 **Blockbench** — Custom 3D modeling and texturing for all character, backplate, and tool blocks.
-*   🐘 **Gradle** — Derleme otomasyonu ve bağımlılık yönetimi.
+*   🐘 **Gradle** — Build automation and dependency management.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Minecraft `1.20.1`
-*   **Fabric** or **Forge** Mod Loader
+*   Minecraft `1.20.1` or `1.21.1`
+*   **Fabric**, **Forge**, or **NeoForge** Mod Loader
 *   [Architectury API](https://modrinth.com/mod/architectury-api) (Required Dependency)
 
 ### Installation
