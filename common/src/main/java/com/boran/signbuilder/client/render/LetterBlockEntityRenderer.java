@@ -89,9 +89,27 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         return blockEntity.getSize() > 1;
     }
 
+    // No @Override so it compiles on Fabric, but it correctly binds on NeoForge!
+    public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(blockEntity.getSize() == 3 ? 12.0 : 8.0);
+    }
+
+
     @Override
     public void render(LetterBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (entity.isLinkedMultiblockPart()) {
+            LetterBlockEntity master = entity.getEffectiveMaster();
+            if (master != null && master != entity && master.getSize() > 1) {
+                // We are a slave. If the master is outside the frustum (culled), we must render it!
+                // To avoid drawing 9 times, we could do complex frame tracking, 
+                // but since it's only for 3x3 signs, a little overdraw is fine to guarantee visibility.
+                
+                net.minecraft.core.BlockPos offset = master.getBlockPos().subtract(entity.getBlockPos());
+                poseStack.pushPose();
+                poseStack.translate(offset.getX(), offset.getY(), offset.getZ());
+                render(master, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+                poseStack.popPose();
+            }
             return;
         }
 

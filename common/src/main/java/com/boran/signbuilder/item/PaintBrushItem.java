@@ -305,7 +305,7 @@ public class PaintBrushItem extends Item {
         if (glyph.isEmpty()) return;
 
         if (newMaterial != null) {
-            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> t.putString("SavedMaterial", newMaterial.name()));
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> { t.putString("SavedMaterial", newMaterial.name()); t.putString("id", "signbuilder:letter_block_entity"); });
             if (newMaterial != SignMaterial.DEFAULT) {
                 glyph.set(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(com.boran.signbuilder.block.LetterBlock.MATERIAL, newMaterial));
             } else {
@@ -314,11 +314,11 @@ public class PaintBrushItem extends Item {
         }
         if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
             if (selectedColor == -1) {
-                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> t.putBoolean("IsRainbow", true));
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> { t.putBoolean("IsRainbow", true); t.putString("id", "signbuilder:letter_block_entity"); });
             } else {
                 net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> {
                     t.putBoolean("IsRainbow", false);
-                    t.putInt("RGBColor", getActualHexColor(selectedColor));
+                    t.putInt("RGBColor", getActualHexColor(selectedColor)); t.putString("id", "signbuilder:letter_block_entity");
                 });
             }
         }
@@ -461,22 +461,22 @@ public class PaintBrushItem extends Item {
             case OAK -> "minecraft:oak_planks"; case SPRUCE -> "minecraft:spruce_planks"; case BIRCH -> "minecraft:birch_planks";
             case JUNGLE -> "minecraft:jungle_planks"; case ACACIA -> "minecraft:acacia_planks"; case DARK_OAK -> "minecraft:dark_oak_planks";
             case MANGROVE -> "minecraft:mangrove_planks"; case CHERRY -> "minecraft:cherry_planks"; case BAMBOO -> "minecraft:bamboo_planks";
-            case IRON -> "minecraft:iron_block"; case ANDESITE -> "minecraft:polished_andesite";
-            case GOLD -> "minecraft:gold_block"; case DIAMOND -> "minecraft:diamond_block"; case LAPIS -> "minecraft:lapis_block";
+            case IRON -> "minecraft:iron_ingot"; case ANDESITE -> "minecraft:polished_andesite";
+            case GOLD -> "minecraft:gold_ingot"; case DIAMOND -> "minecraft:diamond"; case LAPIS -> "minecraft:lapis_lazuli";
             case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
             case BRICKS -> "minecraft:bricks"; case STONE_BRICKS -> "minecraft:stone_bricks";
-            case REDSTONE_BLOCK -> "minecraft:redstone_block";
-            case NETHERITE_BLOCK -> "minecraft:netherite_block";
+            case REDSTONE_BLOCK -> "minecraft:redstone";
+            case NETHERITE_BLOCK -> "minecraft:netherite_ingot";
             case QUARTZ_BLOCK -> "minecraft:quartz_block";
             case POLISHED_GRANITE -> "minecraft:polished_granite";
             case PURPUR_BLOCK -> "minecraft:purpur_block";
             case STONE -> "minecraft:stone";
-            case EMERALD_BLOCK -> "minecraft:emerald_block";
+            case EMERALD_BLOCK -> "minecraft:emerald";
             case SMOOTH_SANDSTONE -> "minecraft:smooth_sandstone";
             case SMOOTH_RED_SANDSTONE -> "minecraft:smooth_red_sandstone";
-            case COPPER_BLOCK -> "minecraft:copper_block";
-            case AMETHYST_BLOCK -> "minecraft:amethyst_block";
-            case COAL_BLOCK -> "minecraft:coal_block";
+            case COPPER_BLOCK -> "minecraft:copper_ingot";
+            case AMETHYST_BLOCK -> "minecraft:amethyst_shard";
+            case COAL_BLOCK -> "minecraft:coal";
             case END_STONE_BRICKS -> "minecraft:end_stone_bricks";
             case NETHER_BRICKS -> "minecraft:nether_bricks";
             case RED_NETHER_BRICKS -> "minecraft:red_nether_bricks";

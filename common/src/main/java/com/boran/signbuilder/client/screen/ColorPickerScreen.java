@@ -194,7 +194,8 @@ public class ColorPickerScreen extends Screen {
             colorList.remove(colorList.size() - 1);
         }
 
-        tag.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray());
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, currentBrush, t -> t.putIntArray("CustomColors", colorList.stream().mapToInt(i -> i).toArray()));
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, currentBrush, t -> t.putInt("SelectedColor", this.selectedColorHex));
     }
 
     @Override

@@ -693,8 +693,11 @@ public class LetterBlock extends Block implements EntityBlock {
                 if (!player.getInventory().add(refund)) {
                     player.drop(refund, false);
                 }
-                if (!backGlyph.isEmpty() && !player.getInventory().add(backGlyph)) {
-                    player.drop(backGlyph, false);
+                if (!backGlyph.isEmpty()) {
+                    backGlyph.setCount(cost);
+                    if (!player.getInventory().add(backGlyph)) {
+                        player.drop(backGlyph, false);
+                    }
                 }
             }
 
@@ -801,10 +804,13 @@ public class LetterBlock extends Block implements EntityBlock {
             if (!master.getBackGlyph().isEmpty()) {
                 return net.minecraft.world.ItemInteractionResult.FAIL;
             }
+            if (!player.isCreative() && held.getCount() < cost) {
+                return net.minecraft.world.ItemInteractionResult.FAIL;
+            }
             if (!level.isClientSide()) {
                 master.setBackGlyph(held);
-                if (!player.isCreative()) held.shrink(1);
-                level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                if (!player.isCreative()) held.shrink(cost);
+                level.playSound(null, pos, net.minecraft.sounds.SoundEvents.WOOD_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
@@ -1254,29 +1260,41 @@ public class LetterBlock extends Block implements EntityBlock {
         if (hasSilkTouch) {
             ItemStack backGlyph = lbe.getBackGlyph().copy();
             ItemStack letterStack = lbe.getDroppedItemStack(dropState);
-            CompoundTag itemTag = letterStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-            if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
-                CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
-                beTag.remove("BackGlyph");
-                beTag.remove("HasBackplate");
-                beTag.remove("BPFrontMat");
-                beTag.remove("BPBackMat");
-                beTag.remove("BPFrontColor");
-                beTag.remove("BPBackColor");
-                beTag.remove("BPFrontRainbow");
-                beTag.remove("BPBackRainbow");
-                beTag.remove("BackplateFrontMaterial");
-                beTag.remove("BackplateBackMaterial");
-                beTag.remove("BackplateFrontColor");
-                beTag.remove("BackplateBackColor");
-                beTag.remove("BackplateFrontRainbow");
-                beTag.remove("BackplateBackRainbow");
-                if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
+            if (letterStack.has(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA)) {
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, letterStack, beTag -> {
+                    beTag.remove("BackGlyph");
+                    beTag.remove("HasBackplate");
+                    beTag.remove("BPFrontMat");
+                    beTag.remove("BPBackMat");
+                    beTag.remove("BPFrontColor");
+                    beTag.remove("BPBackColor");
+                    beTag.remove("BPFrontRainbow");
+                    beTag.remove("BPBackRainbow");
+                    beTag.remove("BackplateFrontMaterial");
+                    beTag.remove("BackplateBackMaterial");
+                    beTag.remove("BackplateFrontColor");
+                    beTag.remove("BackplateBackColor");
+                    beTag.remove("BackplateFrontRainbow");
+                    beTag.remove("BackplateBackRainbow");
+                    beTag.remove("FacingRotation");
+                    beTag.remove("Size");
+                    beTag.remove("IsDummy");
+                    beTag.remove("MasterPos");
+                    
+                    if (!beTag.isEmpty()) {
+                        beTag.putString("id", "signbuilder:letter_block_entity");
+                    }
+                });
+                net.minecraft.world.item.component.CustomData cd = letterStack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                if (cd != null && cd.copyTag().isEmpty()) {
+                    letterStack.remove(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                }
             }
             letterStack.setCount(multiplier);
             popResource(level, dropPos, letterStack);
 
             if (!backGlyph.isEmpty()) {
+                backGlyph.setCount(multiplier);
                 popResource(level, dropPos, backGlyph);
             }
 
