@@ -691,8 +691,11 @@ public class LetterBlock extends Block implements EntityBlock {
                 if (!player.getInventory().add(refund)) {
                     player.drop(refund, false);
                 }
-                if (!backGlyph.isEmpty() && !player.getInventory().add(backGlyph)) {
-                    player.drop(backGlyph, false);
+                if (!backGlyph.isEmpty()) {
+                    backGlyph.setCount(cost);
+                    if (!player.getInventory().add(backGlyph)) {
+                        player.drop(backGlyph, false);
+                    }
                 }
             }
 
@@ -801,7 +804,7 @@ public class LetterBlock extends Block implements EntityBlock {
             }
             if (!level.isClientSide()) {
                 master.setBackGlyph(held);
-                if (!player.isCreative()) held.shrink(1);
+                if (!player.isCreative()) held.shrink(cost);
                 level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
