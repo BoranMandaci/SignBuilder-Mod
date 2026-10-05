@@ -2,7 +2,7 @@
   "parent": "signbuilder:master_architect",
   "display": {
     "icon": {
-      "item": "signbuilder:letter_b"
+      "id": "signbuilder:letter_b"
     },
     "title": {
       "translate": "advancements.signbuilder.billboard.title"

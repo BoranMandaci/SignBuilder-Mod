@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:sign_press"
+      "id": "signbuilder:sign_press"
     },
     "title": {
       "translate": "advancements.signbuilder.heavy_industry.title"

@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:symbol_euro"
+      "id": "signbuilder:symbol_euro"
     },
     "title": {
       "translate": "advancements.signbuilder.trade_center.title"

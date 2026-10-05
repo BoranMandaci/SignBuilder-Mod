@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:paint_brush"
+      "id": "signbuilder:paint_brush"
     },
     "title": {
       "translate": "advancements.signbuilder.street_artist.title"

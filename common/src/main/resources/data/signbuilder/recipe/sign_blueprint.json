@@ -19,7 +19,7 @@
     }
   },
   "result": {
-    "item": "signbuilder:sign_blueprint",
-    "count": 1
+    "count": 1,
+    "id": "signbuilder:sign_blueprint"
   }
 }

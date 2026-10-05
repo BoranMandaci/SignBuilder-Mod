@@ -2,7 +2,7 @@
   "parent": "signbuilder:street_artist",
   "display": {
     "icon": {
-      "item": "minecraft:painting"
+      "id": "minecraft:painting"
     },
     "title": {
       "translate": "advancements.signbuilder.lord_of_the_colors.title"

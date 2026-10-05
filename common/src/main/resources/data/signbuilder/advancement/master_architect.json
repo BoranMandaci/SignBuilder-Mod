@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:sign_blueprint"
+      "id": "signbuilder:sign_blueprint"
     },
     "title": {
       "translate": "advancements.signbuilder.master_architect.title"

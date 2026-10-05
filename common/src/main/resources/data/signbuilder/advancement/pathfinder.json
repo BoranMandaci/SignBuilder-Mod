@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:arrow_up"
+      "id": "signbuilder:arrow_up"
     },
     "title": {
       "translate": "advancements.signbuilder.pathfinder.title"

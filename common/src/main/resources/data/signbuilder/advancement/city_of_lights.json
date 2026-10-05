@@ -2,7 +2,7 @@
   "parent": "signbuilder:neon_nights",
   "display": {
     "icon": {
-      "item": "minecraft:glowstone_dust"
+      "id": "minecraft:glowstone_dust"
     },
     "title": {
       "translate": "advancements.signbuilder.city_of_lights.title"

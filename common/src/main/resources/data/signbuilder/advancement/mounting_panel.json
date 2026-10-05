@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:backplate"
+      "id": "signbuilder:backplate"
     },
     "title": {
       "translate": "advancements.signbuilder.mounting_panel.title"

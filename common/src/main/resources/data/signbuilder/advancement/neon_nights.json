@@ -2,7 +2,7 @@
   "parent": "signbuilder:root",
   "display": {
     "icon": {
-      "item": "signbuilder:wrench"
+      "id": "signbuilder:wrench"
     },
     "title": {
       "translate": "advancements.signbuilder.neon_nights.title"
