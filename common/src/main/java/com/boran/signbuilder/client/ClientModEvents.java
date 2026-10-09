@@ -23,7 +23,12 @@ import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 
 public class ClientModEvents {
 
-    public static void init() {
+    private static boolean initialized = false;
+
+    public static synchronized void init() {
+        if (initialized) return;
+        initialized = true;
+
         GridModeManager.init();
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
         

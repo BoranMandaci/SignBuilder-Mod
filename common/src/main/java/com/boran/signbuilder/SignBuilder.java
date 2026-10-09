@@ -62,10 +62,6 @@ public class SignBuilder {
             
             return EventResult.pass();
         });
-
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-            com.boran.signbuilder.client.ClientModEvents.init();
-        });
     }
 
     public static int getColorHex(int index) {

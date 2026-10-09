@@ -19,15 +19,11 @@ public class SignBuilderFabricClient implements ClientModInitializer {
         
         net.minecraft.client.gui.screens.MenuScreens.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
 
-        BlockEntityRendererRegistry.register(
-                ModBlockEntities.LETTER_BLOCK_ENTITY.get(),
-                LetterBlockEntityRenderer::new
-        );
-
         for (var blockSupplier : ModBlocks.ALL_SIGN_BLOCKS) {
             BlockRenderLayerMap.INSTANCE.putBlock(blockSupplier.get(), RenderType.cutout());
         }
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.BACKPLATE.get(), RenderType.cutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.GRID_SIGN.get(), RenderType.cutout());
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());
