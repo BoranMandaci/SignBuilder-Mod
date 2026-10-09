@@ -1511,7 +1511,15 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
             () -> new BackplateBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
-                    .noOcclusion()));
+                    .noOcclusion()
+                    .lightLevel(state -> {
+                        if (!state.hasProperty(LetterBlock.LIGHT_MODE)) return 0;
+                        return switch (state.getValue(LetterBlock.LIGHT_MODE)) {
+                            case 1 -> 6;
+                            case 2 -> 15;
+                            default -> 0;
+                        };
+                    })));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
             () -> new BackplateItem(BACKPLATE.get(), new Item.Properties()));
@@ -1525,6 +1533,20 @@ public class ModBlocks {
     public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
             () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
 
+    public static final RegistrySupplier<Block> GRID_SIGN = BLOCKS.register("grid_sign",
+            () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
+                    .noOcclusion()
+                    .strength(0.5f)
+                    .isValidSpawn((s, l, p, e) -> false)
+                    .lightLevel(state -> {
+                        if (!state.hasProperty(com.boran.signbuilder.block.GridSignBlock.LIGHT_MODE)) return 0;
+                        return switch (state.getValue(com.boran.signbuilder.block.GridSignBlock.LIGHT_MODE)) {
+                            case 1 -> 6;
+                            case 2 -> 15;
+                            default -> 0;
+                        };
+                    })));
+                    
     public static void register() {
         BLOCKS.register();
         BLOCK_ITEMS.register();

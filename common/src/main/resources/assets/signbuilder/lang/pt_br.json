@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Símbolo de Cadeado",
   "block.signbuilder.symbol_trophy": "Símbolo de Troféu",
   "block.signbuilder.symbol_lightning": "Símbolo de Raio",
-  "block.signbuilder.symbol_bitcoin": "Símbolo do Bitcoin"
+  "block.signbuilder.symbol_bitcoin": "Símbolo do Bitcoin",
+  "tooltip.signbuilder.grid_mode_hint": "Pressione Shift+V para o modo de colocação em grade"
 }

@@ -85,6 +85,12 @@ public class LetterBlock extends Block implements EntityBlock {
         builder.add(FACING, FACE, MATERIAL, LIGHT_MODE);
     }
 
+    @Override
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        tooltip.add(net.minecraft.network.chat.Component.translatable("tooltip.signbuilder.grid_mode_hint").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC));
+    }
+
     public static String getCharacterFromBlock(Block block) {
         String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
         return switch (path) {

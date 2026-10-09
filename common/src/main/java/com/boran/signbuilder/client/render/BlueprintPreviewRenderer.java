@@ -135,6 +135,7 @@ public class BlueprintPreviewRenderer {
             if (!isVertical) {
                 basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * size);
             } else {
+                
                 int baseY = (stepDirY == 1)
                         ? startPos.getY() + (effectiveIdx * size)
                         : startPos.getY() - (size - 1) - (effectiveIdx * size);

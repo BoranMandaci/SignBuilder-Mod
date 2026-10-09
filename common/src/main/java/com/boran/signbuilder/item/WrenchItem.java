@@ -21,6 +21,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -220,7 +222,11 @@ public class WrenchItem extends Item {
             return InteractionResult.PASS;
         }
 
-        if (clickedBlock.getBlock() instanceof LetterBlock && level.getBlockEntity(pos) instanceof LetterBlockEntity rawEntity) {
+        if (clickedBlock.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+            return handleGridSignWrench(level, pos, clickedBlock, gridBe, player, stack, pContext);
+        }
+
+        if ((clickedBlock.getBlock() instanceof LetterBlock || clickedBlock.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) && level.getBlockEntity(pos) instanceof LetterBlockEntity rawEntity) {
             LetterBlockEntity letterEntity = rawEntity.getEffectiveMaster();
             BlockPos targetPos = letterEntity.getBlockPos();
             BlockState targetState = level.getBlockState(targetPos);
@@ -322,6 +328,9 @@ public class WrenchItem extends Item {
                         level.sendBlockUpdated(targetPos, targetState, targetState, 3);
                     }
                 } else {
+                    if (clickedBlock.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) {
+                        return InteractionResult.PASS;
+                    }
                     if (buttonMode == 3 || isSmartFill || syncWord) {
                         applyButtonModeToConnected(level, targetPos, player, stack, pContext.getHand(), buttonMode, syncWord, pinCode);
                     } else {
@@ -370,37 +379,65 @@ public class WrenchItem extends Item {
                 continue;
             }
 
-            LetterBlockEntity rawLetter = (LetterBlockEntity) level.getBlockEntity(current);
-            if (rawLetter == null) continue;
-            LetterBlockEntity letter = rawLetter.getEffectiveMaster();
-            BlockPos effectivePos = letter.getBlockPos();
-            BlockState currentState = level.getBlockState(effectivePos);
+            BlockEntity be = level.getBlockEntity(current);
+            if (be instanceof LetterBlockEntity rawLetter) {
+                LetterBlockEntity letter = rawLetter.getEffectiveMaster();
+                BlockPos effectivePos = letter.getBlockPos();
+                BlockState currentState = level.getBlockState(effectivePos);
 
-            boolean wasActive = letter.isActive();
-            boolean wasConfigured = letter.getWrenchMode() != 0 || wasActive;
+                boolean wasActive = letter.isActive();
+                boolean wasConfigured = letter.getWrenchMode() != 0 || wasActive;
 
-            boolean blockNoChange = (mode == -1 ? (!wasConfigured && letter.getWrenchMode() == 0) : (wasConfigured && letter.getWrenchMode() == mode))
-                    && (mode != 5 || (letter.doesDetectMonsters() == detectsMonsters && letter.doesDetectAnimals() == detectsAnimals))
-                    && (mode != 11 || customLightConfigurationMatches(letter, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
+                boolean blockNoChange = (mode == -1 ? (!wasConfigured && letter.getWrenchMode() == 0) : (wasConfigured && letter.getWrenchMode() == mode))
+                        && (mode != 5 || (letter.doesDetectMonsters() == detectsMonsters && letter.doesDetectAnimals() == detectsAnimals))
+                        && (mode != 11 || customLightConfigurationMatches(letter, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
 
-            if (blockNoChange) continue;
+                if (blockNoChange) continue;
 
-            int dustCost = (letter.getSize() == 3) ? 9 : (letter.getSize() == 2 ? 4 : 1);
+                int dustCost = (letter.getSize() == 3) ? 9 : (letter.getSize() == 2 ? 4 : 1);
 
-            if (player != null && !player.isCreative()) {
-                if (!wasConfigured && targetActive) {
-                    if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
-                    else { failedMaterial++; continue; }
-                } else if (wasConfigured && !targetActive) {
-                    ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
-                    if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
+                if (player != null && !player.isCreative()) {
+                    if (!wasConfigured && targetActive) {
+                        if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
+                        else { failedMaterial++; continue; }
+                    } else if (wasConfigured && !targetActive) {
+                        ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
+                        if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
+                    }
                 }
-            }
 
-            letter.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
-            LetterBlock.updateLightLevel(level, effectivePos, currentState, letter);
-            level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
-            blocksModified++;
+                letter.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
+                LetterBlock.updateLightLevel(level, effectivePos, currentState, letter);
+                level.sendBlockUpdated(effectivePos, currentState, currentState, 3);
+                blocksModified++;
+            } else if (be instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+                BlockState currentState = level.getBlockState(current);
+                boolean wasActive = gridBe.isActive();
+                boolean wasConfigured = gridBe.getWrenchMode() != 0 || wasActive;
+
+                boolean blockNoChange = (mode == -1 ? (!wasConfigured && gridBe.getWrenchMode() == 0) : (wasConfigured && gridBe.getWrenchMode() == mode))
+                        && (mode != 5 || (gridBe.doesDetectMonsters() == detectsMonsters && gridBe.doesDetectAnimals() == detectsAnimals))
+                        && (mode != 11 || customLightConfigurationMatchesGrid(gridBe, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
+
+                if (blockNoChange) continue;
+
+                int dustCost = 1;
+
+                if (player != null && !player.isCreative()) {
+                    if (!wasConfigured && targetActive) {
+                        if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
+                        else { failedMaterial++; continue; }
+                    } else if (wasConfigured && !targetActive) {
+                        ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
+                        if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
+                    }
+                }
+
+                gridBe.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
+                com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, current, currentState, gridBe);
+                level.sendBlockUpdated(current, currentState, currentState, 3);
+                blocksModified++;
+            }
         }
 
         handleSmartFillFeedback(level, player, stack, hand, blocksModified, failedMaterial, failedDurability);
@@ -477,17 +514,28 @@ public class WrenchItem extends Item {
 
         while (!queue.isEmpty() && visited.size() <= 256) {
             BlockPos current = queue.poll();
-            if (level.getBlockEntity(current) instanceof LetterBlockEntity be) {
+            BlockEntity currentBe = level.getBlockEntity(current);
+            if (currentBe instanceof LetterBlockEntity be) {
                 BlockPos effectivePos = be.getEffectiveMaster().getBlockPos();
                 if (!targets.contains(effectivePos)) {
                     targets.add(effectivePos);
                 }
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        for (int dz = -1; dz <= 1; dz++) {
-                            if (dx == 0 && dy == 0 && dz == 0) continue;
-                            BlockPos neighbor = current.offset(dx, dy, dz);
-                            if (!visited.contains(neighbor) && level.getBlockState(neighbor).getBlock() instanceof LetterBlock) {
+            } else if (currentBe instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity) {
+                if (!targets.contains(current)) {
+                    targets.add(current);
+                }
+            }
+
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        BlockPos neighbor = current.offset(dx, dy, dz);
+                        if (!visited.contains(neighbor)) {
+                            Block neighborBlock = level.getBlockState(neighbor).getBlock();
+                            if (neighborBlock instanceof LetterBlock
+                                    || neighborBlock instanceof com.boran.signbuilder.block.BackplateBlock
+                                    || neighborBlock instanceof com.boran.signbuilder.block.GridSignBlock) {
                                 visited.add(neighbor);
                                 queue.add(neighbor);
                             }
@@ -537,5 +585,128 @@ public class WrenchItem extends Item {
                 }
             }
         }
+    }
+
+    private InteractionResult handleGridSignWrench(Level level, BlockPos pos, BlockState state, com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe, Player player, ItemStack stack, UseOnContext context) {
+        if (player != null && player.isShiftKeyDown()) {
+            if (!level.isClientSide()) {
+                int copiedMode = !gridBe.isActive() && gridBe.getWrenchMode() == 0 ? -1 : gridBe.getWrenchMode();
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                    t.putInt("WrenchMode", copiedMode);
+                    t.putBoolean("DetectsMonsters", gridBe.doesDetectMonsters());
+                    t.putBoolean("DetectsAnimals", gridBe.doesDetectAnimals());
+                    t.putInt("CustomLightOnTicks", gridBe.getCustomLightOnTicks());
+                    t.putInt("CustomLightOffTicks", gridBe.getCustomLightOffTicks());
+                    t.putInt("CustomLightType", gridBe.getCustomLightType());
+                    t.putInt("CustomLightRange", gridBe.getCustomLightRange());
+                    t.putInt("CustomLightOffRange", gridBe.getCustomLightOffRange());
+                    t.putInt("CustomLightCloseDelayTicks", gridBe.getCustomLightCloseDelayTicks());
+                    t.putBoolean("CustomLightNightOnly", gridBe.isCustomLightNightOnly());
+                    t.putBoolean("CustomLightPlayers", gridBe.doesCustomLightDetectPlayers());
+                    t.putBoolean("CustomLightLowPower", gridBe.isCustomLightLowPower());
+                    t.putBoolean("CustomLightLookOnly", gridBe.isCustomLightLookOnly());
+                });
+                player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(getModeTranslationKey(copiedMode)).withStyle(ChatFormatting.AQUA)), true);
+                level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        int mode = 0;
+        int activeTab = 0;
+        boolean isSmartFill = false;
+        boolean detectsMonsters = true;
+        boolean detectsAnimals = false;
+        int customLightOnTicks = 10;
+        int customLightOffTicks = 10;
+        int customLightType = 0;
+        int customLightRange = 8;
+        int customLightOffRange = 8;
+        int customLightCloseDelayTicks = 0;
+        boolean customLightNightOnly = true;
+        boolean customLightPlayers = true;
+        boolean customLightLowPower = false;
+        boolean customLightLookOnly = true;
+
+        if (tagData != null) {
+            if (tagData.contains("WrenchMode")) mode = tagData.getInt("WrenchMode");
+            if (tagData.contains("ActiveTab")) activeTab = tagData.getInt("ActiveTab");
+            if (tagData.contains("IsSmartFill")) isSmartFill = tagData.getBoolean("IsSmartFill");
+            if (tagData.contains("DetectsMonsters")) detectsMonsters = tagData.getBoolean("DetectsMonsters");
+            if (tagData.contains("DetectsAnimals")) detectsAnimals = tagData.getBoolean("DetectsAnimals");
+            if (tagData.contains("CustomLightOnTicks")) customLightOnTicks = Math.max(1, Math.min(1200, tagData.getInt("CustomLightOnTicks")));
+            if (tagData.contains("CustomLightOffTicks")) customLightOffTicks = Math.max(1, Math.min(1200, tagData.getInt("CustomLightOffTicks")));
+            if (tagData.contains("CustomLightType")) customLightType = Math.max(0, Math.min(3, tagData.getInt("CustomLightType")));
+            if (tagData.contains("CustomLightRange")) customLightRange = Math.max(1, Math.min(32, tagData.getInt("CustomLightRange")));
+            if (tagData.contains("CustomLightOffRange")) customLightOffRange = Math.max(customLightRange, Math.min(32, tagData.getInt("CustomLightOffRange")));
+            else customLightOffRange = customLightRange;
+            if (tagData.contains("CustomLightCloseDelayTicks")) customLightCloseDelayTicks = Math.max(0, Math.min(100, tagData.getInt("CustomLightCloseDelayTicks")));
+            if (tagData.contains("CustomLightNightOnly")) customLightNightOnly = tagData.getBoolean("CustomLightNightOnly");
+            if (tagData.contains("CustomLightPlayers")) customLightPlayers = tagData.getBoolean("CustomLightPlayers");
+            if (tagData.contains("CustomLightLowPower")) customLightLowPower = tagData.getBoolean("CustomLightLowPower");
+            if (tagData.contains("CustomLightLookOnly")) customLightLookOnly = tagData.getBoolean("CustomLightLookOnly");
+        }
+
+        if (activeTab == 0) {
+            boolean wasActive = gridBe.isActive();
+            boolean wasConfigured = gridBe.getWrenchMode() != 0 || wasActive;
+            boolean targetActive = (mode != -1);
+
+            boolean noChange = (mode == -1 ? (!wasConfigured && gridBe.getWrenchMode() == 0) : (wasConfigured && gridBe.getWrenchMode() == mode))
+                    && (mode != 5 || (gridBe.doesDetectMonsters() == detectsMonsters && gridBe.doesDetectAnimals() == detectsAnimals))
+                    && (mode != 11 || customLightConfigurationMatchesGrid(gridBe, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
+
+            if (noChange && !isSmartFill) {
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+
+            if (!level.isClientSide()) {
+                if (isSmartFill) {
+                    applyLightModeToConnected(level, pos, player, stack, context.getHand(), mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
+                } else {
+                    if (player != null && !player.isCreative()) {
+                        int dustCost = 1;
+                        if (!wasConfigured && targetActive) {
+                            if (countItemInInventory(player, Items.GLOWSTONE_DUST) >= dustCost) {
+                                consumeItemFromInventory(player, Items.GLOWSTONE_DUST, dustCost);
+                            } else {
+                                player.displayClientMessage(Component.translatable("message.signbuilder.missing_material").withStyle(ChatFormatting.RED), true);
+                                player.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
+                                return InteractionResult.FAIL;
+                            }
+                        } else if (wasConfigured && !targetActive) {
+                            ItemStack returnDust = new ItemStack(Items.GLOWSTONE_DUST, dustCost);
+                            if (!player.getInventory().add(returnDust)) player.drop(returnDust, false);
+                        }
+                        stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                    }
+
+                    gridBe.setLightConfiguration(mode == -1 ? 0 : mode, targetActive, detectsMonsters, detectsAnimals, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly);
+                    com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, pos, state, gridBe);
+                    level.sendBlockUpdated(pos, state, state, 3);
+                }
+                level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        return InteractionResult.PASS;
+    }
+
+    private static boolean customLightConfigurationMatchesGrid(com.boran.signbuilder.block.entity.GridSignBlockEntity entity, int onTicks, int offTicks, int type, int range, int offRange, int closeDelayTicks, boolean nightOnly, boolean players, boolean lowPower, boolean lookOnly, boolean detectsMonsters, boolean detectsAnimals) {
+        if (entity.getCustomLightType() != type) return false;
+        if (entity.isCustomLightLowPower() != lowPower) return false;
+        return switch (type) {
+            case 1 -> entity.getCustomLightRange() == range
+                    && entity.getCustomLightOffRange() == offRange
+                    && entity.getCustomLightCloseDelayTicks() == closeDelayTicks
+                    && entity.doesCustomLightDetectPlayers() == players
+                    && entity.doesDetectMonsters() == detectsMonsters
+                    && entity.doesDetectAnimals() == detectsAnimals;
+            case 2 -> entity.isCustomLightNightOnly() == nightOnly;
+            case 3 -> entity.isCustomLightLookOnly() == lookOnly;
+            default -> entity.getCustomLightOnTicks() == onTicks && entity.getCustomLightOffTicks() == offTicks;
+        };
     }
 }

@@ -18,14 +18,49 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.boran.signbuilder.client.grid.GridModeManager;
+import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
+
 public class ClientModEvents {
 
     public static void init() {
+        GridModeManager.init();
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
+        
+        dev.architectury.event.events.common.InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
+            if (player.level().isClientSide() && GridModeManager.isGridModeActive()) {
+                if (GridModeManager.isHoldingLetterBlock(player)) {
+                    net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
+                    net.minecraft.world.phys.HitResult rawHit = client.hitResult;
+                    if (rawHit instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+                        int gridSize = GridModeManager.getCurrentGridSize();
+                        com.boran.signbuilder.client.grid.GridRaytrace.GridHit gridHit = com.boran.signbuilder.client.grid.GridRaytrace.getGridHit(hit, gridSize);
+                        if (gridHit != null) {
+                            net.minecraft.world.item.ItemStack item = player.getItemInHand(hand);
+                            if (item.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+                                net.minecraft.resources.ResourceLocation blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(letterBlock);
+                                String blockPath = blockId.getPath();
+                                
+                                com.boran.signbuilder.network.ModMessages.sendToServer(
+                                        new com.boran.signbuilder.network.PlaceGridLetterC2SPacket(
+                                                gridHit.pos(), gridHit.face(), player.getDirection(), gridHit.index(), gridSize, blockPath
+                                        )
+                                );
+                                player.swing(hand);
+                                return dev.architectury.event.EventResult.interruptFalse();
+                            }
+                        }
+                    }
+                    return dev.architectury.event.EventResult.interruptFalse();
+                }
+            }
+            return dev.architectury.event.EventResult.pass();
+        });
 
         ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
-            
+            KeyMappingRegistry.register(GridModeManager.TOGGLE_GRID_KEY);
             BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
+            BlockEntityRendererRegistry.register(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.GridSignBlockEntityRenderer::new);
 
             ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
                 if (level != null && pos != null) {

@@ -6,6 +6,7 @@ import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
+import com.boran.signbuilder.client.render.cache.LetterRenderCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -45,21 +46,6 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             return size() > 256;
         }
     });
-    private static final double[] OFFSET_ZERO = {0.0, 0.0};
-    private static final double[] OFFSET_NEG_1_NEG_1 = {-1.0, -1.0};
-    private static final double[] OFFSET_NEG_1_ZERO = {-1.0, 0.0};
-    private static final double[] OFFSET_ZERO_NEG_1 = {0.0, -1.0};
-    private static final double[] OFFSET_NEG_1_NEG_06875 = {-1.0, -0.6875};
-    private static final double[] OFFSET_NEG_06875_ZERO = {-0.6875, 0.0};
-    private static final double[] OFFSET_NEG_03125_NEG_1 = {-0.3125, -1.0};
-    private static final double[] OFFSET_ZERO_NEG_03125 = {0.0, -0.3125};
-    private static final double[] OFFSET_NEG_2_NEG_2 = {-2.0, -2.0};
-    private static final double[] OFFSET_ZERO_NEG_2 = {0.0, -2.0};
-    private static final double[] OFFSET_NEG_2_ZERO = {-2.0, 0.0};
-    private static final double[] OFFSET_NEG_2_NEG_1375 = {-2.0, -1.375};
-    private static final double[] OFFSET_NEG_1375_ZERO = {-1.375, 0.0};
-    private static final double[] OFFSET_NEG_0625_NEG_2 = {-0.625, -2.0};
-    private static final double[] OFFSET_ZERO_NEG_0625 = {0.0, -0.625};
     private static long rainbowColorSlot = Long.MIN_VALUE;
     private static int rainbowColor;
 
@@ -86,12 +72,15 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
     @Override
     public boolean shouldRenderOffScreen(LetterBlockEntity blockEntity) {
-        return blockEntity.getSize() > 1;
+        return true;
     }
 
-    // No @Override so it compiles on Fabric, but it correctly binds on NeoForge!
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(blockEntity.getSize() == 3 ? 12.0 : 8.0);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
+    }
+
+    public net.minecraft.world.phys.AABB getViewBoundingBox(LetterBlockEntity blockEntity) {
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
     }
 
 
@@ -99,10 +88,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     public void render(LetterBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (entity.isLinkedMultiblockPart()) {
             LetterBlockEntity master = entity.getEffectiveMaster();
-            if (master != null && master != entity && master.getSize() > 1) {
-                // We are a slave. If the master is outside the frustum (culled), we must render it!
-                // To avoid drawing 9 times, we could do complex frame tracking, 
-                // but since it's only for 3x3 signs, a little overdraw is fine to guarantee visibility.
+            if (master != null && master != entity) {
                 
                 net.minecraft.core.BlockPos offset = master.getBlockPos().subtract(entity.getBlockPos());
                 poseStack.pushPose();
@@ -113,78 +99,49 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             return;
         }
 
-        BlockState state = entity.getBlockState();
         if (entity.getLevel() == null) return;
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
-        RenderType renderType = ItemBlockRenderTypes.getRenderType(state, false);
-        VertexConsumer buffer = bufferSource.getBuffer(renderType);
+        LetterRenderCache cache = LetterRenderCache.getOrCreate(entity, dispatcher);
+        if (cache == null) return;
 
+        VertexConsumer buffer = bufferSource.getBuffer(cache.renderType);
         int light = entity.isActive() ? 15728880 : LevelRenderer.getLightColor(entity.getLevel(), entity.getBlockPos());
+
         boolean usesRainbow = entity.isRainbow()
                 || entity.isBackplateFrontRainbow()
                 || entity.isBackplateBackRainbow()
-                || isBackGlyphRainbow(entity.getBackGlyph());
+                || (cache.hasBackGlyph && cache.backRainbow);
         int currentRainbow = usesRainbow ? calculateRainbowColor() : 0;
 
-        if (state.getBlock() instanceof BackplateBlock) {
-            SignMaterial fMat = entity.getBackplateFrontMaterial();
-            SignMaterial bMat = entity.getBackplateBackMaterial();
+        if (cache.isBackplateBlock) {
             int rawFColor = entity.getBackplateFrontColor();
             int rawBColor = entity.getBackplateBackColor();
+            SignMaterial fMat = entity.getBackplateFrontMaterial();
+            SignMaterial bMat = entity.getBackplateBackMaterial();
 
             int fColor = (fMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isBackplateFrontRainbow() ? currentRainbow : (rawFColor == 0 ? 0xFFFFFF : rawFColor));
             int bColor = (bMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isBackplateBackRainbow() ? currentRainbow : (rawBColor == 0 ? 0xFFFFFF : rawBColor));
 
             poseStack.pushPose();
-            applyRotation(poseStack, state, entity, true);
-            BakedModel baseModel = dispatcher.getBlockModel(state);
-            BakedModel finalModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT)
-                    ? getMaterialModel(baseModel, fMat, bMat, false)
-                    : baseModel;
-
-            int rotationDegrees = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
-                    ? SignRotation.deltaDegrees(entity.getFacingRotation(), state.getValue(BlockStateProperties.HORIZONTAL_FACING))
-                    : 0;
-            if (state.getValue(BackplateBlock.FACE) != AttachFace.WALL) {
-                ModelCentering.centerPose(poseStack, finalModel, state, rotationDegrees, true, 1, 0.0, 0.0, 0.5, 0.5);
-                ModelCentering.widenDiagonalPose(poseStack, state.getValue(BackplateBlock.FACING), entity.getFacingRotation());
+            applyRotation(poseStack, cache.state, entity, true);
+            if (cache.standalonePlateCenterLocalX != 0f || cache.standalonePlateCenterLocalZ != 0f) {
+                poseStack.translate(cache.standalonePlateCenterLocalX, 0.0, cache.standalonePlateCenterLocalZ);
+            }
+            if (cache.standaloneWidenDiagonal) {
+                ModelCentering.widenDiagonalPose(poseStack, cache.standaloneFacing, entity.getFacingRotation());
             }
 
-            renderPlateQuads(poseStack.last(), buffer, finalModel, state, fColor, bColor, light, packedOverlay);
+            renderPlateQuads(poseStack.last(), buffer, cache.standalonePlateQuads, fColor, bColor, light, packedOverlay);
             poseStack.popPose();
             return;
         }
 
-        AttachFace face = state.hasProperty(BlockStateProperties.ATTACH_FACE) ? state.getValue(BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
-        Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? state.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
-        int size = Math.max(1, entity.getSize());
-        boolean wall = face == AttachFace.WALL;
-        double[] offsets = getRenderOffsets(face, facing, size);
-        double offsetX = offsets[0];
-        double offsetZ = offsets[1];
-        int modelScale = size;
-        int rotationDegrees = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
-                ? SignRotation.deltaDegrees(entity.getFacingRotation(), facing)
-                : 0;
-        int normalRotation = wall ? entity.getFacingRotation() : Math.floorMod(entity.getFacingRotation() - 2, 8);
-        double normalX = SignRotation.facingX(normalRotation);
-        double normalZ = SignRotation.facingZ(normalRotation);
-        double normalLength = Math.sqrt(normalX * normalX + normalZ * normalZ);
-        if (normalLength == 0.0) normalLength = 1.0;
-        normalX /= normalLength;
-        normalZ /= normalLength;
-        double stepX = SignRotation.horizontalStepX(entity.getFacingRotation(), wall);
-        double stepZ = SignRotation.horizontalStepZ(entity.getFacingRotation(), wall);
-        double groupCenterX = 0.5 + stepX * (size - 1) * 0.5;
-        double groupCenterZ = 0.5 + stepZ * (size - 1) * 0.5;
-        double plateClearance = (wall ? 1.0 : 2.0) * size / 16.0;
-
         poseStack.pushPose();
-        applyRotation(poseStack, state, entity, entity.getSize() <= 1);
-        poseStack.translate(offsetX, 0.0, offsetZ);
-        if (size > 1) poseStack.scale((float) modelScale, (float) modelScale, (float) modelScale);
+        applyRotation(poseStack, cache.state, entity, cache.size <= 1);
+        poseStack.translate(cache.offsetX, 0.0, cache.offsetZ);
+        if (cache.size > 1) poseStack.scale((float) cache.modelScale, (float) cache.modelScale, (float) cache.modelScale);
 
-        if (entity.hasBackplate()) {
+        if (cache.hasBackplate) {
             SignMaterial fMat = entity.getBackplateFrontMaterial();
             SignMaterial bMat = entity.getBackplateBackMaterial();
             int rawFColor = entity.getBackplateFrontColor();
@@ -194,50 +151,27 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             int bColor = (bMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isBackplateBackRainbow() ? currentRainbow : (rawBColor == 0 ? 0xFFFFFF : rawBColor));
 
             poseStack.pushPose();
-            Direction plateFacing = (face != AttachFace.WALL) ? facing.getCounterClockWise() : facing;
-
-            BlockState plateState = ModBlocks.BACKPLATE.get().defaultBlockState()
-                    .setValue(BackplateBlock.FACING, plateFacing)
-                    .setValue(BackplateBlock.FACE, face);
-
-            BakedModel basePlateModel = dispatcher.getBlockModel(plateState);
-            BakedModel finalPlateModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT)
-                    ? getMaterialModel(basePlateModel, fMat, bMat, false)
-                    : basePlateModel;
-
-            if (!wall) {
-                ModelCentering.centerPose(poseStack, finalPlateModel, plateState, rotationDegrees, size <= 1, modelScale, offsetX, offsetZ, groupCenterX, groupCenterZ);
-                ModelCentering.widenDiagonalPose(poseStack, plateFacing, entity.getFacingRotation());
+            if (!cache.wall) {
+                poseStack.translate(cache.attachedPlateCenterLocalX, 0.0, cache.attachedPlateCenterLocalZ);
+                if (cache.attachedPlateWidenDiagonal) {
+                    ModelCentering.widenDiagonalPose(poseStack, cache.attachedPlateFacing, entity.getFacingRotation());
+                }
             }
-            renderPlateQuads(poseStack.last(), buffer, finalPlateModel, plateState, fColor, bColor, light, packedOverlay);
+            renderPlateQuads(poseStack.last(), buffer, cache.attachedPlateQuads, fColor, bColor, light, packedOverlay);
             poseStack.popPose();
         }
 
-        BakedModel letterModel = dispatcher.getBlockModel(state);
         SignMaterial letterMat = entity.getSavedMaterial();
         int rawLetterCol = entity.getRgbColor();
         int letterCol = (letterMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isRainbow() ? currentRainbow : (rawLetterCol == 0 ? 0xFFFFFF : rawLetterCol));
 
-        BakedModel finalLetterModel = (letterMat != SignMaterial.DEFAULT)
-                ? getMaterialModel(letterModel, letterMat, SignMaterial.DEFAULT, true)
-                : letterModel;
-
-        ModelCentering.Center letterTarget = entity.hasBackplate() && !wall
-                ? new ModelCentering.Center(groupCenterX + normalX * plateClearance, groupCenterZ + normalZ * plateClearance)
-                : new ModelCentering.Center(groupCenterX, groupCenterZ);
-        if (!wall && LetterBlock.isLateralDot(state)) {
-            ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalLetterModel, state, rotationDegrees,
-                    size <= 1, modelScale, offsetX, offsetZ);
-            letterTarget = ModelCentering.centerAlongNormal(currentCenter, letterTarget.x(), letterTarget.z(), normalX, normalZ);
-        }
-
         poseStack.pushPose();
-        if (!wall) {
-            ModelCentering.centerPose(poseStack, finalLetterModel, state, rotationDegrees, size <= 1, modelScale, offsetX, offsetZ, letterTarget.x(), letterTarget.z());
-        } else if (entity.hasBackplate()) {
-            poseStack.translate(normalX * plateClearance / modelScale, 0.0, normalZ * plateClearance / modelScale);
+        if (!cache.wall) {
+            poseStack.translate(cache.letterCenterLocalX, 0.0, cache.letterCenterLocalZ);
+        } else if (cache.letterWallTransX != 0f || cache.letterWallTransZ != 0f) {
+            poseStack.translate(cache.letterWallTransX, 0.0, cache.letterWallTransZ);
         }
-        applyPressedTransform(poseStack, entity, face, facing);
+        applyPressedTransform(poseStack, entity, cache.face, cache.facing);
 
         float lr = ((letterCol >> 16) & 0xFF) / 255.0f;
         float lg = ((letterCol >> 8) & 0xFF) / 255.0f;
@@ -246,106 +180,31 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         dispatcher.getModelRenderer().renderModel(
                 poseStack.last(),
                 buffer,
-                state,
-                finalLetterModel,
+                cache.state,
+                cache.finalLetterModel,
                 lr, lg, lb,
                 light,
                 packedOverlay
         );
-
         poseStack.popPose();
 
-        ItemStack backGlyph = entity.getBackGlyph();
-        if (!wall && !backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
-            Block backBlock = blockItem.getBlock();
-            BlockState backState = backBlock.defaultBlockState()
-                    .setValue(LetterBlock.FACE, face)
-                    .setValue(LetterBlock.FACING, facing.getOpposite());
-            CompoundTag backTag = backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-            SignMaterial backMaterial = readMaterial(backTag, "SavedMaterial");
-            if (backState.hasProperty(LetterBlock.MATERIAL)) {
-                CompoundTag stateTag = backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY).properties().isEmpty() ? null : new net.minecraft.nbt.CompoundTag();
-                if (stateTag != null && stateTag.contains("material")) {
-                    try {
-                        backState = backState.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase()));
-                    } catch (IllegalArgumentException ignored) {
-                    }
-                }
-            }
-            BakedModel backBaseModel = dispatcher.getBlockModel(backState);
-            BakedModel finalBackModel = backMaterial != SignMaterial.DEFAULT
-                    ? getMaterialModel(backBaseModel, backMaterial, SignMaterial.DEFAULT, true)
-                    : backBaseModel;
-            int backColor = backMaterial != SignMaterial.DEFAULT ? 0xFFFFFF
-                    : backTag != null && backTag.getBoolean("IsRainbow") ? currentRainbow
-                    : backTag != null && backTag.contains("RGBColor") ? backTag.getInt("RGBColor") : 0xFFFFFF;
-            int backRotation = Math.floorMod(entity.getFacingRotation() + 4, 8);
-            int backRotationDegrees = SignRotation.deltaDegrees(backRotation, backState.getValue(LetterBlock.FACING));
-            ModelCentering.Center backTarget = entity.hasBackplate() && !wall
-                    ? new ModelCentering.Center(groupCenterX - normalX * plateClearance, groupCenterZ - normalZ * plateClearance)
-                    : new ModelCentering.Center(groupCenterX - normalX * 2.0 * 1.0 / 16.0, groupCenterZ - normalZ * 2.0 * 1.0 / 16.0);
-            if (LetterBlock.isLateralDot(backState)) {
-                ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalBackModel, backState, backRotationDegrees,
-                        size <= 1, modelScale, offsetX, offsetZ);
-                backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
-            }
-
+        if (cache.hasBackGlyph) {
+            int backColor = cache.backIsMaterial ? 0xFFFFFF : (cache.backRainbow ? currentRainbow : cache.backRawColor);
             poseStack.pushPose();
-            if (!wall) {
-                ModelCentering.centerPose(poseStack, finalBackModel, backState, backRotationDegrees, size <= 1, modelScale,
-                        offsetX, offsetZ, backTarget.x(), backTarget.z());
-            } else {
-                poseStack.translate(-normalX * plateClearance / modelScale, 0.0, -normalZ * plateClearance / modelScale);
+            if (!cache.wall) {
+                poseStack.translate(cache.backCenterLocalX, 0.0, cache.backCenterLocalZ);
+            } else if (cache.backWallTransX != 0f || cache.backWallTransZ != 0f) {
+                poseStack.translate(cache.backWallTransX, 0.0, cache.backWallTransZ);
             }
-            applyPressedTransform(poseStack, entity, face, facing.getOpposite());
+            applyPressedTransform(poseStack, entity, cache.face, cache.facing.getOpposite());
             float br = ((backColor >> 16) & 0xFF) / 255.0f;
             float bg = ((backColor >> 8) & 0xFF) / 255.0f;
             float bb = (backColor & 0xFF) / 255.0f;
-            dispatcher.getModelRenderer().renderModel(poseStack.last(), buffer, backState, finalBackModel, br, bg, bb, light, packedOverlay);
+            dispatcher.getModelRenderer().renderModel(poseStack.last(), buffer, cache.backState, cache.finalBackModel, br, bg, bb, light, packedOverlay);
             poseStack.popPose();
         }
 
         poseStack.popPose();
-    }
-
-    private static double[] getRenderOffsets(AttachFace face, Direction facing, int size) {
-        if (size == 3) {
-            if (face == AttachFace.WALL) {
-                return switch (facing) {
-                    case NORTH -> OFFSET_NEG_2_NEG_2;
-                    case SOUTH -> OFFSET_ZERO;
-                    case EAST -> OFFSET_ZERO_NEG_2;
-                    case WEST -> OFFSET_NEG_2_ZERO;
-                    default -> OFFSET_ZERO;
-                };
-            }
-            return switch (facing) {
-                case EAST -> OFFSET_NEG_2_NEG_1375;
-                case NORTH -> OFFSET_NEG_1375_ZERO;
-                case SOUTH -> OFFSET_NEG_0625_NEG_2;
-                case WEST -> OFFSET_ZERO_NEG_0625;
-                default -> OFFSET_ZERO;
-            };
-        }
-        if (size == 2) {
-            if (face == AttachFace.WALL) {
-                return switch (facing) {
-                    case NORTH -> OFFSET_NEG_1_NEG_1;
-                    case SOUTH -> OFFSET_ZERO;
-                    case EAST -> OFFSET_ZERO_NEG_1;
-                    case WEST -> OFFSET_NEG_1_ZERO;
-                    default -> OFFSET_ZERO;
-                };
-            }
-            return switch (facing) {
-                case EAST -> OFFSET_NEG_1_NEG_06875;
-                case NORTH -> OFFSET_NEG_06875_ZERO;
-                case SOUTH -> OFFSET_NEG_03125_NEG_1;
-                case WEST -> OFFSET_ZERO_NEG_03125;
-                default -> OFFSET_ZERO;
-            };
-        }
-        return OFFSET_ZERO;
     }
 
     private static void applyPressedTransform(PoseStack poseStack, LetterBlockEntity entity, AttachFace face, Direction facing) {
@@ -363,21 +222,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         }
     }
 
-    private static boolean isBackGlyphRainbow(ItemStack stack) {
-        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        return tag != null && tag.getBoolean("IsRainbow");
-    }
-
-    private static SignMaterial readMaterial(@Nullable CompoundTag tag, String key) {
-        if (tag == null || !tag.contains(key)) return SignMaterial.DEFAULT;
-        try {
-            return SignMaterial.valueOf(tag.getString(key).toUpperCase());
-        } catch (IllegalArgumentException ignored) {
-            return SignMaterial.DEFAULT;
-        }
-    }
-
-    private static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter) {
+    public static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter) {
         return MATERIAL_MODELS.computeIfAbsent(new MaterialModelKey(model, front, back, letter),
                 key -> new MaterialBakedModel(key.model(), key.front(), key.back(), key.letter()));
     }
@@ -399,7 +244,24 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         }
     }
 
-    private void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, BakedModel model, BlockState state, int frontColor, int backColor, int light, int overlay) {
+    public static List<BakedQuad> getAllQuads(BakedModel model, BlockState state) {
+        if (model == null) return Collections.emptyList();
+        RandomSource random = RandomSource.create(42L);
+        List<BakedQuad> quads = new java.util.ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            random.setSeed(42L);
+            quads.addAll(model.getQuads(state, DIRECTIONS[i], random));
+        }
+        random.setSeed(42L);
+        quads.addAll(model.getQuads(state, null, random));
+        return quads;
+    }
+
+    public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
+        renderPlateQuadList(pose, buffer, quads, frontColor, backColor, light, overlay);
+    }
+
+    public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, BakedModel model, BlockState state, int frontColor, int backColor, int light, int overlay) {
         for (int i = 0; i < 6; i++) {
             RANDOM.setSeed(42L);
             renderPlateQuadList(pose, buffer, model.getQuads(state, DIRECTIONS[i], RANDOM), frontColor, backColor, light, overlay);
@@ -408,7 +270,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         renderPlateQuadList(pose, buffer, model.getQuads(state, null, RANDOM), frontColor, backColor, light, overlay);
     }
 
-    private void renderPlateQuadList(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
+    private static void renderPlateQuadList(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
         int quadCount = quads.size();
         for (int i = 0; i < quadCount; i++) {
             BakedQuad quad = quads.get(i);

@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "錠前記号",
   "block.signbuilder.symbol_trophy": "トロフィー記号",
   "block.signbuilder.symbol_lightning": "雷記号",
-  "block.signbuilder.symbol_bitcoin": "ビットコイン記号"
+  "block.signbuilder.symbol_bitcoin": "ビットコイン記号",
+  "tooltip.signbuilder.grid_mode_hint": "Shift+V を押してグリッド配置モードに切り替えます"
 }

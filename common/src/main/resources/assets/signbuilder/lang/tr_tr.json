@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Kilit Sembolü",
   "block.signbuilder.symbol_trophy": "Kupa Sembolü",
   "block.signbuilder.symbol_lightning": "Şimşek Sembolü",
-  "block.signbuilder.symbol_bitcoin": "Bitcoin Sembolü"
+  "block.signbuilder.symbol_bitcoin": "Bitcoin Sembolü",
+  "tooltip.signbuilder.grid_mode_hint": "Izgara (Küçük Harf) Modu için Shift+V'ye basın"
 }

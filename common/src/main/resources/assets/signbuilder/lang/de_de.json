@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Schlosssymbol",
   "block.signbuilder.symbol_trophy": "Trophäensymbol",
   "block.signbuilder.symbol_lightning": "Blitzsymbol",
-  "block.signbuilder.symbol_bitcoin": "Bitcoin-Symbol"
+  "block.signbuilder.symbol_bitcoin": "Bitcoin-Symbol",
+  "tooltip.signbuilder.grid_mode_hint": "Drücken Sie Umschalt+V für den Rasterplatzierungsmodus"
 }

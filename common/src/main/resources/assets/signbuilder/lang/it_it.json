@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Simbolo lucchetto",
   "block.signbuilder.symbol_trophy": "Simbolo trofeo",
   "block.signbuilder.symbol_lightning": "Simbolo fulmine",
-  "block.signbuilder.symbol_bitcoin": "Simbolo Bitcoin"
+  "block.signbuilder.symbol_bitcoin": "Simbolo Bitcoin",
+  "tooltip.signbuilder.grid_mode_hint": "Premi Maiusc+V per la modalità di posizionamento a griglia"
 }

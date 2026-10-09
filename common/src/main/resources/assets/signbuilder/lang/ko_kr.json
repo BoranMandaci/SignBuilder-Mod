@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "자물쇠 기호",
   "block.signbuilder.symbol_trophy": "트로피 기호",
   "block.signbuilder.symbol_lightning": "번개 기호",
-  "block.signbuilder.symbol_bitcoin": "비트코인 기호"
+  "block.signbuilder.symbol_bitcoin": "비트코인 기호",
+  "tooltip.signbuilder.grid_mode_hint": "Shift+V를 눌러 그리드 배치 모드로 전환합니다"
 }

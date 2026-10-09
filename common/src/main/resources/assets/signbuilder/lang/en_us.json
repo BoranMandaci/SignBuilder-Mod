@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Lock Symbol",
   "block.signbuilder.symbol_trophy": "Trophy Symbol",
   "block.signbuilder.symbol_lightning": "Lightning Symbol",
-  "block.signbuilder.symbol_bitcoin": "Bitcoin Symbol"
+  "block.signbuilder.symbol_bitcoin": "Bitcoin Symbol",
+  "tooltip.signbuilder.grid_mode_hint": "Press Shift+V for Grid Placement Mode"
 }

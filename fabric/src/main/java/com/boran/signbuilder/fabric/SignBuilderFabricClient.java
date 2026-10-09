@@ -31,6 +31,7 @@ public class SignBuilderFabricClient implements ClientModInitializer {
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());
+            com.boran.signbuilder.client.render.GridPreviewRenderer.render(context.matrixStack());
         });
     }
 }

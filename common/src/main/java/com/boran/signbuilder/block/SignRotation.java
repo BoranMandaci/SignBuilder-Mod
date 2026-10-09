@@ -162,4 +162,24 @@ public final class SignRotation {
 
         return result;
     }
+
+    public static boolean calculateWaveGlow(net.minecraft.core.BlockPos pos, BlockState state, int facingRotation, long time) {
+        AttachFace face = state.hasProperty(BlockStateProperties.ATTACH_FACE) ? state.getValue(BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
+        boolean wall = face == AttachFace.WALL;
+
+        int stepX = horizontalStepX(facingRotation, wall);
+        int stepZ = horizontalStepZ(facingRotation, wall);
+        int normSq = stepX * stepX + stepZ * stepZ;
+
+        double signPos;
+        if (normSq > 0) {
+            signPos = (pos.getX() * stepX + pos.getZ() * stepZ) / (double) normSq;
+        } else {
+            signPos = pos.getX() + pos.getZ();
+        }
+        signPos += pos.getY();
+
+        double angle = (time / 3.0) - (signPos * (Math.PI / 3.0));
+        return Math.cos(angle) > 0.2;
+    }
 }

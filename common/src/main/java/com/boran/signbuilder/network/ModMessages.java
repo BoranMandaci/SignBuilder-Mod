@@ -37,11 +37,15 @@ public class ModMessages {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BlueprintUndoC2SPacket.TYPE, BlueprintUndoC2SPacket.STREAM_CODEC, (payload, context) -> {
             context.queue(() -> payload.handle(context));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, PlaceGridLetterC2SPacket.TYPE, PlaceGridLetterC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncGridModeC2SPacket.TYPE, SyncGridModeC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-
         if (message instanceof BrushColorPacket packet) {
             NetworkManager.sendToServer(packet);
         } else if (message instanceof WrenchModeC2SPacket packet) {
@@ -53,6 +57,10 @@ public class ModMessages {
         } else if (message instanceof SignPressCraftC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         } else if (message instanceof BlueprintUndoC2SPacket packet) {
+            NetworkManager.sendToServer(packet);
+        } else if (message instanceof PlaceGridLetterC2SPacket packet) {
+            NetworkManager.sendToServer(packet);
+        } else if (message instanceof SyncGridModeC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         }
     }

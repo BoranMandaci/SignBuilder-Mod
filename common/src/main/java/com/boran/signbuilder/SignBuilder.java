@@ -49,6 +49,17 @@ public class SignBuilder {
                     }
                 }
             }
+            
+            // Server-side cancellation for Grid Mode vanilla placement
+            if (!player.level().isClientSide()) {
+                if (com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1) {
+                    ItemStack item = player.getItemInHand(hand);
+                    if (item.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+                        return EventResult.interruptFalse();
+                    }
+                }
+            }
+            
             return EventResult.pass();
         });
 

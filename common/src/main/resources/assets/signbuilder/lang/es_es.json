@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Símbolo de candado",
   "block.signbuilder.symbol_trophy": "Símbolo de trofeo",
   "block.signbuilder.symbol_lightning": "Símbolo de rayo",
-  "block.signbuilder.symbol_bitcoin": "Símbolo de Bitcoin"
+  "block.signbuilder.symbol_bitcoin": "Símbolo de Bitcoin",
+  "tooltip.signbuilder.grid_mode_hint": "Presiona Mayús+V para el modo de colocación en cuadrícula"
 }

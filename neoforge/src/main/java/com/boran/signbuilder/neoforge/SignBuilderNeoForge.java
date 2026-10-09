@@ -43,6 +43,7 @@ public class SignBuilderNeoForge {
     private void onRenderLevelStage(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             BlueprintPreviewRenderer.render(event.getPoseStack());
+            com.boran.signbuilder.client.render.GridPreviewRenderer.render(event.getPoseStack());
         }
     }
 }

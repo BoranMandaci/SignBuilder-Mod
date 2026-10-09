@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Symbol kłódki",
   "block.signbuilder.symbol_trophy": "Symbol trofeum",
   "block.signbuilder.symbol_lightning": "Symbol błyskawicy",
-  "block.signbuilder.symbol_bitcoin": "Symbol Bitcoin"
+  "block.signbuilder.symbol_bitcoin": "Symbol Bitcoin",
+  "tooltip.signbuilder.grid_mode_hint": "Naciśnij Shift+V, aby włączyć tryb umieszczania siatki"
 }

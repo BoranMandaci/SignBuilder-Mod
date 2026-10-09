@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "挂锁符号",
   "block.signbuilder.symbol_trophy": "奖杯符号",
   "block.signbuilder.symbol_lightning": "闪电符号",
-  "block.signbuilder.symbol_bitcoin": "比特币符号"
+  "block.signbuilder.symbol_bitcoin": "比特币符号",
+  "tooltip.signbuilder.grid_mode_hint": "按 Shift+V 切换到网格放置模式"
 }

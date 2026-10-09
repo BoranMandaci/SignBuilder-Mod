@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Символ замка",
   "block.signbuilder.symbol_trophy": "Символ трофея",
   "block.signbuilder.symbol_lightning": "Символ молнии",
-  "block.signbuilder.symbol_bitcoin": "Символ биткоина"
+  "block.signbuilder.symbol_bitcoin": "Символ биткоина",
+  "tooltip.signbuilder.grid_mode_hint": "Нажмите Shift+V для режима размещения по сетке"
 }

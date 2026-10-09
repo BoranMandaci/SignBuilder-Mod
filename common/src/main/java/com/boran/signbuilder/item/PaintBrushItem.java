@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,6 +108,10 @@ public class PaintBrushItem extends Item {
         ItemStack stack = context.getItemInHand();
         BlockState state = level.getBlockState(pos);
         BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && blockEntity instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+            return handleGridSignInteraction(level, pos, state, gridBe, player, stack, context);
+        }
 
         boolean isBackplateBlock = state.getBlock() instanceof BackplateBlock;
         boolean isLetterBlock = state.getBlock() instanceof LetterBlock;
@@ -569,5 +574,169 @@ public class PaintBrushItem extends Item {
             case 6 -> 0xF27FA5; case 7 -> 0x4C4C4C; case 8 -> 0x999999; case 9 -> 0x4C7F99; case 10 -> 0x7F3FB2; case 11 -> 0x334CB2;
             case 12 -> 0x664C33; case 13 -> 0x667F33; case 14 -> 0xCF2323; case 15 -> 0x191919; default -> 0xFFFFFF;
         };
+    }
+
+    private InteractionResult handleGridSignInteraction(Level level, BlockPos pos, BlockState state, com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe, Player player, ItemStack stack, UseOnContext context) {
+        Direction face = context.getClickedFace();
+        Vec3 loc = context.getClickLocation();
+        double rx = loc.x - pos.getX();
+        double ry = loc.y - pos.getY();
+        double rz = loc.z - pos.getZ();
+
+        Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? state.getValue(BlockStateProperties.HORIZONTAL_FACING) : face;
+        int rotation = gridBe.getFacingRotation();
+        AttachFace aFace = state.hasProperty(BlockStateProperties.ATTACH_FACE) ? state.getValue(BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
+
+        boolean isBack = false;
+        if (player != null && aFace != AttachFace.WALL) {
+            double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
+                    + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
+            if (side < 0.0) {
+                isBack = true;
+            }
+        }
+
+        int rotationDegrees = SignRotation.deltaDegrees(rotation, facing);
+        double radians = Math.toRadians(rotationDegrees);
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        double dx = rx - 0.5;
+        double dz = rz - 0.5;
+        double localX = dx * cos - dz * sin;
+        double localZ = dx * sin + dz * cos;
+
+        double widthFactor = (rotationDegrees != 0 && aFace != AttachFace.WALL) ? Math.sqrt(2.0) : 1.0;
+
+        Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+        double u;
+        switch (effectiveFacing) {
+            case NORTH -> u = 0.5 - (localX / widthFactor);
+            case SOUTH -> u = 0.5 + (localX / widthFactor);
+            case EAST  -> u = 0.5 - (localZ / widthFactor);
+            case WEST  -> u = 0.5 + (localZ / widthFactor);
+            default    -> u = 0.5;
+        }
+        double v = 1.0 - ry;
+
+        if (u < 0.0) u = 0.0;
+        if (u >= 1.0) u = 0.9999;
+        if (v < 0.0) v = 0.0;
+        if (v >= 1.0) v = 0.9999;
+
+        int gridSize = gridBe.getGridSize();
+        int cellU = (int) Math.floor(u * gridSize);
+        int cellV = (int) Math.floor(v * gridSize);
+        if (cellU < 0) cellU = 0;
+        if (cellU >= gridSize) cellU = gridSize - 1;
+        if (cellV < 0) cellV = 0;
+        if (cellV >= gridSize) cellV = gridSize - 1;
+
+        int cellIndex = (isBack ? 16 : 0) + cellV * gridSize + cellU;
+        com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gridBe.getCells().get(cellIndex);
+
+        boolean targetBackplate = false;
+        if (gridBe.hasBackplate()) {
+            if (player != null && player.isShiftKeyDown()) {
+                targetBackplate = true;
+            } else if (cell == null) {
+                targetBackplate = true;
+            }
+        }
+
+        if (player != null && player.isShiftKeyDown() && !targetBackplate) {
+            if (!level.isClientSide()) {
+                if (cell != null) {
+                    int copiedColor = cell.rainbow ? -1 : cell.color;
+                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                        t.putInt("SelectedColor", copiedColor);
+                        if (cell.material != SignMaterial.DEFAULT) {
+                            t.putString("SelectedMaterial", cell.material.name());
+                        } else {
+                            t.remove("SelectedMaterial");
+                        }
+                    });
+                    if (copiedColor == -1) player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [Rainbow]").withStyle(Style.EMPTY.withColor(0xFF55FF)), true);
+                    else player.displayClientMessage(Component.translatable("message.signbuilder.color_copied").append(" [#" + String.format("%06X", copiedColor).toUpperCase() + "]").withStyle(Style.EMPTY.withColor(copiedColor)), true);
+                }
+            }
+            level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        int selectedColor = tag != null && tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
+        boolean hasMaterial = tag != null && tag.contains("SelectedMaterial");
+        SignMaterial newMaterial = hasMaterial ? parseMaterial(tag.getString("SelectedMaterial")) : null;
+
+        if (targetBackplate) {
+            SignMaterial currentMat = isBack ? gridBe.getBackplateBackMaterial() : gridBe.getBackplateFrontMaterial();
+            if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
+                return InteractionResult.PASS;
+            }
+
+            if (hasMaterial && newMaterial != currentMat) {
+                if (player != null && !player.isCreative()) {
+                    ItemStack costItem = BackplateBlock.getItemForMaterial(newMaterial);
+                    if (!costItem.isEmpty()) {
+                        if (countItemInInventory(player, costItem.getItem()) < 1) {
+                            player.displayClientMessage(Component.translatable("message.signbuilder.need_material", costItem.getHoverName()).withStyle(ChatFormatting.RED), true);
+                            return InteractionResult.FAIL;
+                        }
+                        consumeItemFromInventory(player, costItem.getItem(), 1);
+                    }
+                }
+            }
+
+            if (!level.isClientSide()) {
+                boolean rainbow = (selectedColor == -1);
+                int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
+                if (isBack) {
+                    if (hasMaterial) gridBe.setBackplateBackMaterial(newMaterial);
+                    gridBe.setBackplateBackRainbow(rainbow);
+                    gridBe.setBackplateBackColor(color);
+                } else {
+                    if (hasMaterial) gridBe.setBackplateFrontMaterial(newMaterial);
+                    gridBe.setBackplateFrontRainbow(rainbow);
+                    gridBe.setBackplateFrontColor(color);
+                }
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                if (player != null && !player.isCreative()) {
+                    stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                }
+                level.sendBlockUpdated(pos, state, state, 3);
+            } else {
+                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        } else if (cell != null) {
+            if (hasMaterial && newMaterial != cell.material) {
+                if (player != null && !player.isCreative()) {
+                    ItemStack costItem = BackplateBlock.getItemForMaterial(newMaterial);
+                    if (!costItem.isEmpty()) {
+                        if (countItemInInventory(player, costItem.getItem()) < 1) {
+                            player.displayClientMessage(Component.translatable("message.signbuilder.need_material", costItem.getHoverName()).withStyle(ChatFormatting.RED), true);
+                            return InteractionResult.FAIL;
+                        }
+                        consumeItemFromInventory(player, costItem.getItem(), 1);
+                    }
+                }
+            }
+
+            if (!level.isClientSide()) {
+                SignMaterial mat = hasMaterial ? newMaterial : cell.material;
+                boolean rainbow = (selectedColor == -1);
+                int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
+                gridBe.setCell(cellIndex, cell.character, mat, color, rainbow, cell.lightMode);
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                if (player != null && !player.isCreative()) {
+                    stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                }
+                level.sendBlockUpdated(pos, state, state, 3);
+            } else {
+                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+        return InteractionResult.PASS;
     }
 }

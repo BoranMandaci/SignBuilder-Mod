@@ -359,5 +359,6 @@
   "block.signbuilder.symbol_lock": "Symbole de cadenas",
   "block.signbuilder.symbol_trophy": "Symbole de trophée",
   "block.signbuilder.symbol_lightning": "Symbole d'éclair",
-  "block.signbuilder.symbol_bitcoin": "Symbole Bitcoin"
+  "block.signbuilder.symbol_bitcoin": "Symbole Bitcoin",
+  "tooltip.signbuilder.grid_mode_hint": "Appuyez sur Maj+V pour le mode de placement en grille"
 }
