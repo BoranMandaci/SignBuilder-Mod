@@ -120,7 +120,18 @@
   "creativetab.signbuilder_symbols": "Символы SignBuilder",
   "gui.signbuilder.blueprint.save": "Сохранить",
   "gui.signbuilder.blueprint.prompt": "Введите текст для постройки",
+  "gui.signbuilder.blueprint.tab_normal": "Стандарт",
+  "gui.signbuilder.blueprint.tab_grid": "Сетка (Мини)",
+  "gui.signbuilder.blueprint.grid_text": "Текст / Быстрое заполнение",
+  "gui.signbuilder.blueprint.clear_all": "Очистить",
+  "gui.signbuilder.blueprint.mode_banner": "Баннер",
+  "gui.signbuilder.blueprint.mode_banner_horiz": "Баннер (Гориз)",
+  "gui.signbuilder.blueprint.mode_banner_vert": "Баннер (Верт)",
+  "gui.signbuilder.blueprint.mode_single": "Один блок",
+  "tooltip.signbuilder.blueprint.wall_only": "Сеточные таблички можно ставить только на стены или задние панели!",
+  "tooltip.signbuilder.blueprint.mode.grid": "Режим сетки",
   "message.signbuilder.blueprint.saved": "Выбранное слово: ",
+  "message.signbuilder.blueprint.grid_saved": "Чертёж сетки сохранён: ",
   "tooltip.signbuilder.blueprint.current_text": "Текущий текст",
   "tooltip.signbuilder.blueprint.empty": "Текст ещё не введён",
   "tooltip.signbuilder.blueprint.usage": "ПКМ по воздуху для ввода текста",
@@ -359,5 +370,6 @@
   "block.signbuilder.symbol_lock": "Символ замка",
   "block.signbuilder.symbol_trophy": "Символ трофея",
   "block.signbuilder.symbol_lightning": "Символ молнии",
-  "block.signbuilder.symbol_bitcoin": "Символ биткоина"
+  "block.signbuilder.symbol_bitcoin": "Символ биткоина",
+  "tooltip.signbuilder.grid_mode_hint": "Нажмите Shift+V для режима размещения по сетке"
 }

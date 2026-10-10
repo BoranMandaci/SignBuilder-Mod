@@ -120,7 +120,18 @@
   "creativetab.signbuilder_symbols": "SignBuilder 記号",
   "gui.signbuilder.blueprint.save": "保存",
   "gui.signbuilder.blueprint.prompt": "作成するテキストを入力",
+  "gui.signbuilder.blueprint.tab_normal": "標準",
+  "gui.signbuilder.blueprint.tab_grid": "グリッド (ミニ)",
+  "gui.signbuilder.blueprint.grid_text": "テキスト / クイック入力",
+  "gui.signbuilder.blueprint.clear_all": "クリア",
+  "gui.signbuilder.blueprint.mode_banner": "バナー",
+  "gui.signbuilder.blueprint.mode_banner_horiz": "バナー (水平)",
+  "gui.signbuilder.blueprint.mode_banner_vert": "バナー (垂直)",
+  "gui.signbuilder.blueprint.mode_single": "単一ブロック",
+  "tooltip.signbuilder.blueprint.wall_only": "グリッド看板は壁またはバックプレートにのみ設置できます！",
+  "tooltip.signbuilder.blueprint.mode.grid": "グリッドモード",
   "message.signbuilder.blueprint.saved": "選択された単語: ",
+  "message.signbuilder.blueprint.grid_saved": "グリッド設計図を保存しました: ",
   "tooltip.signbuilder.blueprint.current_text": "現在のテキスト",
   "tooltip.signbuilder.blueprint.empty": "テキストがまだ入力されていません",
   "tooltip.signbuilder.blueprint.usage": "空中で右クリックしてテキストを設定",
@@ -359,5 +370,6 @@
   "block.signbuilder.symbol_lock": "錠前記号",
   "block.signbuilder.symbol_trophy": "トロフィー記号",
   "block.signbuilder.symbol_lightning": "雷記号",
-  "block.signbuilder.symbol_bitcoin": "ビットコイン記号"
+  "block.signbuilder.symbol_bitcoin": "ビットコイン記号",
+  "tooltip.signbuilder.grid_mode_hint": "Shift+V を押してグリッド配置モードに切り替えます"
 }

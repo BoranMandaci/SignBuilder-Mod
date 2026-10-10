@@ -120,7 +120,18 @@
   "creativetab.signbuilder_symbols": "SignBuilder Symbols",
   "gui.signbuilder.blueprint.save": "Save",
   "gui.signbuilder.blueprint.prompt": "Enter Text to Build",
+  "gui.signbuilder.blueprint.tab_normal": "Standard",
+  "gui.signbuilder.blueprint.tab_grid": "Grid (Mini)",
+  "gui.signbuilder.blueprint.grid_text": "Text / Quick Fill",
+  "gui.signbuilder.blueprint.clear_all": "Clear",
+  "gui.signbuilder.blueprint.mode_banner": "Banner",
+  "gui.signbuilder.blueprint.mode_banner_horiz": "Banner (Horiz)",
+  "gui.signbuilder.blueprint.mode_banner_vert": "Banner (Vert)",
+  "gui.signbuilder.blueprint.mode_single": "Single Block",
+  "tooltip.signbuilder.blueprint.wall_only": "Grid signs can only be placed on walls or backplates!",
+  "tooltip.signbuilder.blueprint.mode.grid": "Grid Mode",
   "message.signbuilder.blueprint.saved": "Selected word: ",
+  "message.signbuilder.blueprint.grid_saved": "Blueprint Grid Saved: ",
   "tooltip.signbuilder.blueprint.current_text": "Current Text",
   "tooltip.signbuilder.blueprint.empty": "No text entered yet",
   "tooltip.signbuilder.blueprint.usage": "Right-click air to set text",
@@ -359,5 +370,6 @@
   "block.signbuilder.symbol_lock": "Lock Symbol",
   "block.signbuilder.symbol_trophy": "Trophy Symbol",
   "block.signbuilder.symbol_lightning": "Lightning Symbol",
-  "block.signbuilder.symbol_bitcoin": "Bitcoin Symbol"
+  "block.signbuilder.symbol_bitcoin": "Bitcoin Symbol",
+  "tooltip.signbuilder.grid_mode_hint": "Press Shift+V for Grid Placement Mode"
 }

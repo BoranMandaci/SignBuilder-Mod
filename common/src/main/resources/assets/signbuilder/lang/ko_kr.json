@@ -120,7 +120,18 @@
   "creativetab.signbuilder_symbols": "SignBuilder 기호",
   "gui.signbuilder.blueprint.save": "저장",
   "gui.signbuilder.blueprint.prompt": "제작할 텍스트 입력",
+  "gui.signbuilder.blueprint.tab_normal": "표준",
+  "gui.signbuilder.blueprint.tab_grid": "그리드 (미니)",
+  "gui.signbuilder.blueprint.grid_text": "텍스트 / 빠른 입력",
+  "gui.signbuilder.blueprint.clear_all": "초기화",
+  "gui.signbuilder.blueprint.mode_banner": "배너",
+  "gui.signbuilder.blueprint.mode_banner_horiz": "현수막 (가로)",
+  "gui.signbuilder.blueprint.mode_banner_vert": "현수막 (세로)",
+  "gui.signbuilder.blueprint.mode_single": "단일 블록",
+  "tooltip.signbuilder.blueprint.wall_only": "격자 표지판은 벽이나 백플레이트에만 설치할 수 있습니다!",
+  "tooltip.signbuilder.blueprint.mode.grid": "그리드 모드",
   "message.signbuilder.blueprint.saved": "선택된 단어: ",
+  "message.signbuilder.blueprint.grid_saved": "그리드 청사진 저장됨: ",
   "tooltip.signbuilder.blueprint.current_text": "현재 텍스트",
   "tooltip.signbuilder.blueprint.empty": "아직 입력된 텍스트 없음",
   "tooltip.signbuilder.blueprint.usage": "공중에 대고 우클릭하여 텍스트 설정",
@@ -359,5 +370,6 @@
   "block.signbuilder.symbol_lock": "자물쇠 기호",
   "block.signbuilder.symbol_trophy": "트로피 기호",
   "block.signbuilder.symbol_lightning": "번개 기호",
-  "block.signbuilder.symbol_bitcoin": "비트코인 기호"
+  "block.signbuilder.symbol_bitcoin": "비트코인 기호",
+  "tooltip.signbuilder.grid_mode_hint": "Shift+V를 눌러 그리드 배치 모드로 전환합니다"
 }

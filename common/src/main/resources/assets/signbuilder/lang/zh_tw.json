@@ -120,7 +120,18 @@
   "creativetab.signbuilder_symbols": "SignBuilder 符號",
   "gui.signbuilder.blueprint.save": "儲存",
   "gui.signbuilder.blueprint.prompt": "輸入要建造的文字",
+  "gui.signbuilder.blueprint.tab_normal": "標準",
+  "gui.signbuilder.blueprint.tab_grid": "網格 (迷你)",
+  "gui.signbuilder.blueprint.grid_text": "文字 / 快速填充",
+  "gui.signbuilder.blueprint.clear_all": "清除",
+  "gui.signbuilder.blueprint.mode_banner": "橫幅",
+  "gui.signbuilder.blueprint.mode_banner_horiz": "橫幅 (水平)",
+  "gui.signbuilder.blueprint.mode_banner_vert": "橫幅 (垂直)",
+  "gui.signbuilder.blueprint.mode_single": "單個方塊",
+  "tooltip.signbuilder.blueprint.wall_only": "網格告示牌只能放置在牆壁或背板上！",
+  "tooltip.signbuilder.blueprint.mode.grid": "網格模式",
   "message.signbuilder.blueprint.saved": "所選詞組：",
+  "message.signbuilder.blueprint.grid_saved": "網格藍圖已儲存：",
   "tooltip.signbuilder.blueprint.current_text": "目前文字",
   "tooltip.signbuilder.blueprint.empty": "尚未輸入文字",
   "tooltip.signbuilder.blueprint.usage": "對著空氣右鍵點擊以設定文字",
@@ -359,5 +370,6 @@
   "block.signbuilder.symbol_lock": "鎖頭符號",
   "block.signbuilder.symbol_trophy": "獎盃符號",
   "block.signbuilder.symbol_lightning": "閃電符號",
-  "block.signbuilder.symbol_bitcoin": "比特幣符號"
+  "block.signbuilder.symbol_bitcoin": "比特幣符號",
+  "tooltip.signbuilder.grid_mode_hint": "按 Shift+V 切換到網格放置模式"
 }

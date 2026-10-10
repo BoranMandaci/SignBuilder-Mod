@@ -33,7 +33,7 @@ public final class ModelCentering {
                 modelCenter.z * scale - offsetX * sin + offsetZ * cos);
     }
 
-    public static void centerPose(PoseStack poseStack, BakedModel model, BlockState state, int rotationDegrees, boolean blockCentered, int scale, double offsetX, double offsetZ, double targetX, double targetZ) {
+    public static double[] getCenterOffset(BakedModel model, BlockState state, int rotationDegrees, boolean blockCentered, int scale, double offsetX, double offsetZ, double targetX, double targetZ) {
         Center current = transformedCenter(model, state, rotationDegrees, blockCentered, scale, offsetX, offsetZ);
         double radians = Math.toRadians(rotationDegrees);
         double cos = Math.cos(radians);
@@ -42,7 +42,12 @@ public final class ModelCentering {
         double dz = targetZ - current.z;
         double localX = (cos * dx - sin * dz) / scale;
         double localZ = (sin * dx + cos * dz) / scale;
-        poseStack.translate(localX, 0.0, localZ);
+        return new double[]{localX, localZ};
+    }
+
+    public static void centerPose(PoseStack poseStack, BakedModel model, BlockState state, int rotationDegrees, boolean blockCentered, int scale, double offsetX, double offsetZ, double targetX, double targetZ) {
+        double[] offset = getCenterOffset(model, state, rotationDegrees, blockCentered, scale, offsetX, offsetZ, targetX, targetZ);
+        poseStack.translate(offset[0], 0.0, offset[1]);
     }
 
     public static void widenDiagonalPose(PoseStack poseStack, Direction modelFacing, int rotation) {

@@ -3,6 +3,8 @@ package com.boran.signbuilder.forge;
 import com.boran.signbuilder.SignBuilder;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
+import com.boran.signbuilder.client.render.GridPreviewRenderer;
+import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
 import dev.architectury.platform.forge.EventBuses;
@@ -36,11 +38,13 @@ public class SignBuilderForge {
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
     }
 
     private void onRenderLevelStage(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             BlueprintPreviewRenderer.render(event.getPoseStack());
+            GridPreviewRenderer.render(event.getPoseStack());
         }
     }
 }

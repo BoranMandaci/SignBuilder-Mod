@@ -12,6 +12,8 @@ public class ModMessages {
     public static final ResourceLocation BLUEPRINT_TEXT = new ResourceLocation("signbuilder", "blueprint_text");
     public static final ResourceLocation SIGN_PRESS_CRAFT = new ResourceLocation("signbuilder", "sign_press_craft");
     public static final ResourceLocation BLUEPRINT_UNDO = new ResourceLocation("signbuilder", "blueprint_undo");
+    public static final ResourceLocation PLACE_GRID_LETTER = new ResourceLocation("signbuilder", "place_grid_letter");
+    public static final ResourceLocation SYNC_GRID_MODE = new ResourceLocation("signbuilder", "sync_grid_mode");
 
     public static void register() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BRUSH_COLOR, (buf, context) -> {
@@ -43,6 +45,16 @@ public class ModMessages {
             BlueprintUndoC2SPacket packet = new BlueprintUndoC2SPacket(buf);
             context.queue(() -> packet.handle(context));
         });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, PLACE_GRID_LETTER, (buf, context) -> {
+            PlaceGridLetterC2SPacket packet = new PlaceGridLetterC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SYNC_GRID_MODE, (buf, context) -> {
+            SyncGridModeC2SPacket packet = new SyncGridModeC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -66,6 +78,12 @@ public class ModMessages {
         } else if (message instanceof BlueprintUndoC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(BLUEPRINT_UNDO, buf);
+        } else if (message instanceof PlaceGridLetterC2SPacket packet) {
+            packet.toBytes(buf);
+            NetworkManager.sendToServer(PLACE_GRID_LETTER, buf);
+        } else if (message instanceof SyncGridModeC2SPacket packet) {
+            packet.toBytes(buf);
+            NetworkManager.sendToServer(SYNC_GRID_MODE, buf);
         }
     }
 }

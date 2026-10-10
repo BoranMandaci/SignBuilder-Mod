@@ -40,6 +40,10 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("sign_press_be", () ->
                     BlockEntityType.Builder.of(SignPressBlockEntity::new, ModBlocks.SIGN_PRESS.get()).build(null));
 
+    public static final RegistrySupplier<BlockEntityType<GridSignBlockEntity>> GRID_SIGN_BLOCK_ENTITY = 
+            BLOCK_ENTITIES.register("grid_sign_block_entity", () ->
+                    BlockEntityType.Builder.of(GridSignBlockEntity::new, ModBlocks.GRID_SIGN.get()).build(null));
+
     public static void register() {
         BLOCK_ENTITIES.register();
     }

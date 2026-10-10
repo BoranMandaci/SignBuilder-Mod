@@ -91,12 +91,17 @@ public class LetterBlockEntity extends BlockEntity {
     private boolean isPinPowered = false;
     private final List<BlockPos> enteredPositions = new ArrayList<>();
 
+    public transient Object clientRenderCache = null;
+    private long renderVersion = 0;
+    public long getRenderVersion() { return renderVersion; }
+    public void markRenderDirty() { this.renderVersion++; }
+
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     public int getSize() { return this.size; }
-    public void setSize(int size) { this.size = size; setChanged(); sync(); }
+    public void setSize(int size) { this.size = size; markRenderDirty(); setChanged(); sync(); }
 
     public int getFacingRotation() {
         BlockState state = getBlockState();
@@ -118,6 +123,7 @@ public class LetterBlockEntity extends BlockEntity {
         int normalized = Math.floorMod(rotation, 8);
         if (this.facingRotation != normalized) {
             this.facingRotation = normalized;
+            markRenderDirty();
             setChanged();
             sync();
         }
@@ -127,6 +133,7 @@ public class LetterBlockEntity extends BlockEntity {
         this.size = size;
         this.isDummy = false;
         this.masterPos = null;
+        markRenderDirty();
         setChanged();
         sync();
     }
@@ -135,6 +142,7 @@ public class LetterBlockEntity extends BlockEntity {
         this.size = 1;
         this.isDummy = true;
         this.masterPos = masterPos.immutable();
+        markRenderDirty();
         setChanged();
         sync();
     }
@@ -179,7 +187,7 @@ public class LetterBlockEntity extends BlockEntity {
         return this;
     }
 
-    public void setSavedMaterial(SignMaterial mat) { this.savedMaterial = mat; setChanged(); sync(); }
+    public void setSavedMaterial(SignMaterial mat) { this.savedMaterial = mat; markRenderDirty(); setChanged(); sync(); }
     public SignMaterial getSavedMaterial() { return this.savedMaterial; }
     public SignMaterial getMaterial() { return this.savedMaterial; }
 
@@ -259,39 +267,40 @@ public class LetterBlockEntity extends BlockEntity {
     public void setDetectsAnimals(boolean detects) { this.detectsAnimals = detects; setChanged(); sync(); }
     public boolean doesDetectAnimals() { return this.detectsAnimals; }
 
-    public void setRgbColor(int color) { this.rgbColor = color; this.isRainbow = false; setChanged(); sync(); }
+    public void setRgbColor(int color) { this.rgbColor = color; this.isRainbow = false; markRenderDirty(); setChanged(); sync(); }
     public int getRgbColor() { return rgbColor; }
     public int getColorIndex() { return 0; }
-    public void setRainbow(boolean rainbow) { this.isRainbow = rainbow; setChanged(); sync(); }
+    public void setRainbow(boolean rainbow) { this.isRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
     public boolean isRainbow() { return isRainbow; }
 
     public boolean hasBackplate() { return this.hasBackplate; }
-    public void setHasBackplate(boolean hasBackplate) { this.hasBackplate = hasBackplate; setChanged(); sync(); }
+    public void setHasBackplate(boolean hasBackplate) { this.hasBackplate = hasBackplate; markRenderDirty(); setChanged(); sync(); }
 
     public ItemStack getBackGlyph() { return this.backGlyph; }
     public void setBackGlyph(ItemStack stack) {
         this.backGlyph = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        markRenderDirty();
         setChanged();
         sync();
     }
 
     public SignMaterial getBackplateFrontMaterial() { return backplateFrontMaterial; }
-    public void setBackplateFrontMaterial(SignMaterial mat) { this.backplateFrontMaterial = mat; setChanged(); sync(); }
+    public void setBackplateFrontMaterial(SignMaterial mat) { this.backplateFrontMaterial = mat; markRenderDirty(); setChanged(); sync(); }
 
     public SignMaterial getBackplateBackMaterial() { return backplateBackMaterial; }
-    public void setBackplateBackMaterial(SignMaterial mat) { this.backplateBackMaterial = mat; setChanged(); sync(); }
+    public void setBackplateBackMaterial(SignMaterial mat) { this.backplateBackMaterial = mat; markRenderDirty(); setChanged(); sync(); }
 
     public int getBackplateFrontColor() { return backplateFrontColor; }
-    public void setBackplateFrontColor(int color) { this.backplateFrontColor = color; this.backplateFrontRainbow = false; setChanged(); sync(); }
+    public void setBackplateFrontColor(int color) { this.backplateFrontColor = color; this.backplateFrontRainbow = false; markRenderDirty(); setChanged(); sync(); }
 
     public int getBackplateBackColor() { return backplateBackColor; }
-    public void setBackplateBackColor(int color) { this.backplateBackColor = color; this.backplateBackRainbow = false; setChanged(); sync(); }
+    public void setBackplateBackColor(int color) { this.backplateBackColor = color; this.backplateBackRainbow = false; markRenderDirty(); setChanged(); sync(); }
 
     public boolean isBackplateFrontRainbow() { return backplateFrontRainbow; }
-    public void setBackplateFrontRainbow(boolean rainbow) { this.backplateFrontRainbow = rainbow; setChanged(); sync(); }
+    public void setBackplateFrontRainbow(boolean rainbow) { this.backplateFrontRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
 
     public boolean isBackplateBackRainbow() { return backplateBackRainbow; }
-    public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; setChanged(); sync(); }
+    public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
 
     public int getButtonMode() { return this.buttonMode; }
     public void setButtonMode(int mode) {
@@ -698,6 +707,7 @@ public class LetterBlockEntity extends BlockEntity {
                     com.boran.signbuilder.client.ClientHooks.setBlocksDirty(worldPosition)
             );
         }
+        markRenderDirty();
     }
 
     @Override

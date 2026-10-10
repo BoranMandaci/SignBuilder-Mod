@@ -51,6 +51,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<AttachFace> FACE = BlockStateProperties.ATTACH_FACE;
     public static final EnumProperty<SignMaterial> MATERIAL = EnumProperty.create("material", SignMaterial.class);
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty LIGHT_MODE = LetterBlock.LIGHT_MODE;
 
     private static final VoxelShape WALL_NORTH = Block.box(0, 0, 15, 16, 16, 16);
     private static final VoxelShape WALL_SOUTH = Block.box(0, 0, 0, 16, 16, 1);
@@ -67,12 +68,13 @@ public class BackplateBlock extends Block implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.FLOOR)
-                .setValue(MATERIAL, SignMaterial.DEFAULT));
+                .setValue(MATERIAL, SignMaterial.DEFAULT)
+                .setValue(LIGHT_MODE, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FACE, MATERIAL);
+        builder.add(FACING, FACE, MATERIAL, LIGHT_MODE);
     }
 
     @Override
@@ -84,7 +86,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
 
-        if (held.getItem() instanceof PaintBrushItem) {
+        if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
             return InteractionResult.PASS;
         }
 
@@ -138,6 +140,15 @@ public class BackplateBlock extends Block implements EntityBlock {
                     newLetter.setBackplateBackColor(bColor);
                     newLetter.setBackplateFrontRainbow(fRainbow);
                     newLetter.setBackplateBackRainbow(bRainbow);
+                    if (letterBe != null && (letterBe.getWrenchMode() != 0 || letterBe.isActive())) {
+                        newLetter.setLightConfiguration(letterBe.getWrenchMode(), letterBe.isActive(),
+                                letterBe.doesDetectMonsters(), letterBe.doesDetectAnimals(),
+                                letterBe.getCustomLightOnTicks(), letterBe.getCustomLightOffTicks(),
+                                letterBe.getCustomLightType(), letterBe.getCustomLightRange(),
+                                letterBe.getCustomLightOffRange(), letterBe.getCustomLightCloseDelayTicks(),
+                                letterBe.isCustomLightNightOnly(), letterBe.doesCustomLightDetectPlayers(),
+                                letterBe.isCustomLightLowPower(), letterBe.isCustomLightLookOnly());
+                    }
                     newLetter.setChanged();
                     newLetter.sync();
                 }
@@ -158,6 +169,15 @@ public class BackplateBlock extends Block implements EntityBlock {
                     newLetter.setBackplateBackColor(bColor);
                     newLetter.setBackplateFrontRainbow(fRainbow);
                     newLetter.setBackplateBackRainbow(bRainbow);
+                    if (letterBe != null && (letterBe.getWrenchMode() != 0 || letterBe.isActive())) {
+                        newLetter.setLightConfiguration(letterBe.getWrenchMode(), letterBe.isActive(),
+                                letterBe.doesDetectMonsters(), letterBe.doesDetectAnimals(),
+                                letterBe.getCustomLightOnTicks(), letterBe.getCustomLightOffTicks(),
+                                letterBe.getCustomLightType(), letterBe.getCustomLightRange(),
+                                letterBe.getCustomLightOffRange(), letterBe.getCustomLightCloseDelayTicks(),
+                                letterBe.isCustomLightNightOnly(), letterBe.doesCustomLightDetectPlayers(),
+                                letterBe.isCustomLightLowPower(), letterBe.isCustomLightLookOnly());
+                    }
                 }
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () ->
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
@@ -197,6 +217,9 @@ public class BackplateBlock extends Block implements EntityBlock {
             } else if (placer != null && (beTag == null || !beTag.contains("FacingRotation"))) {
                 lbe.setFacingRotation(SignRotation.fromBackplatePlacement(placer.getYRot()));
             }
+            if (lbe.isActive()) {
+                LetterBlock.updateLightLevel(level, pos, state, lbe);
+            }
             level.sendBlockUpdated(pos, state, level.getBlockState(pos), 3);
         }
     }
@@ -234,6 +257,9 @@ public class BackplateBlock extends Block implements EntityBlock {
                     ItemStack bStack = getItemForMaterial(bMat);
                     if (!bStack.isEmpty()) drops.add(bStack);
                 }
+                if (lbe.isActive()) {
+                    drops.add(new ItemStack(Items.GLOWSTONE_DUST, 1));
+                }
             }
         } else {
             drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
@@ -257,7 +283,8 @@ public class BackplateBlock extends Block implements EntityBlock {
                 && (bMat == null || bMat == SignMaterial.DEFAULT)
                 && (fCol == 0xFFFFFF || fCol == 0)
                 && (bCol == 0xFFFFFF || bCol == 0)
-                && !fRain && !bRain;
+                && !fRain && !bRain
+                && lbe.getWrenchMode() == 0 && !lbe.isActive();
 
         if (isDefault) {
             return new ItemStack(ModBlocks.BACKPLATE_ITEM.get());
@@ -285,6 +312,23 @@ public class BackplateBlock extends Block implements EntityBlock {
         if (bRain) {
             beTag.putBoolean("BackplateBackRainbow", true);
         }
+        if (lbe.getWrenchMode() != 0) beTag.putInt("WrenchMode", lbe.getWrenchMode());
+        if (lbe.isActive()) {
+            beTag.putBoolean("IsActive", true);
+            beTag.putBoolean("Glowing", true);
+        }
+        if (!lbe.doesDetectMonsters()) beTag.putBoolean("DetectsMonsters", false);
+        if (lbe.doesDetectAnimals()) beTag.putBoolean("DetectsAnimals", true);
+        if (lbe.getCustomLightOnTicks() != 10) beTag.putInt("CustomLightOnTicks", lbe.getCustomLightOnTicks());
+        if (lbe.getCustomLightOffTicks() != 10) beTag.putInt("CustomLightOffTicks", lbe.getCustomLightOffTicks());
+        if (lbe.getCustomLightType() != 0) beTag.putInt("CustomLightType", lbe.getCustomLightType());
+        if (lbe.getCustomLightRange() != 8) beTag.putInt("CustomLightRange", lbe.getCustomLightRange());
+        if (lbe.getCustomLightOffRange() != lbe.getCustomLightRange()) beTag.putInt("CustomLightOffRange", lbe.getCustomLightOffRange());
+        if (lbe.getCustomLightCloseDelayTicks() != 0) beTag.putInt("CustomLightCloseDelayTicks", lbe.getCustomLightCloseDelayTicks());
+        if (!lbe.isCustomLightNightOnly()) beTag.putBoolean("CustomLightNightOnly", false);
+        if (!lbe.doesCustomLightDetectPlayers()) beTag.putBoolean("CustomLightPlayers", false);
+        if (lbe.isCustomLightLowPower()) beTag.putBoolean("CustomLightLowPower", true);
+        if (!lbe.isCustomLightLookOnly()) beTag.putBoolean("CustomLightLookOnly", false);
 
         stack.addTagElement("BlockEntityTag", beTag);
         return stack;
@@ -330,6 +374,25 @@ public class BackplateBlock extends Block implements EntityBlock {
             entity.setBackplateBackRainbow(beTag.getBoolean("BackplateBackRainbow"));
         } else if (beTag.contains("backplateBackRainbow")) {
             entity.setBackplateBackRainbow(beTag.getBoolean("backplateBackRainbow"));
+        }
+
+        if (beTag.contains("WrenchMode") || beTag.contains("IsActive") || beTag.contains("Glowing")) {
+            int mode = beTag.getInt("WrenchMode");
+            boolean active = beTag.getBoolean("IsActive") || beTag.getBoolean("Glowing");
+            boolean detectsMonsters = !beTag.contains("DetectsMonsters") || beTag.getBoolean("DetectsMonsters");
+            boolean detectsAnimals = beTag.getBoolean("DetectsAnimals");
+            int onTicks = beTag.contains("CustomLightOnTicks") ? beTag.getInt("CustomLightOnTicks") : 10;
+            int offTicks = beTag.contains("CustomLightOffTicks") ? beTag.getInt("CustomLightOffTicks") : 10;
+            int customType = beTag.getInt("CustomLightType");
+            int customRange = beTag.contains("CustomLightRange") ? beTag.getInt("CustomLightRange") : 8;
+            int customOffRange = beTag.contains("CustomLightOffRange") ? beTag.getInt("CustomLightOffRange") : customRange;
+            int closeDelayTicks = beTag.getInt("CustomLightCloseDelayTicks");
+            boolean nightOnly = !beTag.contains("CustomLightNightOnly") || beTag.getBoolean("CustomLightNightOnly");
+            boolean players = !beTag.contains("CustomLightPlayers") || beTag.getBoolean("CustomLightPlayers");
+            boolean lowPower = beTag.getBoolean("CustomLightLowPower");
+            boolean lookOnly = !beTag.contains("CustomLightLookOnly") || beTag.getBoolean("CustomLightLookOnly");
+
+            entity.setLightConfiguration(mode, active, detectsMonsters, detectsAnimals, onTicks, offTicks, customType, customRange, customOffRange, closeDelayTicks, nightOnly, players, lowPower, lookOnly);
         }
     }
 
@@ -391,10 +454,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         }
     }
 
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        AttachFace face = state.getValue(FACE);
-        Direction dir = state.getValue(FACING);
+    public static VoxelShape calculateShape(AttachFace face, Direction dir, int facingRotation) {
         VoxelShape shape;
         if (face == AttachFace.WALL) {
             shape = switch (dir) {
@@ -411,18 +471,23 @@ public class BackplateBlock extends Block implements EntityBlock {
                 default    -> FLOOR_NORTH;
             };
         }
-        BlockEntity be = level.getBlockEntity(pos);
-        LetterBlockEntity letter = be instanceof LetterBlockEntity lbe ? lbe : null;
-        if (letter != null) {
-            shape = SignRotation.rotateAroundBlockCenter(shape, SignRotation.deltaDegrees(letter.getFacingRotation(), dir));
-        }
+        shape = SignRotation.rotateAroundBlockCenter(shape, SignRotation.deltaDegrees(facingRotation, dir));
         if (face != AttachFace.WALL) {
             AABB bounds = shape.bounds();
             shape = shape.move(0.5 - (bounds.minX + bounds.maxX) * 0.5, 0.0,
                     0.5 - (bounds.minZ + bounds.maxZ) * 0.5);
-            if (letter != null) shape = SignRotation.widenAlongTangent(shape, letter.getFacingRotation(), Math.sqrt(2.0));
+            shape = SignRotation.widenAlongTangent(shape, facingRotation, Math.sqrt(2.0));
         }
         return shape;
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        AttachFace face = state.getValue(FACE);
+        Direction dir = state.getValue(FACING);
+        BlockEntity be = level.getBlockEntity(pos);
+        int rot = be instanceof LetterBlockEntity lbe ? lbe.getFacingRotation() : SignRotation.fromDirection(dir);
+        return calculateShape(face, dir, rot);
     }
 
     @Nullable
