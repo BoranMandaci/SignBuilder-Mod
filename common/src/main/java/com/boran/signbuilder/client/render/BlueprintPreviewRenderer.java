@@ -67,13 +67,19 @@ public class BlueprintPreviewRenderer {
         if (!(stack.getItem() instanceof SignBlueprintItem)) return;
 
         CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        if (tag == null || !tag.contains("BlueprintText")) return;
-
-        String text = tag.getString("BlueprintText");
-        if (text.isEmpty()) return;
+        if (tag == null) return;
 
         HitResult hit = mc.hitResult;
         if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) return;
+
+        if (tag.getBoolean("IsGridMode")) {
+            renderGridPreview(poseStack, mc, player, level, camera, tag, blockHit);
+            return;
+        }
+
+        if (!tag.contains("BlueprintText")) return;
+        String text = tag.getString("BlueprintText");
+        if (text.isEmpty()) return;
 
         int size = 1;
         if (tag.contains("Size")) {
@@ -362,5 +368,220 @@ public class BlueprintPreviewRenderer {
                     .setNormal(nx, ny, nz)
                     ;
         }
+    }
+
+    private static void renderGridPreview(PoseStack poseStack, Minecraft mc, Player player, Level level, Camera camera, CompoundTag tag, BlockHitResult blockHit) {
+        int gridSize = tag.contains("GridSize") ? tag.getInt("GridSize") : 3;
+        if (gridSize < 2) gridSize = 3;
+        boolean isBannerMode = tag.contains("IsBannerMode") ? tag.getBoolean("IsBannerMode") : true;
+        String gridText = tag.getString("GridText");
+
+        BlockPos hitPos = blockHit.getBlockPos();
+        Direction hitFace = blockHit.getDirection();
+        BlockState hitState = level.getBlockState(hitPos);
+
+        boolean clickedIsStampable = (hitState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)
+                || (hitState.getBlock() instanceof BackplateBlock)
+                || (hitState.getBlock() instanceof LetterBlock);
+
+        if (hitFace.getAxis() == Direction.Axis.Y && !clickedIsStampable) {
+            return;
+        }
+
+        Direction effectiveFace = hitFace;
+        if (hitFace.getAxis() == Direction.Axis.Y && clickedIsStampable) {
+            if (hitState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                effectiveFace = hitState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            }
+        }
+
+        boolean isVertical = tag.getBoolean("IsVertical");
+        Vec3 hitLoc = blockHit.getLocation();
+        int targetLine;
+        if (isVertical) {
+            targetLine = SignBlueprintItem.getHitSubCellCol(effectiveFace, hitLoc, gridSize);
+        } else {
+            targetLine = SignBlueprintItem.getHitSubCellRow(hitLoc, gridSize);
+        }
+
+        int numBlocks;
+        java.util.List<java.util.Map<Integer, String>> blocksCells = new java.util.ArrayList<>();
+
+        if (isBannerMode && !gridText.isEmpty()) {
+            int charsPerBlock = gridSize;
+            numBlocks = (gridText.length() + charsPerBlock - 1) / charsPerBlock;
+            for (int b = 0; b < numBlocks; b++) {
+                blocksCells.add(SignBlueprintItem.getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine));
+            }
+        } else {
+            numBlocks = 1;
+            java.util.Map<Integer, String> cells = new java.util.HashMap<>();
+            if (tag.contains("GridCells", net.minecraft.nbt.Tag.TAG_LIST)) {
+                net.minecraft.nbt.ListTag list = tag.getList("GridCells", net.minecraft.nbt.Tag.TAG_COMPOUND);
+                for (int i = 0; i < list.size(); i++) {
+                    CompoundTag ctag = list.getCompound(i);
+                    int idx = ctag.getInt("Index");
+                    String cPath = ctag.getString("Char");
+                    if (!cPath.isEmpty()) {
+                        cells.put(idx, cPath);
+                    }
+                }
+            }
+            if (cells.isEmpty() && !gridText.isEmpty()) {
+                int max = Math.min(gridText.length(), gridSize * gridSize);
+                for (int i = 0; i < max; i++) {
+                    char ch = gridText.charAt(i);
+                    if (ch != ' ') {
+                        String path = SignBlueprintItem.getBlockPathForChar(ch);
+                        if (path != null) cells.put(i, path);
+                    }
+                }
+            }
+            if (cells.isEmpty()) return;
+            blocksCells.add(cells);
+        }
+
+        boolean withBackplate = tag.getBoolean("WithBackplate");
+
+        boolean wall = effectiveFace.getAxis() != Direction.Axis.Y;
+        int stepRotation = wall
+                ? SignRotation.fromDirection(effectiveFace)
+                : SignRotation.fromDirection(player.getDirection().getCounterClockWise());
+        int rightX = SignRotation.horizontalStepX(stepRotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
+
+        BlockPos baseTargetPos = clickedIsStampable ? hitPos : hitPos.relative(hitFace);
+
+        Vec3 camPos = camera.getPosition();
+        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+
+        for (int b = 0; b < numBlocks; b++) {
+            BlockPos targetPos = (isBannerMode && isVertical)
+                    ? baseTargetPos.below(b)
+                    : offsetRight(baseTargetPos, rightX, rightZ, b);
+            BlockState targetState = level.getBlockState(targetPos);
+
+            boolean isBackplate = targetState.getBlock() instanceof BackplateBlock;
+            boolean isLetterWithBackplate = false;
+            if (targetState.getBlock() instanceof LetterBlock) {
+                if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
+                    if (lbe.isDummy()) {
+                        net.minecraft.world.level.block.entity.BlockEntity me = level.getBlockEntity(lbe.getMasterPos());
+                        if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) effective = masterBe;
+                    }
+                    isLetterWithBackplate = effective.hasBackplate();
+                }
+            }
+            boolean isGridSign = targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
+            boolean stampExisting = isGridSign || isBackplate || isLetterWithBackplate;
+
+            boolean canPlace = stampExisting || targetState.canBeReplaced();
+
+            AttachFace attachFace = AttachFace.WALL;
+            Direction facing = effectiveFace;
+            int facingRotation = SignRotation.fromDirection(facing);
+
+            if (stampExisting) {
+                if (targetState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                    attachFace = targetState.getValue(BlockStateProperties.ATTACH_FACE);
+                }
+                if (targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                    facing = targetState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                }
+                if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                    facingRotation = gbe.getFacingRotation();
+                } else if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                    facingRotation = lbe.getFacingRotation();
+                } else {
+                    facingRotation = SignRotation.fromDirection(facing);
+                }
+            } else {
+                attachFace = AttachFace.WALL;
+                facing = effectiveFace;
+                facingRotation = SignRotation.fromDirection(facing);
+            }
+
+            boolean isBack = false;
+            if (stampExisting && attachFace != AttachFace.WALL) {
+                double side = (player.getX() - (targetPos.getX() + 0.5)) * SignRotation.facingX(facingRotation)
+                        + (player.getZ() - (targetPos.getZ() + 0.5)) * SignRotation.facingZ(facingRotation);
+                if (side < 0.0) isBack = true;
+            }
+            Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+
+            poseStack.pushPose();
+            poseStack.translate(targetPos.getX() - camPos.x, targetPos.getY() - camPos.y, targetPos.getZ() - camPos.z);
+
+            int rotationDegrees = SignRotation.deltaDegrees(facingRotation, facing);
+            if (rotationDegrees != 0) {
+                poseStack.translate(0.5, 0.0, 0.5);
+                poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDegrees));
+                poseStack.translate(-0.5, 0.0, -0.5);
+            }
+
+            if (withBackplate && !stampExisting) {
+                BlockState plateState = ModBlocks.BACKPLATE.get().defaultBlockState()
+                        .setValue(BackplateBlock.FACING, facing)
+                        .setValue(BackplateBlock.FACE, attachFace);
+                BakedModel plateModel = mc.getBlockRenderer().getBlockModel(plateState);
+                float bpR = canPlace ? 0.85F : 1.0F;
+                float bpG = canPlace ? 0.85F : 0.3F;
+                float bpB = canPlace ? 0.85F : 0.3F;
+                renderGhostModel(poseStack, consumer, plateModel, plateState, bpR, bpG, bpB, 0.4F, 15728880);
+            }
+
+            org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing);
+            poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
+
+            float scale = 1.0f / gridSize;
+            boolean hasPlate = withBackplate || stampExisting;
+
+            float charR = canPlace ? 0.4F : 1.0F;
+            float charG = canPlace ? 0.9F : 0.2F;
+            float charB = canPlace ? 1.0F : 0.2F;
+
+            int max = gridSize * gridSize;
+            java.util.Map<Integer, String> cellMap = blocksCells.get(b);
+            for (java.util.Map.Entry<Integer, String> entry : cellMap.entrySet()) {
+                int index = entry.getKey();
+                if (index < 0 || index >= max) continue;
+                String path = entry.getValue();
+                Block letterBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("signbuilder", path));
+                if (letterBlock == null || letterBlock == net.minecraft.world.level.block.Blocks.AIR) continue;
+
+                BlockState letterState = letterBlock.defaultBlockState();
+                if (letterState.hasProperty(LetterBlock.FACING)) letterState = letterState.setValue(LetterBlock.FACING, effectiveFacing);
+                if (letterState.hasProperty(LetterBlock.FACE)) letterState = letterState.setValue(LetterBlock.FACE, AttachFace.WALL);
+
+                int col = index % gridSize;
+                int row = index / gridSize;
+                float colShift = (gridSize - 1) / 2.0f - col;
+                float rowShift = (gridSize - 1) / 2.0f - row;
+                if (rotationDegrees != 0 && attachFace != AttachFace.WALL) {
+                    colShift *= 1.4142135f;
+                }
+
+                org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
+                org.joml.Vector3f cl = hasPlate ? com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, 1.05f / 16.0f) : new org.joml.Vector3f(0, 0, 0);
+                org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
+
+                poseStack.pushPose();
+                poseStack.translate(offsets.x + cl.x, offsets.y + cl.y, offsets.z + cl.z);
+                poseStack.translate(c.x, c.y, c.z);
+                poseStack.scale(scale, scale, scale);
+                poseStack.translate(-c.x, -c.y, -c.z);
+
+                BakedModel letterModel = mc.getBlockRenderer().getBlockModel(letterState);
+                renderGhostModel(poseStack, consumer, letterModel, letterState, charR, charG, charB, 0.65F, 15728880);
+
+                poseStack.popPose();
+            }
+
+            poseStack.popPose();
+        }
+
+        bufferSource.endBatch(RenderType.translucent());
     }
 }

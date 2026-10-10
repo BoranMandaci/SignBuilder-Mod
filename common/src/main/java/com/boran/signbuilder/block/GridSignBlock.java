@@ -4,11 +4,15 @@ import com.boran.signbuilder.block.entity.GridSignBlockEntity;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -109,21 +113,41 @@ public class GridSignBlock extends Block implements EntityBlock {
     }
 
     @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide()) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof GridSignBlockEntity gridBe) {
+                if (!player.isCreative()) {
+                    dropGridSignResources(level, pos, gridBe);
+                }
+                gridBe.setSuppressDrops(true);
+            }
+        }
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    private void dropGridSignResources(Level level, BlockPos pos, GridSignBlockEntity gridBe) {
+        if (gridBe.hasBackplate()) {
+            Block.popResource(level, pos, new ItemStack(ModBlocks.BACKPLATE_ITEM.get()));
+        }
+        for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
+            Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
+            if (letterBlock != null && letterBlock != Blocks.AIR) {
+                Block.popResource(level, pos, new ItemStack(letterBlock));
+            }
+        }
+        if (gridBe.isActive() || gridBe.getWrenchMode() != 0) {
+            Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.GLOWSTONE_DUST));
+        }
+    }
+
+    @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof GridSignBlockEntity gridBe) {
-                if (gridBe.hasBackplate()) {
-                    Block.popResource(level, pos, new ItemStack(ModBlocks.BACKPLATE_ITEM.get()));
-                }
-                for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
-                    net.minecraft.world.level.block.Block letterBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
-                    if (letterBlock != null && letterBlock != net.minecraft.world.level.block.Blocks.AIR) {
-                        Block.popResource(level, pos, new ItemStack(letterBlock));
-                    }
-                }
-                if (gridBe.isActive() || gridBe.getWrenchMode() != 0) {
-                    Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.GLOWSTONE_DUST));
+                if (!gridBe.shouldSuppressDrops()) {
+                    dropGridSignResources(level, pos, gridBe);
                 }
             }
         }

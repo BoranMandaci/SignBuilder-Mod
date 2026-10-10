@@ -45,8 +45,11 @@ public class GridSignBlockEntity extends BlockEntity {
 
     public transient Object clientRenderCache = null;
     private long renderVersion = 0;
+    private boolean suppressDrops = false;
     public long getRenderVersion() { return renderVersion; }
     public void markRenderDirty() { this.renderVersion++; }
+    public boolean shouldSuppressDrops() { return suppressDrops; }
+    public void setSuppressDrops(boolean suppress) { this.suppressDrops = suppress; }
 
     public boolean hasBackplate() { return hasBackplate; }
     public void setHasBackplate(boolean hasBackplate) { this.hasBackplate = hasBackplate; markRenderDirty(); setChanged(); sync(); }

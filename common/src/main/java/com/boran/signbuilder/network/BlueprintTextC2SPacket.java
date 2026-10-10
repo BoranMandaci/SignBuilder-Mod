@@ -10,6 +10,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+
 public class BlueprintTextC2SPacket implements CustomPacketPayload {
     public static final Type<BlueprintTextC2SPacket> TYPE = new Type<>(com.boran.signbuilder.network.ModMessages.BLUEPRINT_TEXT);
     public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintTextC2SPacket> STREAM_CODEC = StreamCodec.ofMember(BlueprintTextC2SPacket::toBytes, BlueprintTextC2SPacket::new);
@@ -24,13 +30,31 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
     private final boolean is2x2;
     private final boolean isVertical;
     private final boolean withBackplate;
+    private final boolean isGridMode;
+    private final int gridSize;
+    private final boolean isBannerMode;
+    private final String gridText;
+    private final List<String> gridCells;
 
-    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate) {
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells) {
         this.text = text;
         this.size = size;
         this.is2x2 = (size == 2);
         this.isVertical = isVertical;
         this.withBackplate = withBackplate;
+        this.isGridMode = isGridMode;
+        this.gridSize = gridSize;
+        this.isBannerMode = isBannerMode;
+        this.gridText = gridText != null ? gridText : "";
+        this.gridCells = gridCells != null ? new ArrayList<>(gridCells) : Collections.emptyList();
+    }
+
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, String gridText, List<String> gridCells) {
+        this(text, size, isVertical, withBackplate, isGridMode, gridSize, true, gridText, gridCells);
+    }
+
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate) {
+        this(text, size, isVertical, withBackplate, false, 3, true, "", Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical, boolean withBackplate) {
@@ -55,6 +79,15 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         this.is2x2 = (this.size == 2);
         this.isVertical = buf.readBoolean();
         this.withBackplate = buf.readBoolean();
+        this.isGridMode = buf.readBoolean();
+        this.gridSize = buf.readInt();
+        this.isBannerMode = buf.readBoolean();
+        this.gridText = buf.readUtf();
+        int count = buf.readInt();
+        this.gridCells = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            this.gridCells.add(buf.readUtf());
+        }
     }
 
     public void toBytes(RegistryFriendlyByteBuf buf) {
@@ -62,6 +95,14 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         buf.writeInt(this.size);
         buf.writeBoolean(this.isVertical);
         buf.writeBoolean(this.withBackplate);
+        buf.writeBoolean(this.isGridMode);
+        buf.writeInt(this.gridSize);
+        buf.writeBoolean(this.isBannerMode);
+        buf.writeUtf(this.gridText);
+        buf.writeInt(this.gridCells.size());
+        for (String cell : this.gridCells) {
+            buf.writeUtf(cell != null ? cell : "");
+        }
     }
 
     public void handle(NetworkManager.PacketContext context) {
@@ -79,6 +120,18 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
                     t.putBoolean("Is2x2", this.is2x2);
                     t.putBoolean("IsVertical", this.isVertical);
                     t.putBoolean("WithBackplate", this.withBackplate);
+                    t.putBoolean("IsGridMode", this.isGridMode);
+                    t.putInt("GridSize", this.gridSize);
+                    t.putBoolean("IsBannerMode", this.isBannerMode);
+                    t.putString("GridText", this.gridText);
+                    ListTag list = new ListTag();
+                    for (int i = 0; i < this.gridCells.size(); i++) {
+                        CompoundTag cellTag = new CompoundTag();
+                        cellTag.putInt("Index", i);
+                        cellTag.putString("Char", this.gridCells.get(i));
+                        list.add(cellTag);
+                    }
+                    t.put("GridCells", list);
                 });
             }
         }

@@ -88,7 +88,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
 
-        if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem) {
+        if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
             return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
