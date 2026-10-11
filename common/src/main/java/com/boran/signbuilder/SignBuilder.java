@@ -14,6 +14,7 @@ import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,17 +36,28 @@ public class SignBuilder {
         ModMessages.register();
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
-            if (hand == InteractionHand.MAIN_HAND && player.isShiftKeyDown()) {
+            if (hand == InteractionHand.MAIN_HAND) {
                 ItemStack held = player.getItemInHand(hand);
-                if (held.getItem() instanceof PaintBrushItem) {
-                    return EventResult.pass();
+                if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+                    boolean isGridMode = !player.level().isClientSide()
+                            ? com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1
+                            : false;
+                    if (isGridMode) {
+                        return EventResult.interruptFalse();
+                    }
                 }
 
-                Level level = player.level();
-                BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof LetterBlock) {
-                    if (LetterBlock.tryDetachBackplate(level, pos, player)) {
-                        return EventResult.interruptTrue();
+                if (player.isShiftKeyDown()) {
+                    if (held.getItem() instanceof PaintBrushItem) {
+                        return EventResult.pass();
+                    }
+
+                    Level level = player.level();
+                    BlockState state = level.getBlockState(pos);
+                    if (state.getBlock() instanceof LetterBlock) {
+                        if (LetterBlock.tryDetachBackplate(level, pos, player)) {
+                            return EventResult.interruptTrue();
+                        }
                     }
                 }
             }

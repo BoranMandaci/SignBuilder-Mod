@@ -57,7 +57,6 @@ public class ClientModEvents {
                             if (item.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
                                 ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(letterBlock);
                                 String blockPath = blockId.getPath();
-
                                 ModMessages.sendToServer(
                                         new PlaceGridLetterC2SPacket(
                                                 gridHit.pos(), gridHit.face(), player.getDirection(), gridHit.index(), gridSize, blockPath

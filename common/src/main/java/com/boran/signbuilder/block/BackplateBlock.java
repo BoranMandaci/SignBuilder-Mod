@@ -91,6 +91,13 @@ public class BackplateBlock extends Block implements EntityBlock {
         }
 
         if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+            boolean isGridMode = level.isClientSide()
+                    ? dev.architectury.utils.EnvExecutor.getInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.isGridModeActive()).orElse(false)
+                    : com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1;
+            if (isGridMode) {
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+
             BlockEntity be = level.getBlockEntity(pos);
             LetterBlockEntity letterBe = (be instanceof LetterBlockEntity lbe) ? lbe : null;
 
@@ -190,6 +197,12 @@ public class BackplateBlock extends Block implements EntityBlock {
     }
 
     private static boolean isOnBackSide(Player player, BlockPos pos, int rotation) {
+        if (player != null) {
+            net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+            double dot = look.x * SignRotation.facingX(rotation) + look.z * SignRotation.facingZ(rotation);
+            if (dot > 0.05) return true;
+            if (dot < -0.05) return false;
+        }
         double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
                 + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
         return side < 0.0;
@@ -241,7 +254,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 }
                 drops.add(getDroppedBackplateItemStack(lbe));
             } else {
-                drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
+                drops.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), 1));
 
                 SignMaterial fMat = lbe.getBackplateFrontMaterial();
                 if (fMat == SignMaterial.DEFAULT && state.hasProperty(MATERIAL)) {
@@ -262,7 +275,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 }
             }
         } else {
-            drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
+            drops.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), 1));
             SignMaterial mat = state.hasProperty(MATERIAL) ? state.getValue(MATERIAL) : SignMaterial.DEFAULT;
             if (mat != SignMaterial.DEFAULT) {
                 ItemStack matStack = getItemForMaterial(mat);

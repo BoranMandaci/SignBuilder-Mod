@@ -24,7 +24,7 @@ public class GridRaytrace {
         boolean isBackplate = state.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
         if (!isBackplate && state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
             if (net.minecraft.client.Minecraft.getInstance().level.getBlockEntity(hit.getBlockPos()) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                isBackplate = lbe.hasBackplate();
+                isBackplate = lbe.getEffectiveMaster().hasBackplate();
             }
         }
         boolean isGridSign = state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
@@ -44,13 +44,7 @@ public class GridRaytrace {
         if (isGridSign && net.minecraft.client.Minecraft.getInstance().level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
             rotation = gbe.getFacingRotation();
         } else if (isBackplate && net.minecraft.client.Minecraft.getInstance().level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-            com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
-            if (lbe.isDummy()) {
-                net.minecraft.world.level.block.entity.BlockEntity me = net.minecraft.client.Minecraft.getInstance().level.getBlockEntity(lbe.getMasterPos());
-                if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) {
-                    effective = masterBe;
-                }
-            }
+            com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
             rotation = effective.getFacingRotation();
         } else if (isBackplate && state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
             rotation = com.boran.signbuilder.block.SignRotation.fromDirection(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING));
@@ -59,14 +53,35 @@ public class GridRaytrace {
         net.minecraft.world.level.block.state.properties.AttachFace aFace = state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE) 
             ? state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE) 
             : net.minecraft.world.level.block.state.properties.AttachFace.WALL;
+
+        if (state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
+            facing = facing.getCounterClockWise();
+            rotation = Math.floorMod(rotation - 2, 8);
+        }
             
         boolean isBack = false;
         net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
-        if (player != null && (isBackplate || isGridSign) && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-            double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rotation)
-                    + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
-            if (side < 0.0) {
+        if ((isBackplate || isGridSign) && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
+            Direction frontDirection = com.boran.signbuilder.block.SignRotation.cardinalDirection(rotation);
+            if (frontDirection != null && face == frontDirection) {
+                isBack = false;
+            } else if (frontDirection != null && face == frontDirection.getOpposite()) {
                 isBack = true;
+            } else if (player != null) {
+                Vec3 look = player.getLookAngle();
+                double dot = look.x * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                        + look.z * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                    if (side < 0.0) {
+                        isBack = true;
+                    }
+                }
             }
         }
 

@@ -799,6 +799,15 @@ public class LetterBlock extends Block implements EntityBlock {
         int size = master.getSize();
         int cost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
 
+        if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+            boolean isGridMode = level.isClientSide()
+                    ? dev.architectury.utils.EnvExecutor.getInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.isGridModeActive()).orElse(false)
+                    : com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1;
+            if (isGridMode) {
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+        }
+
         if (held.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof LetterBlock
                 && master.hasBackplate()
@@ -934,6 +943,12 @@ public class LetterBlock extends Block implements EntityBlock {
         int normalRotation = state.hasProperty(FACE) && state.getValue(FACE) == AttachFace.WALL
                 ? rotation
                 : Math.floorMod(rotation - 2, 8);
+        if (player != null) {
+            net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+            double dot = look.x * SignRotation.facingX(normalRotation) + look.z * SignRotation.facingZ(normalRotation);
+            if (dot > 0.05) return true;
+            if (dot < -0.05) return false;
+        }
         double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(normalRotation)
                 + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(normalRotation);
         return side < 0.0;
@@ -1292,7 +1307,7 @@ public class LetterBlock extends Block implements EntityBlock {
                 popResource(level, dropPos, bp);
             }
         } else {
-            popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+            popResource(level, dropPos, new ItemStack(dropState.getBlock(), multiplier));
             SignMaterial mat = dropState.hasProperty(MATERIAL) ? dropState.getValue(MATERIAL) : lbe.getSavedMaterial();
             if (mat != SignMaterial.DEFAULT) {
                 ItemStack matStack = BackplateBlock.getItemForMaterial(mat);
@@ -1308,7 +1323,7 @@ public class LetterBlock extends Block implements EntityBlock {
 
             ItemStack backGlyph = lbe.getBackGlyph();
             if (!backGlyph.isEmpty()) {
-                popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+                popResource(level, dropPos, new ItemStack(backGlyph.getItem(), multiplier));
                 SignMaterial backGlyphMaterial = getBackGlyphMaterial(backGlyph);
                 if (backGlyphMaterial != SignMaterial.DEFAULT) {
                     ItemStack backGlyphMaterialStack = BackplateBlock.getItemForMaterial(backGlyphMaterial);
@@ -1320,7 +1335,7 @@ public class LetterBlock extends Block implements EntityBlock {
             }
 
             if (backplateSource != null) {
-                popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+                popResource(level, dropPos, new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), multiplier));
                 SignMaterial fMat = backplateSource.getBackplateFrontMaterial();
                 SignMaterial bMat = backplateSource.getBackplateBackMaterial();
 

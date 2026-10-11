@@ -19,6 +19,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -81,11 +84,35 @@ public class GridSignRenderCache {
 
     public final List<CachedCell> cells;
 
+    public final boolean hasBackGlyph;
+    public final BlockState backState;
+    public final BakedModel finalBackModel;
+    public final RenderType backRenderType;
+    public final float backTransX, backTransY, backTransZ;
+    public final int backRawColor;
+    public final boolean backRainbow;
+    public final boolean backIsMaterial;
+
+    public final boolean hasFrontGlyph;
+    public final BlockState frontState;
+    public final BakedModel finalFrontModel;
+    public final RenderType frontRenderType;
+    public final float frontTransX, frontTransY, frontTransZ;
+    public final int frontRawColor;
+    public final boolean frontRainbow;
+    public final boolean frontIsMaterial;
+
     public GridSignRenderCache(long version, Object modelManagerRef, AttachFace face, Direction facing, int rotationDegrees,
                                boolean hasBackplate, BlockState plateState, BakedModel finalPlateModel,
                                List<BakedQuad> plateQuads, float plateCenterLocalX, float plateCenterLocalZ,
                                boolean widenDiagonal, Direction plateFacing, SignMaterial fMat, SignMaterial bMat,
-                               List<CachedCell> cells) {
+                               List<CachedCell> cells,
+                               boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel,
+                               RenderType backRenderType, float backTransX, float backTransY, float backTransZ,
+                               int backRawColor, boolean backRainbow, boolean backIsMaterial,
+                               boolean hasFrontGlyph, BlockState frontState, BakedModel finalFrontModel,
+                               RenderType frontRenderType, float frontTransX, float frontTransY, float frontTransZ,
+                               int frontRawColor, boolean frontRainbow, boolean frontIsMaterial) {
         this.version = version;
         this.modelManagerRef = modelManagerRef;
         this.face = face;
@@ -102,6 +129,26 @@ public class GridSignRenderCache {
         this.fMat = fMat;
         this.bMat = bMat;
         this.cells = cells;
+        this.hasBackGlyph = hasBackGlyph;
+        this.backState = backState;
+        this.finalBackModel = finalBackModel;
+        this.backRenderType = backRenderType;
+        this.backTransX = backTransX;
+        this.backTransY = backTransY;
+        this.backTransZ = backTransZ;
+        this.backRawColor = backRawColor;
+        this.backRainbow = backRainbow;
+        this.backIsMaterial = backIsMaterial;
+        this.hasFrontGlyph = hasFrontGlyph;
+        this.frontState = frontState;
+        this.finalFrontModel = finalFrontModel;
+        this.frontRenderType = frontRenderType;
+        this.frontTransX = frontTransX;
+        this.frontTransY = frontTransY;
+        this.frontTransZ = frontTransZ;
+        this.frontRawColor = frontRawColor;
+        this.frontRainbow = frontRainbow;
+        this.frontIsMaterial = frontIsMaterial;
     }
 
     public static GridSignRenderCache getOrCreate(GridSignBlockEntity entity, BlockRenderDispatcher dispatcher) {
@@ -166,12 +213,15 @@ public class GridSignRenderCache {
             if (letterBlock == null || letterBlock == Blocks.AIR) continue;
 
             Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+            Direction cellFacing = (face != AttachFace.WALL) ? effectiveFacing.getClockWise() : effectiveFacing;
+            AttachFace cellFace = (face != AttachFace.WALL) ? face : AttachFace.WALL;
+
             BlockState letterState = letterBlock.defaultBlockState();
             if (letterState.hasProperty(LetterBlock.FACING)) {
-                letterState = letterState.setValue(LetterBlock.FACING, effectiveFacing);
+                letterState = letterState.setValue(LetterBlock.FACING, cellFacing);
             }
             if (letterState.hasProperty(LetterBlock.FACE)) {
-                letterState = letterState.setValue(LetterBlock.FACE, AttachFace.WALL);
+                letterState = letterState.setValue(LetterBlock.FACE, cellFace);
             }
             if (letterState.hasProperty(LetterBlock.MATERIAL)) {
                 letterState = letterState.setValue(LetterBlock.MATERIAL, data.material);
@@ -190,7 +240,7 @@ public class GridSignRenderCache {
 
             Vector3f offsets = GridOffsetHelper.getOffset(face, effectiveFacing, colShift, rowShift, scale);
             Vector3f baseTrans = GridOffsetHelper.getBaseTranslation(face, effectiveFacing);
-            Vector3f cl = hasBackplate ? GridOffsetHelper.getClearance(face, effectiveFacing, 1.05f / 16.0f) : new Vector3f(0, 0, 0);
+            Vector3f cl = GridOffsetHelper.getClearance(face, effectiveFacing, hasBackplate);
             Vector3f c = GridOffsetHelper.getCenter(face, effectiveFacing);
 
             float totalTransX = baseTrans.x + offsets.x + cl.x;
@@ -214,11 +264,175 @@ public class GridSignRenderCache {
             ));
         }
 
+        ItemStack backGlyph = entity.getBackGlyph();
+        boolean hasBackGlyph = false;
+        BlockState backState = null;
+        BakedModel finalBackModel = null;
+        RenderType backRenderType = null;
+        float backTransX = 0f, backTransY = 0f, backTransZ = 0f;
+        int backRawColor = 0xFFFFFF;
+        boolean backRainbow = false;
+        boolean backIsMaterial = false;
+
+        if (face != AttachFace.WALL && !backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+            Direction effectiveFacing = facing.getOpposite();
+            Direction cellFacing = effectiveFacing.getClockWise();
+            AttachFace cellFace = face;
+
+            backState = letterBlock.defaultBlockState();
+            if (backState.hasProperty(LetterBlock.FACING)) {
+                backState = backState.setValue(LetterBlock.FACING, cellFacing);
+            }
+            if (backState.hasProperty(LetterBlock.FACE)) {
+                backState = backState.setValue(LetterBlock.FACE, cellFace);
+            }
+
+            CompoundTag backTag = backGlyph.getTagElement("BlockEntityTag");
+            SignMaterial backMaterial = SignMaterial.DEFAULT;
+            if (backTag != null && backTag.contains("SavedMaterial")) {
+                try {
+                    backMaterial = SignMaterial.valueOf(backTag.getString("SavedMaterial"));
+                } catch (IllegalArgumentException ignored) {}
+            }
+            if (backState.hasProperty(LetterBlock.MATERIAL)) {
+                CompoundTag stateTag = backGlyph.getTagElement("BlockStateTag");
+                if (stateTag != null && stateTag.contains("material")) {
+                    try {
+                        backState = backState.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase()));
+                    } catch (IllegalArgumentException ignored) {}
+                } else if (backMaterial != SignMaterial.DEFAULT) {
+                    backState = backState.setValue(LetterBlock.MATERIAL, backMaterial);
+                }
+            }
+
+            BakedModel baseBackModel = dispatcher.getBlockModel(backState);
+            finalBackModel = (backMaterial != SignMaterial.DEFAULT)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseBackModel, backMaterial, SignMaterial.DEFAULT, true)
+                    : baseBackModel;
+
+            int plateRotation = entity.getFacingRotation();
+            double normalLength = Math.sqrt(
+                    SignRotation.facingX(plateRotation) * SignRotation.facingX(plateRotation)
+                            + SignRotation.facingZ(plateRotation) * SignRotation.facingZ(plateRotation));
+            if (normalLength == 0.0) normalLength = 1.0;
+            double normalX = SignRotation.facingX(plateRotation) / normalLength;
+            double normalZ = SignRotation.facingZ(plateRotation) / normalLength;
+            double plateClearance = 2.0 / 16.0;
+
+            ModelCentering.Center backTarget = hasBackplate
+                    ? new ModelCentering.Center(0.5 - normalX * plateClearance, 0.5 - normalZ * plateClearance)
+                    : new ModelCentering.Center(0.5 - normalX * 2.0 / 16.0, 0.5 - normalZ * 2.0 / 16.0);
+            if (LetterBlock.isLateralDot(backState)) {
+                ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalBackModel, backState, rotationDegrees,
+                        true, 1, 0.0, 0.0);
+                backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
+            }
+
+            double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, rotationDegrees, true, 1, 0.0, 0.0, backTarget.x(), backTarget.z());
+            backTransX = (float) bOffsets[0];
+            backTransY = 0f;
+            backTransZ = (float) bOffsets[1];
+
+            backRenderType = ItemBlockRenderTypes.getRenderType(backState, false);
+            backIsMaterial = backMaterial != SignMaterial.DEFAULT;
+            backRainbow = backTag != null && backTag.getBoolean("IsRainbow");
+            backRawColor = backMaterial != SignMaterial.DEFAULT ? 0xFFFFFF
+                    : (backTag != null && backTag.contains("RGBColor") ? backTag.getInt("RGBColor") : 0xFFFFFF);
+            hasBackGlyph = true;
+        }
+
+        ItemStack frontGlyph = entity.getFrontGlyph();
+        boolean hasFrontGlyph = false;
+        BlockState frontState = null;
+        BakedModel finalFrontModel = null;
+        RenderType frontRenderType = null;
+        float frontTransX = 0f, frontTransY = 0f, frontTransZ = 0f;
+        int frontRawColor = 0xFFFFFF;
+        boolean frontRainbow = false;
+        boolean frontIsMaterial = false;
+
+        if (!frontGlyph.isEmpty() && frontGlyph.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+            Direction cellFacing = (face != AttachFace.WALL) ? facing.getClockWise() : facing;
+            AttachFace cellFace = face;
+
+            frontState = letterBlock.defaultBlockState();
+            if (frontState.hasProperty(LetterBlock.FACING)) {
+                frontState = frontState.setValue(LetterBlock.FACING, cellFacing);
+            }
+            if (frontState.hasProperty(LetterBlock.FACE)) {
+                frontState = frontState.setValue(LetterBlock.FACE, cellFace);
+            }
+
+            CompoundTag frontTag = frontGlyph.getTagElement("BlockEntityTag");
+            SignMaterial frontMaterial = SignMaterial.DEFAULT;
+            if (frontTag != null && frontTag.contains("SavedMaterial")) {
+                try {
+                    frontMaterial = SignMaterial.valueOf(frontTag.getString("SavedMaterial"));
+                } catch (IllegalArgumentException ignored) {}
+            }
+            if (frontState.hasProperty(LetterBlock.MATERIAL)) {
+                CompoundTag stateTag = frontGlyph.getTagElement("BlockStateTag");
+                if (stateTag != null && stateTag.contains("material")) {
+                    try {
+                        frontState = frontState.setValue(LetterBlock.MATERIAL, SignMaterial.valueOf(stateTag.getString("material").toUpperCase()));
+                    } catch (IllegalArgumentException ignored) {}
+                } else if (frontMaterial != SignMaterial.DEFAULT) {
+                    frontState = frontState.setValue(LetterBlock.MATERIAL, frontMaterial);
+                }
+            }
+
+            BakedModel baseFrontModel = dispatcher.getBlockModel(frontState);
+            finalFrontModel = (frontMaterial != SignMaterial.DEFAULT)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseFrontModel, frontMaterial, SignMaterial.DEFAULT, true)
+                    : baseFrontModel;
+
+            int plateRotation = entity.getFacingRotation();
+            double normalLength = Math.sqrt(
+                    SignRotation.facingX(plateRotation) * SignRotation.facingX(plateRotation)
+                            + SignRotation.facingZ(plateRotation) * SignRotation.facingZ(plateRotation));
+            if (normalLength == 0.0) normalLength = 1.0;
+            double normalX = SignRotation.facingX(plateRotation) / normalLength;
+            double normalZ = SignRotation.facingZ(plateRotation) / normalLength;
+            double plateClearance = (face == AttachFace.WALL ? 1.0 : 2.0) / 16.0;
+
+            if (face != AttachFace.WALL) {
+                ModelCentering.Center letterTarget = hasBackplate
+                        ? new ModelCentering.Center(0.5 + normalX * plateClearance, 0.5 + normalZ * plateClearance)
+                        : new ModelCentering.Center(0.5, 0.5);
+                if (LetterBlock.isLateralDot(frontState)) {
+                    ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalFrontModel, frontState, rotationDegrees,
+                            true, 1, 0.0, 0.0);
+                    letterTarget = ModelCentering.centerAlongNormal(currentCenter, letterTarget.x(), letterTarget.z(), normalX, normalZ);
+                }
+                double[] lOffsets = ModelCentering.getCenterOffset(finalFrontModel, frontState, rotationDegrees, true, 1, 0.0, 0.0, letterTarget.x(), letterTarget.z());
+                frontTransX = (float) lOffsets[0];
+                frontTransY = 0f;
+                frontTransZ = (float) lOffsets[1];
+            } else if (hasBackplate) {
+                frontTransX = (float) (normalX * plateClearance);
+                frontTransY = 0f;
+                frontTransZ = (float) (normalZ * plateClearance);
+            }
+
+            frontRenderType = ItemBlockRenderTypes.getRenderType(frontState, false);
+            frontIsMaterial = frontMaterial != SignMaterial.DEFAULT;
+            frontRainbow = frontTag != null && frontTag.getBoolean("IsRainbow");
+            frontRawColor = frontMaterial != SignMaterial.DEFAULT ? 0xFFFFFF
+                    : (frontTag != null && frontTag.contains("RGBColor") ? frontTag.getInt("RGBColor") : 0xFFFFFF);
+            hasFrontGlyph = true;
+        }
+
         return new GridSignRenderCache(
                 entity.getRenderVersion(), modelManagerRef, face, facing, rotationDegrees,
                 hasBackplate, plateState, finalPlateModel, plateQuads,
                 plateCenterLocalX, plateCenterLocalZ, widenDiagonal, plateFacing, fMat, bMat,
-                cellList
+                cellList,
+                hasBackGlyph, backState, finalBackModel,
+                backRenderType, backTransX, backTransY, backTransZ,
+                backRawColor, backRainbow, backIsMaterial,
+                hasFrontGlyph, frontState, finalFrontModel,
+                frontRenderType, frontTransX, frontTransY, frontTransZ,
+                frontRawColor, frontRainbow, frontIsMaterial
         );
     }
 }

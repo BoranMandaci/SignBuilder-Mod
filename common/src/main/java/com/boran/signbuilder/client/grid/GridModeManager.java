@@ -31,18 +31,19 @@ public class GridModeManager {
             if (isPressed && !wasKeyPressed) {
                 Player player = client.player;
                 if (player != null && (isHoldingLetterBlock(player))) {
-                    if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT) ||
-                            InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RSHIFT)) {
-                        
+                    boolean isShift = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT) ||
+                            InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RSHIFT);
+                    if (isShift) {
                         currentGridSize++;
-                        if (currentGridSize > 4) {
-                            currentGridSize = 1;
-                        }
-                        
-                        String message = currentGridSize == 1 ? "Normal Mode (1x1)" : "Grid Mode (" + currentGridSize + "x" + currentGridSize + ")";
-                        player.displayClientMessage(Component.literal(message), true);
-                        com.boran.signbuilder.network.ModMessages.sendToServer(new com.boran.signbuilder.network.SyncGridModeC2SPacket(currentGridSize));
+                        if (currentGridSize > 4) currentGridSize = 1;
+                    } else {
+                        currentGridSize--;
+                        if (currentGridSize < 1) currentGridSize = 4;
                     }
+
+                    String message = currentGridSize == 1 ? "Normal Mode (1x1)" : "Grid Mode (" + currentGridSize + "x" + currentGridSize + ")";
+                    player.displayClientMessage(Component.literal(message), true);
+                    com.boran.signbuilder.network.ModMessages.sendToServer(new com.boran.signbuilder.network.SyncGridModeC2SPacket(currentGridSize));
                 }
             }
             wasKeyPressed = isPressed;

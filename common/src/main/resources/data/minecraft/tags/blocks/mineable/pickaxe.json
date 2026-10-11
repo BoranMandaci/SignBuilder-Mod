@@ -104,6 +104,7 @@
     "signbuilder:symbol_tilde",
     "signbuilder:symbol_trophy",
     "signbuilder:sign_press",
-    "signbuilder:backplate"
+    "signbuilder:backplate",
+    "signbuilder:grid_sign"
   ]
 }

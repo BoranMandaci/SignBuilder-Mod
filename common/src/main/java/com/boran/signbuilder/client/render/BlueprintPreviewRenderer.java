@@ -281,9 +281,7 @@ public class BlueprintPreviewRenderer {
         Direction hitFace = blockHit.getDirection();
         BlockState hitState = level.getBlockState(hitPos);
 
-        boolean clickedIsStampable = (hitState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)
-                || (hitState.getBlock() instanceof BackplateBlock)
-                || (hitState.getBlock() instanceof LetterBlock);
+        boolean clickedIsStampable = SignBlueprintItem.isStampableTarget(level, hitPos, hitState);
 
         if (hitFace.getAxis() == Direction.Axis.Y && !clickedIsStampable) {
             return;
@@ -293,26 +291,61 @@ public class BlueprintPreviewRenderer {
         if (hitFace.getAxis() == Direction.Axis.Y && clickedIsStampable) {
             if (hitState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 effectiveFace = hitState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (hitState.getBlock() instanceof LetterBlock && hitState.hasProperty(BlockStateProperties.ATTACH_FACE) && hitState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                    effectiveFace = effectiveFace.getCounterClockWise();
+                }
+            }
+        }
+
+        AttachFace clickedAttachFace = AttachFace.WALL;
+        Direction clickedFacing = effectiveFace;
+        int clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
+
+        if (clickedIsStampable) {
+            if (hitState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                clickedAttachFace = hitState.getValue(BlockStateProperties.ATTACH_FACE);
+            }
+            if (hitState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                clickedFacing = hitState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            }
+            if (level.getBlockEntity(hitPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                clickedFacingRotation = gbe.getFacingRotation();
+            } else if (level.getBlockEntity(hitPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                clickedFacingRotation = lbe.getFacingRotation();
+            } else {
+                clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
+            }
+            if (hitState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && clickedAttachFace != AttachFace.WALL) {
+                clickedFacing = clickedFacing.getCounterClockWise();
+                clickedFacingRotation = Math.floorMod(clickedFacingRotation - 2, 8);
             }
         }
 
         boolean isVertical = tag.getBoolean("IsVertical");
         Vec3 hitLoc = blockHit.getLocation();
         int targetLine;
+        int startOffset;
         if (isVertical) {
             targetLine = SignBlueprintItem.getHitSubCellCol(effectiveFace, hitLoc, gridSize);
+            startOffset = SignBlueprintItem.getHitSubCellRow(hitLoc, gridSize);
         } else {
             targetLine = SignBlueprintItem.getHitSubCellRow(hitLoc, gridSize);
+            startOffset = SignBlueprintItem.getHitSubCellCol(effectiveFace, hitLoc, gridSize);
         }
 
         int numBlocks;
         List<Map<Integer, String>> blocksCells = new ArrayList<>();
 
         if (isBannerMode && !gridText.isEmpty()) {
-            int charsPerBlock = gridSize;
-            numBlocks = (gridText.length() + charsPerBlock - 1) / charsPerBlock;
+            int firstBlockCap = gridSize - startOffset;
+            if (gridText.length() <= firstBlockCap) {
+                numBlocks = 1;
+            } else {
+                int rem = gridText.length() - firstBlockCap;
+                numBlocks = 1 + (rem + gridSize - 1) / gridSize;
+            }
             for (int b = 0; b < numBlocks; b++) {
-                blocksCells.add(SignBlueprintItem.getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine));
+                blocksCells.add(SignBlueprintItem.getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
             }
         } else {
             numBlocks = 1;
@@ -363,26 +396,12 @@ public class BlueprintPreviewRenderer {
                     : offsetRight(baseTargetPos, rightX, rightZ, b);
             BlockState targetState = level.getBlockState(targetPos);
 
-            boolean isBackplate = targetState.getBlock() instanceof BackplateBlock;
-            boolean isLetterWithBackplate = false;
-            if (targetState.getBlock() instanceof LetterBlock) {
-                if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
-                    if (lbe.isDummy()) {
-                        net.minecraft.world.level.block.entity.BlockEntity me = level.getBlockEntity(lbe.getMasterPos());
-                        if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) effective = masterBe;
-                    }
-                    isLetterWithBackplate = effective.hasBackplate();
-                }
-            }
-            boolean isGridSign = targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
-            boolean stampExisting = isGridSign || isBackplate || isLetterWithBackplate;
+            boolean stampExisting = SignBlueprintItem.isStampableTarget(level, targetPos, targetState);
+            boolean canPlace = clickedIsStampable ? stampExisting : (stampExisting || targetState.canBeReplaced());
 
-            boolean canPlace = stampExisting || targetState.canBeReplaced();
-
-            AttachFace attachFace = AttachFace.WALL;
-            Direction facing = effectiveFace;
-            int facingRotation = SignRotation.fromDirection(facing);
+            AttachFace attachFace = clickedAttachFace;
+            Direction facing = clickedFacing;
+            int facingRotation = clickedFacingRotation;
 
             if (stampExisting) {
                 if (targetState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
@@ -398,14 +417,18 @@ public class BlueprintPreviewRenderer {
                 } else {
                     facingRotation = SignRotation.fromDirection(facing);
                 }
-            } else {
+                if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && attachFace != AttachFace.WALL) {
+                    facing = facing.getCounterClockWise();
+                    facingRotation = Math.floorMod(facingRotation - 2, 8);
+                }
+            } else if (!clickedIsStampable) {
                 attachFace = AttachFace.WALL;
                 facing = effectiveFace;
                 facingRotation = SignRotation.fromDirection(facing);
             }
 
             boolean isBack = false;
-            if (stampExisting && attachFace != AttachFace.WALL) {
+            if ((stampExisting || clickedIsStampable) && attachFace != AttachFace.WALL) {
                 double side = (player.getX() - (targetPos.getX() + 0.5)) * SignRotation.facingX(facingRotation)
                         + (player.getZ() - (targetPos.getZ() + 0.5)) * SignRotation.facingZ(facingRotation);
                 if (side < 0.0) isBack = true;
@@ -422,7 +445,7 @@ public class BlueprintPreviewRenderer {
                 poseStack.translate(-0.5, 0.0, -0.5);
             }
 
-            if (withBackplate && !stampExisting) {
+            if (withBackplate && !stampExisting && !clickedIsStampable) {
                 BlockState plateState = ModBlocks.BACKPLATE.get().defaultBlockState()
                         .setValue(BackplateBlock.FACING, facing)
                         .setValue(BackplateBlock.FACE, attachFace);
@@ -437,7 +460,7 @@ public class BlueprintPreviewRenderer {
             poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
 
             float scale = 1.0f / gridSize;
-            boolean hasPlate = withBackplate || stampExisting;
+            boolean hasPlate = stampExisting || (clickedIsStampable || withBackplate);
 
             float charR = canPlace ? 0.4F : 1.0F;
             float charG = canPlace ? 0.9F : 0.2F;
@@ -452,9 +475,12 @@ public class BlueprintPreviewRenderer {
                 Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", path));
                 if (letterBlock == null || letterBlock == Blocks.AIR) continue;
 
+                Direction cellFacing = (attachFace != AttachFace.WALL) ? effectiveFacing.getClockWise() : effectiveFacing;
+                AttachFace cellFace = (attachFace != AttachFace.WALL) ? attachFace : AttachFace.WALL;
+
                 BlockState letterState = letterBlock.defaultBlockState();
-                if (letterState.hasProperty(LetterBlock.FACING)) letterState = letterState.setValue(LetterBlock.FACING, effectiveFacing);
-                if (letterState.hasProperty(LetterBlock.FACE)) letterState = letterState.setValue(LetterBlock.FACE, AttachFace.WALL);
+                if (letterState.hasProperty(LetterBlock.FACING)) letterState = letterState.setValue(LetterBlock.FACING, cellFacing);
+                if (letterState.hasProperty(LetterBlock.FACE)) letterState = letterState.setValue(LetterBlock.FACE, cellFace);
 
                 int col = index % gridSize;
                 int row = index / gridSize;
@@ -465,7 +491,7 @@ public class BlueprintPreviewRenderer {
                 }
 
                 org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
-                org.joml.Vector3f cl = hasPlate ? com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, 1.05f / 16.0f) : new org.joml.Vector3f(0, 0, 0);
+                org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, hasPlate);
                 org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
 
                 poseStack.pushPose();
