@@ -6,69 +6,65 @@
 
 # 🪧 Sign Builder
 
-A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs. Decorate your cities, build interactive redstone keypad locks, and construct glowing neon shop fronts or towering billboards with a highly detailed, dynamic building system perfectly balanced for Survival mode.
+A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs. Decorate your cities, build interactive Redstone keypad locks, and construct glowing neon shop fronts or towering billboards with a highly detailed, dynamic building system perfectly balanced for Survival mode.
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Introduction
 
-Sign Builder is a cross-platform Minecraft mod built from the ground up for Fabric, Forge, and NeoForge using the Architectury API. It introduces a comprehensive workflow for creating highly detailed 3D text in your world. Rather than relying on simple vanilla signs, this mod provides physical blocks for letters, numbers, symbols, and modular backplates, coupled with custom tools to construct, paint, texture, automate, and illuminate them dynamically.
+Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fabric, Forge, and NeoForge** using the Architectury API. Rather than relying on simple vanilla signs, this mod introduces physical blocks for letters, numbers, symbols, sub-block mini letters, and modular backplates—accompanied by custom tools to construct, paint, texture, automate, and illuminate them dynamically.
+
+---
 
 ## ✨ Key Features
 
-*   🏢 **Giant 2x2 & 3x3 Multi-Block Signs** — Need massive signage? Placing four matching sign blocks in a 2x2 square creates a 2.0x display, while a 3x3 square automatically forms a towering **3.0x giant blocks**! Features synchronized multi-block destruction, scaled material drops (4x / 9x), dynamic hitboxes, off-screen FOV rendering protection, master-dummy data sync, and multi-block backplates across wall, floor, and ceiling orientations.
-*   🔴 **Interactive Buttons & Redstone Automation** — Turn any character into an interactive mechanism! Using the Wrench, configure signs as **Momentary Pulse Buttons**, **Toggle Switches (Levers)**, or continuous **Hold-to-Activate** controls:
-    *   **Hold-to-Activate Mode:** Keeps power output active continuously while holding interaction, powered by robust client/server held-state synchronization.
-    *   **Directional Output:** Emits full Redstone power (signal strength 15) strictly from the back attachment face.
-    *   **Material-Aware Timing:** Wooden signs stay depressed for 1.5 seconds (30 ticks), while metal/stone materials reset after 1.0 second (20 ticks), complete with unique physical audio profiles.
-    *   **Word-Wide Synchronization:** Configure letters to press independently or trigger the entire connected word simultaneously via flood-fill logic.
-    *   **Ranged Triggering:** Shoot wall buttons with arrows, tridents, or snowballs to activate them from a distance!
-    *   **Analog Comparator Support:** Number blocks (0–9) output their literal numerical value (signal strength 0–9) directly into Redstone Comparators.
-*   💡 **Dynamic Lighting & Custom Behaviors** — Signs feature real in-game light emission (up to level 15) configurable with the Wrench. Choose dynamic presets (Static, Wave, Breathing, Disco, Audio Sync) or build **fully custom lighting behaviors** directly in-game using timed cycles, proximity detection, day/night schedules, or eye contact triggers with customizable entity filters and detection ranges.
-*   🔐 **PIN Keypad Security System** — Turn text into secret passcode locks!
-    *   **Sequence Locking:** Characters latch inward as you press them. Entering the correct sequence emits a 2-second redstone pulse across all entered blocks; entering an invalid sequence immediately resets the lock with audio feedback.
-    *   **Touch-to-Record ("REC"):** Effortlessly configure PINs directly in the world! Tap the "REC" button in the Wrench GUI, click the blocks in order, and Shift + Right-Click to save.
-*   🛡️ **Double-Sided Modular Backplates** — Give your signage depth and contrast or create free-standing signs! Mount signs onto pre-placed backplates or snap a backplate directly onto existing single, 2x2, or 3x3 signs. **Signs can be placed on both the front and back faces of a backplate.** Front and back surfaces can be textured and dyed independently. Shift + Right-Click with an empty hand safely detaches the plate while refunding materials.
-*   🧱 **40 Dynamic Materials & Balanced Costs** — Signs are no longer just concrete! Customize your text with 40 distinct materials. Fully balanced for survival: painting with precious materials like Emerald, Diamond, Gold, Iron, Copper, Lapis, Coal, Redstone, and Amethyst now requires their standard ingots, gems, or dusts instead of full blocks. Browse them effortlessly in the Paint Brush screen with a balanced 20-item-per-page grid (`<` / `>`).
-*   🎒 **Survival Ready & Realistic Loot** — Breaking a sign normally drops its crafted components (3x White Concrete, Base Materials like Gold Ingot or Diamond, Glowstone Dust). Drops dynamically scale with multiblock size (4x for 2x2s, 9x for 3x3 billboards). Mining with a **Silk Touch** tool flawlessly retains all custom NBT data (colors, materials, glowing states, PIN codes, animations) directly on the dropped item!
-*   🏗️ **Expansive 3D Models & International Symbols** — Redesigned 3D character sets with pixel-perfect hitboxes: Latin letters (A-Z), German & Turkish special letters (`Ä`, `ß`, `Ç`, `Ğ`, `İ`, `Ö`, `Ş`, `Ü`), numbers, cardinal and diagonal arrows, currency symbols (€, $, ₺, ¥, £, **₿**), mathematical operators, and an extensive symbol roster: Tilde (`~`), Key (`🗝`), Lock (`🔒`), Trophy (`🏆`), Lightning (`⚡`), Bitcoin (`₿`), Cross (`✗`), Circle (`○`), Diamond (`◆`), Musical Notes (`♪`, `♫`), Skull (`☠`), Heart (`♥`), Star (`★`), Checkmark (`✓`), Infinity (`∞`), brackets, and punctuation.
-*   🗜️ **The Sign Press** — A dedicated survival crafting station featuring a refreshed 3D workstation model. Stamp your white concrete into specific letters, symbols, and backplates cleanly and efficiently with a scrollable interface. Fully compatible with hoppers for automated workflows.
-*   🗺️ **Holographic Blueprint, Diagonal Angles & Undo** — Type your text into the modernized Blueprint GUI with direct symbol buttons, full GUI scale support, and Unicode handling. Enjoy real-time **translucent 3D ghost previews** directly in the world, dynamically shifting between **green** (valid) and **red** (obstructed). Features horizontal, 45-degree diagonal (1x1), and Y-axis locked **vertical placement**, 3-way size cycling (**1x1**, **2x2**, **3x3**), and an **automatic backplate toggle**. The one-click Undo system cleanly removes misplaced constructions and refunds all blocks and backplates.
-*   🎨 **The Paint Brush & Custom Palette** — Right-click in the air to open a responsive GUI. Mix your own RGB/Hex codes and save up to 14 custom colors in your personal palette, or apply material textures directly to sign faces and backplates across multiple pages.
-*   🌈 **Smart Fill & Rainbow Mode** — Sneak + Right-click in the air to toggle "Smart Fill", featuring intuitive circular HUD indicators. Instantly paint, light, or animate entire connected words at once with zero visual delay.
-*   💧 **Eyedropper Mechanic** — Sneak + Right-click on any painted block in the world to copy its exact hex color directly to your Paint Brush.
-*   🌍 **Global Localization** — Fully translated into 13 languages: English, Turkish, German, French, Spanish, Italian, Russian, Simplified Chinese, Brazilian Portuguese, Japanese, Korean, Polish, and Traditional Chinese.
+* 🔤 **Grid Mode (Mini Letters) — *New in v1.3!*** — Toggle Grid Mode with `Shift + V` to fit 2x2 (4 chars), 3x3 (9 chars), or 4x4 (16 chars) sub-block mini letters inside a single block. Supports dual-sided placement, targeted raytracing, and pixel-perfect alignment across floors, ceilings, and 45° diagonal backplates.
+* 🏢 **Giant Multi-Blocks & Modular Backplates** — Placing matching sign blocks in a 2x2 or 3x3 square automatically merges them into massive **2.0x** and **3.0x** multi-block billboards with synchronized hitboxes. Mount signs on both sides of modular backplates, texture front/back independently, or rotate signs at 45° diagonal angles.
+* 🗺️ **Holographic Blueprint & Precision Stamping** — Type your text and preview it directly in the world via a real-time **3D ghost hologram** (green = valid, red = obstructed). Features crosshair-targeted Banner placement, backplate boundary overflow protection, continuous word flows, and an instant **Undo** system.
+* 🎨 **40 Dynamic Materials & Custom Dyeing** — Customize text with 40 distinct survival-balanced textures (wood, stone, copper, iron, gold, diamond, emerald, and more) using ingots and gems instead of full blocks. Mix custom Hex/RGB colors, activate dynamic cycling Rainbow mode, or use **Smart Fill** and the **Eyedropper** to style entire words in one click.
+* 💡 **Animated Neon Lighting & Light Emission** — Configure signs with 11 lighting presets (Blink, Flicker, Pulse, Wave, Motion Sensor, Night Only) emitting real world light (levels 6–15), or build custom light behaviors with timed cycles, day/night schedules, and proximity filters.
+* 🔴 **Interactive Buttons & PIN Keypad Locks** — Turn any character into a momentary Pulse button, Toggle lever, or continuous Hold-to-Activate control. Connect Redstone Comparators to number blocks (0–9) for analog readouts, or create secret PIN passcode locks that emit a 2-second Redstone pulse upon entering the correct sequence.
+* 🗜️ **The Sign Press & Survival Balance** — Manufacture all characters, symbols, and backplates in a dedicated, hopper-compatible 3D workstation. Breaking signs normally drops the block itself and any applied materials, while **Silk Touch** perfectly preserves all custom colors, light modes, and PIN configurations.
+* ⚡ **Zero-Lag Render Fast-Path** — Optimized client-side mesh caching eliminates frame drops and GC stutter, keeping rendering buttery-smooth around dense neon signage.
+* 🌍 **Global Localization** — Fully translated into 13 languages: English, Turkish, German, French, Spanish, Italian, Russian, Simplified Chinese, Traditional Chinese, Japanese, Korean, Polish, and Brazilian Portuguese.
+
+---
 
 ## 🛠️ Tech Stack
 
 **Modding API & Languages**
-*   ☕ **Java** — Core logic and backend.
-*   🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge, NeoForge, and Fabric development.
-*   🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Mod loaders.
+* ☕ **Java** — Core logic and backend.
+* 🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge, NeoForge, and Fabric development.
+* 🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Supported mod loaders.
 
-**Tools**
-*   🧊 **Blockbench** — Custom 3D modeling and texturing for all character, backplate, and tool blocks.
-*   🐘 **Gradle** — Build automation and dependency management.
+**Tools & Design**
+* 🧊 **Blockbench** — Custom 3D modeling and texturing for all character, backplate, and workstation models.
+* 🐘 **Gradle** — Multi-project build automation and dependency management.
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Minecraft `1.20.1` or `1.21.1`
-*   **Fabric**, **Forge**, or **NeoForge** Mod Loader
-*   [Architectury API](https://modrinth.com/mod/architectury-api) (Required Dependency)
+* Minecraft `1.20.1` or `1.21.1`
+* **Fabric**, **Forge**, or **NeoForge** Mod Loader
+* [Architectury API](https://modrinth.com/mod/architectury-api) (Required Dependency on all loaders)
+* [Fabric API](https://modrinth.com/mod/fabric-api) (Required on Fabric only)
 
 ### Installation
-1.  Download the latest version of the mod from **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** or **[Modrinth](https://modrinth.com/mod/sign-builder)**.
-2.  Download the required version of the Architectury API (and Fabric API if using Fabric).
-3.  Drop the `.jar` files into your Minecraft `mods` folder.
-4.  Launch the game!
+1. Download the latest version of the mod from **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** or **[Modrinth](https://modrinth.com/mod/sign-builder)**.
+2. Download the required version of Architectury API (and Fabric API if using Fabric).
+3. Drop the `.jar` files into your Minecraft `mods` folder.
+4. Launch the game!
+
+---
 
 ## 🤝 Contributing
 This is primarily a personal portfolio project, but issues, suggestions, and pull requests are welcome. Please open an issue first for anything non-trivial so we can discuss the approach.
 
 ## ⚖️ Disclaimer & Legal Notice
-*   This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the `LICENSE` file for more details.
-*   This project is strictly a fan-made, open-source modification for Minecraft.
-*   All custom 3D models and code implementations are original works created by the author.
+* This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the `LICENSE` file for more details.
+* This project is strictly a fan-made, open-source modification for Minecraft.
+* All custom 3D models and code implementations are original works created by the author.
 
 Built by **Boran Mandacı**

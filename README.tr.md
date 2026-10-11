@@ -6,69 +6,65 @@
 
 # 🪧 Sign Builder
 
-Özel 3D tabelaları sorunsuzca inşa etmek, renklendirmek, aydınlatmak ve materyalleştirmek için tam özellikli, platformlar arası bir Minecraft modu. Hayatta Kalma (Survival) modu için mükemmel şekilde dengelenmiş son derece ayrıntılı, dinamik bir inşa sistemiyle şehirlerinizi süsleyin, etkileşimli redstone tuş takımı kilitleri oluşturun ve parlayan neon dükkan vitrinleri ya da devasa panolar inşa edin.
+Özel 3D tabelaları sorunsuzca inşa etmek, renklendirmek, aydınlatmak ve materyalleştirmek için tam özellikli, platformlar arası bir Minecraft modu. Hayatta Kalma (Survival) modu için mükemmel şekilde dengelenmiş son derece ayrıntılı, dinamik bir inşa sistemiyle şehirlerinizi süsleyin, etkileşimli Redstone tuş takımı kilitleri oluşturun ve parlayan neon dükkan vitrinleri ya da devasa panolar inşa edin.
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Giriş
 
-Sign Builder, Architectury API kullanılarak Fabric, Forge ve NeoForge için sıfırdan geliştirilmiş, platformlar arası bir Minecraft modudur. Dünyanızda son derece ayrıntılı 3D metinler oluşturmanız için kapsamlı bir iş akışı sunar. Basit vanilla tabelalara bağlı kalmak yerine harfler, sayılar, semboller ve modüler arka plakalar için fiziksel bloklar sağlarken; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak, otomatikleştirmek ve aydınlatmak için özel araçlar sunar.
+Sign Builder, Architectury API kullanılarak **Fabric, Forge ve NeoForge** için sıfırdan geliştirilmiş, platformlar arası bir Minecraft modudur. Basit vanilla tabelalara bağlı kalmak yerine harfler, sayılar, semboller, blok içi mini harfler ve modüler arka plakalar için fiziksel bloklar sağlarken; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak, otomatikleştirmek ve aydınlatmak için özel araçlar sunar.
+
+---
 
 ## ✨ Temel Özellikler
 
-*   🏢 **Devasa 2x2 & 3x3 Çoklu Blok (Multi-Block) Tabelalar** — Daha büyük tabelalara mı ihtiyacınız var? Dört eşleşen tabela bloğunu 2x2 kare şeklinde yerleştirmek 2.0x boyutunda bir tabela oluştururken, 3x3 bir kare otomatik olarak **3.0x devasa bloklara** dönüşür! Duvar, zemin ve tavan yönlerinde senkronize çoklu blok kırma, ölçeklendirilmiş malzeme iadesi (4x / 9x), dinamik hitbox'lar, ekran dışı görüş açısı (FOV) çizim koruması, master-dummy veri senkronizasyonu ve çoklu blok arka plakaları içerir.
-*   🔴 **Etkileşimli Butonlar & Redstone Otomasyonu** — Herhangi bir karakteri etkileşimli bir mekanizmaya dönüştürün! İngiliz Anahtarını (Wrench) kullanarak tabelaları **Kısa Darbeli Buton (Pulse)**, **Şalter (Lever)** veya sürekli **Basılı Tutmalı (Hold-to-Activate)** kontrol olarak ayarlayın:
-    *   **Basılı Tutmalı Çalıştırma Modu:** Etkileşimi basılı tuttuğunuz sürece güç çıkışını aktif tutar; güçlü istemci/sunucu basılı tutma senkronizasyonuna sahiptir.
-    *   **Yönlü Çıkış:** Tam Redstone gücünü (15 sinyal gücü) yalnızca bloğun arkasındaki montaj yüzeyinden yayar.
-    *   **Materyale Duyarlı Zamanlama:** Ahşap tabelalar 1,5 saniye (30 tick) basılı kalırken, metal/taş materyaller kendine has fiziksel ses profilleri eşliğinde 1,0 saniye (20 tick) sonra sıfırlanır.
-    *   **Kelime Çapında Senkronizasyon:** Harfleri bağımsız basılacak şekilde yapılandırın veya flood-fill mantığıyla bağlı tüm kelimeyi aynı anda tetikleyin.
-    *   **Menzilli Tetikleme:** Uzaktan etkinleştirmek için duvardaki butonlara ok, mızrak veya kartopu ile ateş edin!
-    *   **Analog Karşılaştırıcı Desteği:** Sayı blokları (0–9), sayısal değerlerini (0–9 sinyal gücü) doğrudan Redstone Karşılaştırıcılarına (Comparator) aktarır.
-*   💡 **Dinamik Aydınlatma & Özel Işık Davranışları** — Tabelalar, İngiliz Anahtarı (Wrench) ile yapılandırılabilen gerçek oyun içi ışık yayma (15. seviyeye kadar) özelliğine sahiptir. Dinamik hazır ayarları (Sabit, Dalga, Nefes Alma, Disko, Ses Senkronizasyonu) seçin veya zaman ayarlı döngüler, yaklaşma algılama, gece/gündüz planları ya da ayarlanabilir varlık filtreleri ve algılama mesafelerine sahip göz teması tetikleyicilerini kullanarak doğrudan oyun içinde **tamamen özel ışık davranışları** oluşturun.
-*   🔐 **PIN Tuş Takımı Güvenlik Sistemi** — Yazıları gizli şifreli kilitlere dönüştürün!
-    *   **Sıralı Kilitleme:** Karakterler basıldıkça içe doğru kilitlenir. Doğru dizilim girildiğinde girilen tüm bloklar boyunca 2 saniyelik bir redstone darbesi yayar; geçersiz bir dizilim girildiğinde ise sesli geri bildirimle kilidi anında sıfırlar.
-    *   **Dokunarak Kaydetme ("REC"):** Dünyada doğrudan PIN kodlarını zahmetsizce yapılandırın! Wrench arayüzündeki "REC" butonuna dokunun, bloklara sırayla tıklayın ve kaydetmek için Shift + Sağ Tıklayın.
-*   🛡️ **Çift Taraflı Modüler Arka Plaka (Backplate) Sistemi** — Tabelalarınıza derinlik ve kontrast kazandırın ya da bağımsız durabilen çift taraflı tabelalar oluşturun! Tabelaları önceden yerleştirilmiş arka plakalara monte edin veya doğrudan mevcut tekli, 2x2 ya da 3x3 tabelalara bir arka plaka takın. **Tabelalar artık bir arka plakanın hem ön hem de arka yüzüne yerleştirilebilir.** Ön ve arka yüzeyler bağımsız olarak dokulandırılabilir ve boyanabilir. Boş elle Shift + Sağ Tık yapmak, materyalleri iade ederek plakayı güvenle söker.
-*   🧱 **40 Dinamik Materyal & Dengeli Maliyetler** — Tabelalar artık sadece betondan ibaret değil! Metinlerinizi 40 farklı materyalle özelleştirin. Hayatta kalma modu için tamamen dengelenmiştir: Zümrüt, Elmas, Altın, Demir, Bakır, Kömür, Lapis, Redstone ve Ametist gibi değerli materyalleri tabelaya işlemek artık koca bir blok yerine bu madenlerin sadece külçe, cevher veya toz hallerini gerektirir. Boya Fırçası ekranındaki 20 öğelik dengeli ızgara (`<` / `>`) ile sayfalar arasında kolayca gezinin.
-*   🎒 **Hayatta Kalmaya Hazır & Gerçekçi Ganimet** — Bir tabelayı kırmak, üretilen bileşenlerini düşürür (3x Beyaz Beton, Altın Külçesi/Elmas gibi Temel Materyaller, Işık Taşı Tozu). Düşen eşyalar çoklu blok boyutuna göre dinamik olarak ölçeklenir (2x2 için 4x, 3x3 panolar için 9x). **İpeksi Dokunuş (Silk Touch)** aletiyle kırmak, eşya üzerindeki tüm özel NBT verilerini (renkler, materyaller, parlama durumları, PIN kodları, animasyonlar) kusursuz şekilde korur!
-*   🏗️ **Geliştirilmiş 3D Modeller & Uluslararası Semboller** — Piksel hassasiyetinde hitbox'lara sahip yenilenmiş 3D karakter setleri: Latin harfleri (A-Z), Almanca ve Türkçe özel harfler (`Ä`, `ß`, `Ç`, `Ğ`, `İ`, `Ö`, `Ş`, `Ü`), sayılar, ana ve çapraz yön okları, para birimi sembolleri (€, $, ₺, ¥, £, **₿**), matematiksel operatörler ve kapsamlı bir sembol listesi: Tilde (`~`), Anahtar (`🗝`), Kilit (`🔒`), Kupa (`🏆`), Yıldırım (`⚡`), Bitcoin (`₿`), Çarpı (`✗`), Daire (`○`), Karo (`◆`), Müzik Notaları (`♪`, `♫`), Kurukafa (`☠`), Kalp (`♥`), Yıldız (`★`), Onay İmi (`✓`), Sonsuzluk (`∞`), parantezler ve noktalama işaretleri.
-*   🗜️ **Tabela Presi (Sign Press)** — Yenilenen 3D atölye modeline sahip özel bir hayatta kalma üretim istasyonu. Beyaz betonlarınızı kaydırılabilir arayüz üzerinden temiz ve verimli bir şekilde belirli harflere, sembollere ve arka plakalara dönüştürün. Otomatik iş akışları için hunilerle (hopper) tam uyumludur.
-*   🗺️ **Holografik Taslak (Blueprint), Çapraz Açı & Geri Alma (Undo)** — Metninizi tam GUI ölçekleme desteğine ve Unicode karakter işlemeye sahip modernize edilmiş Blueprint arayüzüne doğrudan sembol butonlarıyla yazın. Dünyada **yeşil** (geçerli) ve **kırmızı** (engelli) arasında dinamik olarak geçiş yapan gerçek zamanlı **yarı saydam 3D hayalet önizlemenin** keyfini çıkarın. Yatay, 45 derecelik çapraz (1x1) veya Y eksenine kilitli **dikey yerleştirme**, 3 yönlü boyut döngüsü (**1x1**, **2x2**, **3x3**) ve **otomatik arka plaka anahtarı** sunar. Tek tıklamayla Geri Alma (Undo) sistemi, hatalı yerleştirmeleri temiz bir şekilde kaldırır ve tüm blokları ile arka plakaları eksiksiz iade eder.
-*   🎨 **Boya Fırçası & Özel Palet** — Duyarlı arayüzü açmak için havaya sağ tıklayın. Kendi RGB/Hex kodlarınızı karıştırın ve kişisel paletinize 14 adede kadar özel renk kaydedin ya da birden çok sayfa boyunca materyal dokularını doğrudan tabela yüzeylerine ve arka plakalara uygulayın.
-*   🌈 **Akıllı Doldurma (Smart Fill) & Gökkuşağı Modu** — Sezgisel dairesel HUD göstergeleri eşliğinde "Smart Fill" özelliğini açıp kapatmak için havaya Shift + Sağ Tıklayın. Bağlı tüm kelimeleri sıfır görsel gecikmeyle anında tek seferde boyayın, aydınlatın veya canlandırın.
-*   💧 **Damlalık (Eyedropper) Mekaniği** — Dünyadaki herhangi bir boyalı bloğun tam hex rengini doğrudan Boya Fırçanıza kopyalamak için bloğa Shift + Sağ Tıklayın.
-*   🌍 **Küresel Yerelleştirme** — 13 dile tamamen çevrilmiştir: İngilizce, Türkçe, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça, Basitleştirilmiş Çince, Brezilya Portekizcesi, Japonca, Korece, Lehçe ve Geleneksel Çince.
+* 🔤 **Grid (Mini Harf) Modu — *v1.3 ile Yeni!*** — `Shift + V` tuşuyla Grid Moduna geçiş yaparak tek bir blok içine 2x2 (4 harf), 3x3 (9 harf) veya 4x4 (16 harf) şeklinde küçük harfler yerleştirin. Çift taraflı yerleşimi, hassas nişangah algılamasını ve zemin/tavan ile 45° çapraz arka plakalarda piksel hassasiyetinde hizalamayı destekler.
+* 🏢 **Devasa Çoklu Bloklar & Modüler Arka Plakalar** — Dört eşleşen tabela bloğunu 2x2 veya dokuz tanesini 3x3 kare şeklinde yerleştirmek, bunları dinamik çarpışma kutularına sahip devasa **2.0x** ve **3.0x** panolarda otomatik olarak birleştirir. Tabelaları modüler arka plakaların her iki yüzüne takabilir, ön ve arka yüzeyleri bağımsız olarak renklendirebilir ve 45° çapraz açıyla yerleştirebilirsiniz.
+* 🗺️ **Holografik Taslak & Hassas Damgalama** — Metninizi yazın ve blokları yerleştirmeden önce dünyada gerçek zamanlı **3D hayalet hologram** (yeşil = geçerli, kırmızı = engelli) ile önizleyin. Nişangahın baktığı kutucuktan başlayan Banner yerleşimi, arka plaka sınır taşma koruması, ardışık kelime akışı ve tek tıkla **Geri Alma (Undo)** sistemi içerir.
+* 🎨 **40 Dinamik Materyal & Özel Boyama** — Metinleri koca bloklar yerine sadece külçe ve cevherler harcayarak 40 farklı hayatta kalma dengeli dokuyla (ahşap, taş, bakır, altın, elmas, zümrüt vb.) özelleştirin. Özel Hex/RGB renkleri karıştırın, akıcı Gökkuşağı animasyonunu açın veya **Smart Fill** ve **Damlalık (Eyedropper)** ile tüm kelimeyi tek tıkla biçimlendirin.
+* 💡 **Animasyonlu Neon Aydınlatma & Gerçek Işık** — Tabelaları gerçek dünya ışığı (seviye 6–15) yayacak şekilde 11 hazır ayarla (Dalga, Yanıp Sönme, Nabız, Yaklaşma Sensörü, Gece Lambası) donatın ya da zaman döngüleri, gece/gündüz saatleri ve varlık filtreleriyle özel ışık davranışları kurgulayın.
+* 🔴 **Etkileşimli Butonlar & PIN Tuş Takımı Kilitleri** — Herhangi bir karakteri kısa darbeli butona, şaltere veya basılı tutmalı kontrole dönüştürün. Sayı bloklarına (0–9) Redstone Karşılaştırıcı (Comparator) bağlayarak analog sinyal alın veya doğru şifre girildiğinde 2 saniyelik sinyal yayan gizli PIN kilitleri oluşturun.
+* 🗜️ **Tabela Presi & Hayatta Kalma Dengesi** — Tüm karakterleri, sembolleri ve arka plakaları huni uyumlu özel bir 3D atölye masasında üretin. Tabelaları normal kırmak bloğun kendisini ve uygulanan materyalleri düşürür; **İpeksi Dokunuş (Silk Touch)** ise tüm özel renk, ışık ve PIN ayarlarını kusursuz korur.
+* ⚡ **Sıfır Gecikmeli Render Önbelleği (Fast-Path)** — Gelişmiş istemci tarafı mesh önbelleklemesi FPS düşüşlerini ve anlık takılmaları ortadan kaldırarak yoğun neon panoların yanında bile son derece akıcı bir deneyim sunar.
+* 🌍 **Küresel Yerelleştirme** — Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça, Basitleştirilmiş Çince, Geleneksel Çince, Japonca, Korece, Lehçe ve Brezilya Portekizcesi olmak üzere 13 dile eksiksiz çevrilmiştir.
+
+---
 
 ## 🛠️ Teknoloji Yığını
 
 **Modlama API'si & Diller**
-*   ☕ **Java** — Çekirdek mantık ve arka uç.
-*   🧩 **Architectury API** — Eşzamanlı Forge, NeoForge ve Fabric geliştirmesi için platformlar arası soyutlama katmanı.
-*   🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Mod yükleyicileri.
+* ☕ **Java** — Çekirdek mantık ve arka uç.
+* 🧩 **Architectury API** — Eşzamanlı Forge, NeoForge ve Fabric geliştirmesi için platformlar arası soyutlama katmanı.
+* 🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Desteklenen mod yükleyicileri.
 
-**Araçlar**
-*   🧊 **Blockbench** — Tüm karakter, arka plaka ve alet blokları için özel 3D modelleme ve dokulandırma.
-*   🐘 **Gradle** — Derleme otomasyonu ve bağımlılık yönetimi.
+**Araçlar & Tasarım**
+* 🧊 **Blockbench** — Tüm karakter, arka plaka ve atölye modelleri için özel 3D modelleme ve dokulandırma.
+* 🐘 **Gradle** — Çoklu proje derleme otomasyonu ve bağımlılık yönetimi.
+
+---
 
 ## 🚀 Başlarken
 
 ### Gereksinimler
-*   Minecraft `1.20.1` veya `1.21.1`
-*   **Fabric**, **Forge** veya **NeoForge** Mod Yükleyicisi
-*   [Architectury API](https://modrinth.com/mod/architectury-api) (Zorunlu Bağımlılık)
+* Minecraft `1.20.1` veya `1.21.1`
+* **Fabric**, **Forge** veya **NeoForge** Mod Yükleyicisi
+* [Architectury API](https://modrinth.com/mod/architectury-api) (Tüm yükleyiciler için zorunlu bağımlılık)
+* [Fabric API](https://modrinth.com/mod/fabric-api) (Yalnızca Fabric için gereklidir)
 
 ### Kurulum
-1.  Modun en son sürümünü **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** veya **[Modrinth](https://modrinth.com/mod/sign-builder)** üzerinden indirin.
-2.  Architectury API'nin gerekli sürümünü indirin (Fabric kullanıyorsanız Fabric API'yi de indirin).
-3.  `.jar` dosyalarını Minecraft `mods` klasörünüze bırakın.
-4.  Oyunu başlatın!
+1. Modun en son sürümünü **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/sign-builder)** veya **[Modrinth](https://modrinth.com/mod/sign-builder)** üzerinden indirin.
+2. Architectury API'nin gerekli sürümünü indirin (Fabric kullanıyorsanız Fabric API'yi de indirin).
+3. `.jar` dosyalarını Minecraft `mods` klasörünüze bırakın.
+4. Oyunu başlatın!
+
+---
 
 ## 🤝 Katkıda Bulunma
 Bu proje öncelikli olarak kişisel bir portföy projesidir; ancak sorun bildirimleri, öneriler ve pull request'ler memnuniyetle karşılanır. Yaklaşımı tartışabilmemiz adına önemsiz olmayan her şey için lütfen önce bir konu (issue) açın.
 
 ## ⚖️ Sorumluluk Reddi & Yasal Bildirim
-*   Bu proje **GNU General Public License v3.0 (GPLv3)** kapsamında lisanslanmıştır. Daha fazla ayrıntı için `LICENSE` dosyasına bakın.
-*   Bu proje tamamen Minecraft için hayran yapımı, açık kaynaklı bir modifikasyondur.
-*   Tüm özel 3D modeller ve kod uygulamaları yazar tarafından oluşturulmuş orijinal eserlerdir.
+* Bu proje **GNU General Public License v3.0 (GPLv3)** kapsamında lisanslanmıştır. Daha fazla ayrıntı için `LICENSE` dosyasına bakın.
+* Bu proje tamamen Minecraft için hayran yapımı, açık kaynaklı bir modifikasyondur.
+* Tüm özel 3D modeller ve kod uygulamaları yazar tarafından oluşturulmuş orijinal eserlerdir.
 
 **Boran Mandacı** tarafından geliştirildi
