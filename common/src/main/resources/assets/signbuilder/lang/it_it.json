@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Blocco singolo",
   "tooltip.signbuilder.blueprint.wall_only": "I cartelli a griglia possono essere posizionati solo su pareti o piastre posteriori!",
   "tooltip.signbuilder.blueprint.mode.grid": "Modalità griglia",
+  "message.signbuilder.need_material": "Hai bisogno di %s per dipingere questo!",
+  "block.signbuilder.grid_sign": "Cartello griglia",
   "message.signbuilder.blueprint.saved": "Parola selezionata: ",
   "message.signbuilder.blueprint.grid_saved": "Progetto griglia salvato: ",
   "tooltip.signbuilder.blueprint.current_text": "Testo attuale",

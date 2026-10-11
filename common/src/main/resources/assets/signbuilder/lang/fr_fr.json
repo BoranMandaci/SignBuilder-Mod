@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Bloc unique",
   "tooltip.signbuilder.blueprint.wall_only": "Les panneaux en grille ne peuvent être placés que sur des murs ou des plaques arrières !",
   "tooltip.signbuilder.blueprint.mode.grid": "Mode grille",
+  "message.signbuilder.need_material": "Vous avez besoin de %s pour peindre cela !",
+  "block.signbuilder.grid_sign": "Panneau de grille",
   "message.signbuilder.blueprint.saved": "Mot sélectionné : ",
   "message.signbuilder.blueprint.grid_saved": "Plan de grille enregistré : ",
   "tooltip.signbuilder.blueprint.current_text": "Texte actuel",

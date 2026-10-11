@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Pojedynczy blok",
   "tooltip.signbuilder.blueprint.wall_only": "Tabliczki siatkowe można umieszczać tylko na ścianach lub płytach tylnych!",
   "tooltip.signbuilder.blueprint.mode.grid": "Tryb siatki",
+  "message.signbuilder.need_material": "Potrzebujesz %s, aby to pomalować!",
+  "block.signbuilder.grid_sign": "Tablica siatkowa",
   "message.signbuilder.blueprint.saved": "Wybrane słowo: ",
   "message.signbuilder.blueprint.grid_saved": "Zapisano plan siatki: ",
   "tooltip.signbuilder.blueprint.current_text": "Bieżący tekst",

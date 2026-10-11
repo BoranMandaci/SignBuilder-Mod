@@ -1,5 +1,6 @@
 package com.boran.signbuilder.item;
 
+import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.SignRotation;
 import com.boran.signbuilder.block.entity.LetterBlockEntity;
@@ -552,16 +553,33 @@ public class SignBlueprintItem extends Item {
 
     public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize) {
         int targetRow = (gridSize == 2) ? 0 : 1;
-        return getBannerCellsForBlock(text, blockIdx, gridSize, false, targetRow);
+        return getBannerCellsForBlock(text, blockIdx, gridSize, false, targetRow, 0);
     }
 
     public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine) {
+        return getBannerCellsForBlock(text, blockIdx, gridSize, isVertical, targetLine, 0);
+    }
+
+    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine, int startOffset) {
         Map<Integer, String> cells = new HashMap<>();
-        int charsPerBlock = gridSize;
-        int startChar = blockIdx * charsPerBlock;
-        int endChar = Math.min(text.length(), (blockIdx + 1) * charsPerBlock);
-        if (startChar >= text.length()) return cells;
-        String sub = text.substring(startChar, endChar);
+        if (text == null || text.isEmpty()) return cells;
+
+        int textStart;
+        int count;
+        int lineOffset;
+
+        if (blockIdx == 0) {
+            textStart = 0;
+            count = Math.min(gridSize - startOffset, text.length());
+            lineOffset = startOffset;
+        } else {
+            textStart = (gridSize - startOffset) + (blockIdx - 1) * gridSize;
+            if (textStart >= text.length()) return cells;
+            count = Math.min(gridSize, text.length() - textStart);
+            lineOffset = 0;
+        }
+
+        String sub = text.substring(textStart, textStart + count);
         for (int i = 0; i < sub.length(); i++) {
             char ch = sub.charAt(i);
             if (ch != ' ') {
@@ -569,8 +587,8 @@ public class SignBlueprintItem extends Item {
                 String path = getBlockPathForChar(cp);
                 if (path != null) {
                     int cellIndex = isVertical
-                            ? (i * gridSize + targetLine)
-                            : (targetLine * gridSize + i);
+                            ? ((lineOffset + i) * gridSize + targetLine)
+                            : (targetLine * gridSize + (lineOffset + i));
                     cells.put(cellIndex, path);
                 }
             }
@@ -578,7 +596,7 @@ public class SignBlueprintItem extends Item {
         return cells;
     }
 
-    private void stampOrPlaceGridSign(Level level, Player player, BlockPos targetPos, Direction clickedFace, int gridSize, Map<Integer, String> cells, boolean withBackplate, boolean isBannerMode, boolean isVertical, int targetLine) {
+    private void stampOrPlaceGridSign(Level level, Player player, BlockPos targetPos, Direction clickedFace, int gridSize, Map<Integer, String> cells, boolean withBackplate, boolean isBannerMode, boolean isVertical, int targetLine, int lineStartOffset) {
         BlockState currentState = level.getBlockState(targetPos);
         boolean isBackplate = currentState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
         boolean isLetterWithBackplate = false;
@@ -608,11 +626,11 @@ public class SignBlueprintItem extends Item {
                 int offsetIdx = isBack ? 16 : 0;
                 if (isBannerMode) {
                     if (isVertical) {
-                        for (int r = 0; r < gridSize; r++) {
+                        for (int r = lineStartOffset; r < gridSize; r++) {
                             gridBe.getCells().remove(offsetIdx + r * gridSize + targetLine);
                         }
                     } else {
-                        for (int c = 0; c < gridSize; c++) {
+                        for (int c = lineStartOffset; c < gridSize; c++) {
                             gridBe.getCells().remove(offsetIdx + targetLine * gridSize + c);
                         }
                     }
@@ -748,6 +766,22 @@ public class SignBlueprintItem extends Item {
         }
     }
 
+    public static boolean isStampableTarget(Level level, BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) return true;
+        if (state.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) return true;
+        if (state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+            if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                com.boran.signbuilder.block.entity.LetterBlockEntity eff = lbe;
+                if (lbe.isDummy()) {
+                    BlockEntity me = level.getBlockEntity(lbe.getMasterPos());
+                    if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) eff = masterBe;
+                }
+                return eff.hasBackplate();
+            }
+        }
+        return false;
+    }
+
     private InteractionResult useOnGrid(UseOnContext pContext, Level level, Player player, ItemStack stack, CompoundTag tag, boolean withBackplate) {
         int gridSize = tag.contains("GridSize") ? tag.getInt("GridSize") : 3;
         if (gridSize < 2) gridSize = 3;
@@ -758,9 +792,7 @@ public class SignBlueprintItem extends Item {
         Direction clickedFace = pContext.getClickedFace();
         BlockState clickedState = level.getBlockState(clickedPos);
 
-        boolean clickedIsStampable = (clickedState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)
-                || (clickedState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock)
-                || (clickedState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock);
+        boolean clickedIsStampable = isStampableTarget(level, clickedPos, clickedState);
 
         if (clickedFace.getAxis() == Direction.Axis.Y && !clickedIsStampable) {
             player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.wall_only").withStyle(ChatFormatting.RED), true);
@@ -771,6 +803,9 @@ public class SignBlueprintItem extends Item {
         if (clickedFace.getAxis() == Direction.Axis.Y && clickedIsStampable) {
             if (clickedState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 effectiveFace = clickedState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (clickedState.getBlock() instanceof LetterBlock && clickedState.hasProperty(BlockStateProperties.ATTACH_FACE) && clickedState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                    effectiveFace = effectiveFace.getCounterClockWise();
+                }
             }
         }
 
@@ -786,20 +821,28 @@ public class SignBlueprintItem extends Item {
         boolean isVertical = tag.getBoolean("IsVertical");
         Vec3 hitLoc = pContext.getClickLocation();
         int targetLine;
+        int startOffset;
         if (isVertical) {
             targetLine = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
+            startOffset = getHitSubCellRow(hitLoc, gridSize);
         } else {
             targetLine = getHitSubCellRow(hitLoc, gridSize);
+            startOffset = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
         }
 
         int numBlocks;
         List<Map<Integer, String>> blocksCells = new ArrayList<>();
 
         if (isBannerMode && !gridText.isEmpty()) {
-            int charsPerBlock = gridSize;
-            numBlocks = (gridText.length() + charsPerBlock - 1) / charsPerBlock;
+            int firstBlockCap = gridSize - startOffset;
+            if (gridText.length() <= firstBlockCap) {
+                numBlocks = 1;
+            } else {
+                int rem = gridText.length() - firstBlockCap;
+                numBlocks = 1 + (rem + gridSize - 1) / gridSize;
+            }
             for (int b = 0; b < numBlocks; b++) {
-                blocksCells.add(getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine));
+                blocksCells.add(getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
             }
         } else {
             numBlocks = 1;
@@ -833,31 +876,39 @@ public class SignBlueprintItem extends Item {
         }
 
         List<BlockPos> targetPositions = new ArrayList<>();
+        List<Integer> validBlockIndices = new ArrayList<>();
         for (int b = 0; b < numBlocks; b++) {
             BlockPos bPos = (isBannerMode && isVertical)
                     ? startPos.below(b)
                     : offsetRight(startPos, rightX, rightZ, b);
             BlockState bState = level.getBlockState(bPos);
-            boolean bStamp = (bState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)
-                    || (bState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock)
-                    || (bState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock);
-            if (!bStamp && !bState.canBeReplaced()) {
-                player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
-                return InteractionResult.FAIL;
+            boolean bStamp = isStampableTarget(level, bPos, bState);
+            if (clickedIsStampable) {
+                if (bStamp) {
+                    validBlockIndices.add(b);
+                }
+            } else {
+                if (!bStamp && !bState.canBeReplaced()) {
+                    player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
+                    return InteractionResult.FAIL;
+                }
+                validBlockIndices.add(b);
             }
             targetPositions.add(bPos);
+        }
+
+        if (validBlockIndices.isEmpty()) {
+            return InteractionResult.FAIL;
         }
 
         if (!player.isCreative()) {
             int backplatesNeeded = 0;
             Map<Item, Integer> lettersNeeded = new HashMap<>();
 
-            for (int b = 0; b < numBlocks; b++) {
+            for (int b : validBlockIndices) {
                 BlockPos bPos = targetPositions.get(b);
                 BlockState bState = level.getBlockState(bPos);
-                boolean bStamp = (bState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)
-                        || (bState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock)
-                        || (bState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock);
+                boolean bStamp = isStampableTarget(level, bPos, bState);
                 if (!bStamp && withBackplate) {
                     backplatesNeeded++;
                 }
@@ -891,9 +942,10 @@ public class SignBlueprintItem extends Item {
         }
 
         List<Long> placedPositions = new ArrayList<>();
-        for (int b = 0; b < numBlocks; b++) {
+        for (int b : validBlockIndices) {
             BlockPos bPos = targetPositions.get(b);
-            stampOrPlaceGridSign(level, player, bPos, effectiveFace, gridSize, blocksCells.get(b), withBackplate, isBannerMode, isVertical, targetLine);
+            int lineStartOffset = (b == 0) ? startOffset : 0;
+            stampOrPlaceGridSign(level, player, bPos, effectiveFace, gridSize, blocksCells.get(b), withBackplate, isBannerMode, isVertical, targetLine, lineStartOffset);
             placedPositions.add(bPos.asLong());
         }
 

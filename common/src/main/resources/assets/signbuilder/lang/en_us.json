@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Single Block",
   "tooltip.signbuilder.blueprint.wall_only": "Grid signs can only be placed on walls or backplates!",
   "tooltip.signbuilder.blueprint.mode.grid": "Grid Mode",
+  "message.signbuilder.need_material": "You need %s to paint this!",
+  "block.signbuilder.grid_sign": "Grid Sign",
   "message.signbuilder.blueprint.saved": "Selected word: ",
   "message.signbuilder.blueprint.grid_saved": "Blueprint Grid Saved: ",
   "tooltip.signbuilder.blueprint.current_text": "Current Text",

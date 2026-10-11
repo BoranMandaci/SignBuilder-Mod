@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "単一ブロック",
   "tooltip.signbuilder.blueprint.wall_only": "グリッド看板は壁またはバックプレートにのみ設置できます！",
   "tooltip.signbuilder.blueprint.mode.grid": "グリッドモード",
+  "message.signbuilder.need_material": "これを塗るには%sが必要です！",
+  "block.signbuilder.grid_sign": "グリッド看板",
   "message.signbuilder.blueprint.saved": "選択された単語: ",
   "message.signbuilder.blueprint.grid_saved": "グリッド設計図を保存しました: ",
   "tooltip.signbuilder.blueprint.current_text": "現在のテキスト",

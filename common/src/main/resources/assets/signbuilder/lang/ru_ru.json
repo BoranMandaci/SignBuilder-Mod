@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Один блок",
   "tooltip.signbuilder.blueprint.wall_only": "Сеточные таблички можно ставить только на стены или задние панели!",
   "tooltip.signbuilder.blueprint.mode.grid": "Режим сетки",
+  "message.signbuilder.need_material": "Вам нужно %s, чтобы покрасить это!",
+  "block.signbuilder.grid_sign": "Сеточная табличка",
   "message.signbuilder.blueprint.saved": "Выбранное слово: ",
   "message.signbuilder.blueprint.grid_saved": "Чертёж сетки сохранён: ",
   "tooltip.signbuilder.blueprint.current_text": "Текущий текст",

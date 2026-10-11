@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Tek Blok",
   "tooltip.signbuilder.blueprint.wall_only": "Izgara tabelaları yalnızca duvara veya arka plakaya yerleştirilebilir!",
   "tooltip.signbuilder.blueprint.mode.grid": "Grid Modu",
+  "message.signbuilder.need_material": "Bunu boyamak için %s gerekli!",
+  "block.signbuilder.grid_sign": "Grid Tabela",
   "message.signbuilder.blueprint.saved": "Seçilen kelime: ",
   "message.signbuilder.blueprint.grid_saved": "Blueprint Grid Kaydedildi: ",
   "tooltip.signbuilder.blueprint.current_text": "Mevcut Metin",

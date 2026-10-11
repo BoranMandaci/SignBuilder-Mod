@@ -246,7 +246,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 }
                 drops.add(getDroppedBackplateItemStack(lbe));
             } else {
-                drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
+                drops.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), 1));
 
                 SignMaterial fMat = lbe.getBackplateFrontMaterial();
                 if (fMat == SignMaterial.DEFAULT && state.hasProperty(MATERIAL)) {
@@ -267,7 +267,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                 }
             }
         } else {
-            drops.add(new ItemStack(Blocks.WHITE_CONCRETE, 3));
+            drops.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), 1));
             SignMaterial mat = state.hasProperty(MATERIAL) ? state.getValue(MATERIAL) : SignMaterial.DEFAULT;
             if (mat != SignMaterial.DEFAULT) {
                 ItemStack matStack = getItemForMaterial(mat);

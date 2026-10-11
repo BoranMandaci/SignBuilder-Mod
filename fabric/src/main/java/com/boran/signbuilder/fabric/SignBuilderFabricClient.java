@@ -3,6 +3,7 @@ package com.boran.signbuilder.fabric;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
+import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
 import dev.architectury.registry.client.rendering.BlockEntityRendererRegistry;
@@ -18,6 +19,9 @@ public class SignBuilderFabricClient implements ClientModInitializer {
         ModColorHandlers.register();
         
         net.minecraft.client.gui.screens.MenuScreens.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
+
+        BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
+        BlockEntityRendererRegistry.register(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
 
         for (var blockSupplier : ModBlocks.ALL_SIGN_BLOCKS) {
             BlockRenderLayerMap.INSTANCE.putBlock(blockSupplier.get(), RenderType.cutout());

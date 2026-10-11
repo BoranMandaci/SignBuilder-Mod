@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "單個方塊",
   "tooltip.signbuilder.blueprint.wall_only": "網格告示牌只能放置在牆壁或背板上！",
   "tooltip.signbuilder.blueprint.mode.grid": "網格模式",
+  "message.signbuilder.need_material": "你需要 %s 來為此著色！",
+  "block.signbuilder.grid_sign": "網格告示牌",
   "message.signbuilder.blueprint.saved": "所選詞組：",
   "message.signbuilder.blueprint.grid_saved": "網格藍圖已儲存：",
   "tooltip.signbuilder.blueprint.current_text": "目前文字",

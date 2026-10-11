@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Einzelblock",
   "tooltip.signbuilder.blueprint.wall_only": "Gitterschilder können nur an Wänden oder Rückplatten angebracht werden!",
   "tooltip.signbuilder.blueprint.mode.grid": "Rastermodus",
+  "message.signbuilder.need_material": "Du benötigst %s, um dies zu bemalen!",
+  "block.signbuilder.grid_sign": "Gitter-Schild",
   "message.signbuilder.blueprint.saved": "Ausgewähltes Wort: ",
   "message.signbuilder.blueprint.grid_saved": "Raster-Blaupause gespeichert: ",
   "tooltip.signbuilder.blueprint.current_text": "Aktueller Text",

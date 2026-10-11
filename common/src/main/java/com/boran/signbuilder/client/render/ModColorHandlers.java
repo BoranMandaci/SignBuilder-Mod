@@ -33,6 +33,40 @@ public class ModColorHandlers {
                 ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, ModBlocks.BACKPLATE_ITEM.get());
             }
         } catch (Exception ignored) {}
+
+        List<Block> blocks = new ArrayList<>();
+        for (RegistrySupplier<Block> supplier : ModBlocks.ALL_SIGN_BLOCKS) {
+            try {
+                if (supplier != null && supplier.isPresent()) {
+                    blocks.add(supplier.get());
+                }
+            } catch (Exception ignored) {}
+        }
+        try {
+            if (ModBlocks.BACKPLATE.isPresent()) {
+                blocks.add(ModBlocks.BACKPLATE.get());
+            }
+        } catch (Exception ignored) {}
+
+        if (!blocks.isEmpty()) {
+            ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
+                if (level != null && pos != null) {
+                    net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+                    if (be instanceof com.boran.signbuilder.block.entity.LetterBlockEntity letter) {
+                        if (state.is(ModBlocks.BACKPLATE.get())) {
+                            return tintIndex == 1 ? letter.getBackplateBackColor() : letter.getBackplateFrontColor();
+                        }
+                        if (tintIndex == 0) {
+                            return letter.getRgbColor();
+                        }
+                        if (tintIndex == 1) {
+                            return letter.getBackplateBackColor();
+                        }
+                    }
+                }
+                return 0xFFFFFF;
+            }, blocks.toArray(new Block[0]));
+        }
     }
 
     public static int getItemColor(ItemStack stack, int tintIndex) {

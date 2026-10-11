@@ -129,11 +129,25 @@ public class GridSignBlock extends Block implements EntityBlock {
     private void dropGridSignResources(Level level, BlockPos pos, GridSignBlockEntity gridBe) {
         if (gridBe.hasBackplate()) {
             Block.popResource(level, pos, new ItemStack(ModBlocks.BACKPLATE_ITEM.get()));
+            if (gridBe.getBackplateFrontMaterial() != SignMaterial.DEFAULT) {
+                ItemStack fStack = BackplateBlock.getItemForMaterial(gridBe.getBackplateFrontMaterial());
+                if (!fStack.isEmpty()) Block.popResource(level, pos, fStack);
+            }
+            if (gridBe.getBackplateBackMaterial() != SignMaterial.DEFAULT) {
+                ItemStack bStack = BackplateBlock.getItemForMaterial(gridBe.getBackplateBackMaterial());
+                if (!bStack.isEmpty()) Block.popResource(level, pos, bStack);
+            }
         }
         for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
             Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
             if (letterBlock != null && letterBlock != Blocks.AIR) {
                 Block.popResource(level, pos, new ItemStack(letterBlock));
+            }
+            if (cell.material != null && cell.material != SignMaterial.DEFAULT) {
+                ItemStack matStack = BackplateBlock.getItemForMaterial(cell.material);
+                if (!matStack.isEmpty()) {
+                    Block.popResource(level, pos, matStack);
+                }
             }
         }
         if (gridBe.isActive() || gridBe.getWrenchMode() != 0) {

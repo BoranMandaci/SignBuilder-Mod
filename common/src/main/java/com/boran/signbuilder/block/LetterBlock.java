@@ -1310,7 +1310,7 @@ public class LetterBlock extends Block implements EntityBlock {
                 popResource(level, dropPos, bp);
             }
         } else {
-            popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+            popResource(level, dropPos, new ItemStack(dropState.getBlock(), multiplier));
             SignMaterial mat = dropState.hasProperty(MATERIAL) ? dropState.getValue(MATERIAL) : lbe.getSavedMaterial();
             if (mat != SignMaterial.DEFAULT) {
                 ItemStack matStack = BackplateBlock.getItemForMaterial(mat);
@@ -1326,7 +1326,7 @@ public class LetterBlock extends Block implements EntityBlock {
 
             ItemStack backGlyph = lbe.getBackGlyph();
             if (!backGlyph.isEmpty()) {
-                popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+                popResource(level, dropPos, new ItemStack(backGlyph.getItem(), multiplier));
                 SignMaterial backGlyphMaterial = getBackGlyphMaterial(backGlyph);
                 if (backGlyphMaterial != SignMaterial.DEFAULT) {
                     ItemStack backGlyphMaterialStack = BackplateBlock.getItemForMaterial(backGlyphMaterial);
@@ -1338,7 +1338,7 @@ public class LetterBlock extends Block implements EntityBlock {
             }
 
             if (backplateSource != null) {
-                popResource(level, dropPos, new ItemStack(Blocks.WHITE_CONCRETE, 3 * multiplier));
+                popResource(level, dropPos, new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), multiplier));
                 SignMaterial fMat = backplateSource.getBackplateFrontMaterial();
                 SignMaterial bMat = backplateSource.getBackplateBackMaterial();
 

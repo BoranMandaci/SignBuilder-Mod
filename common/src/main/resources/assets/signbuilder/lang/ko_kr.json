@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "단일 블록",
   "tooltip.signbuilder.blueprint.wall_only": "격자 표지판은 벽이나 백플레이트에만 설치할 수 있습니다!",
   "tooltip.signbuilder.blueprint.mode.grid": "그리드 모드",
+  "message.signbuilder.need_material": "이것을 칠하려면 %s이(가) 필요합니다!",
+  "block.signbuilder.grid_sign": "격자 표지판",
   "message.signbuilder.blueprint.saved": "선택된 단어: ",
   "message.signbuilder.blueprint.grid_saved": "그리드 청사진 저장됨: ",
   "tooltip.signbuilder.blueprint.current_text": "현재 텍스트",

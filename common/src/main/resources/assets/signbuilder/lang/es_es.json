@@ -130,6 +130,8 @@
   "gui.signbuilder.blueprint.mode_single": "Bloque único",
   "tooltip.signbuilder.blueprint.wall_only": "¡Los carteles de cuadrícula solo se pueden colocar en paredes o placas traseras!",
   "tooltip.signbuilder.blueprint.mode.grid": "Modo cuadrícula",
+  "message.signbuilder.need_material": "¡Necesitas %s para pintar esto!",
+  "block.signbuilder.grid_sign": "Cartel de cuadrícula",
   "message.signbuilder.blueprint.saved": "Palabra seleccionada: ",
   "message.signbuilder.blueprint.grid_saved": "Plano de cuadrícula guardado: ",
   "tooltip.signbuilder.blueprint.current_text": "Texto actual",
