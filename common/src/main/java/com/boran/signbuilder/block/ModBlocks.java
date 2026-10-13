@@ -1511,6 +1511,7 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
             () -> new BackplateBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
+                    .sound(net.minecraft.world.level.block.SoundType.WOOD)
                     .noOcclusion()
                     .lightLevel(state -> {
                         if (!state.hasProperty(LetterBlock.LIGHT_MODE)) return 0;

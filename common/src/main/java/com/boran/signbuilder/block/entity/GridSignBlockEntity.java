@@ -191,11 +191,70 @@ public class GridSignBlockEntity extends BlockEntity {
         return cells;
     }
 
-    public void setCell(int index, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
-        cells.put(index, new CellData(character, material, color, rainbow, lightMode));
+    public static int makeKey(boolean isBack, int gridSize, int col, int row) {
+        return (isBack ? 10000 : 0) + gridSize * 100 + row * 10 + col;
+    }
+
+    public static boolean cellsOverlap(int g1, int col1, int row1, int g2, int col2, int row2) {
+        float u1A = (float) col1 / g1;
+        float u2A = (float) (col1 + 1) / g1;
+        float v1A = (float) row1 / g1;
+        float v2A = (float) (row1 + 1) / g1;
+        float u1B = (float) col2 / g2;
+        float u2B = (float) (col2 + 1) / g2;
+        float v1B = (float) row2 / g2;
+        float v2B = (float) (row2 + 1) / g2;
+        float eps = 0.001f;
+        return (u1A < u2B - eps) && (u2A > u1B + eps)
+            && (v1A < v2B - eps) && (v2A > v1B + eps);
+    }
+
+    public boolean hasCollision(int candidateGridSize, int candidateCol, int candidateRow, boolean candidateIsBack) {
+        for (CellData cell : cells.values()) {
+            if (cell.isBack != candidateIsBack) continue;
+            if (cell.gridSize == candidateGridSize && cell.col == candidateCol && cell.row == candidateRow) {
+                continue;
+            }
+            if (cell.overlaps(candidateGridSize, candidateCol, candidateRow, candidateIsBack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasAnyCollision(int candidateGridSize, int candidateCol, int candidateRow, boolean candidateIsBack) {
+        for (CellData cell : cells.values()) {
+            if (cell.isBack != candidateIsBack) continue;
+            if (cell.overlaps(candidateGridSize, candidateCol, candidateRow, candidateIsBack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public CellData getCellAt(float u, float v, boolean isBack) {
+        for (CellData cell : cells.values()) {
+            if (cell.isBack == isBack && u >= cell.getU1() && u <= cell.getU2() && v >= cell.getV1() && v <= cell.getV2()) {
+                return cell;
+            }
+        }
+        return null;
+    }
+
+    public void setCell(int col, int row, int cellGridSize, boolean isBack, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+        int key = makeKey(isBack, cellGridSize, col, row);
+        cells.put(key, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack));
         markRenderDirty();
         setChanged();
         sync();
+    }
+
+    public void setCell(int index, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+        boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(index, this.gridSize);
+        int localIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(index, this.gridSize);
+        int col = localIndex % this.gridSize;
+        int row = localIndex / this.gridSize;
+        setCell(col, row, this.gridSize, isBack, character, material, color, rainbow, lightMode);
     }
 
     public void clearCell(int index) {
@@ -250,6 +309,10 @@ public class GridSignBlockEntity extends BlockEntity {
             cellTag.putInt("Color", entry.getValue().color);
             cellTag.putBoolean("Rainbow", entry.getValue().rainbow);
             cellTag.putInt("LightMode", entry.getValue().lightMode);
+            cellTag.putInt("GridSize", entry.getValue().gridSize);
+            cellTag.putInt("Col", entry.getValue().col);
+            cellTag.putInt("Row", entry.getValue().row);
+            cellTag.putBoolean("IsBack", entry.getValue().isBack);
             list.add(cellTag);
         }
         tag.put("Cells", list);
@@ -295,7 +358,26 @@ public class GridSignBlockEntity extends BlockEntity {
             int color = cellTag.getInt("Color");
             boolean rainbow = cellTag.getBoolean("Rainbow");
             int lightMode = cellTag.getInt("LightMode");
-            cells.put(index, new CellData(character, material, color, rainbow, lightMode));
+
+            int cellGridSize;
+            int col;
+            int row;
+            boolean isBack;
+
+            if (cellTag.contains("GridSize")) {
+                cellGridSize = cellTag.getInt("GridSize");
+                col = cellTag.getInt("Col");
+                row = cellTag.getInt("Row");
+                isBack = cellTag.getBoolean("IsBack");
+            } else {
+                cellGridSize = this.gridSize;
+                isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(index, this.gridSize);
+                int localIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(index, this.gridSize);
+                col = localIndex % this.gridSize;
+                row = localIndex / this.gridSize;
+            }
+
+            cells.put(index, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack));
         }
         markRenderDirty();
     }
@@ -505,13 +587,42 @@ public class GridSignBlockEntity extends BlockEntity {
         public int color;
         public boolean rainbow;
         public int lightMode;
+        public int gridSize;
+        public int col;
+        public int row;
+        public boolean isBack;
 
-        public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+        public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode,
+                        int gridSize, int col, int row, boolean isBack) {
             this.character = character;
             this.material = material;
             this.color = color;
             this.rainbow = rainbow;
             this.lightMode = lightMode;
+            this.gridSize = gridSize;
+            this.col = col;
+            this.row = row;
+            this.isBack = isBack;
+        }
+
+        public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+            this(character, material, color, rainbow, lightMode, 3, 0, 0, false);
+        }
+
+        public float getU1() { return (float) col / gridSize; }
+        public float getU2() { return (float) (col + 1) / gridSize; }
+        public float getV1() { return (float) row / gridSize; }
+        public float getV2() { return (float) (row + 1) / gridSize; }
+
+        public boolean overlaps(int otherGridSize, int otherCol, int otherRow, boolean otherIsBack) {
+            if (this.isBack != otherIsBack) return false;
+            float oU1 = (float) otherCol / otherGridSize;
+            float oU2 = (float) (otherCol + 1) / otherGridSize;
+            float oV1 = (float) otherRow / otherGridSize;
+            float oV2 = (float) (otherRow + 1) / otherGridSize;
+            float eps = 0.001f;
+            return (getU1() < oU2 - eps) && (getU2() > oU1 + eps)
+                && (getV1() < oV2 - eps) && (getV2() > oV1 + eps);
         }
     }
 

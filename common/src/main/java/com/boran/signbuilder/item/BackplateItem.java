@@ -91,6 +91,43 @@ public class BackplateItem extends BlockItem {
             }
         }
 
+        if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                if (player != null && player.isShiftKeyDown()) {
+                    if (gbe.hasBackplate()) {
+                        if (!level.isClientSide()) {
+                            gbe.setHasBackplate(false);
+                            gbe.markRenderDirty();
+                            gbe.setChanged();
+                            gbe.sync();
+                            if (!player.isCreative()) {
+                                Block.popResource(level, pos, new ItemStack(com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()));
+                            }
+                            level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                        }
+                        return InteractionResult.sidedSuccess(level.isClientSide());
+                    }
+                    return InteractionResult.PASS;
+                } else if (!gbe.hasBackplate()) {
+                    if (player != null && !player.isCreative() && stack.getCount() < 1) {
+                        return InteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        gbe.setHasBackplate(true);
+                        gbe.markRenderDirty();
+                        gbe.setChanged();
+                        gbe.sync();
+                        if (player != null && !player.isCreative()) {
+                            stack.shrink(1);
+                        }
+                        level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+            }
+        }
+
         return super.useOn(context);
     }
 }

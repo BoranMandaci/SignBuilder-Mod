@@ -36,7 +36,7 @@ public class GridModeManager {
                             InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RSHIFT)) {
                         
                         currentGridSize++;
-                        if (currentGridSize > 4) {
+                        if (currentGridSize > 5) {
                             currentGridSize = 1;
                         }
                         

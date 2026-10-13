@@ -28,7 +28,7 @@ public class GridOffsetHelper {
         return new Vector3f(cx, cy, cz);
     }
 
-    public static Vector3f getBaseTranslation(AttachFace face, Direction facing) {
+    public static Vector3f getBaseTranslation(AttachFace face, Direction facing, boolean isBack) {
         float dx = 0, dy = 0, dz = 0;
         if (face == AttachFace.FLOOR || face == AttachFace.CEILING) {
             float shift = 0.46875f;
@@ -38,8 +38,19 @@ public class GridOffsetHelper {
                 case WEST -> dx = -shift;
                 case EAST -> dx = shift;
             }
+        } else if (face == AttachFace.WALL && isBack) {
+            switch (facing) {
+                case NORTH -> dz = -1.0f;
+                case SOUTH -> dz = 1.0f;
+                case WEST -> dx = -1.0f;
+                case EAST -> dx = 1.0f;
+            }
         }
         return new Vector3f(dx, dy, dz);
+    }
+
+    public static Vector3f getBaseTranslation(AttachFace face, Direction facing) {
+        return getBaseTranslation(face, facing, false);
     }
     
     public static Vector3f getClearance(AttachFace face, Direction facing, float amount) {

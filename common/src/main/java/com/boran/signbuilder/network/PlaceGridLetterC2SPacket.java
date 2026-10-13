@@ -158,10 +158,19 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
         }
 
         if (level.getBlockEntity(targetPos) instanceof GridSignBlockEntity gridBe) {
-            if (gridBe.getGridSize() != gridSize) {
+            boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(index, gridSize);
+            int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(index, gridSize);
+            int col = rawIndex % gridSize;
+            int row = rawIndex / gridSize;
+
+            if (gridBe.hasCollision(gridSize, col, row, isBack)) {
+                return;
+            }
+
+            if (gridBe.getCells().isEmpty()) {
                 gridBe.setGridSize(gridSize);
             }
-            gridBe.setCell(index, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+            gridBe.setCell(col, row, gridSize, isBack, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
 
             if (!player.isCreative()) {
                 ItemStack mainHand = player.getMainHandItem();

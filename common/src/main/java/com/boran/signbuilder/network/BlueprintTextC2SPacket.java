@@ -25,6 +25,8 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         return TYPE;
     }
 
+    public record GridCellSpec(int gridSize, int col, int row, String charPath) {}
+
     private final String text;
     private final int size;
     private final boolean is2x2;
@@ -35,8 +37,9 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
     private final boolean isBannerMode;
     private final String gridText;
     private final List<String> gridCells;
+    private final List<GridCellSpec> multiGridCells;
 
-    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells) {
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells, List<GridCellSpec> multiGridCells) {
         this.text = text;
         this.size = size;
         this.is2x2 = (size == 2);
@@ -47,14 +50,19 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         this.isBannerMode = isBannerMode;
         this.gridText = gridText != null ? gridText : "";
         this.gridCells = gridCells != null ? new ArrayList<>(gridCells) : Collections.emptyList();
+        this.multiGridCells = multiGridCells != null ? new ArrayList<>(multiGridCells) : Collections.emptyList();
+    }
+
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells) {
+        this(text, size, isVertical, withBackplate, isGridMode, gridSize, isBannerMode, gridText, gridCells, Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, String gridText, List<String> gridCells) {
-        this(text, size, isVertical, withBackplate, isGridMode, gridSize, true, gridText, gridCells);
+        this(text, size, isVertical, withBackplate, isGridMode, gridSize, true, gridText, gridCells, Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate) {
-        this(text, size, isVertical, withBackplate, false, 3, true, "", Collections.emptyList());
+        this(text, size, isVertical, withBackplate, false, 3, true, "", Collections.emptyList(), Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical, boolean withBackplate) {
@@ -88,6 +96,11 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         for (int i = 0; i < count; i++) {
             this.gridCells.add(buf.readUtf());
         }
+        int multiCount = buf.readInt();
+        this.multiGridCells = new ArrayList<>(multiCount);
+        for (int i = 0; i < multiCount; i++) {
+            this.multiGridCells.add(new GridCellSpec(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf()));
+        }
     }
 
     public void toBytes(RegistryFriendlyByteBuf buf) {
@@ -102,6 +115,13 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
         buf.writeInt(this.gridCells.size());
         for (String cell : this.gridCells) {
             buf.writeUtf(cell != null ? cell : "");
+        }
+        buf.writeInt(this.multiGridCells.size());
+        for (GridCellSpec spec : this.multiGridCells) {
+            buf.writeInt(spec.gridSize());
+            buf.writeInt(spec.col());
+            buf.writeInt(spec.row());
+            buf.writeUtf(spec.charPath() != null ? spec.charPath() : "");
         }
     }
 
@@ -125,11 +145,26 @@ public class BlueprintTextC2SPacket implements CustomPacketPayload {
                     t.putBoolean("IsBannerMode", this.isBannerMode);
                     t.putString("GridText", this.gridText);
                     ListTag list = new ListTag();
-                    for (int i = 0; i < this.gridCells.size(); i++) {
-                        CompoundTag cellTag = new CompoundTag();
-                        cellTag.putInt("Index", i);
-                        cellTag.putString("Char", this.gridCells.get(i));
-                        list.add(cellTag);
+                    if (!this.multiGridCells.isEmpty()) {
+                        for (GridCellSpec spec : this.multiGridCells) {
+                            CompoundTag cellTag = new CompoundTag();
+                            cellTag.putInt("GridSize", spec.gridSize());
+                            cellTag.putInt("Col", spec.col());
+                            cellTag.putInt("Row", spec.row());
+                            cellTag.putString("Char", spec.charPath());
+                            cellTag.putInt("Index", spec.gridSize() * 100 + spec.row() * 10 + spec.col());
+                            list.add(cellTag);
+                        }
+                    } else {
+                        for (int i = 0; i < this.gridCells.size(); i++) {
+                            CompoundTag cellTag = new CompoundTag();
+                            cellTag.putInt("GridSize", this.gridSize);
+                            cellTag.putInt("Col", i % this.gridSize);
+                            cellTag.putInt("Row", i / this.gridSize);
+                            cellTag.putString("Char", this.gridCells.get(i));
+                            cellTag.putInt("Index", i);
+                            list.add(cellTag);
+                        }
                     }
                     t.put("GridCells", list);
                 });

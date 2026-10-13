@@ -157,13 +157,16 @@ public class GridSignRenderCache {
 
         List<CachedCell> cellList = new ArrayList<>();
         for (Map.Entry<Integer, GridSignBlockEntity.CellData> entry : entity.getCells().entrySet()) {
-            int rawIndex = entry.getKey();
-            boolean isBack = rawIndex >= 16;
-            int index = isBack ? rawIndex - 16 : rawIndex;
             GridSignBlockEntity.CellData data = entry.getValue();
 
             Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", data.character));
             if (letterBlock == null || letterBlock == Blocks.AIR) continue;
+
+            boolean isBack = data.isBack;
+            int cellGridSize = data.gridSize > 0 ? data.gridSize : gridSize;
+            int col = data.col;
+            int row = data.row;
+            float cellScale = 1.0f / cellGridSize;
 
             Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
             BlockState letterState = letterBlock.defaultBlockState();
@@ -180,16 +183,14 @@ public class GridSignRenderCache {
                 letterState = letterState.setValue(LetterBlock.LIGHT_MODE, data.lightMode);
             }
 
-            int col = index % gridSize;
-            int row = index / gridSize;
-            float colShift = (gridSize - 1) / 2.0f - col;
-            float rowShift = (gridSize - 1) / 2.0f - row;
+            float colShift = (cellGridSize - 1) / 2.0f - col;
+            float rowShift = (cellGridSize - 1) / 2.0f - row;
             if (rotationDegrees != 0 && face != AttachFace.WALL) {
                 colShift *= 1.4142135f;
             }
 
-            Vector3f offsets = GridOffsetHelper.getOffset(face, effectiveFacing, colShift, rowShift, scale);
-            Vector3f baseTrans = GridOffsetHelper.getBaseTranslation(face, effectiveFacing);
+            Vector3f offsets = GridOffsetHelper.getOffset(face, effectiveFacing, colShift, rowShift, cellScale);
+            Vector3f baseTrans = GridOffsetHelper.getBaseTranslation(face, effectiveFacing, isBack);
             Vector3f cl = hasBackplate ? GridOffsetHelper.getClearance(face, effectiveFacing, 1.05f / 16.0f) : new Vector3f(0, 0, 0);
             Vector3f c = GridOffsetHelper.getCenter(face, effectiveFacing);
 
@@ -210,7 +211,7 @@ public class GridSignRenderCache {
                     letterState, finalLetterModel, renderType,
                     totalTransX, totalTransY, totalTransZ,
                     c.x, c.y, c.z,
-                    scale, rawColor, data.rainbow, isMaterial
+                    cellScale, rawColor, data.rainbow, isMaterial
             ));
         }
 
