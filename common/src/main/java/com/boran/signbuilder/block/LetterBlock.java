@@ -811,8 +811,6 @@ public class LetterBlock extends Block implements EntityBlock {
         if (held.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof LetterBlock
                 && master.hasBackplate()
-                && state.hasProperty(FACE)
-                && state.getValue(FACE) != AttachFace.WALL
                 && isOnBackSide(player, pos, state, master.getFacingRotation())) {
             if (!master.getBackGlyph().isEmpty()) {
                 return InteractionResult.FAIL;

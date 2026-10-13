@@ -1,11 +1,14 @@
 package com.boran.signbuilder;
 
+import com.boran.signbuilder.block.GridSignBlock;
 import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.ModCreativeModeTabs;
 import com.boran.signbuilder.item.ModItems;
 import com.boran.signbuilder.item.PaintBrushItem;
+import com.boran.signbuilder.item.SignBlueprintItem;
+import com.boran.signbuilder.item.WrenchItem;
 import com.boran.signbuilder.menu.ModMenuTypes;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
@@ -36,8 +39,12 @@ public class SignBuilder {
         ModMessages.register();
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
+            ItemStack held = player.getItemInHand(hand);
+            if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof WrenchItem || held.getItem() instanceof SignBlueprintItem) {
+                return EventResult.pass();
+            }
+
             if (hand == InteractionHand.MAIN_HAND) {
-                ItemStack held = player.getItemInHand(hand);
                 if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock) {
                     boolean isGridMode = !player.level().isClientSide()
                             ? com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1
@@ -46,18 +53,19 @@ public class SignBuilder {
                         return EventResult.interruptFalse();
                     }
                 }
+            }
 
-                if (player.isShiftKeyDown()) {
-                    if (held.getItem() instanceof PaintBrushItem) {
-                        return EventResult.pass();
-                    }
+            if (player.isShiftKeyDown()) {
+                Level level = player.level();
+                BlockState state = level.getBlockState(pos);
 
-                    Level level = player.level();
-                    BlockState state = level.getBlockState(pos);
-                    if (state.getBlock() instanceof LetterBlock) {
-                        if (LetterBlock.tryDetachBackplate(level, pos, player)) {
-                            return EventResult.interruptTrue();
-                        }
+                if (!level.isClientSide() && state.getBlock() instanceof GridSignBlock) {
+                    return EventResult.interruptFalse();
+                }
+
+                if (hand == InteractionHand.MAIN_HAND && state.getBlock() instanceof LetterBlock) {
+                    if (LetterBlock.tryDetachBackplate(level, pos, player)) {
+                        return EventResult.interruptTrue();
                     }
                 }
             }

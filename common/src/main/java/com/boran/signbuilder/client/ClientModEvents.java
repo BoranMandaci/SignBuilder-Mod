@@ -23,6 +23,7 @@ import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -49,22 +50,46 @@ public class ClientModEvents {
                 Minecraft client = Minecraft.getInstance();
                 HitResult rawHit = client.hitResult;
                 if (rawHit instanceof BlockHitResult hit && hit.getType() != HitResult.Type.MISS) {
+                    ItemStack held = player.getItemInHand(hand);
+                    if (held.getItem() instanceof com.boran.signbuilder.item.PaintBrushItem ||
+                            held.getItem() instanceof com.boran.signbuilder.item.WrenchItem ||
+                            held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
+                        return EventResult.pass();
+                    }
+
                     if (player.isShiftKeyDown()) {
                         net.minecraft.world.level.block.state.BlockState targetState = client.level.getBlockState(hit.getBlockPos());
                         if (targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
-                            com.boran.signbuilder.client.grid.GridRaytrace.GridRay ray = com.boran.signbuilder.client.grid.GridRaytrace.getRay(hit);
-                            if (ray != null && client.level.getBlockEntity(ray.pos()) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
-                                com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
-                                if (cell != null) {
-                                    int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
-                                    com.boran.signbuilder.network.ModMessages.sendToServer(
-                                            new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
-                                    );
-                                    player.swing(hand);
-                                    client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
-                                    return EventResult.interruptFalse();
+                            if (hand == InteractionHand.MAIN_HAND) {
+                                com.boran.signbuilder.client.grid.GridRaytrace.GridRay ray = com.boran.signbuilder.client.grid.GridRaytrace.getRay(hit);
+                                if (ray != null && client.level.getBlockEntity(ray.pos()) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                                    com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
+                                    if (cell != null) {
+                                        int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return EventResult.interruptFalse();
+                                    } else if (ray.isBack() && !gbe.getBackGlyph().isEmpty()) {
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -1)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return EventResult.interruptFalse();
+                                    } else if (!ray.isBack() && !gbe.getFrontGlyph().isEmpty()) {
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -2)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return EventResult.interruptFalse();
+                                    }
                                 }
                             }
+                            return EventResult.interruptFalse();
                         }
                     }
 

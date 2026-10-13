@@ -137,7 +137,21 @@ public class GridSignBlock extends Block implements EntityBlock {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof GridSignBlockEntity gridBe && gridBe.hasBackplate()) {
                 boolean isBack = false;
-                if (state.getValue(FACE) != AttachFace.WALL) {
+                AttachFace aFace = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+                if (aFace == AttachFace.WALL) {
+                    Direction blockFacing = state.hasProperty(FACING) ? state.getValue(FACING) : hit.getDirection();
+                    Direction face = hit.getDirection();
+                    if (face == blockFacing.getOpposite()) {
+                        isBack = true;
+                    } else if (face == blockFacing) {
+                        isBack = false;
+                    } else if (player != null) {
+                        int rot = SignRotation.fromDirection(blockFacing);
+                        double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rot)
+                                + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rot);
+                        isBack = side < 0.0;
+                    }
+                } else {
                     int rot = gridBe.getFacingRotation();
                     Direction frontDirection = SignRotation.cardinalDirection(rot);
                     Direction face = hit.getDirection();
@@ -159,14 +173,18 @@ public class GridSignBlock extends Block implements EntityBlock {
                         }
                     }
                 }
-                if (isBack) {
-                    boolean hasBackGridCells = false;
-                    for (int key : gridBe.getCells().keySet()) {
-                        if (key >= 16) {
-                            hasBackGridCells = true;
-                            break;
-                        }
+
+                boolean hasBackGridCells = false;
+                boolean hasFrontGridCells = false;
+                for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
+                    if (cell.isBack) {
+                        hasBackGridCells = true;
+                    } else {
+                        hasFrontGridCells = true;
                     }
+                }
+
+                if (isBack) {
                     if (!hasBackGridCells && gridBe.getBackGlyph().isEmpty()) {
                         if (!level.isClientSide()) {
                             gridBe.setBackGlyph(held);
@@ -178,13 +196,6 @@ public class GridSignBlock extends Block implements EntityBlock {
                         return InteractionResult.sidedSuccess(level.isClientSide());
                     }
                 } else {
-                    boolean hasFrontGridCells = false;
-                    for (int key : gridBe.getCells().keySet()) {
-                        if (key < 16) {
-                            hasFrontGridCells = true;
-                            break;
-                        }
-                    }
                     if (!hasFrontGridCells && gridBe.getFrontGlyph().isEmpty()) {
                         if (!level.isClientSide()) {
                             gridBe.setFrontGlyph(held);

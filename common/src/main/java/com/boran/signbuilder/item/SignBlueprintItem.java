@@ -574,6 +574,7 @@ public class SignBlueprintItem extends Item {
         BlockState currentState = level.getBlockState(targetPos);
         boolean isBackplate = currentState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
         boolean isGridSign = currentState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
+        boolean isLetter = currentState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock;
 
         if (isGridSign) {
             if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
@@ -596,7 +597,7 @@ public class SignBlueprintItem extends Item {
                 gridBe.setChanged();
                 gridBe.sync();
             }
-        } else if (isBackplate) {
+        } else if (isBackplate || (isLetter && isBack)) {
             com.boran.signbuilder.block.SignMaterial bpFMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
             com.boran.signbuilder.block.SignMaterial bpBMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
             int bpFColor = 0xFFFFFF, bpBColor = 0xFFFFFF;
@@ -607,9 +608,38 @@ public class SignBlueprintItem extends Item {
             boolean bpDetectsMonsters = true, bpDetectsAnimals = false;
             int bpOnTicks = 10, bpOffTicks = 10, bpType = 0, bpRange = 8, bpOffRange = 8, bpCloseDelay = 0;
             boolean bpNightOnly = true, bpPlayers = true, bpLowPower = false, bpLookOnly = true;
+            ItemStack oldFrontGlyph = ItemStack.EMPTY;
 
             if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
                 com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
+                if (isLetter) {
+                    oldFrontGlyph = effective.getDroppedItemStack(currentState);
+                    CompoundTag itemTag = oldFrontGlyph.getTag();
+                    if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
+                        CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
+                        beTag.remove("BackGlyph");
+                        beTag.remove("HasBackplate");
+                        beTag.remove("BPFrontMat");
+                        beTag.remove("BPBackMat");
+                        beTag.remove("BPFrontColor");
+                        beTag.remove("BPBackColor");
+                        beTag.remove("BPFrontRainbow");
+                        beTag.remove("BPBackRainbow");
+                        beTag.remove("BackplateFrontMaterial");
+                        beTag.remove("BackplateBackMaterial");
+                        beTag.remove("BackplateFrontColor");
+                        beTag.remove("BackplateBackColor");
+                        beTag.remove("BackplateFrontRainbow");
+                        beTag.remove("BackplateBackRainbow");
+                        if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
+                    }
+                    ItemStack bpBackGlyph = effective.getBackGlyph();
+                    if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
+                        if (!player.isCreative()) {
+                            net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
+                        }
+                    }
+                }
                 bpFMat = effective.getBackplateFrontMaterial();
                 bpBMat = effective.getBackplateBackMaterial();
                 bpFColor = effective.getBackplateFrontColor();
@@ -617,6 +647,9 @@ public class SignBlueprintItem extends Item {
                 bpFRainbow = effective.isBackplateFrontRainbow();
                 bpBRainbow = effective.isBackplateBackRainbow();
                 bpFacingRotation = effective.getFacingRotation();
+                if (isLetter && currentState.hasProperty(BlockStateProperties.ATTACH_FACE) && currentState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                    bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
+                }
                 bpWrenchMode = effective.getWrenchMode();
                 bpActive = effective.isActive();
                 bpDetectsMonsters = effective.doesDetectMonsters();
@@ -646,6 +679,9 @@ public class SignBlueprintItem extends Item {
             Direction blockFacing = clickedFace;
             if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 blockFacing = currentState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (isLetter && attachFace != AttachFace.WALL) {
+                    blockFacing = blockFacing.getCounterClockWise();
+                }
             }
 
             BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
@@ -663,6 +699,9 @@ public class SignBlueprintItem extends Item {
                 gridBe.setBackplateBackRainbow(bpBRainbow);
                 gridBe.setFacingRotation(bpFacingRotation);
                 gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
+                if (!oldFrontGlyph.isEmpty()) {
+                    gridBe.setFrontGlyph(oldFrontGlyph);
+                }
                 com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
 
                 gridBe.setGridSize(gridSize);
@@ -734,6 +773,11 @@ public class SignBlueprintItem extends Item {
     public static boolean isStampableTarget(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) return true;
         if (state.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) return true;
+        if (state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+            if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                return lbe.getEffectiveMaster().hasBackplate() && lbe.getEffectiveMaster().getSize() == 1;
+            }
+        }
         return false;
     }
 
@@ -783,6 +827,25 @@ public class SignBlueprintItem extends Item {
                 }
             }
             return true;
+        }
+
+        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                com.boran.signbuilder.block.entity.LetterBlockEntity master = lbe.getEffectiveMaster();
+                if (master.hasBackplate() && master.getSize() == 1 && isBack) {
+                    AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACE)
+                            ? targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACE)
+                            : AttachFace.WALL;
+                    if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
+                        if (targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACING)) {
+                            Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACING);
+                            if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
         }
 
         return targetState.canBeReplaced();

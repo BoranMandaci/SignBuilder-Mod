@@ -56,7 +56,21 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                 ? targetState.getValue(BlockStateProperties.ATTACH_FACE)
                 : AttachFace.WALL;
 
-        if (aFace != AttachFace.WALL) {
+        if (aFace == AttachFace.WALL) {
+            Direction blockFacing = targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                    ? targetState.getValue(BlockStateProperties.HORIZONTAL_FACING)
+                    : face;
+            if (face == blockFacing.getOpposite()) {
+                serverIsBack = true;
+            } else if (face == blockFacing) {
+                serverIsBack = false;
+            } else if (player != null) {
+                int rot = com.boran.signbuilder.block.SignRotation.fromDirection(blockFacing);
+                double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rot)
+                        + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rot);
+                serverIsBack = side < 0.0;
+            }
+        } else {
             int signNormalRotation = 0;
             if (targetState.getBlock() instanceof GridSignBlock && level.getBlockEntity(pos) instanceof GridSignBlockEntity gbe) {
                 signNormalRotation = gbe.getFacingRotation();
@@ -91,17 +105,13 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                     serverIsBack = side < 0.0;
                 }
             }
+        }
 
-            int backOffset = GridSignBlock.getBackOffset(this.gridSize);
-            if (serverIsBack && !GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
-                targetIndex += backOffset;
-            } else if (!serverIsBack && GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
-                targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
-            }
-        } else {
-            if (GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
-                targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
-            }
+        int backOffset = GridSignBlock.getBackOffset(this.gridSize);
+        if (serverIsBack && !GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+            targetIndex += backOffset;
+        } else if (!serverIsBack && GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+            targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
         }
 
         if (!(targetState.getBlock() instanceof GridSignBlock)) {

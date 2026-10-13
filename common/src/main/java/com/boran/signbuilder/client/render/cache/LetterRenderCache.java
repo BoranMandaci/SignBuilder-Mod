@@ -302,7 +302,7 @@ public class LetterRenderCache {
         boolean backRainbow = false;
         boolean backIsMaterial = false;
 
-        if (!wall && !backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
+        if (!backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
             Block backBlock = blockItem.getBlock();
             backState = backBlock.defaultBlockState()
                     .setValue(LetterBlock.FACE, face)
@@ -338,9 +338,20 @@ public class LetterRenderCache {
                 backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
             }
 
-            double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, backRotationDegrees, size <= 1, modelScale, offsetX, offsetZ, backTarget.x(), backTarget.z());
-            backCenterLocalX = (float) bOffsets[0];
-            backCenterLocalZ = (float) bOffsets[1];
+            if (!wall) {
+                double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, backRotationDegrees, size <= 1, modelScale, offsetX, offsetZ, backTarget.x(), backTarget.z());
+                backCenterLocalX = (float) bOffsets[0];
+                backCenterLocalZ = (float) bOffsets[1];
+            } else {
+                float shift = 1.0f;
+                float clearance = hasBackplate ? (1.05f / 16.0f) : 0f;
+                switch (facing.getOpposite()) {
+                    case NORTH -> backWallTransZ = (-shift - clearance) / modelScale;
+                    case SOUTH -> backWallTransZ = (shift + clearance) / modelScale;
+                    case WEST  -> backWallTransX = (-shift - clearance) / modelScale;
+                    case EAST  -> backWallTransX = (shift + clearance) / modelScale;
+                }
+            }
             hasBackGlyph = true;
         }
 

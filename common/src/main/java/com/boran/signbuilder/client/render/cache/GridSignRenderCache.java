@@ -275,9 +275,9 @@ public class GridSignRenderCache {
         boolean backRainbow = false;
         boolean backIsMaterial = false;
 
-        if (face != AttachFace.WALL && !backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+        if (!backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
             Direction effectiveFacing = facing.getOpposite();
-            Direction cellFacing = effectiveFacing.getClockWise();
+            Direction cellFacing = (face != AttachFace.WALL) ? effectiveFacing.getClockWise() : effectiveFacing;
             AttachFace cellFace = face;
 
             backState = letterBlock.defaultBlockState();
@@ -318,21 +318,32 @@ public class GridSignRenderCache {
             if (normalLength == 0.0) normalLength = 1.0;
             double normalX = SignRotation.facingX(plateRotation) / normalLength;
             double normalZ = SignRotation.facingZ(plateRotation) / normalLength;
-            double plateClearance = 2.0 / 16.0;
+            double plateClearance = (face == AttachFace.WALL ? 1.0 : 2.0) / 16.0;
 
-            ModelCentering.Center backTarget = hasBackplate
-                    ? new ModelCentering.Center(0.5 - normalX * plateClearance, 0.5 - normalZ * plateClearance)
-                    : new ModelCentering.Center(0.5 - normalX * 2.0 / 16.0, 0.5 - normalZ * 2.0 / 16.0);
-            if (LetterBlock.isLateralDot(backState)) {
-                ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalBackModel, backState, rotationDegrees,
-                        true, 1, 0.0, 0.0);
-                backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
+            if (face != AttachFace.WALL) {
+                ModelCentering.Center backTarget = hasBackplate
+                        ? new ModelCentering.Center(0.5 - normalX * plateClearance, 0.5 - normalZ * plateClearance)
+                        : new ModelCentering.Center(0.5 - normalX * 2.0 / 16.0, 0.5 - normalZ * 2.0 / 16.0);
+                if (LetterBlock.isLateralDot(backState)) {
+                    ModelCentering.Center currentCenter = ModelCentering.transformedCenter(finalBackModel, backState, rotationDegrees,
+                            true, 1, 0.0, 0.0);
+                    backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
+                }
+
+                double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, rotationDegrees, true, 1, 0.0, 0.0, backTarget.x(), backTarget.z());
+                backTransX = (float) bOffsets[0];
+                backTransY = 0f;
+                backTransZ = (float) bOffsets[1];
+            } else {
+                float shift = 1.0f;
+                float clearance = hasBackplate ? (1.05f / 16.0f) : 0f;
+                switch (effectiveFacing) {
+                    case NORTH -> backTransZ = -shift - clearance;
+                    case SOUTH -> backTransZ = shift + clearance;
+                    case WEST  -> backTransX = -shift - clearance;
+                    case EAST  -> backTransX = shift + clearance;
+                }
             }
-
-            double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, rotationDegrees, true, 1, 0.0, 0.0, backTarget.x(), backTarget.z());
-            backTransX = (float) bOffsets[0];
-            backTransY = 0f;
-            backTransZ = (float) bOffsets[1];
 
             backRenderType = ItemBlockRenderTypes.getRenderType(backState, false);
             backIsMaterial = backMaterial != SignMaterial.DEFAULT;
