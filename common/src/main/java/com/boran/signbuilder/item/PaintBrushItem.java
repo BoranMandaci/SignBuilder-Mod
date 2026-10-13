@@ -614,16 +614,7 @@ public class PaintBrushItem extends Item {
         if (v < 0.0) v = 0.0;
         if (v >= 1.0) v = 0.9999;
 
-        int gridSize = gridBe.getGridSize();
-        int cellU = (int) Math.floor(u * gridSize);
-        int cellV = (int) Math.floor(v * gridSize);
-        if (cellU < 0) cellU = 0;
-        if (cellU >= gridSize) cellU = gridSize - 1;
-        if (cellV < 0) cellV = 0;
-        if (cellV >= gridSize) cellV = gridSize - 1;
-
-        int cellIndex = (isBack ? 16 : 0) + cellV * gridSize + cellU;
-        com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gridBe.getCells().get(cellIndex);
+        com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gridBe.getCellAt((float) u, (float) v, isBack);
 
         boolean targetBackGlyph = isBack && !gridBe.getBackGlyph().isEmpty() && (player == null || !player.isShiftKeyDown());
         boolean targetFrontGlyph = !isBack && !gridBe.getFrontGlyph().isEmpty() && (player == null || !player.isShiftKeyDown());
@@ -810,7 +801,7 @@ public class PaintBrushItem extends Item {
                 SignMaterial mat = hasMaterial ? newMaterial : cell.material;
                 boolean rainbow = (selectedColor == -1);
                 int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
-                gridBe.setCell(cellIndex, cell.character, mat, color, rainbow, cell.lightMode);
+                gridBe.setCell(cell.col, cell.row, cell.gridSize, cell.isBack, cell.character, mat, color, rainbow, cell.lightMode);
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (player != null && !player.isCreative()) {
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));

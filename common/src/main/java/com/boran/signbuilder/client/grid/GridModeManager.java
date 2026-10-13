@@ -35,10 +35,10 @@ public class GridModeManager {
                             InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RSHIFT);
                     if (isShift) {
                         currentGridSize++;
-                        if (currentGridSize > 4) currentGridSize = 1;
+                        if (currentGridSize > 5) currentGridSize = 1;
                     } else {
                         currentGridSize--;
-                        if (currentGridSize < 1) currentGridSize = 4;
+                        if (currentGridSize < 1) currentGridSize = 5;
                     }
 
                     String message = currentGridSize == 1 ? "Normal Mode (1x1)" : "Grid Mode (" + currentGridSize + "x" + currentGridSize + ")";

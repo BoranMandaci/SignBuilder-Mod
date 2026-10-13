@@ -61,14 +61,19 @@ public class GridRaytrace {
             
         boolean isBack = false;
         net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
-        if ((isBackplate || isGridSign) && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
-            Direction frontDirection = com.boran.signbuilder.block.SignRotation.cardinalDirection(rotation);
-            if (frontDirection != null && face == frontDirection) {
-                isBack = false;
-            } else if (frontDirection != null && face == frontDirection.getOpposite()) {
-                isBack = true;
-            } else if (player != null) {
-                Vec3 look = player.getLookAngle();
+        if (player != null && (isBackplate || isGridSign)) {
+            if (aFace == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
+                if (face == facing.getOpposite()) {
+                    isBack = true;
+                } else if (face != facing) {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                    if (side < 0.0) {
+                        isBack = true;
+                    }
+                }
+            } else {
+                net.minecraft.world.phys.Vec3 look = player.getLookAngle();
                 double dot = look.x * com.boran.signbuilder.block.SignRotation.facingX(rotation)
                         + look.z * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
                 if (dot > 0.05) {
@@ -122,9 +127,101 @@ public class GridRaytrace {
 
         int index = cellV * gridSize + cellU;
         if (isBack) {
-            index += 16;
+            index += com.boran.signbuilder.block.GridSignBlock.getBackOffset(gridSize);
         }
 
         return new GridHit(pos, face, cellU, cellV, index, gridSize);
+    }
+
+    public record GridRay(BlockPos pos, Direction face, double u, double v, boolean isBack) {}
+
+    public static GridRay getRay(BlockHitResult hit) {
+        if (hit == null || hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
+
+        BlockPos pos = hit.getBlockPos();
+        Direction face = hit.getDirection();
+        Vec3 loc = hit.getLocation();
+        double rx = loc.x - pos.getX();
+        double ry = loc.y - pos.getY();
+        double rz = loc.z - pos.getZ();
+
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return null;
+        BlockState state = mc.level.getBlockState(pos);
+        if (!(state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)) return null;
+
+        Direction facing = face;
+        if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            facing = state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING);
+        }
+
+        int rotation = com.boran.signbuilder.block.SignRotation.fromDirection(facing);
+        if (mc.level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+            rotation = gbe.getFacingRotation();
+        }
+
+        net.minecraft.world.level.block.state.properties.AttachFace aFace = state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE)
+                ? state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE)
+                : net.minecraft.world.level.block.state.properties.AttachFace.WALL;
+
+        boolean isBack = false;
+        net.minecraft.world.entity.player.Player player = mc.player;
+        if (player != null) {
+            if (aFace == net.minecraft.world.level.block.state.properties.AttachFace.WALL) {
+                if (face == facing.getOpposite()) {
+                    isBack = true;
+                } else if (face != facing) {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                    if (side < 0.0) {
+                        isBack = true;
+                    }
+                }
+            } else {
+                net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+                double dot = look.x * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                        + look.z * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+                    if (side < 0.0) {
+                        isBack = true;
+                    }
+                }
+            }
+        }
+
+        int rotationDegrees = com.boran.signbuilder.block.SignRotation.deltaDegrees(rotation, facing);
+        double radians = Math.toRadians(rotationDegrees);
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        double dx = rx - 0.5;
+        double dz = rz - 0.5;
+        double localX = dx * cos - dz * sin;
+        double localZ = dx * sin + dz * cos;
+
+        double widthFactor = (rotationDegrees != 0 && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL) ? Math.sqrt(2.0) : 1.0;
+
+        Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+        double u;
+        switch (effectiveFacing) {
+            case NORTH -> u = 0.5 - (localX / widthFactor);
+            case SOUTH -> u = 0.5 + (localX / widthFactor);
+            case EAST  -> u = 0.5 - (localZ / widthFactor);
+            case WEST  -> u = 0.5 + (localZ / widthFactor);
+            default    -> u = 0.5;
+        }
+        double v = 1.0 - ry;
+
+        if (u < 0.0) u = 0.0;
+        if (u >= 1.0) u = 0.9999;
+        if (v < 0.0) v = 0.0;
+        if (v >= 1.0) v = 0.9999;
+
+        return new GridRay(pos, face, u, v, isBack);
     }
 }

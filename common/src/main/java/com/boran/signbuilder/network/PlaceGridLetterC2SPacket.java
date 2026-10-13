@@ -92,14 +92,15 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                 }
             }
 
-            if (serverIsBack && targetIndex < 16) {
-                targetIndex += 16;
-            } else if (!serverIsBack && targetIndex >= 16) {
-                targetIndex -= 16;
+            int backOffset = GridSignBlock.getBackOffset(this.gridSize);
+            if (serverIsBack && !GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+                targetIndex += backOffset;
+            } else if (!serverIsBack && GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+                targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
             }
         } else {
-            if (targetIndex >= 16) {
-                targetIndex -= 16;
+            if (GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+                targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
             }
         }
 
@@ -209,7 +210,7 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                     .setValue(GridSignBlock.FACE, attachFace)
                     .setValue(GridSignBlock.FACING, blockFacing);
 
-            if (targetIndex >= 16) {
+            if (GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
                 if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
                     if (!player.isCreative()) {
                         net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
@@ -249,22 +250,31 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
         }
 
         if (level.getBlockEntity(targetPos) instanceof GridSignBlockEntity gridBe) {
-            if (gridBe.getGridSize() != gridSize) {
+            boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(targetIndex, gridSize);
+            int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(targetIndex, gridSize);
+            int col = rawIndex % gridSize;
+            int row = rawIndex / gridSize;
+
+            if (gridBe.hasCollision(gridSize, col, row, isBack)) {
+                return;
+            }
+
+            if (gridBe.getCells().isEmpty()) {
                 gridBe.setGridSize(gridSize);
             }
-            if (targetIndex >= 16 && !gridBe.getBackGlyph().isEmpty()) {
+            if (isBack && !gridBe.getBackGlyph().isEmpty()) {
                 if (!player.isCreative()) {
                     net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getBackGlyph().copy());
                 }
                 gridBe.setBackGlyph(ItemStack.EMPTY);
             }
-            if (targetIndex < 16 && !gridBe.getFrontGlyph().isEmpty()) {
+            if (!isBack && !gridBe.getFrontGlyph().isEmpty()) {
                 if (!player.isCreative()) {
                     net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getFrontGlyph().copy());
                 }
                 gridBe.setFrontGlyph(ItemStack.EMPTY);
             }
-            gridBe.setCell(targetIndex, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+            gridBe.setCell(col, row, gridSize, isBack, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
 
             if (!player.isCreative()) {
                 ItemStack mainHand = player.getMainHandItem();

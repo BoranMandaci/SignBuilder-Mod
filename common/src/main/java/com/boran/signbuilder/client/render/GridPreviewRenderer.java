@@ -85,8 +85,8 @@ public class GridPreviewRenderer {
         }
 
         int index = gridHit.index();
-        boolean isBack = index >= 16;
-        int rawIndex = isBack ? index - 16 : index;
+        boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(index, gridSize);
+        int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(index, gridSize);
         int col = rawIndex % gridSize;
         int row = rawIndex / gridSize;
 
@@ -133,7 +133,7 @@ public class GridPreviewRenderer {
             poseStack.translate(-0.5, 0.0, -0.5);
         }
 
-        org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing);
+        org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
         poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
 
         float scale = 1.0f / gridSize;
@@ -169,8 +169,30 @@ public class GridPreviewRenderer {
         Matrix4f poseMatrix = poseStack.last().pose();
         Matrix3f normalMatrix = poseStack.last().normal();
         
+        boolean hasCollision = false;
+        net.minecraft.core.BlockPos targetBePos = basePos;
+        if (!(targetState.getBlock() instanceof GridSignBlock) && !isBackplate) {
+            targetBePos = targetBePos.relative(gridHit.face());
+        }
+        if (mc.level.getBlockEntity(targetBePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+            hasCollision = gbe.hasCollision(gridSize, col, row, isBack);
+        } else if (mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe2) {
+            hasCollision = gbe2.hasCollision(gridSize, col, row, isBack);
+        }
+
         int light = 0xF000F0;
-        int red = 255, green = 255, blue = 255, alpha = 127; // Semi-transparent
+        int red, green, blue, alpha;
+        if (hasCollision) {
+            red = 255;
+            green = 50;
+            blue = 50;
+            alpha = 160;
+        } else {
+            red = 100;
+            green = 230;
+            blue = 255;
+            alpha = 140;
+        }
 
         for (Direction d : Direction.values()) {
             RANDOM.setSeed(42L);

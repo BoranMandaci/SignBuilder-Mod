@@ -21,7 +21,9 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BlueprintScreen extends Screen {
     private static final int PANEL_WIDTH = 520;
@@ -45,7 +47,8 @@ public class BlueprintScreen extends Screen {
     private int gridSize = 3;
     private boolean isBannerMode = true;
     private String gridText = "";
-    private final String[] gridCells = new String[16];
+    private final String[] gridCells = new String[25];
+    private final Map<Integer, String> multiGridCells = new LinkedHashMap<>();
     private int selectedGridCell = -1;
     private EditBox gridTextField;
     private boolean isUpdatingGridText = false;
@@ -55,6 +58,7 @@ public class BlueprintScreen extends Screen {
     private BlueprintActionButton gridSize2Btn;
     private BlueprintActionButton gridSize3Btn;
     private BlueprintActionButton gridSize4Btn;
+    private BlueprintActionButton gridSize5Btn;
     private BlueprintActionButton clearGridButton;
     private BlueprintActionButton sizeButton;
     private BlueprintActionButton dirButton;
@@ -119,13 +123,49 @@ public class BlueprintScreen extends Screen {
                 if (tag.contains("GridText")) {
                     this.gridText = tag.getString("GridText");
                 }
+                Arrays.fill(this.gridCells, "");
+                this.multiGridCells.clear();
                 if (tag.contains("GridCells", Tag.TAG_LIST)) {
                     ListTag list = tag.getList("GridCells", Tag.TAG_COMPOUND);
                     for (int i = 0; i < list.size(); i++) {
-                        CompoundTag cellTag = list.getCompound(i);
-                        int idx = cellTag.getInt("Index");
-                        if (idx >= 0 && idx < 16) {
-                            this.gridCells[idx] = cellTag.getString("Char");
+                        CompoundTag ctag = list.getCompound(i);
+                        String cPath = ctag.getString("Char");
+                        if (cPath.isEmpty()) continue;
+                        int key;
+                        if (ctag.contains("Col") && ctag.contains("Row")) {
+                            int gSize = ctag.contains("GridSize") ? ctag.getInt("GridSize") : this.gridSize;
+                            int col = ctag.getInt("Col");
+                            int row = ctag.getInt("Row");
+                            key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, gSize, col, row);
+                        } else {
+                            int idx = ctag.getInt("Index");
+                            if (idx >= 200) {
+                                key = idx;
+                            } else {
+                                int col = idx % this.gridSize;
+                                int row = idx / this.gridSize;
+                                key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
+                            }
+                        }
+                        this.multiGridCells.put(key, cPath);
+                        int legacyIdx = ctag.getInt("Index");
+                        if (legacyIdx >= 0 && legacyIdx < 25) {
+                            this.gridCells[legacyIdx] = cPath;
+                        }
+                    }
+                } else if (!this.gridText.isEmpty()) {
+                    int max = Math.min(this.gridText.length(), this.gridSize * this.gridSize);
+                    for (int i = 0; i < max; i++) {
+                        char ch = this.gridText.charAt(i);
+                        if (ch != ' ') {
+                            String path = SignBlueprintItem.getBlockPathForChar(ch);
+                            if (path != null) {
+                                int col = i % this.gridSize;
+                                int row = i / this.gridSize;
+                                int key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
+                                this.multiGridCells.put(key, path);
+                                if (i < 25) this.gridCells[i] = path;
+                            }
                         }
                     }
                 }
@@ -191,13 +231,16 @@ public class BlueprintScreen extends Screen {
 
         int btnDockX = this.panelX + 18;
         int btnDockY = this.panelY + scaledY(128);
-        int miniBtnW = 24;
+        int miniBtnW = 17;
+        int miniBtnGap = 2;
         this.gridSize2Btn = new BlueprintActionButton(btnDockX, btnDockY, miniBtnW, scaledY(16), Component.literal("2x2"), 0xFFFFC857, this.gridSize == 2, () -> setGridSize(2));
-        this.gridSize3Btn = new BlueprintActionButton(btnDockX + miniBtnW + 2, btnDockY, miniBtnW, scaledY(16), Component.literal("3x3"), 0xFF57C8D9, this.gridSize == 3, () -> setGridSize(3));
-        this.gridSize4Btn = new BlueprintActionButton(btnDockX + (miniBtnW + 2) * 2, btnDockY, miniBtnW, scaledY(16), Component.literal("4x4"), 0xFFCE8AF1, this.gridSize == 4, () -> setGridSize(4));
+        this.gridSize3Btn = new BlueprintActionButton(btnDockX + (miniBtnW + miniBtnGap), btnDockY, miniBtnW, scaledY(16), Component.literal("3x3"), 0xFF57C8D9, this.gridSize == 3, () -> setGridSize(3));
+        this.gridSize4Btn = new BlueprintActionButton(btnDockX + (miniBtnW + miniBtnGap) * 2, btnDockY, miniBtnW, scaledY(16), Component.literal("4x4"), 0xFFCE8AF1, this.gridSize == 4, () -> setGridSize(4));
+        this.gridSize5Btn = new BlueprintActionButton(btnDockX + (miniBtnW + miniBtnGap) * 3, btnDockY, miniBtnW, scaledY(16), Component.literal("5x5"), 0xFF5EEAD4, this.gridSize == 5, () -> setGridSize(5));
         this.addRenderableWidget(this.gridSize2Btn);
         this.addRenderableWidget(this.gridSize3Btn);
         this.addRenderableWidget(this.gridSize4Btn);
+        this.addRenderableWidget(this.gridSize5Btn);
 
         String[] row1Insert = {"↑", "↓", "←", "→", "↖", "↗", "↙", "↘", "+", "-", "✗", "÷", "=", "%", ">", "<", "~", "*", "#"};
         String[] row1Tooltips = {
@@ -306,7 +349,7 @@ public class BlueprintScreen extends Screen {
                 this.size = (this.size % 3) + 1;
                 sizeButtonRefresh();
             } else {
-                int next = (this.gridSize == 2) ? 3 : (this.gridSize == 3 ? 4 : 2);
+                int next = (this.gridSize == 2) ? 3 : (this.gridSize == 3 ? 4 : (this.gridSize == 4 ? 5 : 2));
                 setGridSize(next);
             }
         });
@@ -407,9 +450,34 @@ public class BlueprintScreen extends Screen {
         if (this.gridSize2Btn != null) this.gridSize2Btn.setActive(this.gridSize == 2);
         if (this.gridSize3Btn != null) this.gridSize3Btn.setActive(this.gridSize == 3);
         if (this.gridSize4Btn != null) this.gridSize4Btn.setActive(this.gridSize == 4);
+        if (this.gridSize5Btn != null) this.gridSize5Btn.setActive(this.gridSize == 5);
+    }
+
+    private void removeCollidingCells(int candidateGridSize, int candidateCol, int candidateRow) {
+        this.multiGridCells.entrySet().removeIf(entry -> {
+            int k = entry.getKey();
+            int gSize = (k % 10000) / 100;
+            int r = (k % 100) / 10;
+            int c = k % 10;
+            return com.boran.signbuilder.block.entity.GridSignBlockEntity.cellsOverlap(candidateGridSize, candidateCol, candidateRow, gSize, c, r);
+        });
+    }
+
+    private boolean hasConflictWithOtherGrid(int gridSize, int col, int row) {
+        for (int k : this.multiGridCells.keySet()) {
+            int gSize = (k % 10000) / 100;
+            if (gSize == gridSize) continue;
+            int r = (k % 100) / 10;
+            int c = k % 10;
+            if (com.boran.signbuilder.block.entity.GridSignBlockEntity.cellsOverlap(gridSize, col, row, gSize, c, r)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void clearGridCells() {
+        this.multiGridCells.clear();
         Arrays.fill(this.gridCells, "");
         this.selectedGridCell = 0;
         if (this.gridTextField != null) {
@@ -422,43 +490,62 @@ public class BlueprintScreen extends Screen {
         this.isUpdatingGridText = true;
         this.gridText = text;
         if (this.isBannerMode) {
+            this.multiGridCells.clear();
             Arrays.fill(this.gridCells, "");
             int maxChars = Math.min(text.length(), this.gridSize);
             if (this.isVertical) {
-                int targetCol = (this.gridSize == 2) ? 0 : 1;
+                int targetCol = (this.gridSize - 1) / 2;
                 for (int i = 0; i < maxChars; i++) {
                     char ch = text.charAt(i);
                     if (ch != ' ') {
                         int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
                         String path = SignBlueprintItem.getBlockPathForChar(cp);
-                        this.gridCells[i * this.gridSize + targetCol] = (path != null) ? path : "";
+                        if (path != null) {
+                            this.gridCells[i * this.gridSize + targetCol] = path;
+                            this.multiGridCells.put(com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, targetCol, i), path);
+                        }
                     }
                 }
             } else {
-                int targetRow = (this.gridSize == 2) ? 0 : 1;
+                int targetRow = (this.gridSize - 1) / 2;
                 for (int i = 0; i < maxChars; i++) {
                     char ch = text.charAt(i);
                     if (ch != ' ') {
                         int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
                         String path = SignBlueprintItem.getBlockPathForChar(cp);
-                        this.gridCells[targetRow * this.gridSize + i] = (path != null) ? path : "";
+                        if (path != null) {
+                            this.gridCells[targetRow * this.gridSize + i] = path;
+                            this.multiGridCells.put(com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, i, targetRow), path);
+                        }
                     }
                 }
             }
         } else {
             int max = this.gridSize * this.gridSize;
             for (int i = 0; i < max; i++) {
+                int col = i % this.gridSize;
+                int row = i / this.gridSize;
+                int key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
                 if (i < text.length()) {
                     char ch = text.charAt(i);
                     if (ch == ' ') {
-                        this.gridCells[i] = "";
+                        this.multiGridCells.remove(key);
+                        if (i < 25) this.gridCells[i] = "";
                     } else {
                         int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
                         String path = SignBlueprintItem.getBlockPathForChar(cp);
-                        this.gridCells[i] = (path != null) ? path : "";
+                        if (path != null) {
+                            removeCollidingCells(this.gridSize, col, row);
+                            this.multiGridCells.put(key, path);
+                            if (i < 25) this.gridCells[i] = path;
+                        } else {
+                            this.multiGridCells.remove(key);
+                            if (i < 25) this.gridCells[i] = "";
+                        }
                     }
                 } else {
-                    this.gridCells[i] = "";
+                    this.multiGridCells.remove(key);
+                    if (i < 25) this.gridCells[i] = "";
                 }
             }
         }
@@ -470,7 +557,10 @@ public class BlueprintScreen extends Screen {
         StringBuilder sb = new StringBuilder();
         int max = this.gridSize * this.gridSize;
         for (int i = 0; i < max; i++) {
-            String p = this.gridCells[i];
+            int col = i % this.gridSize;
+            int row = i / this.gridSize;
+            int key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
+            String p = this.multiGridCells.get(key);
             if (p != null && !p.isEmpty()) {
                 sb.append(SignBlueprintItem.getDisplayCharForBlockPath(p));
             } else {
@@ -499,19 +589,32 @@ public class BlueprintScreen extends Screen {
 
         int max = this.gridSize * this.gridSize;
         if (this.selectedGridCell >= 0 && this.selectedGridCell < max) {
-            this.gridCells[this.selectedGridCell] = path;
+            int col = this.selectedGridCell % this.gridSize;
+            int row = this.selectedGridCell / this.gridSize;
+            removeCollidingCells(this.gridSize, col, row);
+            if (!path.isEmpty()) {
+                this.multiGridCells.put(com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row), path);
+            }
             this.selectedGridCell = (this.selectedGridCell + 1) % max;
             syncGridTextFromCells();
         } else {
             int target = -1;
             for (int i = 0; i < max; i++) {
-                if (this.gridCells[i] == null || this.gridCells[i].isEmpty()) {
+                int col = i % this.gridSize;
+                int row = i / this.gridSize;
+                int key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
+                if (!this.multiGridCells.containsKey(key)) {
                     target = i;
                     break;
                 }
             }
             if (target != -1) {
-                this.gridCells[target] = path;
+                int col = target % this.gridSize;
+                int row = target / this.gridSize;
+                removeCollidingCells(this.gridSize, col, row);
+                if (!path.isEmpty()) {
+                    this.multiGridCells.put(com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row), path);
+                }
                 this.selectedGridCell = (target + 1) % max;
                 syncGridTextFromCells();
             }
@@ -526,6 +629,7 @@ public class BlueprintScreen extends Screen {
         this.gridSize2Btn.visible = !isNormal;
         this.gridSize3Btn.visible = !isNormal;
         this.gridSize4Btn.visible = !isNormal;
+        this.gridSize5Btn.visible = !isNormal;
         this.dirButton.visible = true;
 
         updateGridSizeButtons();
@@ -757,47 +861,78 @@ public class BlueprintScreen extends Screen {
 
         guiGraphics.fill(gridX - 3, gridY - 3, gridX + totalPlateSize + 3, gridY + totalPlateSize + 3, 0xFF141920);
         guiGraphics.renderOutline(gridX - 3, gridY - 3, totalPlateSize + 6, totalPlateSize + 6, 0xFF4A5564);
+        guiGraphics.fill(gridX, gridY, gridX + totalPlateSize, gridY + totalPlateSize, 0xFF18202A);
 
-        int cellSize;
-        int gap;
-        if (this.gridSize == 2) {
-            cellSize = 36;
-            gap = 4;
-        } else if (this.gridSize == 3) {
-            cellSize = 23;
-            gap = 3;
-        } else {
-            cellSize = 17;
-            gap = 2;
+        for (int i = 1; i < this.gridSize; i++) {
+            int lineX = gridX + Math.round((float) i * totalPlateSize / this.gridSize);
+            int lineY = gridY + Math.round((float) i * totalPlateSize / this.gridSize);
+            guiGraphics.fill(lineX, gridY, lineX + 1, gridY + totalPlateSize, 0x2A596B80);
+            guiGraphics.fill(gridX, lineY, gridX + totalPlateSize, lineY + 1, 0x2A596B80);
         }
 
-        int max = this.gridSize * this.gridSize;
-        for (int i = 0; i < max; i++) {
-            int row = i / this.gridSize;
-            int col = i % this.gridSize;
-            int cX = gridX + col * (cellSize + gap);
-            int cY = gridY + row * (cellSize + gap);
+        for (Map.Entry<Integer, String> entry : this.multiGridCells.entrySet()) {
+            int key = entry.getKey();
+            String path = entry.getValue();
+            if (path == null || path.isEmpty()) continue;
+            int gSize = (key % 10000) / 100;
+            int row = (key % 100) / 10;
+            int col = key % 10;
+            if (gSize < 2 || gSize > 5) continue;
 
-            boolean hovered = mouseX >= cX && mouseX < cX + cellSize && mouseY >= cY && mouseY < cY + cellSize;
-            boolean selected = (i == this.selectedGridCell);
+            int cX1 = gridX + Math.round((float) col * totalPlateSize / gSize);
+            int cX2 = gridX + Math.round((float) (col + 1) * totalPlateSize / gSize);
+            int cY1 = gridY + Math.round((float) row * totalPlateSize / gSize);
+            int cY2 = gridY + Math.round((float) (row + 1) * totalPlateSize / gSize);
+            int cW = cX2 - cX1;
+            int cH = cY2 - cY1;
 
-            int bg = selected ? 0xFF2A3D54 : (hovered ? 0xFF232D3B : 0xFF161D26);
-            int border = selected ? SignBuilderUi.ACCENT : (hovered ? 0xFF7D8C9E : 0xFF3D4756);
-
-            guiGraphics.fill(cX, cY, cX + cellSize, cY + cellSize, bg);
-            guiGraphics.renderOutline(cX, cY, cellSize, cellSize, border);
-            if (selected) {
-                guiGraphics.renderOutline(cX + 1, cY + 1, cellSize - 2, cellSize - 2, 0x88FFC857);
+            int fillColor;
+            int borderColor;
+            switch (gSize) {
+                case 2 -> { fillColor = 0x33FFC857; borderColor = 0x88FFC857; }
+                case 3 -> { fillColor = 0x3357C8D9; borderColor = 0x8857C8D9; }
+                case 4 -> { fillColor = 0x33CE8AF1; borderColor = 0x88CE8AF1; }
+                default -> { fillColor = 0x335EEAD4; borderColor = 0x885EEAD4; }
             }
 
-            String path = this.gridCells[i];
+            guiGraphics.fill(cX1 + 1, cY1 + 1, cX2 - 1, cY2 - 1, fillColor);
+            guiGraphics.renderOutline(cX1, cY1, cW, cH, borderColor);
+
             String display = SignBlueprintItem.getDisplayCharForBlockPath(path);
-            if (display.isEmpty()) {
-                SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, "·", cX + cellSize / 2, cY + (cellSize - 8) / 2, 0x55888888);
+            int textY = cY1 + (cH - 8) / 2;
+            SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, display, cX1 + cW / 2, textY, 0xFFFFFFFF);
+        }
+
+        int hoverCol = -1, hoverRow = -1;
+        if (mouseX >= gridX && mouseX < gridX + totalPlateSize && mouseY >= gridY && mouseY < gridY + totalPlateSize) {
+            hoverCol = Math.min(this.gridSize - 1, Math.max(0, (int) ((mouseX - gridX) * this.gridSize / totalPlateSize)));
+            hoverRow = Math.min(this.gridSize - 1, Math.max(0, (int) ((mouseY - gridY) * this.gridSize / totalPlateSize)));
+        }
+
+        if (hoverCol >= 0 && hoverRow >= 0) {
+            int hX1 = gridX + Math.round((float) hoverCol * totalPlateSize / this.gridSize);
+            int hX2 = gridX + Math.round((float) (hoverCol + 1) * totalPlateSize / this.gridSize);
+            int hY1 = gridY + Math.round((float) hoverRow * totalPlateSize / this.gridSize);
+            int hY2 = gridY + Math.round((float) (hoverRow + 1) * totalPlateSize / this.gridSize);
+            boolean conflict = hasConflictWithOtherGrid(this.gridSize, hoverCol, hoverRow);
+            if (conflict) {
+                guiGraphics.fill(hX1, hY1, hX2, hY2, 0x44E06A70);
+                guiGraphics.renderOutline(hX1, hY1, hX2 - hX1, hY2 - hY1, 0xFFE06A70);
             } else {
-                int textColor = selected ? SignBuilderUi.ACCENT : 0xFFFFFFFF;
-                SignBuilderUi.drawCenteredStringNoShadow(guiGraphics, this.font, display, cX + cellSize / 2, cY + (cellSize - 8) / 2, textColor);
+                guiGraphics.fill(hX1, hY1, hX2, hY2, 0x22FFFFFF);
+                guiGraphics.renderOutline(hX1, hY1, hX2 - hX1, hY2 - hY1, 0x88FFFFFF);
             }
+        }
+
+        if (this.selectedGridCell >= 0 && this.selectedGridCell < this.gridSize * this.gridSize) {
+            int selCol = this.selectedGridCell % this.gridSize;
+            int selRow = this.selectedGridCell / this.gridSize;
+            int sX1 = gridX + Math.round((float) selCol * totalPlateSize / this.gridSize);
+            int sX2 = gridX + Math.round((float) (selCol + 1) * totalPlateSize / this.gridSize);
+            int sY1 = gridY + Math.round((float) selRow * totalPlateSize / this.gridSize);
+            int sY2 = gridY + Math.round((float) (selRow + 1) * totalPlateSize / this.gridSize);
+            guiGraphics.renderOutline(sX1, sY1, sX2 - sX1, sY2 - sY1, SignBuilderUi.ACCENT);
+            guiGraphics.renderOutline(sX1 + 1, sY1 + 1, sX2 - sX1 - 2, sY2 - sY1 - 2, 0x88FFC857);
         }
     }
 
@@ -806,37 +941,51 @@ public class BlueprintScreen extends Screen {
         if (this.activeTab == 1) {
             int gridX = this.panelX + 18;
             int gridY = this.panelY + scaledY(46);
-            int cellSize = (this.gridSize == 2) ? 36 : (this.gridSize == 3 ? 23 : 17);
-            int gap = (this.gridSize == 2) ? 4 : (this.gridSize == 3 ? 3 : 2);
+            int totalPlateSize = 76;
 
-            int max = this.gridSize * this.gridSize;
-            for (int i = 0; i < max; i++) {
-                int row = i / this.gridSize;
-                int col = i % this.gridSize;
-                int cX = gridX + col * (cellSize + gap);
-                int cY = gridY + row * (cellSize + gap);
+            if (mouseX >= gridX && mouseX < gridX + totalPlateSize && mouseY >= gridY && mouseY < gridY + totalPlateSize) {
+                if (this.isBannerMode) {
+                    this.isBannerMode = false;
+                    this.isVertical = false;
+                    if (this.gridTextField != null) {
+                        this.gridTextField.setMaxLength(this.gridSize * this.gridSize);
+                    }
+                    dirButtonRefresh();
+                }
 
-                if (mouseX >= cX && mouseX < cX + cellSize && mouseY >= cY && mouseY < cY + cellSize) {
-                    if (this.isBannerMode) {
-                        this.isBannerMode = false;
-                        this.isVertical = false;
-                        if (this.gridTextField != null) {
-                            this.gridTextField.setMaxLength(this.gridSize * this.gridSize);
+                int col = Math.min(this.gridSize - 1, Math.max(0, (int) ((mouseX - gridX) * this.gridSize / totalPlateSize)));
+                int row = Math.min(this.gridSize - 1, Math.max(0, (int) ((mouseY - gridY) * this.gridSize / totalPlateSize)));
+
+                if (button == 0) {
+                    this.selectedGridCell = row * this.gridSize + col;
+                    if (this.gridTextField != null) this.gridTextField.setFocused(false);
+                    Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.2F));
+                    return true;
+                } else if (button == 1) {
+                    Integer foundKey = null;
+                    for (Map.Entry<Integer, String> entry : this.multiGridCells.entrySet()) {
+                        int k = entry.getKey();
+                        int gSize = (k % 10000) / 100;
+                        int r = (k % 100) / 10;
+                        int c = k % 10;
+                        int cX1 = gridX + Math.round((float) c * totalPlateSize / gSize);
+                        int cX2 = gridX + Math.round((float) (c + 1) * totalPlateSize / gSize);
+                        int cY1 = gridY + Math.round((float) r * totalPlateSize / gSize);
+                        int cY2 = gridY + Math.round((float) (r + 1) * totalPlateSize / gSize);
+                        if (mouseX >= cX1 && mouseX < cX2 && mouseY >= cY1 && mouseY < cY2) {
+                            foundKey = k;
+                            break;
                         }
-                        dirButtonRefresh();
                     }
-                    if (button == 0) {
-                        this.selectedGridCell = i;
-                        if (this.gridTextField != null) this.gridTextField.setFocused(false);
-                        Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.2F));
-                        return true;
-                    } else if (button == 1) {
-                        this.gridCells[i] = "";
-                        this.selectedGridCell = i;
-                        syncGridTextFromCells();
-                        Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.8F));
-                        return true;
+                    if (foundKey != null) {
+                        this.multiGridCells.remove(foundKey);
+                    } else {
+                        removeCollidingCells(this.gridSize, col, row);
                     }
+                    this.selectedGridCell = row * this.gridSize + col;
+                    syncGridTextFromCells();
+                    Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.8F));
+                    return true;
                 }
             }
         }
@@ -858,7 +1007,10 @@ public class BlueprintScreen extends Screen {
                         }
                         dirButtonRefresh();
                     }
-                    this.gridCells[this.selectedGridCell] = path;
+                    int col = this.selectedGridCell % this.gridSize;
+                    int row = this.selectedGridCell / this.gridSize;
+                    removeCollidingCells(this.gridSize, col, row);
+                    this.multiGridCells.put(com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row), path);
                     int max = this.gridSize * this.gridSize;
                     this.selectedGridCell = (this.selectedGridCell + 1) % max;
                     syncGridTextFromCells();
@@ -882,7 +1034,10 @@ public class BlueprintScreen extends Screen {
                     }
                     dirButtonRefresh();
                 }
-                this.gridCells[this.selectedGridCell] = "";
+                int col = this.selectedGridCell % this.gridSize;
+                int row = this.selectedGridCell / this.gridSize;
+                int key = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, this.gridSize, col, row);
+                this.multiGridCells.remove(key);
                 if (keyCode == GLFW.GLFW_KEY_BACKSPACE && this.selectedGridCell > 0) {
                     this.selectedGridCell--;
                 }
@@ -926,9 +1081,23 @@ public class BlueprintScreen extends Screen {
         }
         String enteredText = sb.toString();
 
-        List<String> cellList = new ArrayList<>(16);
-        for (int i = 0; i < 16; i++) {
+        int maxGridCells = this.gridSize * this.gridSize;
+        List<String> cellList = new ArrayList<>(maxGridCells);
+        for (int i = 0; i < maxGridCells; i++) {
             cellList.add(this.gridCells[i] != null ? this.gridCells[i] : "");
+        }
+
+        List<BlueprintTextC2SPacket.GridCellSpec> multiGridList = new ArrayList<>();
+        if (!this.isBannerMode) {
+            for (Map.Entry<Integer, String> entry : this.multiGridCells.entrySet()) {
+                int k = entry.getKey();
+                String path = entry.getValue();
+                if (path == null || path.isEmpty()) continue;
+                int gSize = (k % 10000) / 100;
+                int r = (k % 100) / 10;
+                int c = k % 10;
+                multiGridList.add(new BlueprintTextC2SPacket.GridCellSpec(gSize, c, r, path));
+            }
         }
 
         boolean isGrid = (this.activeTab == 1);
@@ -936,7 +1105,7 @@ public class BlueprintScreen extends Screen {
 
         ModMessages.sendToServer(new BlueprintTextC2SPacket(
                 enteredText, this.size, this.isVertical, this.withBackplate,
-                isGrid, this.gridSize, this.isBannerMode, currentGridText, cellList
+                isGrid, this.gridSize, this.isBannerMode, currentGridText, cellList, multiGridList
         ));
 
         if (this.minecraft != null && this.minecraft.player != null) {
@@ -956,11 +1125,23 @@ public class BlueprintScreen extends Screen {
                 t.putBoolean("IsBannerMode", this.isBannerMode);
                 t.putString("GridText", currentGridText);
                 ListTag list = new ListTag();
-                for (int i = 0; i < cellList.size(); i++) {
-                    CompoundTag cellTag = new CompoundTag();
-                    cellTag.putInt("Index", i);
-                    cellTag.putString("Char", cellList.get(i));
-                    list.add(cellTag);
+                if (!multiGridList.isEmpty()) {
+                    for (BlueprintTextC2SPacket.GridCellSpec spec : multiGridList) {
+                        CompoundTag cellTag = new CompoundTag();
+                        cellTag.putInt("GridSize", spec.gridSize());
+                        cellTag.putInt("Col", spec.col());
+                        cellTag.putInt("Row", spec.row());
+                        cellTag.putString("Char", spec.charPath());
+                        cellTag.putInt("Index", com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, spec.gridSize(), spec.col(), spec.row()));
+                        list.add(cellTag);
+                    }
+                } else {
+                    for (int i = 0; i < cellList.size(); i++) {
+                        CompoundTag cellTag = new CompoundTag();
+                        cellTag.putInt("Index", i);
+                        cellTag.putString("Char", cellList.get(i));
+                        list.add(cellTag);
+                    }
                 }
                 t.put("GridCells", list);
             }
@@ -973,6 +1154,7 @@ public class BlueprintScreen extends Screen {
                     modeComp = Component.translatable("gui.signbuilder.blueprint.mode_single");
                 }
                 ChatFormatting modeColor = this.isBannerMode ? (this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN) : ChatFormatting.AQUA;
+                String extraInfo = !this.isBannerMode ? " (" + multiGridList.size() + " letters)" : "";
                 this.minecraft.player.displayClientMessage(
                         Component.translatable("message.signbuilder.blueprint.grid_saved")
                                 .withStyle(ChatFormatting.YELLOW)
@@ -980,7 +1162,7 @@ public class BlueprintScreen extends Screen {
                                 .append(Component.literal("[").withStyle(ChatFormatting.GRAY))
                                 .append(modeComp.copy().withStyle(modeColor))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
-                                .append(Component.literal(currentGridText).withStyle(ChatFormatting.WHITE))
+                                .append(Component.literal(currentGridText + extraInfo).withStyle(ChatFormatting.WHITE))
                                 .append(Component.literal(" [▣ ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))

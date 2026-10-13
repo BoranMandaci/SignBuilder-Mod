@@ -70,6 +70,18 @@ public class GridSignBlock extends Block implements EntityBlock {
         }
     }
 
+    public static int getBackOffset(int gridSize) {
+        return gridSize >= 5 ? 32 : 16;
+    }
+
+    public static boolean isBackIndex(int rawIndex, int gridSize) {
+        return (rawIndex >= 32) || (gridSize < 5 && rawIndex >= 16);
+    }
+
+    public static int getLocalIndex(int rawIndex, int gridSize) {
+        return isBackIndex(rawIndex, gridSize) ? (rawIndex >= 32 ? rawIndex - 32 : rawIndex - 16) : rawIndex;
+    }
+
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
