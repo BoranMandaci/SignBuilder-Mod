@@ -19,11 +19,20 @@ public class GridOffsetHelper {
     
     public static Vector3f getCenter(AttachFace face, Direction facing) {
         float cx = 0.5f, cy = 0.5f, cz = 0.5f;
-        switch (facing) {
-            case NORTH -> cz = 1.0f;
-            case SOUTH -> cz = 0.0f;
-            case WEST -> cx = 1.0f;
-            case EAST -> cx = 0.0f;
+        if (face == AttachFace.WALL) {
+            switch (facing) {
+                case NORTH -> cz = 1.0f;
+                case SOUTH -> cz = 0.0f;
+                case WEST -> cx = 1.0f;
+                case EAST -> cx = 0.0f;
+            }
+        } else {
+            switch (facing) {
+                case NORTH -> cz = 11.0f / 16.0f;
+                case SOUTH -> cz = 5.0f / 16.0f;
+                case WEST -> cx = 11.0f / 16.0f;
+                case EAST -> cx = 5.0f / 16.0f;
+            }
         }
         return new Vector3f(cx, cy, cz);
     }
@@ -31,7 +40,7 @@ public class GridOffsetHelper {
     public static Vector3f getBaseTranslation(AttachFace face, Direction facing, boolean isBack) {
         float dx = 0, dy = 0, dz = 0;
         if (face == AttachFace.FLOOR || face == AttachFace.CEILING) {
-            float shift = 0.46875f;
+            float shift = 3.5f / 16.0f;
             switch (facing) {
                 case NORTH -> dz = -shift;
                 case SOUTH -> dz = shift;
@@ -51,6 +60,18 @@ public class GridOffsetHelper {
 
     public static Vector3f getBaseTranslation(AttachFace face, Direction facing) {
         return getBaseTranslation(face, facing, false);
+    }
+
+    public static Vector3f getClearance(AttachFace face, Direction facing, boolean hasBackplate) {
+        if (!hasBackplate) return new Vector3f(0, 0, 0);
+        float amount = (face == AttachFace.WALL) ? (1.05f / 16.0f) : (0.05f / 16.0f);
+        return switch (facing) {
+            case NORTH -> new Vector3f(0, 0, -amount);
+            case SOUTH -> new Vector3f(0, 0, amount);
+            case WEST -> new Vector3f(-amount, 0, 0);
+            case EAST -> new Vector3f(amount, 0, 0);
+            default -> new Vector3f(0, 0, 0);
+        };
     }
     
     public static Vector3f getClearance(AttachFace face, Direction facing, float amount) {

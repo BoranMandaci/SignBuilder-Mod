@@ -75,6 +75,24 @@ public class GridSignBlockEntity extends BlockEntity {
     }
     public void setFacingRotation(int rotation) { this.facingRotation = rotation; markRenderDirty(); setChanged(); sync(); }
 
+    private net.minecraft.world.item.ItemStack backGlyph = net.minecraft.world.item.ItemStack.EMPTY;
+    public net.minecraft.world.item.ItemStack getBackGlyph() { return this.backGlyph; }
+    public void setBackGlyph(net.minecraft.world.item.ItemStack stack) {
+        this.backGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
+    private net.minecraft.world.item.ItemStack frontGlyph = net.minecraft.world.item.ItemStack.EMPTY;
+    public net.minecraft.world.item.ItemStack getFrontGlyph() { return this.frontGlyph; }
+    public void setFrontGlyph(net.minecraft.world.item.ItemStack stack) {
+        this.frontGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
     private int wrenchMode = 0;
     private boolean isActive = false;
     private boolean detectsMonsters = true;
@@ -299,6 +317,12 @@ public class GridSignBlockEntity extends BlockEntity {
         tag.putBoolean("CustomLightPlayers", customLightPlayers);
         tag.putBoolean("CustomLightLowPower", customLightLowPower);
         tag.putBoolean("CustomLightLookOnly", customLightLookOnly);
+        if (!this.backGlyph.isEmpty()) {
+            tag.put("BackGlyph", this.backGlyph.save(lookup, new CompoundTag()));
+        }
+        if (!this.frontGlyph.isEmpty()) {
+            tag.put("FrontGlyph", this.frontGlyph.save(lookup, new CompoundTag()));
+        }
 
         ListTag list = new ListTag();
         for (Map.Entry<Integer, CellData> entry : cells.entrySet()) {
@@ -337,6 +361,8 @@ public class GridSignBlockEntity extends BlockEntity {
         this.detectsMonsters = !tag.contains("DetectsMonsters") || tag.getBoolean("DetectsMonsters");
         this.detectsAnimals = tag.getBoolean("DetectsAnimals");
         this.customLightOnTicks = tag.contains("CustomLightOnTicks") ? tag.getInt("CustomLightOnTicks") : 10;
+        this.backGlyph = tag.contains("BackGlyph", 10) ? net.minecraft.world.item.ItemStack.parse(lookup, tag.getCompound("BackGlyph")).orElse(net.minecraft.world.item.ItemStack.EMPTY) : net.minecraft.world.item.ItemStack.EMPTY;
+        this.frontGlyph = tag.contains("FrontGlyph", 10) ? net.minecraft.world.item.ItemStack.parse(lookup, tag.getCompound("FrontGlyph")).orElse(net.minecraft.world.item.ItemStack.EMPTY) : net.minecraft.world.item.ItemStack.EMPTY;
         this.customLightOffTicks = tag.contains("CustomLightOffTicks") ? tag.getInt("CustomLightOffTicks") : 10;
         this.customLightType = tag.getInt("CustomLightType");
         this.customLightRange = tag.contains("CustomLightRange") ? tag.getInt("CustomLightRange") : 8;

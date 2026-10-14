@@ -46,7 +46,7 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             int rawFColor = entity.getBackplateFrontColor();
             int rawBColor = entity.getBackplateBackColor();
             int currentRainbow = 0xFFFFFF;
-            if (entity.isBackplateFrontRainbow() || entity.isBackplateBackRainbow()) {
+            if (entity.isBackplateFrontRainbow() || entity.isBackplateBackRainbow() || (cache.hasBackGlyph && cache.backRainbow) || (cache.hasFrontGlyph && cache.frontRainbow)) {
                 float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
                 currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
             }
@@ -108,6 +108,72 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                     packedOverlay
             );
 
+            poseStack.popPose();
+        }
+
+        if (cache.hasBackGlyph && cache.finalBackModel != null) {
+            VertexConsumer buffer = bufferSource.getBuffer(cache.backRenderType);
+            int color = cache.backRawColor;
+            if (cache.backRainbow) {
+                if (!hasRainbowCalculated) {
+                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
+                    currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
+                    hasRainbowCalculated = true;
+                }
+                color = currentRainbow;
+            }
+            if (cache.backIsMaterial) {
+                color = 0xFFFFFF;
+            }
+
+            float lr = ((color >> 16) & 0xFF) / 255.0f;
+            float lg = ((color >> 8) & 0xFF) / 255.0f;
+            float lb = (color & 0xFF) / 255.0f;
+
+            poseStack.pushPose();
+            poseStack.translate(cache.backTransX, cache.backTransY, cache.backTransZ);
+            dispatcher.getModelRenderer().renderModel(
+                    poseStack.last(),
+                    buffer,
+                    cache.backState,
+                    cache.finalBackModel,
+                    lr, lg, lb,
+                    plateLight,
+                    packedOverlay
+            );
+            poseStack.popPose();
+        }
+
+        if (cache.hasFrontGlyph && cache.finalFrontModel != null) {
+            VertexConsumer buffer = bufferSource.getBuffer(cache.frontRenderType);
+            int color = cache.frontRawColor;
+            if (cache.frontRainbow) {
+                if (!hasRainbowCalculated) {
+                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
+                    currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
+                    hasRainbowCalculated = true;
+                }
+                color = currentRainbow;
+            }
+            if (cache.frontIsMaterial) {
+                color = 0xFFFFFF;
+            }
+
+            float lr = ((color >> 16) & 0xFF) / 255.0f;
+            float lg = ((color >> 8) & 0xFF) / 255.0f;
+            float lb = (color & 0xFF) / 255.0f;
+
+            poseStack.pushPose();
+            poseStack.translate(cache.frontTransX, cache.frontTransY, cache.frontTransZ);
+            dispatcher.getModelRenderer().renderModel(
+                    poseStack.last(),
+                    buffer,
+                    cache.frontState,
+                    cache.finalFrontModel,
+                    lr, lg, lb,
+                    plateLight,
+                    packedOverlay
+            );
             poseStack.popPose();
         }
 

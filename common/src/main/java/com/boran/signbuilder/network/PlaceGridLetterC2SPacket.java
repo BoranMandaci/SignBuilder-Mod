@@ -53,19 +53,76 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
 
         BlockState targetState = level.getBlockState(pos);
         BlockPos targetPos = pos;
+        int targetIndex = this.index;
+        boolean serverIsBack = false;
+
+        AttachFace aFace = targetState.hasProperty(BlockStateProperties.ATTACH_FACE)
+                ? targetState.getValue(BlockStateProperties.ATTACH_FACE)
+                : AttachFace.WALL;
+
+        if (aFace == AttachFace.WALL) {
+            Direction blockFacing = targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                    ? targetState.getValue(BlockStateProperties.HORIZONTAL_FACING)
+                    : face;
+            if (face == blockFacing.getOpposite()) {
+                serverIsBack = true;
+            } else if (face == blockFacing) {
+                serverIsBack = false;
+            } else if (player != null) {
+                int rot = com.boran.signbuilder.block.SignRotation.fromDirection(blockFacing);
+                double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(rot)
+                        + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(rot);
+                serverIsBack = side < 0.0;
+            }
+        } else {
+            int signNormalRotation = 0;
+            if (targetState.getBlock() instanceof GridSignBlock && level.getBlockEntity(pos) instanceof GridSignBlockEntity gbe) {
+                signNormalRotation = gbe.getFacingRotation();
+            } else if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
+                int rot = effective.getFacingRotation();
+                if (targetState.getBlock() instanceof LetterBlock) {
+                    signNormalRotation = Math.floorMod(rot - 2, 8);
+                } else {
+                    signNormalRotation = rot;
+                }
+            } else if (targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                signNormalRotation = com.boran.signbuilder.block.SignRotation.fromDirection(targetState.getValue(BlockStateProperties.HORIZONTAL_FACING));
+            }
+            Direction frontDirection = com.boran.signbuilder.block.SignRotation.cardinalDirection(signNormalRotation);
+
+            if (frontDirection != null && face == frontDirection.getOpposite()) {
+                serverIsBack = true;
+            } else if (frontDirection != null && face == frontDirection) {
+                serverIsBack = false;
+            } else if (player != null) {
+                net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+                double dot = look.x * com.boran.signbuilder.block.SignRotation.facingX(signNormalRotation) + look.z * com.boran.signbuilder.block.SignRotation.facingZ(signNormalRotation);
+                if (dot > 0.05) {
+                    serverIsBack = true;
+                } else if (dot < -0.05) {
+                    serverIsBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingX(signNormalRotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * com.boran.signbuilder.block.SignRotation.facingZ(signNormalRotation);
+                    serverIsBack = side < 0.0;
+                }
+            }
+        }
+
+        int backOffset = GridSignBlock.getBackOffset(this.gridSize);
+        if (serverIsBack && !GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+            targetIndex += backOffset;
+        } else if (!serverIsBack && GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+            targetIndex = GridSignBlock.getLocalIndex(targetIndex, this.gridSize);
+        }
 
         if (!(targetState.getBlock() instanceof GridSignBlock)) {
             boolean isBackplate = targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
             if (!isBackplate && targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
                 if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
-                    if (lbe.isDummy()) {
-                        net.minecraft.world.level.block.entity.BlockEntity me = level.getBlockEntity(lbe.getMasterPos());
-                        if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) {
-                            effective = masterBe;
-                        }
-                    }
-                    isBackplate = effective.hasBackplate();
+                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
+                    isBackplate = effective.hasBackplate() && effective.getSize() == 1;
                 }
             }
             boolean hasBackplateProperties = false;
@@ -82,19 +139,39 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
             boolean bpDetectsAnimals = false;
             int bpOnTicks = 10, bpOffTicks = 10, bpType = 0, bpRange = 8, bpOffRange = 8, bpCloseDelay = 0;
             boolean bpNightOnly = true, bpPlayers = true, bpLowPower = false, bpLookOnly = true;
+            ItemStack bpBackGlyph = ItemStack.EMPTY;
+            ItemStack oldFrontGlyph = ItemStack.EMPTY;
 
             if (isBackplate) {
                 targetPos = pos;
                 if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
-                    if (lbe.isDummy()) {
-                        net.minecraft.world.level.block.entity.BlockEntity me = level.getBlockEntity(lbe.getMasterPos());
-                        if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) {
-                            effective = masterBe;
-                        }
-                    }
+                    com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
                     hasBackplateProperties = effective.hasBackplate() || targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
                     if (hasBackplateProperties) {
+                        bpBackGlyph = effective.getBackGlyph();
+                        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+                            oldFrontGlyph = effective.getDroppedItemStack(targetState);
+                            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, oldFrontGlyph, beTag -> {
+                                beTag.remove("BackGlyph");
+                                beTag.remove("HasBackplate");
+                                beTag.remove("BPFrontMat");
+                                beTag.remove("BPBackMat");
+                                beTag.remove("BPFrontColor");
+                                beTag.remove("BPBackColor");
+                                beTag.remove("BPFrontRainbow");
+                                beTag.remove("BPBackRainbow");
+                                beTag.remove("BackplateFrontMaterial");
+                                beTag.remove("BackplateBackMaterial");
+                                beTag.remove("BackplateFrontColor");
+                                beTag.remove("BackplateBackColor");
+                                beTag.remove("BackplateFrontRainbow");
+                                beTag.remove("BackplateBackRainbow");
+                            });
+                            net.minecraft.world.item.component.CustomData cd = oldFrontGlyph.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                            if (cd != null && cd.isEmpty()) {
+                                oldFrontGlyph.remove(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                            }
+                        }
                         bpFMat = effective.getBackplateFrontMaterial();
                         bpBMat = effective.getBackplateBackMaterial();
                         bpFColor = effective.getBackplateFrontColor();
@@ -102,6 +179,9 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                         bpFRainbow = effective.isBackplateFrontRainbow();
                         bpBRainbow = effective.isBackplateBackRainbow();
                         bpFacingRotation = effective.getFacingRotation();
+                        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && targetState.hasProperty(BlockStateProperties.ATTACH_FACE) && targetState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                            bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
+                        }
                         bpWrenchMode = effective.getWrenchMode();
                         bpActive = effective.isActive();
                         bpDetectsMonsters = effective.doesDetectMonsters();
@@ -122,6 +202,7 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                     bpFacingRotation = com.boran.signbuilder.block.SignRotation.fromDirection(targetState.getValue(BlockStateProperties.HORIZONTAL_FACING));
                 }
             } else {
+                if (face == Direction.UP || face == Direction.DOWN) return;
                 targetPos = pos.relative(face);
                 if (!level.getBlockState(targetPos).canBeReplaced()) return;
             }
@@ -134,11 +215,30 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
             Direction blockFacing = face;
             if (isBackplate && targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 blockFacing = targetState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && attachFace != AttachFace.WALL) {
+                    blockFacing = blockFacing.getCounterClockWise();
+                }
             }
 
             BlockState newState = ModBlocks.GRID_SIGN.get().defaultBlockState()
                     .setValue(GridSignBlock.FACE, attachFace)
                     .setValue(GridSignBlock.FACING, blockFacing);
+
+            if (GridSignBlock.isBackIndex(targetIndex, this.gridSize)) {
+                if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
+                    if (!player.isCreative()) {
+                        net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
+                    }
+                    bpBackGlyph = ItemStack.EMPTY;
+                }
+            } else {
+                if (!oldFrontGlyph.isEmpty()) {
+                    if (!player.isCreative()) {
+                        net.minecraft.world.level.block.Block.popResource(level, targetPos, oldFrontGlyph.copy());
+                    }
+                    oldFrontGlyph = ItemStack.EMPTY;
+                }
+            }
 
             level.setBlock(targetPos, newState, 3);
             targetState = newState;
@@ -153,13 +253,19 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                 gridBe.setBackplateBackRainbow(bpBRainbow);
                 gridBe.setFacingRotation(bpFacingRotation);
                 gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
+                if (!oldFrontGlyph.isEmpty()) {
+                    gridBe.setFrontGlyph(oldFrontGlyph);
+                }
+                if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
+                    gridBe.setBackGlyph(bpBackGlyph);
+                }
                 GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
             }
         }
 
         if (level.getBlockEntity(targetPos) instanceof GridSignBlockEntity gridBe) {
-            boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(index, gridSize);
-            int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(index, gridSize);
+            boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(targetIndex, gridSize);
+            int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(targetIndex, gridSize);
             int col = rawIndex % gridSize;
             int row = rawIndex / gridSize;
 
@@ -169,6 +275,18 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
 
             if (gridBe.getCells().isEmpty()) {
                 gridBe.setGridSize(gridSize);
+            }
+            if (isBack && !gridBe.getBackGlyph().isEmpty()) {
+                if (!player.isCreative()) {
+                    net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getBackGlyph().copy());
+                }
+                gridBe.setBackGlyph(ItemStack.EMPTY);
+            }
+            if (!isBack && !gridBe.getFrontGlyph().isEmpty()) {
+                if (!player.isCreative()) {
+                    net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getFrontGlyph().copy());
+                }
+                gridBe.setFrontGlyph(ItemStack.EMPTY);
             }
             gridBe.setCell(col, row, gridSize, isBack, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
 

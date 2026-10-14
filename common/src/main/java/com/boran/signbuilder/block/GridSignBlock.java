@@ -25,9 +25,13 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.LootParams;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -120,6 +124,95 @@ public class GridSignBlock extends Block implements EntityBlock {
     }
 
     @Override
+    protected ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
+            boolean isGridMode = level.isClientSide()
+                    ? dev.architectury.utils.EnvExecutor.<Boolean>getInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.isGridModeActive()).orElse(false)
+                    : com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1;
+            if (isGridMode) {
+                return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            }
+
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof GridSignBlockEntity gridBe && gridBe.hasBackplate()) {
+                boolean isBack = false;
+                AttachFace aFace = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+                if (aFace == AttachFace.WALL) {
+                    Direction blockFacing = state.hasProperty(FACING) ? state.getValue(FACING) : hit.getDirection();
+                    Direction face = hit.getDirection();
+                    if (face == blockFacing.getOpposite()) {
+                        isBack = true;
+                    } else if (face == blockFacing) {
+                        isBack = false;
+                    } else if (player != null) {
+                        int rot = SignRotation.fromDirection(blockFacing);
+                        double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rot)
+                                + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rot);
+                        isBack = side < 0.0;
+                    }
+                } else {
+                    int rot = gridBe.getFacingRotation();
+                    Direction frontDirection = SignRotation.cardinalDirection(rot);
+                    Direction face = hit.getDirection();
+                    if (frontDirection != null && face == frontDirection) {
+                        isBack = false;
+                    } else if (frontDirection != null && face == frontDirection.getOpposite()) {
+                        isBack = true;
+                    } else if (player != null) {
+                        net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+                        double dot = look.x * SignRotation.facingX(rot) + look.z * SignRotation.facingZ(rot);
+                        if (dot > 0.05) {
+                            isBack = true;
+                        } else if (dot < -0.05) {
+                            isBack = false;
+                        } else {
+                            double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rot)
+                                    + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rot);
+                            isBack = side < 0.0;
+                        }
+                    }
+                }
+
+                boolean hasBackGridCells = false;
+                boolean hasFrontGridCells = false;
+                for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
+                    if (cell.isBack) {
+                        hasBackGridCells = true;
+                    } else {
+                        hasFrontGridCells = true;
+                    }
+                }
+
+                if (isBack) {
+                    if (!hasBackGridCells && gridBe.getBackGlyph().isEmpty()) {
+                        if (!level.isClientSide()) {
+                            gridBe.setBackGlyph(held);
+                            if (!player.isCreative()) {
+                                held.shrink(1);
+                            }
+                            level.playSound(null, pos, net.minecraft.sounds.SoundEvents.WOOD_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+                        }
+                        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    }
+                } else {
+                    if (!hasFrontGridCells && gridBe.getFrontGlyph().isEmpty()) {
+                        if (!level.isClientSide()) {
+                            gridBe.setFrontGlyph(held);
+                            if (!player.isCreative()) {
+                                held.shrink(1);
+                            }
+                            level.playSound(null, pos, net.minecraft.sounds.SoundEvents.WOOD_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+                        }
+                        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    }
+                }
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        }
+        return super.useItemOn(held, state, level, pos, player, hand, hit);
+    }
+
+    @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return true;
     }
@@ -161,6 +254,12 @@ public class GridSignBlock extends Block implements EntityBlock {
                     Block.popResource(level, pos, matStack);
                 }
             }
+        }
+        if (!gridBe.getBackGlyph().isEmpty()) {
+            Block.popResource(level, pos, gridBe.getBackGlyph().copy());
+        }
+        if (!gridBe.getFrontGlyph().isEmpty()) {
+            Block.popResource(level, pos, gridBe.getFrontGlyph().copy());
         }
         if (gridBe.isActive() || gridBe.getWrenchMode() != 0) {
             Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.GLOWSTONE_DUST));

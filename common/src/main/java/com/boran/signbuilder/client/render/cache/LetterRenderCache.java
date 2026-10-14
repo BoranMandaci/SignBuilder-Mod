@@ -51,7 +51,6 @@ public class LetterRenderCache {
     public final BlockState state;
     public final RenderType renderType;
 
-    // Backplate Standalone fields
     public final BakedModel standalonePlateModel;
     public final List<BakedQuad> standalonePlateQuads;
     public final float standalonePlateCenterLocalX;
@@ -60,7 +59,6 @@ public class LetterRenderCache {
     public final Direction standaloneFacing;
     public final int standaloneRotationDegrees;
 
-    // LetterBlock fields
     public final AttachFace face;
     public final Direction facing;
     public final int size;
@@ -69,7 +67,6 @@ public class LetterRenderCache {
     public final int modelScale;
     public final int rotationDegrees;
 
-    // Attached Backplate
     public final boolean hasBackplate;
     public final BlockState attachedPlateState;
     public final BakedModel attachedPlateModel;
@@ -79,7 +76,6 @@ public class LetterRenderCache {
     public final boolean attachedPlateWidenDiagonal;
     public final Direction attachedPlateFacing;
 
-    // Letter geometry
     public final BakedModel finalLetterModel;
     public final float letterCenterLocalX;
     public final float letterCenterLocalZ;
@@ -87,7 +83,6 @@ public class LetterRenderCache {
     public final float letterWallTransZ;
     public final boolean isLetterWall;
 
-    // Back Glyph
     public final boolean hasBackGlyph;
     public final BlockState backState;
     public final BakedModel finalBackModel;
@@ -308,7 +303,7 @@ public class LetterRenderCache {
         boolean backRainbow = false;
         boolean backIsMaterial = false;
 
-        if (!wall && !backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
+        if (!backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
             Block backBlock = blockItem.getBlock();
             backState = backBlock.defaultBlockState()
                     .setValue(LetterBlock.FACE, face)
@@ -344,9 +339,20 @@ public class LetterRenderCache {
                 backTarget = ModelCentering.centerAlongNormal(currentCenter, backTarget.x(), backTarget.z(), normalX, normalZ);
             }
 
-            double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, backRotationDegrees, size <= 1, modelScale, offsetX, offsetZ, backTarget.x(), backTarget.z());
-            backCenterLocalX = (float) bOffsets[0];
-            backCenterLocalZ = (float) bOffsets[1];
+            if (!wall) {
+                double[] bOffsets = ModelCentering.getCenterOffset(finalBackModel, backState, backRotationDegrees, size <= 1, modelScale, offsetX, offsetZ, backTarget.x(), backTarget.z());
+                backCenterLocalX = (float) bOffsets[0];
+                backCenterLocalZ = (float) bOffsets[1];
+            } else {
+                float shift = 1.0f;
+                float clearance = hasBackplate ? (1.05f / 16.0f) : 0f;
+                switch (facing.getOpposite()) {
+                    case NORTH -> backWallTransZ = (-shift - clearance) / modelScale;
+                    case SOUTH -> backWallTransZ = (shift + clearance) / modelScale;
+                    case WEST  -> backWallTransX = (-shift - clearance) / modelScale;
+                    case EAST  -> backWallTransX = (shift + clearance) / modelScale;
+                }
+            }
             hasBackGlyph = true;
         }
 

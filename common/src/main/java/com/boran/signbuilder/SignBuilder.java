@@ -35,31 +35,37 @@ public class SignBuilder {
         ModMessages.register();
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
-            if (hand == InteractionHand.MAIN_HAND && player.isShiftKeyDown()) {
-                ItemStack held = player.getItemInHand(hand);
-                if (held.getItem() instanceof PaintBrushItem) {
-                    return EventResult.pass();
-                }
+            ItemStack held = player.getItemInHand(hand);
+            if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
+                return EventResult.pass();
+            }
 
+            if (hand == InteractionHand.MAIN_HAND) {
+                if (held.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+                    boolean isGridMode = !player.level().isClientSide()
+                            ? com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1
+                            : false;
+                    if (isGridMode) {
+                        return EventResult.interruptFalse();
+                    }
+                }
+            }
+
+            if (player.isShiftKeyDown()) {
                 Level level = player.level();
                 BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof LetterBlock) {
+
+                if (!level.isClientSide() && state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+                    return EventResult.interruptFalse();
+                }
+
+                if (hand == InteractionHand.MAIN_HAND && state.getBlock() instanceof LetterBlock) {
                     if (LetterBlock.tryDetachBackplate(level, pos, player)) {
                         return EventResult.interruptTrue();
                     }
                 }
             }
-            
-            // Server-side cancellation for Grid Mode vanilla placement
-            if (!player.level().isClientSide()) {
-                if (com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1) {
-                    ItemStack item = player.getItemInHand(hand);
-                    if (item.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
-                        return EventResult.interruptFalse();
-                    }
-                }
-            }
-            
+
             return EventResult.pass();
         });
     }

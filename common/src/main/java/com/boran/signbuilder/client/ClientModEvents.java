@@ -22,22 +22,46 @@ public class ClientModEvents {
                 net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
                 net.minecraft.world.phys.HitResult rawHit = client.hitResult;
                 if (rawHit instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+                    net.minecraft.world.item.ItemStack held = player.getItemInHand(hand);
+                    if (held.getItem() instanceof com.boran.signbuilder.item.PaintBrushItem ||
+                            held.getItem() instanceof com.boran.signbuilder.item.WrenchItem ||
+                            held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
+                        return dev.architectury.event.EventResult.pass();
+                    }
+
                     if (player.isShiftKeyDown()) {
                         net.minecraft.world.level.block.state.BlockState targetState = client.level.getBlockState(hit.getBlockPos());
                         if (targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
-                            com.boran.signbuilder.client.grid.GridRaytrace.GridRay ray = com.boran.signbuilder.client.grid.GridRaytrace.getRay(hit);
-                            if (ray != null && client.level.getBlockEntity(ray.pos()) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
-                                com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
-                                if (cell != null) {
-                                    int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
-                                    com.boran.signbuilder.network.ModMessages.sendToServer(
-                                            new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
-                                    );
-                                    player.swing(hand);
-                                    client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
-                                    return dev.architectury.event.EventResult.interruptFalse();
+                            if (hand == net.minecraft.world.InteractionHand.MAIN_HAND) {
+                                com.boran.signbuilder.client.grid.GridRaytrace.GridRay ray = com.boran.signbuilder.client.grid.GridRaytrace.getRay(hit);
+                                if (ray != null && client.level.getBlockEntity(ray.pos()) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                                    com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
+                                    if (cell != null) {
+                                        int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return dev.architectury.event.EventResult.interruptFalse();
+                                    } else if (ray.isBack() && !gbe.getBackGlyph().isEmpty()) {
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -1)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return dev.architectury.event.EventResult.interruptFalse();
+                                    } else if (!ray.isBack() && !gbe.getFrontGlyph().isEmpty()) {
+                                        com.boran.signbuilder.network.ModMessages.sendToServer(
+                                                new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -2)
+                                        );
+                                        player.swing(hand);
+                                        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
+                                        return dev.architectury.event.EventResult.interruptFalse();
+                                    }
                                 }
                             }
+                            return dev.architectury.event.EventResult.interruptFalse();
                         }
                     }
 

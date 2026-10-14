@@ -65,7 +65,7 @@ public class GridPreviewRenderer {
         boolean isBackplate = targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock || targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
         if (!isBackplate && targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
             if (mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                isBackplate = lbe.hasBackplate();
+                isBackplate = lbe.getEffectiveMaster().hasBackplate();
             }
         }
 
@@ -80,14 +80,7 @@ public class GridPreviewRenderer {
         if (mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
             facingRotation = gbe.getFacingRotation();
         } else if (isBackplate && mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-            com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe;
-            if (lbe.isDummy()) {
-                net.minecraft.world.level.block.entity.BlockEntity me = mc.level.getBlockEntity(lbe.getMasterPos());
-                if (me instanceof com.boran.signbuilder.block.entity.LetterBlockEntity masterBe) {
-                    effective = masterBe;
-                }
-            }
-            facingRotation = effective.getFacingRotation();
+            facingRotation = lbe.getEffectiveMaster().getFacingRotation();
         } else if (isBackplate && targetState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             facingRotation = com.boran.signbuilder.block.SignRotation.fromDirection(targetState.getValue(BlockStateProperties.HORIZONTAL_FACING));
         }
@@ -98,18 +91,26 @@ public class GridPreviewRenderer {
         int col = rawIndex % gridSize;
         int row = rawIndex / gridSize;
 
-        Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
-
-        BlockState letterState = letterBlock.defaultBlockState();
-        if (letterState.hasProperty(LetterBlock.FACING)) {
-            letterState = letterState.setValue(LetterBlock.FACING, effectiveFacing);
-        }
         AttachFace attachFace = AttachFace.WALL;
         if (isBackplate && targetState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
             attachFace = targetState.getValue(BlockStateProperties.ATTACH_FACE);
         }
+
+        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && attachFace != AttachFace.WALL) {
+            facing = facing.getCounterClockWise();
+            facingRotation = Math.floorMod(facingRotation - 2, 8);
+        }
+
+        Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+        Direction cellFacing = (attachFace != AttachFace.WALL) ? effectiveFacing.getClockWise() : effectiveFacing;
+        AttachFace cellFace = (attachFace != AttachFace.WALL) ? attachFace : AttachFace.WALL;
+
+        BlockState letterState = letterBlock.defaultBlockState();
+        if (letterState.hasProperty(LetterBlock.FACING)) {
+            letterState = letterState.setValue(LetterBlock.FACING, cellFacing);
+        }
         if (letterState.hasProperty(LetterBlock.FACE)) {
-            letterState = letterState.setValue(LetterBlock.FACE, AttachFace.WALL);
+            letterState = letterState.setValue(LetterBlock.FACE, cellFace);
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
@@ -149,9 +150,9 @@ public class GridPreviewRenderer {
 
         poseStack.translate(offsets.x, offsets.y, offsets.z);
 
-        if (isBackplate || (targetState.getBlock() instanceof GridSignBlock && mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe && gbe.hasBackplate())) {
-            float clearance = 1.05f / 16.0f;
-            org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, clearance);
+        boolean hasPlate = isBackplate || (targetState.getBlock() instanceof GridSignBlock && mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe && gbe.hasBackplate());
+        if (hasPlate) {
+            org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, true);
             poseStack.translate(cl.x, cl.y, cl.z);
         }
 

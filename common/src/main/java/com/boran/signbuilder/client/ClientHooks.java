@@ -22,4 +22,8 @@ public class ClientHooks {
     public static void setBlocksDirty(BlockPos pos) {
         Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
+
+    public static boolean isGridModeActive() {
+        return com.boran.signbuilder.client.grid.GridModeManager.isGridModeActive();
+    }
 }
