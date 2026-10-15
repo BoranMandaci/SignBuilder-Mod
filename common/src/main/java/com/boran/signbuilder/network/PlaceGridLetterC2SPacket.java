@@ -12,7 +12,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -128,6 +130,10 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
             int bpBColor = 0xFFFFFF;
             boolean bpFRainbow = false;
             boolean bpBRainbow = false;
+            boolean bpFGlow = false;
+            boolean bpBGlow = false;
+            boolean bpFrontGlyphGlow = false;
+            boolean bpBackGlyphGlow = false;
             int bpFacingRotation = 0;
             int bpWrenchMode = 0;
             boolean bpActive = false;
@@ -146,6 +152,8 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                     hasBackplateProperties = effective.hasBackplate() || targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
                     if (hasBackplateProperties) {
                         bpBackGlyph = effective.getBackGlyph();
+                        bpFrontGlyphGlow = effective.isGlowInked();
+                        bpBackGlyphGlow = effective.isBackGlyphGlowInked();
                         if (previousState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
                             oldFrontGlyph = effective.getDroppedItemStack(previousState);
                             CompoundTag itemTag = oldFrontGlyph.getTag();
@@ -165,15 +173,24 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                                 beTag.remove("BackplateBackColor");
                                 beTag.remove("BackplateFrontRainbow");
                                 beTag.remove("BackplateBackRainbow");
+                                beTag.remove("BPFrontGlowInked");
+                                beTag.remove("BPBackGlowInked");
+                                beTag.remove("BackplateFrontGlowInked");
+                                beTag.remove("BackplateBackGlowInked");
                                 if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
                             }
                         }
                         bpFMat = effective.getBackplateFrontMaterial();
+                        if (bpFMat == com.boran.signbuilder.block.SignMaterial.DEFAULT && targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.MATERIAL)) {
+                            bpFMat = targetState.getValue(com.boran.signbuilder.block.BackplateBlock.MATERIAL);
+                        }
                         bpBMat = effective.getBackplateBackMaterial();
                         bpFColor = effective.getBackplateFrontColor();
                         bpBColor = effective.getBackplateBackColor();
                         bpFRainbow = effective.isBackplateFrontRainbow();
                         bpBRainbow = effective.isBackplateBackRainbow();
+                        bpFGlow = effective.isBackplateFrontGlowInked();
+                        bpBGlow = effective.isBackplateBackGlowInked();
                         bpFacingRotation = effective.getFacingRotation();
                         if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock && targetState.hasProperty(BlockStateProperties.ATTACH_FACE) && targetState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
                             bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
@@ -195,6 +212,9 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                     }
                 } else if (targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) {
                     hasBackplateProperties = true;
+                    if (targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.MATERIAL)) {
+                        bpFMat = targetState.getValue(com.boran.signbuilder.block.BackplateBlock.MATERIAL);
+                    }
                     bpFacingRotation = com.boran.signbuilder.block.SignRotation.fromDirection(targetState.getValue(BlockStateProperties.HORIZONTAL_FACING));
                 }
             } else {
@@ -224,15 +244,23 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                 if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
                     if (!player.isCreative()) {
                         net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
+                        if (bpBackGlyphGlow) {
+                            net.minecraft.world.level.block.Block.popResource(level, targetPos, new ItemStack(Items.GLOW_INK_SAC));
+                        }
                     }
                     bpBackGlyph = ItemStack.EMPTY;
+                    bpBackGlyphGlow = false;
                 }
             } else {
                 if (!oldFrontGlyph.isEmpty()) {
                     if (!player.isCreative()) {
                         net.minecraft.world.level.block.Block.popResource(level, targetPos, oldFrontGlyph.copy());
+                        if (bpFrontGlyphGlow) {
+                            net.minecraft.world.level.block.Block.popResource(level, targetPos, new ItemStack(Items.GLOW_INK_SAC));
+                        }
                     }
                     oldFrontGlyph = ItemStack.EMPTY;
+                    bpFrontGlyphGlow = false;
                 }
             }
 
@@ -247,14 +275,22 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
                 gridBe.setBackplateBackColor(bpBColor);
                 gridBe.setBackplateFrontRainbow(bpFRainbow);
                 gridBe.setBackplateBackRainbow(bpBRainbow);
+                gridBe.setBackplateFrontGlowInked(bpFGlow);
+                gridBe.setBackplateBackGlowInked(bpBGlow);
                 gridBe.setFacingRotation(bpFacingRotation);
                 gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
                 if (!oldFrontGlyph.isEmpty()) {
                     gridBe.setFrontGlyph(oldFrontGlyph);
+                    gridBe.setFrontGlyphGlowInked(bpFrontGlyphGlow);
                 }
                 if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
                     gridBe.setBackGlyph(bpBackGlyph);
+                    gridBe.setBackGlyphGlowInked(bpBackGlyphGlow);
                 }
+                gridBe.markRenderDirty();
+                gridBe.setChanged();
+                gridBe.sync();
+                level.sendBlockUpdated(targetPos, newState, newState, 3);
                 GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
             }
         }
@@ -275,30 +311,41 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
             if (isBack && !gridBe.getBackGlyph().isEmpty()) {
                 if (!player.isCreative()) {
                     net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getBackGlyph().copy());
+                    if (gridBe.isBackGlyphGlowInked()) {
+                        net.minecraft.world.level.block.Block.popResource(level, targetPos, new ItemStack(Items.GLOW_INK_SAC));
+                    }
                 }
                 gridBe.setBackGlyph(ItemStack.EMPTY);
+                gridBe.setBackGlyphGlowInked(false);
             }
             if (!isBack && !gridBe.getFrontGlyph().isEmpty()) {
                 if (!player.isCreative()) {
                     net.minecraft.world.level.block.Block.popResource(level, targetPos, gridBe.getFrontGlyph().copy());
-                }
-                gridBe.setFrontGlyph(ItemStack.EMPTY);
-            }
-            gridBe.setCell(col, row, gridSize, isBack, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
-
-            if (!player.isCreative()) {
-                ItemStack mainHand = player.getMainHandItem();
-                boolean found = false;
-                if (mainHand.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
-                    mainHand.shrink(1);
-                    found = true;
-                }
-                if (!found) {
-                    ItemStack offHand = player.getOffhandItem();
-                    if (offHand.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
-                        offHand.shrink(1);
+                    if (gridBe.isFrontGlyphGlowInked()) {
+                        Block.popResource(level, targetPos, new ItemStack(Items.GLOW_INK_SAC));
                     }
                 }
+                gridBe.setFrontGlyph(ItemStack.EMPTY);
+                gridBe.setFrontGlyphGlowInked(false);
+            }
+
+            ItemStack mainHand = player.getMainHandItem();
+            ItemStack usedStack = ItemStack.EMPTY;
+            if (mainHand.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+                usedStack = mainHand;
+            } else {
+                ItemStack offHand = player.getOffhandItem();
+                if (offHand.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock) {
+                    usedStack = offHand;
+                }
+            }
+            CompoundTag beTag = usedStack.getTagElement("BlockEntityTag");
+            boolean itemGlowInked = beTag != null && beTag.getBoolean("IsGlowInked");
+
+            gridBe.setCell(col, row, gridSize, isBack, character, SignMaterial.DEFAULT, 0xFFFFFF, false, 0, itemGlowInked);
+
+            if (!player.isCreative() && !usedStack.isEmpty()) {
+                usedStack.shrink(1);
             }
 
             level.playSound(null, targetPos, targetState.getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 0.8F);

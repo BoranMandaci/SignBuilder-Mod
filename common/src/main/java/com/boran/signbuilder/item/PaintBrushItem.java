@@ -115,6 +115,18 @@ public class PaintBrushItem extends Item {
         boolean isLetterBlock = state.getBlock() instanceof LetterBlock;
 
         if (!isBackplateBlock && !isLetterBlock) {
+            BlockPos abovePos = pos.above();
+            if (level.getBlockState(abovePos).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && level.getBlockEntity(abovePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity aboveGridBe) {
+                BlockState aboveState = level.getBlockState(abovePos);
+                return handleGridSignInteraction(level, abovePos, aboveState, aboveGridBe, player, stack, context);
+            }
+            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                BlockPos neighborPos = abovePos.relative(dir);
+                if (level.getBlockState(neighborPos).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && level.getBlockEntity(neighborPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity neighborGridBe) {
+                    BlockState neighborState = level.getBlockState(neighborPos);
+                    return handleGridSignInteraction(level, neighborPos, neighborState, neighborGridBe, player, stack, context);
+                }
+            }
             return InteractionResult.PASS;
         }
 
@@ -299,18 +311,18 @@ public class PaintBrushItem extends Item {
         return stateTag != null && stateTag.contains("material") ? parseMaterial(stateTag.getString("material")) : SignMaterial.DEFAULT;
     }
 
-    private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
-        ItemStack glyph = entity.getBackGlyph().copy();
-        if (glyph.isEmpty()) return;
+    private ItemStack applyToGlyph(ItemStack glyph, @Nullable SignMaterial newMaterial, int selectedColor, boolean hasMaterial) {
+        ItemStack copy = glyph.copy();
+        if (copy.isEmpty()) return copy;
 
-        CompoundTag blockEntityTag = glyph.getOrCreateTagElement("BlockEntityTag");
-        if (newMaterial != null) {
+        CompoundTag blockEntityTag = copy.getOrCreateTagElement("BlockEntityTag");
+        if (hasMaterial && newMaterial != null) {
             blockEntityTag.putString("SavedMaterial", newMaterial.name());
-            CompoundTag stateTag = glyph.getOrCreateTagElement("BlockStateTag");
+            CompoundTag stateTag = copy.getOrCreateTagElement("BlockStateTag");
             if (newMaterial == SignMaterial.DEFAULT) stateTag.remove("material");
             else stateTag.putString("material", newMaterial.getSerializedName());
         }
-        if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+        if (!hasMaterial || newMaterial == SignMaterial.DEFAULT) {
             if (selectedColor == -1) {
                 blockEntityTag.putBoolean("IsRainbow", true);
             } else {
@@ -318,7 +330,12 @@ public class PaintBrushItem extends Item {
                 blockEntityTag.putInt("RGBColor", getActualHexColor(selectedColor));
             }
         }
-        entity.setBackGlyph(glyph);
+        return copy;
+    }
+
+    private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
+        ItemStack updated = applyToGlyph(entity.getBackGlyph(), newMaterial, selectedColor, newMaterial != null);
+        entity.setBackGlyph(updated);
     }
 
     private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, @Nullable SignMaterial newMaterial, boolean hasMaterial, boolean targetBackplate, boolean targetBackGlyph, boolean isBackFace) {
@@ -579,11 +596,26 @@ public class PaintBrushItem extends Item {
         AttachFace aFace = state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE) ? state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
 
         boolean isBack = false;
-        if (player != null && aFace != AttachFace.WALL) {
-            double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
-                    + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
-            if (side < 0.0) {
+        if (aFace == AttachFace.WALL) {
+            isBack = false;
+        } else {
+            Direction frontDirection = SignRotation.cardinalDirection(rotation);
+            if (frontDirection != null && face == frontDirection.getOpposite()) {
                 isBack = true;
+            } else if (frontDirection != null && face == frontDirection) {
+                isBack = false;
+            } else if (player != null) {
+                Vec3 look = player.getLookAngle();
+                double dot = look.x * SignRotation.facingX(rotation) + look.z * SignRotation.facingZ(rotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
+                    isBack = side < 0.0;
+                }
             }
         }
 
@@ -607,27 +639,32 @@ public class PaintBrushItem extends Item {
             case WEST  -> u = 0.5 + (localZ / widthFactor);
             default    -> u = 0.5;
         }
+        if (ry < 0.0) ry = 0.0;
+        if (ry > 1.0) ry = 1.0;
         double v = 1.0 - ry;
 
         if (u < 0.0) u = 0.0;
-        if (u >= 1.0) u = 0.9999;
+        if (u > 1.0) u = 1.0;
         if (v < 0.0) v = 0.0;
-        if (v >= 1.0) v = 0.9999;
+        if (v > 1.0) v = 1.0;
 
         com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gridBe.getCellAt((float) u, (float) v, isBack);
 
-        boolean targetBackGlyph = isBack && !gridBe.getBackGlyph().isEmpty() && (player == null || !player.isShiftKeyDown());
-        boolean targetFrontGlyph = !isBack && !gridBe.getFrontGlyph().isEmpty() && (player == null || !player.isShiftKeyDown());
+        boolean shiftDown = player != null && player.isShiftKeyDown();
+
+        boolean targetBackGlyph = isBack && !gridBe.getBackGlyph().isEmpty() && !shiftDown;
+        boolean targetFrontGlyph = !isBack && !gridBe.getFrontGlyph().isEmpty() && !shiftDown;
+
         boolean targetBackplate = false;
         if (gridBe.hasBackplate()) {
-            if (player != null && player.isShiftKeyDown()) {
+            if (shiftDown) {
                 targetBackplate = true;
             } else if (cell == null && !targetBackGlyph && !targetFrontGlyph) {
                 targetBackplate = true;
             }
         }
 
-        if (player != null && player.isShiftKeyDown() && !targetBackplate) {
+        if (shiftDown && !targetBackplate) {
             if (!level.isClientSide()) {
                 if (cell != null) {
                     int copiedColor = cell.rainbow ? -1 : cell.color;
@@ -650,9 +687,10 @@ public class PaintBrushItem extends Item {
         int selectedColor = tag != null && tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
         boolean hasMaterial = tag != null && tag.contains("SelectedMaterial");
         SignMaterial newMaterial = hasMaterial ? parseMaterial(tag.getString("SelectedMaterial")) : null;
+        boolean isSmartFill = tag != null && tag.getBoolean("IsSmartFill");
 
-        if (targetBackGlyph) {
-            ItemStack glyph = gridBe.getBackGlyph();
+        if (targetBackGlyph || targetFrontGlyph) {
+            ItemStack glyph = targetBackGlyph ? gridBe.getBackGlyph() : gridBe.getFrontGlyph();
             SignMaterial currentMat = getBackGlyphMaterial(glyph);
             if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
                 return InteractionResult.PASS;
@@ -672,72 +710,87 @@ public class PaintBrushItem extends Item {
             }
 
             if (!level.isClientSide()) {
-                ItemStack newGlyph = glyph.copy();
-                boolean rainbow = (selectedColor == -1);
-                int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
-                CompoundTag beTag = newGlyph.getOrCreateTagElement("BlockEntityTag");
-                if (hasMaterial) {
-                    beTag.putString("SavedMaterial", newMaterial.name());
+                ItemStack updatedGlyph = applyToGlyph(glyph, newMaterial, selectedColor, hasMaterial);
+                if (targetBackGlyph) {
+                    gridBe.setBackGlyph(updatedGlyph);
+                } else {
+                    gridBe.setFrontGlyph(updatedGlyph);
                 }
-                beTag.putBoolean("IsRainbow", rainbow);
-                beTag.putInt("RGBColor", color);
-                if (hasMaterial) {
-                    CompoundTag stateTag = newGlyph.getOrCreateTagElement("BlockStateTag");
-                    stateTag.putString("material", newMaterial.name().toLowerCase());
-                }
-                gridBe.setBackGlyph(newGlyph);
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (player != null && !player.isCreative()) {
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
                 }
                 level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        if (targetFrontGlyph) {
-            ItemStack glyph = gridBe.getFrontGlyph();
-            SignMaterial currentMat = getBackGlyphMaterial(glyph);
-            if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
-                return InteractionResult.PASS;
+        List<com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData> faceCells = new ArrayList<>();
+        for (com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData c : gridBe.getCells().values()) {
+            if (c.isBack == isBack) {
+                faceCells.add(c);
             }
+        }
 
-            if (hasMaterial && newMaterial != currentMat) {
-                if (player != null && !player.isCreative()) {
-                    ItemStack costItem = BackplateBlock.getItemForMaterial(newMaterial);
-                    if (!costItem.isEmpty()) {
+        if (isSmartFill && !shiftDown && !faceCells.isEmpty()) {
+            int currentDamage = stack.getDamageValue();
+            int maxDamage = stack.getMaxDamage();
+            int cellsPainted = 0;
+            int failedMaterial = 0;
+            int failedDurability = 0;
+
+            ItemStack costItem = (hasMaterial && newMaterial != SignMaterial.DEFAULT) ? BackplateBlock.getItemForMaterial(newMaterial) : ItemStack.EMPTY;
+
+            for (com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData c : faceCells) {
+                if (player != null && !player.isCreative() && (currentDamage + cellsPainted) >= maxDamage) {
+                    failedDurability++;
+                    continue;
+                }
+
+                if (hasMaterial && newMaterial != c.material) {
+                    if (player != null && !player.isCreative() && !costItem.isEmpty()) {
                         if (countItemInInventory(player, costItem.getItem()) < 1) {
-                            player.displayClientMessage(Component.translatable("message.signbuilder.need_material", costItem.getHoverName()).withStyle(ChatFormatting.RED), true);
-                            return InteractionResult.FAIL;
+                            failedMaterial++;
+                            continue;
                         }
                         consumeItemFromInventory(player, costItem.getItem(), 1);
                     }
                 }
+
+                if (!level.isClientSide()) {
+                    SignMaterial mat = hasMaterial ? newMaterial : c.material;
+                    boolean rainbow = (selectedColor == -1);
+                    int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
+                    gridBe.setCell(c.col, c.row, c.gridSize, c.isBack, c.character, mat, color, rainbow, c.lightMode, c.glowInked);
+                }
+                cellsPainted++;
             }
 
             if (!level.isClientSide()) {
-                ItemStack newGlyph = glyph.copy();
-                boolean rainbow = (selectedColor == -1);
-                int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
-                CompoundTag beTag = newGlyph.getOrCreateTagElement("BlockEntityTag");
-                if (hasMaterial) {
-                    beTag.putString("SavedMaterial", newMaterial.name());
+                if (cellsPainted > 0) {
+                    gridBe.markRenderDirty();
+                    gridBe.setChanged();
+                    gridBe.sync();
+                    level.sendBlockUpdated(pos, state, state, 3);
+                    level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    if (player != null && !player.isCreative()) {
+                        stack.hurtAndBreak(cellsPainted, player, (p) -> p.broadcastBreakEvent(context.getHand()));
+                    }
                 }
-                beTag.putBoolean("IsRainbow", rainbow);
-                beTag.putInt("RGBColor", color);
-                if (hasMaterial) {
-                    CompoundTag stateTag = newGlyph.getOrCreateTagElement("BlockStateTag");
-                    stateTag.putString("material", newMaterial.name().toLowerCase());
+                if (player != null) {
+                    if (failedMaterial > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_material", cellsPainted, failedMaterial).withStyle(ChatFormatting.YELLOW), true);
+                    } else if (failedDurability > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_durability", cellsPainted, failedDurability).withStyle(ChatFormatting.YELLOW), true);
+                    } else if (cellsPainted > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.success", cellsPainted).withStyle(ChatFormatting.GREEN), true);
+                    }
                 }
-                gridBe.setFrontGlyph(newGlyph);
-                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                if (player != null && !player.isCreative()) {
-                    stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
-                }
-                level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
@@ -780,6 +833,7 @@ public class PaintBrushItem extends Item {
                 }
                 level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
@@ -801,13 +855,14 @@ public class PaintBrushItem extends Item {
                 SignMaterial mat = hasMaterial ? newMaterial : cell.material;
                 boolean rainbow = (selectedColor == -1);
                 int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
-                gridBe.setCell(cell.col, cell.row, cell.gridSize, cell.isBack, cell.character, mat, color, rainbow, cell.lightMode);
+                gridBe.setCell(cell.col, cell.row, cell.gridSize, cell.isBack, cell.character, mat, color, rainbow, cell.lightMode, cell.glowInked);
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (player != null && !player.isCreative()) {
                     stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(context.getHand()));
                 }
                 level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());

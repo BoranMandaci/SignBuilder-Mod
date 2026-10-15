@@ -49,7 +49,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     private static long rainbowColorSlot = Long.MIN_VALUE;
     private static int rainbowColor;
 
-    private record MaterialModelKey(BakedModel model, SignMaterial front, SignMaterial back, boolean letter) {}
+    private record MaterialModelKey(BakedModel model, SignMaterial front, SignMaterial back, boolean letter, boolean glowInked) {}
 
     public LetterBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -131,7 +131,9 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
                 ModelCentering.widenDiagonalPose(poseStack, cache.standaloneFacing, entity.getFacingRotation());
             }
 
-            renderPlateQuads(poseStack.last(), buffer, cache.standalonePlateQuads, fColor, bColor, light, packedOverlay);
+            int fLight = (entity.isBackplateFrontGlowInked() || entity.isActive()) ? 15728880 : light;
+            int bLight = (entity.isBackplateBackGlowInked() || entity.isActive()) ? 15728880 : light;
+            renderPlateQuads(poseStack.last(), buffer, cache.standalonePlateQuads, fColor, bColor, fLight, bLight, packedOverlay);
             poseStack.popPose();
             return;
         }
@@ -157,7 +159,9 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
                     ModelCentering.widenDiagonalPose(poseStack, cache.attachedPlateFacing, entity.getFacingRotation());
                 }
             }
-            renderPlateQuads(poseStack.last(), buffer, cache.attachedPlateQuads, fColor, bColor, light, packedOverlay);
+            int fLight = (entity.isBackplateFrontGlowInked() || entity.isActive()) ? 15728880 : light;
+            int bLight = (entity.isBackplateBackGlowInked() || entity.isActive()) ? 15728880 : light;
+            renderPlateQuads(poseStack.last(), buffer, cache.attachedPlateQuads, fColor, bColor, fLight, bLight, packedOverlay);
             poseStack.popPose();
         }
 
@@ -177,13 +181,14 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         float lg = ((letterCol >> 8) & 0xFF) / 255.0f;
         float lb = (letterCol & 0xFF) / 255.0f;
 
+        int letterLight = (entity.isGlowInked() || entity.isActive()) ? 15728880 : light;
         dispatcher.getModelRenderer().renderModel(
                 poseStack.last(),
                 buffer,
                 cache.state,
                 cache.finalLetterModel,
                 lr, lg, lb,
-                light,
+                letterLight,
                 packedOverlay
         );
         poseStack.popPose();
@@ -200,7 +205,8 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             float br = ((backColor >> 16) & 0xFF) / 255.0f;
             float bg = ((backColor >> 8) & 0xFF) / 255.0f;
             float bb = (backColor & 0xFF) / 255.0f;
-            dispatcher.getModelRenderer().renderModel(poseStack.last(), buffer, cache.backState, cache.finalBackModel, br, bg, bb, light, packedOverlay);
+            int backLight = (cache.backGlowInked || entity.isActive()) ? 15728880 : light;
+            dispatcher.getModelRenderer().renderModel(poseStack.last(), buffer, cache.backState, cache.finalBackModel, br, bg, bb, backLight, packedOverlay);
             poseStack.popPose();
         }
 
@@ -222,9 +228,13 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         }
     }
 
+    public static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter, boolean glowInked) {
+        return MATERIAL_MODELS.computeIfAbsent(new MaterialModelKey(model, front, back, letter, glowInked),
+                key -> new MaterialBakedModel(key.model(), key.front(), key.back(), key.letter(), key.glowInked()));
+    }
+
     public static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter) {
-        return MATERIAL_MODELS.computeIfAbsent(new MaterialModelKey(model, front, back, letter),
-                key -> new MaterialBakedModel(key.model(), key.front(), key.back(), key.letter()));
+        return getMaterialModel(model, front, back, letter, false);
     }
 
     private static void applyRotation(PoseStack poseStack, BlockState state, LetterBlockEntity entity, boolean blockCentered) {
@@ -257,28 +267,39 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         return quads;
     }
 
+    public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int frontLight, int backLight, int overlay) {
+        renderPlateQuadList(pose, buffer, quads, frontColor, backColor, frontLight, backLight, overlay);
+    }
+
     public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
-        renderPlateQuadList(pose, buffer, quads, frontColor, backColor, light, overlay);
+        renderPlateQuadList(pose, buffer, quads, frontColor, backColor, light, light, overlay);
+    }
+
+    public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, BakedModel model, BlockState state, int frontColor, int backColor, int frontLight, int backLight, int overlay) {
+        for (int i = 0; i < 6; i++) {
+            RANDOM.setSeed(42L);
+            renderPlateQuadList(pose, buffer, model.getQuads(state, DIRECTIONS[i], RANDOM), frontColor, backColor, frontLight, backLight, overlay);
+        }
+        RANDOM.setSeed(42L);
+        renderPlateQuadList(pose, buffer, model.getQuads(state, null, RANDOM), frontColor, backColor, frontLight, backLight, overlay);
     }
 
     public static void renderPlateQuads(PoseStack.Pose pose, VertexConsumer buffer, BakedModel model, BlockState state, int frontColor, int backColor, int light, int overlay) {
-        for (int i = 0; i < 6; i++) {
-            RANDOM.setSeed(42L);
-            renderPlateQuadList(pose, buffer, model.getQuads(state, DIRECTIONS[i], RANDOM), frontColor, backColor, light, overlay);
-        }
-        RANDOM.setSeed(42L);
-        renderPlateQuadList(pose, buffer, model.getQuads(state, null, RANDOM), frontColor, backColor, light, overlay);
+        renderPlateQuads(pose, buffer, model, state, frontColor, backColor, light, light, overlay);
     }
 
-    private static void renderPlateQuadList(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int light, int overlay) {
+    private static void renderPlateQuadList(PoseStack.Pose pose, VertexConsumer buffer, List<BakedQuad> quads, int frontColor, int backColor, int frontLight, int backLight, int overlay) {
         int quadCount = quads.size();
         for (int i = 0; i < quadCount; i++) {
             BakedQuad quad = quads.get(i);
             int color = 0xFFFFFF;
+            int light = (frontLight == 15728880 || backLight == 15728880) ? 15728880 : frontLight;
             if (quad.getTintIndex() == 0) {
                 color = frontColor;
+                light = frontLight;
             } else if (quad.getTintIndex() == 1) {
                 color = backColor;
+                light = backLight;
             }
 
             float r = ((color >> 16) & 0xFF) / 255.0f;

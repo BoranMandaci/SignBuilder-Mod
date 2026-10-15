@@ -37,11 +37,18 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) {
         if (level.getBlockEntity(pos) instanceof GridSignBlockEntity gridBe) {
             if (cellKey == -1) {
                 if (!gridBe.getBackGlyph().isEmpty()) {
+                    boolean wasGlowInked = gridBe.isBackGlyphGlowInked();
                     ItemStack glyph = gridBe.getBackGlyph().copy();
                     gridBe.setBackGlyph(ItemStack.EMPTY);
                     if (!player.isCreative()) {
                         if (!player.getInventory().add(glyph)) {
                             Block.popResource(level, pos, glyph);
+                        }
+                        if (wasGlowInked) {
+                            ItemStack ink = new ItemStack(net.minecraft.world.item.Items.GLOW_INK_SAC);
+                            if (!player.getInventory().add(ink)) {
+                                Block.popResource(level, pos, ink);
+                            }
                         }
                         player.containerMenu.broadcastChanges();
                     }
@@ -56,11 +63,18 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) {
             }
             if (cellKey == -2) {
                 if (!gridBe.getFrontGlyph().isEmpty()) {
+                    boolean wasGlowInked = gridBe.isFrontGlyphGlowInked();
                     ItemStack glyph = gridBe.getFrontGlyph().copy();
                     gridBe.setFrontGlyph(ItemStack.EMPTY);
                     if (!player.isCreative()) {
                         if (!player.getInventory().add(glyph)) {
                             Block.popResource(level, pos, glyph);
+                        }
+                        if (wasGlowInked) {
+                            ItemStack ink = new ItemStack(net.minecraft.world.item.Items.GLOW_INK_SAC);
+                            if (!player.getInventory().add(ink)) {
+                                Block.popResource(level, pos, ink);
+                            }
                         }
                         player.containerMenu.broadcastChanges();
                     }
@@ -94,6 +108,12 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) {
                             if (!player.getInventory().add(matStack)) {
                                 Block.popResource(level, pos, matStack);
                             }
+                        }
+                    }
+                    if (removed.glowInked) {
+                        ItemStack ink = new ItemStack(net.minecraft.world.item.Items.GLOW_INK_SAC);
+                        if (!player.getInventory().add(ink)) {
+                            Block.popResource(level, pos, ink);
                         }
                     }
                     player.containerMenu.broadcastChanges();

@@ -55,7 +55,10 @@ public class LetterBlockEntity extends BlockEntity {
     private int backplateBackColor = 0xFFFFFF;
     private boolean backplateFrontRainbow = false;
     private boolean backplateBackRainbow = false;
+    private boolean backplateFrontGlowInked = false;
+    private boolean backplateBackGlowInked = false;
     private ItemStack backGlyph = ItemStack.EMPTY;
+    private boolean isGlowInked = false;
 
     private int size = 1;
     private int facingRotation = -1;
@@ -196,6 +199,39 @@ public class LetterBlockEntity extends BlockEntity {
     public boolean isGlowing() { return this.isActive; }
     public void setGlowing(boolean glowing) { this.isActive = glowing; setChanged(); sync(); }
 
+    public boolean isGlowInked() { return this.isGlowInked; }
+    public void setGlowInked(boolean glowInked) {
+        this.isGlowInked = glowInked;
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
+    private boolean backGlyphGlowInked = false;
+    public boolean isBackGlyphGlowInked() {
+        if (this.backGlyph.isEmpty()) return false;
+        if (this.backGlyphGlowInked) return true;
+        CompoundTag tag = this.backGlyph.getTagElement("BlockEntityTag");
+        return tag != null && tag.getBoolean("IsGlowInked");
+    }
+
+    public void setBackGlyphGlowInked(boolean glowInked) {
+        if (this.backGlyph.isEmpty()) return;
+        this.backGlyphGlowInked = glowInked;
+        ItemStack copy = this.backGlyph.copy();
+        CompoundTag tag = copy.getOrCreateTagElement("BlockEntityTag");
+        tag.putString("id", "signbuilder:letter_block_entity");
+        if (glowInked) {
+            tag.putBoolean("IsGlowInked", true);
+        } else {
+            tag.remove("IsGlowInked");
+        }
+        this.backGlyph = copy;
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
     public void setWrenchMode(int mode) { this.wrenchMode = mode; setChanged(); sync(); }
     public int getWrenchMode() { return this.wrenchMode; }
     public int getCustomLightOnTicks() { return this.customLightOnTicks; }
@@ -279,6 +315,15 @@ public class LetterBlockEntity extends BlockEntity {
     public ItemStack getBackGlyph() { return this.backGlyph; }
     public void setBackGlyph(ItemStack stack) {
         this.backGlyph = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        if (this.backGlyph.isEmpty()) {
+            this.backGlyphGlowInked = false;
+        } else {
+            GridSignBlockEntity.ensureBlockEntityDataId(this.backGlyph);
+            CompoundTag tag = this.backGlyph.getTagElement("BlockEntityTag");
+            if (tag != null && tag.getBoolean("IsGlowInked")) {
+                this.backGlyphGlowInked = true;
+            }
+        }
         markRenderDirty();
         setChanged();
         sync();
@@ -301,6 +346,22 @@ public class LetterBlockEntity extends BlockEntity {
 
     public boolean isBackplateBackRainbow() { return backplateBackRainbow; }
     public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
+
+    public boolean isBackplateFrontGlowInked() { return backplateFrontGlowInked; }
+    public void setBackplateFrontGlowInked(boolean glow) {
+        this.backplateFrontGlowInked = glow;
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
+    public boolean isBackplateBackGlowInked() { return backplateBackGlowInked; }
+    public void setBackplateBackGlowInked(boolean glow) {
+        this.backplateBackGlowInked = glow;
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
 
     public int getButtonMode() { return this.buttonMode; }
     public void setButtonMode(int mode) {
@@ -595,6 +656,7 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putInt("WrenchMode", this.wrenchMode);
         tag.putBoolean("IsActive", this.isActive);
         tag.putBoolean("Glowing", this.isActive);
+        tag.putBoolean("IsGlowInked", this.isGlowInked);
         tag.putBoolean("DetectsMonsters", this.detectsMonsters);
         tag.putBoolean("DetectsAnimals", this.detectsAnimals);
         tag.putString("SavedMaterial", this.savedMaterial.name());
@@ -616,7 +678,13 @@ public class LetterBlockEntity extends BlockEntity {
         tag.putInt("BPBackColor", this.backplateBackColor);
         tag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
         tag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
-        if (!this.backGlyph.isEmpty()) tag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+        tag.putBoolean("BPFrontGlowInked", this.backplateFrontGlowInked);
+        tag.putBoolean("BPBackGlowInked", this.backplateBackGlowInked);
+        tag.putBoolean("BackGlyphGlowInked", this.backGlyphGlowInked);
+        if (!this.backGlyph.isEmpty()) {
+            GridSignBlockEntity.ensureBlockEntityDataId(this.backGlyph);
+            tag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+        }
 
         tag.putInt("Size", this.size);
         if (this.facingRotation >= 0) tag.putInt("FacingRotation", this.facingRotation);
@@ -645,6 +713,7 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("WrenchMode")) this.wrenchMode = tag.getInt("WrenchMode");
         if (tag.contains("IsActive")) this.isActive = tag.getBoolean("IsActive");
         else if (tag.contains("Glowing")) this.isActive = tag.getBoolean("Glowing");
+        if (tag.contains("IsGlowInked")) this.isGlowInked = tag.getBoolean("IsGlowInked");
 
         if (tag.contains("DetectsMonsters")) this.detectsMonsters = tag.getBoolean("DetectsMonsters");
         if (tag.contains("DetectsAnimals")) this.detectsAnimals = tag.getBoolean("DetectsAnimals");
@@ -664,15 +733,32 @@ public class LetterBlockEntity extends BlockEntity {
         if (tag.contains("HasBackplate")) this.hasBackplate = tag.getBoolean("HasBackplate");
         if (tag.contains("BPFrontMat")) {
             try { this.backplateFrontMaterial = SignMaterial.valueOf(tag.getString("BPFrontMat").toUpperCase()); } catch (Exception ignored) {}
+        } else if (tag.contains("BackplateFrontMaterial")) {
+            try { this.backplateFrontMaterial = SignMaterial.valueOf(tag.getString("BackplateFrontMaterial").toUpperCase()); } catch (Exception ignored) {}
         }
         if (tag.contains("BPBackMat")) {
             try { this.backplateBackMaterial = SignMaterial.valueOf(tag.getString("BPBackMat").toUpperCase()); } catch (Exception ignored) {}
+        } else if (tag.contains("BackplateBackMaterial")) {
+            try { this.backplateBackMaterial = SignMaterial.valueOf(tag.getString("BackplateBackMaterial").toUpperCase()); } catch (Exception ignored) {}
         }
         if (tag.contains("BPFrontColor")) this.backplateFrontColor = tag.getInt("BPFrontColor");
+        else if (tag.contains("BackplateFrontColor")) this.backplateFrontColor = tag.getInt("BackplateFrontColor");
         if (tag.contains("BPBackColor")) this.backplateBackColor = tag.getInt("BPBackColor");
+        else if (tag.contains("BackplateBackColor")) this.backplateBackColor = tag.getInt("BackplateBackColor");
         if (tag.contains("BPFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BPFrontRainbow");
+        else if (tag.contains("BackplateFrontRainbow")) this.backplateFrontRainbow = tag.getBoolean("BackplateFrontRainbow");
         if (tag.contains("BPBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BPBackRainbow");
+        else if (tag.contains("BackplateBackRainbow")) this.backplateBackRainbow = tag.getBoolean("BackplateBackRainbow");
+        if (tag.contains("BPFrontGlowInked")) this.backplateFrontGlowInked = tag.getBoolean("BPFrontGlowInked");
+        else if (tag.contains("BackplateFrontGlowInked")) this.backplateFrontGlowInked = tag.getBoolean("BackplateFrontGlowInked");
+        else if (tag.contains("backplateFrontGlowInked")) this.backplateFrontGlowInked = tag.getBoolean("backplateFrontGlowInked");
+        if (tag.contains("BPBackGlowInked")) this.backplateBackGlowInked = tag.getBoolean("BPBackGlowInked");
+        else if (tag.contains("BackplateBackGlowInked")) this.backplateBackGlowInked = tag.getBoolean("BackplateBackGlowInked");
+        else if (tag.contains("backplateBackGlowInked")) this.backplateBackGlowInked = tag.getBoolean("backplateBackGlowInked");
+        this.backGlyphGlowInked = tag.getBoolean("BackGlyphGlowInked");
         this.backGlyph = tag.contains("BackGlyph", 10) ? ItemStack.of(tag.getCompound("BackGlyph")) : ItemStack.EMPTY;
+        GridSignBlockEntity.ensureBlockEntityDataId(this.backGlyph);
+        if (!this.backGlyphGlowInked && isBackGlyphGlowInked()) this.backGlyphGlowInked = true;
 
         if (tag.contains("Size")) {
             this.size = tag.getInt("Size");
@@ -728,6 +814,7 @@ public class LetterBlockEntity extends BlockEntity {
 
         boolean isCustomized = (this.rgbColor != 0xFFFFFF)
                 || this.isRainbow
+                || this.isGlowInked
                 || (this.wrenchMode != 0)
                 || this.customLightOnTicks != 10
                 || this.customLightOffTicks != 10
@@ -759,6 +846,7 @@ public class LetterBlockEntity extends BlockEntity {
 
         if (this.rgbColor != 0xFFFFFF) beTag.putInt("RGBColor", this.rgbColor);
         if (this.isRainbow) beTag.putBoolean("IsRainbow", this.isRainbow);
+        if (this.isGlowInked) beTag.putBoolean("IsGlowInked", this.isGlowInked);
         if (this.wrenchMode != 0) beTag.putInt("WrenchMode", this.wrenchMode);
         if (this.isActive) {
             beTag.putBoolean("IsActive", this.isActive);
@@ -786,7 +874,12 @@ public class LetterBlockEntity extends BlockEntity {
             if (this.backplateBackColor != 0xFFFFFF) beTag.putInt("BPBackColor", this.backplateBackColor);
             if (this.backplateFrontRainbow) beTag.putBoolean("BPFrontRainbow", this.backplateFrontRainbow);
             if (this.backplateBackRainbow) beTag.putBoolean("BPBackRainbow", this.backplateBackRainbow);
-            if (!this.backGlyph.isEmpty()) beTag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+            if (this.backplateFrontGlowInked) beTag.putBoolean("BPFrontGlowInked", this.backplateFrontGlowInked);
+            if (this.backplateBackGlowInked) beTag.putBoolean("BPBackGlowInked", this.backplateBackGlowInked);
+            if (!this.backGlyph.isEmpty()) {
+                GridSignBlockEntity.ensureBlockEntityDataId(this.backGlyph);
+                beTag.put("BackGlyph", this.backGlyph.save(new CompoundTag()));
+            }
         }
 
         if (this.buttonMode != 0) beTag.putInt("ButtonMode", this.buttonMode);

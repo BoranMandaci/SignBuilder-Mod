@@ -64,9 +64,11 @@ public class BackplateItem extends BlockItem {
                     int bCol = temp.getBackplateBackColor();
                     boolean fRain = temp.isBackplateFrontRainbow();
                     boolean bRain = temp.isBackplateBackRainbow();
+                    boolean fGlow = temp.isBackplateFrontGlowInked();
+                    boolean bGlow = temp.isBackplateBackGlowInked();
 
                     if (!level.isClientSide()) {
-                        LetterBlock.updateAllEntitiesBackplate(level, mPos, mState, size, true, fMat, bMat, fCol, bCol, fRain, bRain);
+                        LetterBlock.updateAllEntitiesBackplate(level, mPos, mState, size, true, fMat, bMat, fCol, bCol, fRain, bRain, fGlow, bGlow);
 
                         if (player != null && !player.isCreative()) {
                             stack.shrink(cost);
@@ -115,6 +117,19 @@ public class BackplateItem extends BlockItem {
                     }
                     if (!level.isClientSide()) {
                         gbe.setHasBackplate(true);
+                        CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+                        if (beTag != null) {
+                            LetterBlockEntity temp = new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), pos, state);
+                            BackplateBlock.applyBackplateTagToEntity(temp, beTag.copy());
+                            gbe.setBackplateFrontMaterial(temp.getBackplateFrontMaterial());
+                            gbe.setBackplateBackMaterial(temp.getBackplateBackMaterial());
+                            gbe.setBackplateFrontColor(temp.getBackplateFrontColor());
+                            gbe.setBackplateBackColor(temp.getBackplateBackColor());
+                            gbe.setBackplateFrontRainbow(temp.isBackplateFrontRainbow());
+                            gbe.setBackplateBackRainbow(temp.isBackplateBackRainbow());
+                            gbe.setBackplateFrontGlowInked(temp.isBackplateFrontGlowInked());
+                            gbe.setBackplateBackGlowInked(temp.isBackplateBackGlowInked());
+                        }
                         gbe.markRenderDirty();
                         gbe.setChanged();
                         gbe.sync();

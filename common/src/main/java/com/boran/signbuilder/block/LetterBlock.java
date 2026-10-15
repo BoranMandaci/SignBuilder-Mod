@@ -645,6 +645,10 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     public static void updateAllEntitiesBackplate(Level level, BlockPos masterPos, BlockState masterState, int size, boolean hasBackplate, SignMaterial fMat, SignMaterial bMat, int fCol, int bCol, boolean fRain, boolean bRain) {
+        updateAllEntitiesBackplate(level, masterPos, masterState, size, hasBackplate, fMat, bMat, fCol, bCol, fRain, bRain, false, false);
+    }
+
+    public static void updateAllEntitiesBackplate(Level level, BlockPos masterPos, BlockState masterState, int size, boolean hasBackplate, SignMaterial fMat, SignMaterial bMat, int fCol, int bCol, boolean fRain, boolean bRain, boolean fGlow, boolean bGlow) {
         BlockPos[] targets = (size == 3)
                 ? get3x3BlockPositions(masterPos, masterState, getMasterRotation(level, masterPos, masterState))
                 : (size == 2 ? getBigBlockPositions(masterPos, masterState, getMasterRotation(level, masterPos, masterState)) : new BlockPos[] { masterPos });
@@ -659,6 +663,30 @@ public class LetterBlock extends Block implements EntityBlock {
                 lbe.setBackplateBackColor(bCol);
                 lbe.setBackplateFrontRainbow(fRain);
                 lbe.setBackplateBackRainbow(bRain);
+                lbe.setBackplateFrontGlowInked(fGlow);
+                lbe.setBackplateBackGlowInked(bGlow);
+                lbe.setChanged();
+                lbe.sync();
+                BlockState s = level.getBlockState(p);
+                level.sendBlockUpdated(p, s, s, 3);
+            }
+        }
+    }
+
+    public static void updateAllEntitiesBackplateGlow(Level level, BlockPos masterPos, BlockState masterState, int size, boolean onBack, boolean glow) {
+        int rot = getMasterRotation(level, masterPos, masterState);
+        BlockPos[] targets = (size == 3)
+                ? get3x3BlockPositions(masterPos, masterState, rot)
+                : (size == 2 ? getBigBlockPositions(masterPos, masterState, rot) : new BlockPos[] { masterPos });
+
+        for (BlockPos p : targets) {
+            BlockEntity be = level.getBlockEntity(p);
+            if (be instanceof LetterBlockEntity lbe) {
+                if (onBack) {
+                    lbe.setBackplateBackGlowInked(glow);
+                } else {
+                    lbe.setBackplateFrontGlowInked(glow);
+                }
                 lbe.setChanged();
                 lbe.sync();
                 BlockState s = level.getBlockState(p);
@@ -673,6 +701,15 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     public static boolean tryDetachBackplate(Level level, BlockPos clickedPos, Player player) {
+        if (player != null) {
+            boolean holdingInk = player.getMainHandItem().is(Items.GLOW_INK_SAC)
+                    || player.getMainHandItem().is(Items.INK_SAC)
+                    || player.getOffhandItem().is(Items.GLOW_INK_SAC)
+                    || player.getOffhandItem().is(Items.INK_SAC);
+            if (holdingInk) {
+                return false;
+            }
+        }
         BlockEntity rawBe = level.getBlockEntity(clickedPos);
         if (!(rawBe instanceof LetterBlockEntity rawLetter)) return false;
 
@@ -781,7 +818,12 @@ public class LetterBlock extends Block implements EntityBlock {
             return InteractionResult.PASS;
         }
 
-        if (player.isShiftKeyDown()) {
+        boolean holdingInk = player.getMainHandItem().is(Items.GLOW_INK_SAC)
+                || player.getMainHandItem().is(Items.INK_SAC)
+                || player.getOffhandItem().is(Items.GLOW_INK_SAC)
+                || player.getOffhandItem().is(Items.INK_SAC);
+
+        if (player.isShiftKeyDown() && !holdingInk) {
             if (tryDetachBackplate(level, pos, player)) {
                 return InteractionResult.sidedSuccess(level.isClientSide());
             }
@@ -798,6 +840,112 @@ public class LetterBlock extends Block implements EntityBlock {
         BlockState mState = level.getBlockState(mPos);
         int size = master.getSize();
         int cost = (size == 3) ? 9 : (size == 2 ? 4 : 1);
+        boolean onBack = isOnBackSide(player, pos, state, master.getFacingRotation());
+        boolean shiftDown = player.isShiftKeyDown();
+
+        if (held.is(Items.GLOW_INK_SAC)) {
+            boolean targetBackGlyph = onBack && master.hasBackplate() && !master.getBackGlyph().isEmpty() && !shiftDown;
+            boolean targetBackplate = master.hasBackplate() && (shiftDown || (onBack && master.getBackGlyph().isEmpty()));
+
+            if (targetBackGlyph) {
+                if (!master.isBackGlyphGlowInked()) {
+                    if (!player.isCreative() && held.getCount() < cost) {
+                        return InteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        master.setBackGlyphGlowInked(true);
+                        if (!player.isCreative()) held.shrink(cost);
+                        level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+            } else if (targetBackplate) {
+                boolean currentGlow = onBack ? master.isBackplateBackGlowInked() : master.isBackplateFrontGlowInked();
+                if (!currentGlow) {
+                    if (!player.isCreative() && held.getCount() < cost) {
+                        return InteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        updateAllEntitiesBackplateGlow(level, mPos, mState, size, onBack, true);
+                        if (!player.isCreative()) held.shrink(cost);
+                        level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+            } else if (!master.isGlowInked()) {
+                if (!player.isCreative() && held.getCount() < cost) {
+                    return InteractionResult.FAIL;
+                }
+                if (!level.isClientSide()) {
+                    master.setGlowInked(true);
+                    if (!player.isCreative()) held.shrink(cost);
+                    level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        if (held.is(Items.INK_SAC)) {
+            boolean targetBackGlyph = onBack && master.hasBackplate() && !master.getBackGlyph().isEmpty() && !shiftDown;
+            boolean targetBackplate = master.hasBackplate() && (shiftDown || (onBack && master.getBackGlyph().isEmpty()));
+
+            if (targetBackGlyph) {
+                if (master.isBackGlyphGlowInked()) {
+                    if (!player.isCreative() && held.getCount() < cost) {
+                        return InteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        master.setBackGlyphGlowInked(false);
+                        if (!player.isCreative()) {
+                            held.shrink(cost);
+                            ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, cost);
+                            if (!player.getInventory().add(refund)) {
+                                player.drop(refund, false);
+                            }
+                        }
+                        level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+            } else if (targetBackplate) {
+                boolean currentGlow = onBack ? master.isBackplateBackGlowInked() : master.isBackplateFrontGlowInked();
+                if (currentGlow) {
+                    if (!player.isCreative() && held.getCount() < cost) {
+                        return InteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        updateAllEntitiesBackplateGlow(level, mPos, mState, size, onBack, false);
+                        if (!player.isCreative()) {
+                            held.shrink(cost);
+                            ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, cost);
+                            if (!player.getInventory().add(refund)) {
+                                player.drop(refund, false);
+                            }
+                        }
+                        level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+            } else if (master.isGlowInked()) {
+                if (!player.isCreative() && held.getCount() < cost) {
+                    return InteractionResult.FAIL;
+                }
+                if (!level.isClientSide()) {
+                    master.setGlowInked(false);
+                    if (!player.isCreative()) {
+                        held.shrink(cost);
+                        ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, cost);
+                        if (!player.getInventory().add(refund)) {
+                            player.drop(refund, false);
+                        }
+                    }
+                    level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
 
         if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock) {
             boolean isGridMode = level.isClientSide()
@@ -811,7 +959,7 @@ public class LetterBlock extends Block implements EntityBlock {
         if (held.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof LetterBlock
                 && master.hasBackplate()
-                && isOnBackSide(player, pos, state, master.getFacingRotation())) {
+                && onBack) {
             if (!master.getBackGlyph().isEmpty()) {
                 return InteractionResult.FAIL;
             }
@@ -845,8 +993,10 @@ public class LetterBlock extends Block implements EntityBlock {
                 int bCol = temp.getBackplateBackColor();
                 boolean fRain = temp.isBackplateFrontRainbow();
                 boolean bRain = temp.isBackplateBackRainbow();
+                boolean fGlow = temp.isBackplateFrontGlowInked();
+                boolean bGlow = temp.isBackplateBackGlowInked();
 
-                updateAllEntitiesBackplate(level, mPos, mState, size, true, fMat, bMat, fCol, bCol, fRain, bRain);
+                updateAllEntitiesBackplate(level, mPos, mState, size, true, fMat, bMat, fCol, bCol, fRain, bRain, fGlow, bGlow);
 
                 if (!player.isCreative()) {
                     held.shrink(cost);
@@ -937,7 +1087,7 @@ public class LetterBlock extends Block implements EntityBlock {
         scan2x2(level, placedPos, placedState.getBlock(), rightX, rightZ, facing, rotation);
     }
 
-    private static boolean isOnBackSide(Player player, BlockPos pos, BlockState state, int rotation) {
+    public static boolean isOnBackSide(Player player, BlockPos pos, BlockState state, int rotation) {
         int normalRotation = state.hasProperty(FACE) && state.getValue(FACE) == AttachFace.WALL
                 ? rotation
                 : Math.floorMod(rotation - 2, 8);
@@ -1019,6 +1169,8 @@ public class LetterBlock extends Block implements EntityBlock {
         int bCol = 0xFFFFFF;
         boolean fRain = false;
         boolean bRain = false;
+        boolean fGlow = false;
+        boolean bGlow = false;
 
         for (LetterBlockEntity e : entities) {
             if (e.hasBackplate()) {
@@ -1029,6 +1181,8 @@ public class LetterBlock extends Block implements EntityBlock {
                 bCol = e.getBackplateBackColor();
                 fRain = e.isBackplateFrontRainbow();
                 bRain = e.isBackplateBackRainbow();
+                fGlow = e.isBackplateFrontGlowInked();
+                bGlow = e.isBackplateBackGlowInked();
                 break;
             }
         }
@@ -1050,7 +1204,7 @@ public class LetterBlock extends Block implements EntityBlock {
         }
 
         if (hasAnyBackplate) {
-            updateAllEntitiesBackplate(level, b00, level.getBlockState(b00), 3, true, fMat, bMat, fCol, bCol, fRain, bRain);
+            updateAllEntitiesBackplate(level, b00, level.getBlockState(b00), 3, true, fMat, bMat, fCol, bCol, fRain, bRain, fGlow, bGlow);
         }
 
         updateLightLevel(level, b00, level.getBlockState(b00), master);
@@ -1107,6 +1261,8 @@ public class LetterBlock extends Block implements EntityBlock {
                 int bCol = master.hasBackplate() ? master.getBackplateBackColor() : (e10.hasBackplate() ? e10.getBackplateBackColor() : 0xFFFFFF);
                 boolean fRain = master.hasBackplate() ? master.isBackplateFrontRainbow() : e10.isBackplateFrontRainbow();
                 boolean bRain = master.hasBackplate() ? master.isBackplateBackRainbow() : e10.isBackplateBackRainbow();
+                boolean fGlow = master.hasBackplate() ? master.isBackplateFrontGlowInked() : (e10.hasBackplate() ? e10.isBackplateFrontGlowInked() : (e01.hasBackplate() ? e01.isBackplateFrontGlowInked() : e11.isBackplateFrontGlowInked()));
+                boolean bGlow = master.hasBackplate() ? master.isBackplateBackGlowInked() : (e10.hasBackplate() ? e10.isBackplateBackGlowInked() : (e01.hasBackplate() ? e01.isBackplateBackGlowInked() : e11.isBackplateBackGlowInked()));
 
                 level.setBlock(b00, level.getBlockState(b00).setValue(FACING, finalFacing).setValue(FACE, commonFace), 3);
                 level.setBlock(b10, level.getBlockState(b10).setValue(FACING, finalFacing).setValue(FACE, commonFace), 3);
@@ -1126,7 +1282,7 @@ public class LetterBlock extends Block implements EntityBlock {
                     setupDummy(actual11, b00);
 
                     if (hasAnyBackplate) {
-                        updateAllEntitiesBackplate(level, b00, mState, 2, true, fMat, bMat, fCol, bCol, fRain, bRain);
+                        updateAllEntitiesBackplate(level, b00, mState, 2, true, fMat, bMat, fCol, bCol, fRain, bRain, fGlow, bGlow);
                     }
 
                     updateLightLevel(level, b00, level.getBlockState(b00), actualMaster);
@@ -1319,6 +1475,10 @@ public class LetterBlock extends Block implements EntityBlock {
                 popResource(level, dropPos, new ItemStack(Items.GLOWSTONE_DUST, multiplier));
             }
 
+            if (lbe.isGlowInked()) {
+                popResource(level, dropPos, new ItemStack(Items.GLOW_INK_SAC, multiplier));
+            }
+
             ItemStack backGlyph = lbe.getBackGlyph();
             if (!backGlyph.isEmpty()) {
                 popResource(level, dropPos, new ItemStack(backGlyph.getItem(), multiplier));
@@ -1329,6 +1489,9 @@ public class LetterBlock extends Block implements EntityBlock {
                         backGlyphMaterialStack.setCount(multiplier);
                         popResource(level, dropPos, backGlyphMaterialStack);
                     }
+                }
+                if (lbe.isBackGlyphGlowInked()) {
+                    popResource(level, dropPos, new ItemStack(Items.GLOW_INK_SAC, multiplier));
                 }
             }
 
@@ -1350,6 +1513,12 @@ public class LetterBlock extends Block implements EntityBlock {
                         bStack.setCount(multiplier);
                         popResource(level, dropPos, bStack);
                     }
+                }
+                if (backplateSource.isBackplateFrontGlowInked()) {
+                    popResource(level, dropPos, new ItemStack(Items.GLOW_INK_SAC, multiplier));
+                }
+                if (backplateSource.isBackplateBackGlowInked()) {
+                    popResource(level, dropPos, new ItemStack(Items.GLOW_INK_SAC, multiplier));
                 }
             }
         }

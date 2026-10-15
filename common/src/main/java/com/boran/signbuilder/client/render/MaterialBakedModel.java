@@ -28,6 +28,7 @@ public class MaterialBakedModel implements BakedModel {
     private final SignMaterial frontMat;
     private final SignMaterial backMat;
     private final boolean isLetter;
+    private final boolean isGlowInked;
 
     private static final Map<QuadCacheKey, List<BakedQuad>> GLOBAL_QUAD_CACHE = Collections.synchronizedMap(new LinkedHashMap<>(128, 0.75F, true) {
         @Override
@@ -36,17 +37,21 @@ public class MaterialBakedModel implements BakedModel {
         }
     });
 
-    private record QuadCacheKey(BakedModel model, SignMaterial front, SignMaterial back, Direction direction, boolean letter) {}
+    private record QuadCacheKey(BakedModel model, SignMaterial front, SignMaterial back, Direction direction, boolean letter, boolean glowInked) {}
 
     public MaterialBakedModel(BakedModel originalModel) {
-        this(originalModel, SignMaterial.DEFAULT, SignMaterial.DEFAULT, false);
+        this(originalModel, SignMaterial.DEFAULT, SignMaterial.DEFAULT, false, false);
     }
 
     public MaterialBakedModel(BakedModel originalModel, SignMaterial frontMat, SignMaterial backMat) {
-        this(originalModel, frontMat, backMat, false);
+        this(originalModel, frontMat, backMat, false, false);
     }
 
     public MaterialBakedModel(BakedModel originalModel, SignMaterial frontMat, SignMaterial backMat, boolean isLetter) {
+        this(originalModel, frontMat, backMat, isLetter, false);
+    }
+
+    public MaterialBakedModel(BakedModel originalModel, SignMaterial frontMat, SignMaterial backMat, boolean isLetter, boolean isGlowInked) {
         BakedModel unwrapped = originalModel;
         while (unwrapped instanceof MaterialBakedModel mbm) {
             unwrapped = mbm.originalModel;
@@ -55,6 +60,7 @@ public class MaterialBakedModel implements BakedModel {
         this.frontMat = frontMat;
         this.backMat = backMat;
         this.isLetter = isLetter;
+        this.isGlowInked = isGlowInked;
     }
 
     BakedModel originalModel() {
@@ -79,11 +85,11 @@ public class MaterialBakedModel implements BakedModel {
 
         SignMaterial currentBMat = this.backMat;
 
-        if (currentFMat == SignMaterial.DEFAULT && currentBMat == SignMaterial.DEFAULT) {
+        if (currentFMat == SignMaterial.DEFAULT && currentBMat == SignMaterial.DEFAULT && !isGlowInked) {
             return originalQuads;
         }
 
-        QuadCacheKey cacheKey = new QuadCacheKey(originalModel, currentFMat, currentBMat, direction, isLetter);
+        QuadCacheKey cacheKey = new QuadCacheKey(originalModel, currentFMat, currentBMat, direction, isLetter, isGlowInked);
         SignMaterial activeFront = currentFMat;
         return GLOBAL_QUAD_CACHE.computeIfAbsent(cacheKey, k -> remapQuads(originalQuads, activeFront, currentBMat));
     }
@@ -101,15 +107,19 @@ public class MaterialBakedModel implements BakedModel {
             } else {
                 if (tint == 0) {
                     targetMat = fMat;
-                    if (fMat != SignMaterial.DEFAULT) tint = -1;
                 } else if (tint == 1) {
                     targetMat = bMat;
-                    if (bMat != SignMaterial.DEFAULT) tint = -1;
                 }
             }
 
+            boolean quadShade = isGlowInked ? false : quad.isShade();
+
             if (targetMat == SignMaterial.DEFAULT) {
-                newQuads.add(quad);
+                if (isGlowInked && quad.isShade()) {
+                    newQuads.add(new BakedQuad(quad.getVertices(), tint, quad.getDirection(), quad.getSprite(), false));
+                } else {
+                    newQuads.add(quad);
+                }
                 continue;
             }
 
@@ -137,7 +147,7 @@ public class MaterialBakedModel implements BakedModel {
                 newData[vIndex] = Float.floatToIntBits(newV0 + relV * (newV1 - newV0));
             }
 
-            newQuads.add(new BakedQuad(newData, tint, quad.getDirection(), newSprite, quad.isShade()));
+            newQuads.add(new BakedQuad(newData, tint, quad.getDirection(), newSprite, quadShade));
         }
         return newQuads;
     }
