@@ -43,11 +43,12 @@ public class GridSignRenderCache {
         public final int rawColor;
         public final boolean isRainbow;
         public final boolean isMaterial;
+        public final boolean glowInked;
 
         public CachedCell(BlockState letterState, BakedModel finalLetterModel, RenderType renderType,
                           float totalTransX, float totalTransY, float totalTransZ,
                           float pivotX, float pivotY, float pivotZ,
-                          float scale, int rawColor, boolean isRainbow, boolean isMaterial) {
+                          float scale, int rawColor, boolean isRainbow, boolean isMaterial, boolean glowInked) {
             this.letterState = letterState;
             this.finalLetterModel = finalLetterModel;
             this.renderType = renderType;
@@ -61,6 +62,7 @@ public class GridSignRenderCache {
             this.rawColor = rawColor;
             this.isRainbow = isRainbow;
             this.isMaterial = isMaterial;
+            this.glowInked = glowInked;
         }
     }
 
@@ -90,6 +92,7 @@ public class GridSignRenderCache {
     public final int backRawColor;
     public final boolean backRainbow;
     public final boolean backIsMaterial;
+    public final boolean backGlowInked;
 
     public final boolean hasFrontGlyph;
     public final BlockState frontState;
@@ -99,6 +102,7 @@ public class GridSignRenderCache {
     public final int frontRawColor;
     public final boolean frontRainbow;
     public final boolean frontIsMaterial;
+    public final boolean frontGlowInked;
 
     public GridSignRenderCache(long version, Object modelManagerRef, AttachFace face, Direction facing, int rotationDegrees,
                                boolean hasBackplate, BlockState plateState, BakedModel finalPlateModel,
@@ -107,10 +111,10 @@ public class GridSignRenderCache {
                                List<CachedCell> cells,
                                boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel,
                                RenderType backRenderType, float backTransX, float backTransY, float backTransZ,
-                               int backRawColor, boolean backRainbow, boolean backIsMaterial,
+                               int backRawColor, boolean backRainbow, boolean backIsMaterial, boolean backGlowInked,
                                boolean hasFrontGlyph, BlockState frontState, BakedModel finalFrontModel,
                                RenderType frontRenderType, float frontTransX, float frontTransY, float frontTransZ,
-                               int frontRawColor, boolean frontRainbow, boolean frontIsMaterial) {
+                               int frontRawColor, boolean frontRainbow, boolean frontIsMaterial, boolean frontGlowInked) {
         this.version = version;
         this.modelManagerRef = modelManagerRef;
         this.face = face;
@@ -137,6 +141,7 @@ public class GridSignRenderCache {
         this.backRawColor = backRawColor;
         this.backRainbow = backRainbow;
         this.backIsMaterial = backIsMaterial;
+        this.backGlowInked = backGlowInked;
         this.hasFrontGlyph = hasFrontGlyph;
         this.frontState = frontState;
         this.finalFrontModel = finalFrontModel;
@@ -147,6 +152,7 @@ public class GridSignRenderCache {
         this.frontRawColor = frontRawColor;
         this.frontRainbow = frontRainbow;
         this.frontIsMaterial = frontIsMaterial;
+        this.frontGlowInked = frontGlowInked;
     }
 
     public static GridSignRenderCache getOrCreate(GridSignBlockEntity entity, BlockRenderDispatcher dispatcher) {
@@ -186,8 +192,9 @@ public class GridSignRenderCache {
                     .setValue(BackplateBlock.FACING, facing)
                     .setValue(BackplateBlock.FACE, face);
             BakedModel basePlateModel = dispatcher.getBlockModel(plateState);
-            finalPlateModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(basePlateModel, fMat, bMat, false)
+            boolean plateGlowInked = entity.isBackplateFrontGlowInked() || entity.isBackplateBackGlowInked();
+            finalPlateModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT || plateGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(basePlateModel, fMat, bMat, false, plateGlowInked)
                     : basePlateModel;
             plateQuads = LetterBlockEntityRenderer.getAllQuads(finalPlateModel, plateState);
 
@@ -248,8 +255,8 @@ public class GridSignRenderCache {
 
             RenderType renderType = ItemBlockRenderTypes.getRenderType(letterState, false);
             BakedModel baseModel = dispatcher.getBlockModel(letterState);
-            BakedModel finalLetterModel = (data.material != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(baseModel, data.material, SignMaterial.DEFAULT, true)
+            BakedModel finalLetterModel = (data.material != SignMaterial.DEFAULT || data.glowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseModel, data.material, SignMaterial.DEFAULT, true, data.glowInked)
                     : baseModel;
 
             boolean isMaterial = data.material != SignMaterial.DEFAULT;
@@ -259,7 +266,7 @@ public class GridSignRenderCache {
                     letterState, finalLetterModel, renderType,
                     totalTransX, totalTransY, totalTransZ,
                     c.x, c.y, c.z,
-                    cellScale, rawColor, data.rainbow, isMaterial
+                    cellScale, rawColor, data.rainbow, isMaterial, data.glowInked
             ));
         }
 
@@ -272,6 +279,7 @@ public class GridSignRenderCache {
         int backRawColor = 0xFFFFFF;
         boolean backRainbow = false;
         boolean backIsMaterial = false;
+        boolean backGlowInked = false;
 
         if (!backGlyph.isEmpty() && backGlyph.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
             Direction effectiveFacing = facing.getOpposite();
@@ -304,9 +312,10 @@ public class GridSignRenderCache {
                 }
             }
 
+            backGlowInked = entity.isBackGlyphGlowInked();
             BakedModel baseBackModel = dispatcher.getBlockModel(backState);
-            finalBackModel = (backMaterial != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(baseBackModel, backMaterial, SignMaterial.DEFAULT, true)
+            finalBackModel = (backMaterial != SignMaterial.DEFAULT || backGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseBackModel, backMaterial, SignMaterial.DEFAULT, true, backGlowInked)
                     : baseBackModel;
 
             int plateRotation = entity.getFacingRotation();
@@ -346,6 +355,7 @@ public class GridSignRenderCache {
             backRenderType = ItemBlockRenderTypes.getRenderType(backState, false);
             backIsMaterial = backMaterial != SignMaterial.DEFAULT;
             backRainbow = backTag != null && backTag.getBoolean("IsRainbow");
+            backGlowInked = backTag != null && backTag.getBoolean("IsGlowInked");
             backRawColor = backMaterial != SignMaterial.DEFAULT ? 0xFFFFFF
                     : (backTag != null && backTag.contains("RGBColor") ? backTag.getInt("RGBColor") : 0xFFFFFF);
             hasBackGlyph = true;
@@ -360,6 +370,7 @@ public class GridSignRenderCache {
         int frontRawColor = 0xFFFFFF;
         boolean frontRainbow = false;
         boolean frontIsMaterial = false;
+        boolean frontGlowInked = false;
 
         if (!frontGlyph.isEmpty() && frontGlyph.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
             Direction cellFacing = (face != AttachFace.WALL) ? facing.getClockWise() : facing;
@@ -391,9 +402,10 @@ public class GridSignRenderCache {
                 }
             }
 
+            frontGlowInked = entity.isFrontGlyphGlowInked();
             BakedModel baseFrontModel = dispatcher.getBlockModel(frontState);
-            finalFrontModel = (frontMaterial != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(baseFrontModel, frontMaterial, SignMaterial.DEFAULT, true)
+            finalFrontModel = (frontMaterial != SignMaterial.DEFAULT || frontGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseFrontModel, frontMaterial, SignMaterial.DEFAULT, true, frontGlowInked)
                     : baseFrontModel;
 
             int plateRotation = entity.getFacingRotation();
@@ -427,6 +439,7 @@ public class GridSignRenderCache {
             frontRenderType = ItemBlockRenderTypes.getRenderType(frontState, false);
             frontIsMaterial = frontMaterial != SignMaterial.DEFAULT;
             frontRainbow = frontTag != null && frontTag.getBoolean("IsRainbow");
+            frontGlowInked = entity.isFrontGlyphGlowInked();
             frontRawColor = frontMaterial != SignMaterial.DEFAULT ? 0xFFFFFF
                     : (frontTag != null && frontTag.contains("RGBColor") ? frontTag.getInt("RGBColor") : 0xFFFFFF);
             hasFrontGlyph = true;
@@ -439,10 +452,10 @@ public class GridSignRenderCache {
                 cellList,
                 hasBackGlyph, backState, finalBackModel,
                 backRenderType, backTransX, backTransY, backTransZ,
-                backRawColor, backRainbow, backIsMaterial,
+                backRawColor, backRainbow, backIsMaterial, backGlowInked,
                 hasFrontGlyph, frontState, finalFrontModel,
                 frontRenderType, frontTransX, frontTransY, frontTransZ,
-                frontRawColor, frontRainbow, frontIsMaterial
+                frontRawColor, frontRainbow, frontIsMaterial, frontGlowInked
         );
     }
 }

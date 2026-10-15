@@ -36,7 +36,12 @@ public class SignBuilder {
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             ItemStack held = player.getItemInHand(hand);
-            if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
+            boolean holdingInk = player.getMainHandItem().is(net.minecraft.world.item.Items.GLOW_INK_SAC)
+                    || player.getMainHandItem().is(net.minecraft.world.item.Items.INK_SAC)
+                    || player.getOffhandItem().is(net.minecraft.world.item.Items.GLOW_INK_SAC)
+                    || player.getOffhandItem().is(net.minecraft.world.item.Items.INK_SAC);
+
+            if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem || holdingInk) {
                 return EventResult.pass();
             }
 
@@ -59,7 +64,7 @@ public class SignBuilder {
                     return EventResult.interruptFalse();
                 }
 
-                if (hand == InteractionHand.MAIN_HAND && state.getBlock() instanceof LetterBlock) {
+                if (hand == InteractionHand.MAIN_HAND && !holdingInk && state.getBlock() instanceof LetterBlock) {
                     if (LetterBlock.tryDetachBackplate(level, pos, player)) {
                         return EventResult.interruptTrue();
                     }

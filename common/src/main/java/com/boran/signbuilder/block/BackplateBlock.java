@@ -92,6 +92,70 @@ public class BackplateBlock extends Block implements EntityBlock {
             return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
+        if (held.is(Items.GLOW_INK_SAC)) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LetterBlockEntity lbe) {
+                int facingRotation = lbe.getFacingRotation();
+                boolean backSide = isOnBackSide(player, pos, facingRotation);
+                if (state.getValue(FACE) == AttachFace.WALL && backSide) {
+                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                }
+                boolean currentGlow = backSide ? lbe.isBackplateBackGlowInked() : lbe.isBackplateFrontGlowInked();
+                if (!currentGlow) {
+                    if (!player.isCreative() && held.getCount() < 1) {
+                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        if (backSide) {
+                            lbe.setBackplateBackGlowInked(true);
+                        } else {
+                            lbe.setBackplateFrontGlowInked(true);
+                        }
+                        if (!player.isCreative()) {
+                            held.shrink(1);
+                        }
+                        level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
+                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            }
+        }
+
+        if (held.is(Items.INK_SAC)) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LetterBlockEntity lbe) {
+                int facingRotation = lbe.getFacingRotation();
+                boolean backSide = isOnBackSide(player, pos, facingRotation);
+                if (state.getValue(FACE) == AttachFace.WALL && backSide) {
+                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                }
+                boolean currentGlow = backSide ? lbe.isBackplateBackGlowInked() : lbe.isBackplateFrontGlowInked();
+                if (currentGlow) {
+                    if (!player.isCreative() && held.getCount() < 1) {
+                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                    }
+                    if (!level.isClientSide()) {
+                        if (backSide) {
+                            lbe.setBackplateBackGlowInked(false);
+                        } else {
+                            lbe.setBackplateFrontGlowInked(false);
+                        }
+                        if (!player.isCreative()) {
+                            held.shrink(1);
+                            ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, 1);
+                            if (!player.getInventory().add(refund)) {
+                                player.drop(refund, false);
+                            }
+                        }
+                        level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    }
+                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
+                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            }
+        }
+
         if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
             BlockEntity be = level.getBlockEntity(pos);
             LetterBlockEntity letterBe = (be instanceof LetterBlockEntity lbe) ? lbe : null;
@@ -107,6 +171,8 @@ public class BackplateBlock extends Block implements EntityBlock {
             int bColor = letterBe != null ? letterBe.getBackplateBackColor() : 0xFFFFFF;
             boolean fRainbow = letterBe != null && letterBe.isBackplateFrontRainbow();
             boolean bRainbow = letterBe != null && letterBe.isBackplateBackRainbow();
+            boolean fGlow = letterBe != null && letterBe.isBackplateFrontGlowInked();
+            boolean bGlow = letterBe != null && letterBe.isBackplateBackGlowInked();
 
             AttachFace face = state.getValue(FACE);
             Direction facing = state.getValue(FACING);
@@ -145,6 +211,8 @@ public class BackplateBlock extends Block implements EntityBlock {
                     newLetter.setBackplateBackColor(bColor);
                     newLetter.setBackplateFrontRainbow(fRainbow);
                     newLetter.setBackplateBackRainbow(bRainbow);
+                    newLetter.setBackplateFrontGlowInked(fGlow);
+                    newLetter.setBackplateBackGlowInked(bGlow);
                     if (letterBe != null && (blockEntityTag == null || !blockEntityTag.contains("WrenchMode"))) {
                         newLetter.setLightConfiguration(letterBe.getWrenchMode(), letterBe.isActive(),
                                 letterBe.doesDetectMonsters(), letterBe.doesDetectAnimals(),
@@ -174,6 +242,8 @@ public class BackplateBlock extends Block implements EntityBlock {
                     newLetter.setBackplateBackColor(bColor);
                     newLetter.setBackplateFrontRainbow(fRainbow);
                     newLetter.setBackplateBackRainbow(bRainbow);
+                    newLetter.setBackplateFrontGlowInked(fGlow);
+                    newLetter.setBackplateBackGlowInked(bGlow);
                     if (letterBe != null && (blockEntityTag == null || !blockEntityTag.contains("WrenchMode"))) {
                         newLetter.setLightConfiguration(letterBe.getWrenchMode(), letterBe.isActive(),
                                 letterBe.doesDetectMonsters(), letterBe.doesDetectAnimals(),
@@ -194,7 +264,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
-    private static boolean isOnBackSide(Player player, BlockPos pos, int rotation) {
+    public static boolean isOnBackSide(Player player, BlockPos pos, int rotation) {
         double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
                 + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
         return side < 0.0;
@@ -265,6 +335,12 @@ public class BackplateBlock extends Block implements EntityBlock {
                 if (lbe.isActive()) {
                     drops.add(new ItemStack(Items.GLOWSTONE_DUST, 1));
                 }
+                if (lbe.isBackplateFrontGlowInked()) {
+                    drops.add(new ItemStack(Items.GLOW_INK_SAC, 1));
+                }
+                if (lbe.isBackplateBackGlowInked()) {
+                    drops.add(new ItemStack(Items.GLOW_INK_SAC, 1));
+                }
             }
         } else {
             drops.add(new ItemStack(ModBlocks.BACKPLATE_ITEM.get(), 1));
@@ -284,11 +360,14 @@ public class BackplateBlock extends Block implements EntityBlock {
         int bCol = lbe.getBackplateBackColor();
         boolean fRain = lbe.isBackplateFrontRainbow();
         boolean bRain = lbe.isBackplateBackRainbow();
+        boolean fGlow = lbe.isBackplateFrontGlowInked();
+        boolean bGlow = lbe.isBackplateBackGlowInked();
         boolean isDefault = (fMat == null || fMat == SignMaterial.DEFAULT)
                 && (bMat == null || bMat == SignMaterial.DEFAULT)
                 && (fCol == 0xFFFFFF || fCol == 0)
                 && (bCol == 0xFFFFFF || bCol == 0)
                 && !fRain && !bRain
+                && !fGlow && !bGlow
                 && lbe.getWrenchMode() == 0 && !lbe.isActive();
 
         if (isDefault) {
@@ -317,6 +396,12 @@ public class BackplateBlock extends Block implements EntityBlock {
         }
         if (bRain) {
             beTag.putBoolean("BackplateBackRainbow", true);
+        }
+        if (fGlow) {
+            beTag.putBoolean("BackplateFrontGlowInked", true);
+        }
+        if (bGlow) {
+            beTag.putBoolean("BackplateBackGlowInked", true);
         }
         if (lbe.getWrenchMode() != 0) beTag.putInt("WrenchMode", lbe.getWrenchMode());
         if (lbe.isActive()) {
@@ -350,36 +435,76 @@ public class BackplateBlock extends Block implements EntityBlock {
             try { entity.setBackplateFrontMaterial(SignMaterial.valueOf(beTag.getString("BackplateFrontMaterial"))); } catch (Exception ignored) {}
         } else if (beTag.contains("backplateFrontMaterial")) {
             try { entity.setBackplateFrontMaterial(SignMaterial.valueOf(beTag.getString("backplateFrontMaterial"))); } catch (Exception ignored) {}
+        } else if (beTag.contains("BPFrontMat")) {
+            try { entity.setBackplateFrontMaterial(SignMaterial.valueOf(beTag.getString("BPFrontMat"))); } catch (Exception ignored) {}
+        } else if (beTag.contains("BPFMat")) {
+            try { entity.setBackplateFrontMaterial(SignMaterial.valueOf(beTag.getString("BPFMat"))); } catch (Exception ignored) {}
         }
 
         if (beTag.contains("BackplateBackMaterial")) {
             try { entity.setBackplateBackMaterial(SignMaterial.valueOf(beTag.getString("BackplateBackMaterial"))); } catch (Exception ignored) {}
         } else if (beTag.contains("backplateBackMaterial")) {
             try { entity.setBackplateBackMaterial(SignMaterial.valueOf(beTag.getString("backplateBackMaterial"))); } catch (Exception ignored) {}
+        } else if (beTag.contains("BPBackMat")) {
+            try { entity.setBackplateBackMaterial(SignMaterial.valueOf(beTag.getString("BPBackMat"))); } catch (Exception ignored) {}
+        } else if (beTag.contains("BPBMat")) {
+            try { entity.setBackplateBackMaterial(SignMaterial.valueOf(beTag.getString("BPBMat"))); } catch (Exception ignored) {}
         }
 
         if (beTag.contains("BackplateFrontColor")) {
             entity.setBackplateFrontColor(beTag.getInt("BackplateFrontColor"));
         } else if (beTag.contains("backplateFrontColor")) {
             entity.setBackplateFrontColor(beTag.getInt("backplateFrontColor"));
+        } else if (beTag.contains("BPFrontColor")) {
+            entity.setBackplateFrontColor(beTag.getInt("BPFrontColor"));
+        } else if (beTag.contains("BPFColor")) {
+            entity.setBackplateFrontColor(beTag.getInt("BPFColor"));
         }
 
         if (beTag.contains("BackplateBackColor")) {
             entity.setBackplateBackColor(beTag.getInt("BackplateBackColor"));
         } else if (beTag.contains("backplateBackColor")) {
             entity.setBackplateBackColor(beTag.getInt("backplateBackColor"));
+        } else if (beTag.contains("BPBackColor")) {
+            entity.setBackplateBackColor(beTag.getInt("BPBackColor"));
+        } else if (beTag.contains("BPBColor")) {
+            entity.setBackplateBackColor(beTag.getInt("BPBColor"));
         }
 
         if (beTag.contains("BackplateFrontRainbow")) {
             entity.setBackplateFrontRainbow(beTag.getBoolean("BackplateFrontRainbow"));
         } else if (beTag.contains("backplateFrontRainbow")) {
             entity.setBackplateFrontRainbow(beTag.getBoolean("backplateFrontRainbow"));
+        } else if (beTag.contains("BPFrontRainbow")) {
+            entity.setBackplateFrontRainbow(beTag.getBoolean("BPFrontRainbow"));
+        } else if (beTag.contains("BPFRainbow")) {
+            entity.setBackplateFrontRainbow(beTag.getBoolean("BPFRainbow"));
         }
 
         if (beTag.contains("BackplateBackRainbow")) {
             entity.setBackplateBackRainbow(beTag.getBoolean("BackplateBackRainbow"));
         } else if (beTag.contains("backplateBackRainbow")) {
             entity.setBackplateBackRainbow(beTag.getBoolean("backplateBackRainbow"));
+        } else if (beTag.contains("BPBackRainbow")) {
+            entity.setBackplateBackRainbow(beTag.getBoolean("BPBackRainbow"));
+        } else if (beTag.contains("BPBRainbow")) {
+            entity.setBackplateBackRainbow(beTag.getBoolean("BPBRainbow"));
+        }
+
+        if (beTag.contains("BackplateFrontGlowInked")) {
+            entity.setBackplateFrontGlowInked(beTag.getBoolean("BackplateFrontGlowInked"));
+        } else if (beTag.contains("backplateFrontGlowInked")) {
+            entity.setBackplateFrontGlowInked(beTag.getBoolean("backplateFrontGlowInked"));
+        } else if (beTag.contains("BPFrontGlowInked")) {
+            entity.setBackplateFrontGlowInked(beTag.getBoolean("BPFrontGlowInked"));
+        }
+
+        if (beTag.contains("BackplateBackGlowInked")) {
+            entity.setBackplateBackGlowInked(beTag.getBoolean("BackplateBackGlowInked"));
+        } else if (beTag.contains("backplateBackGlowInked")) {
+            entity.setBackplateBackGlowInked(beTag.getBoolean("backplateBackGlowInked"));
+        } else if (beTag.contains("BPBackGlowInked")) {
+            entity.setBackplateBackGlowInked(beTag.getBoolean("BPBackGlowInked"));
         }
 
         if (beTag.contains("WrenchMode") || beTag.contains("IsActive") || beTag.contains("Glowing")) {

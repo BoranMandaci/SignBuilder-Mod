@@ -41,6 +41,8 @@ public class GridSignBlockEntity extends BlockEntity {
     private int backplateBackColor = 0xFFFFFF;
     private boolean backplateFrontRainbow = false;
     private boolean backplateBackRainbow = false;
+    private boolean backplateFrontGlowInked = false;
+    private boolean backplateBackGlowInked = false;
     private int facingRotation = -1;
 
     public transient Object clientRenderCache = null;
@@ -65,6 +67,10 @@ public class GridSignBlockEntity extends BlockEntity {
     public void setBackplateFrontRainbow(boolean rainbow) { this.backplateFrontRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
     public boolean isBackplateBackRainbow() { return backplateBackRainbow; }
     public void setBackplateBackRainbow(boolean rainbow) { this.backplateBackRainbow = rainbow; markRenderDirty(); setChanged(); sync(); }
+    public boolean isBackplateFrontGlowInked() { return backplateFrontGlowInked; }
+    public void setBackplateFrontGlowInked(boolean glow) { this.backplateFrontGlowInked = glow; markRenderDirty(); setChanged(); sync(); }
+    public boolean isBackplateBackGlowInked() { return backplateBackGlowInked; }
+    public void setBackplateBackGlowInked(boolean glow) { this.backplateBackGlowInked = glow; markRenderDirty(); setChanged(); sync(); }
     public int getFacingRotation() { 
         if (facingRotation >= 0) return facingRotation;
         BlockState state = getBlockState();
@@ -75,19 +81,102 @@ public class GridSignBlockEntity extends BlockEntity {
     }
     public void setFacingRotation(int rotation) { this.facingRotation = rotation; markRenderDirty(); setChanged(); sync(); }
 
+    public static void ensureBlockEntityDataId(net.minecraft.world.item.ItemStack stack) {
+        if (stack.isEmpty()) return;
+        net.minecraft.world.item.component.CustomData cd = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+        if (cd != null) {
+            net.minecraft.nbt.CompoundTag tag = cd.copyTag();
+            if (!tag.contains("id")) {
+                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, stack, t -> {
+                    t.putString("id", "signbuilder:letter_block_entity");
+                });
+            }
+        }
+    }
+
     private net.minecraft.world.item.ItemStack backGlyph = net.minecraft.world.item.ItemStack.EMPTY;
+    private boolean backGlyphGlowInked = false;
     public net.minecraft.world.item.ItemStack getBackGlyph() { return this.backGlyph; }
     public void setBackGlyph(net.minecraft.world.item.ItemStack stack) {
         this.backGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        if (this.backGlyph.isEmpty()) {
+            this.backGlyphGlowInked = false;
+        } else {
+            ensureBlockEntityDataId(this.backGlyph);
+            CompoundTag tag = this.backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            if (tag != null && tag.getBoolean("IsGlowInked")) {
+                this.backGlyphGlowInked = true;
+            }
+        }
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
+    public boolean isBackGlyphGlowInked() {
+        if (this.backGlyph.isEmpty()) return false;
+        if (this.backGlyphGlowInked) return true;
+        CompoundTag tag = this.backGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        return tag != null && tag.getBoolean("IsGlowInked");
+    }
+
+    public void setBackGlyphGlowInked(boolean glowInked) {
+        if (this.backGlyph.isEmpty()) return;
+        this.backGlyphGlowInked = glowInked;
+        net.minecraft.world.item.ItemStack copy = this.backGlyph.copy();
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, copy, t -> {
+            t.putString("id", "signbuilder:letter_block_entity");
+            if (glowInked) {
+                t.putBoolean("IsGlowInked", true);
+            } else {
+                t.remove("IsGlowInked");
+            }
+        });
+        this.backGlyph = copy;
         markRenderDirty();
         setChanged();
         sync();
     }
 
     private net.minecraft.world.item.ItemStack frontGlyph = net.minecraft.world.item.ItemStack.EMPTY;
+    private boolean frontGlyphGlowInked = false;
     public net.minecraft.world.item.ItemStack getFrontGlyph() { return this.frontGlyph; }
     public void setFrontGlyph(net.minecraft.world.item.ItemStack stack) {
         this.frontGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        if (this.frontGlyph.isEmpty()) {
+            this.frontGlyphGlowInked = false;
+        } else {
+            ensureBlockEntityDataId(this.frontGlyph);
+            CompoundTag tag = this.frontGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            if (tag != null && tag.getBoolean("IsGlowInked")) {
+                this.frontGlyphGlowInked = true;
+            }
+        }
+        markRenderDirty();
+        setChanged();
+        sync();
+    }
+
+    public boolean isFrontGlyphGlowInked() {
+        if (this.frontGlyph.isEmpty()) return false;
+        if (this.frontGlyphGlowInked) return true;
+        CompoundTag tag = this.frontGlyph.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        return tag != null && tag.getBoolean("IsGlowInked");
+    }
+
+    public void setFrontGlyphGlowInked(boolean glowInked) {
+        if (this.frontGlyph.isEmpty()) return;
+        this.frontGlyphGlowInked = glowInked;
+        net.minecraft.world.item.ItemStack copy = this.frontGlyph.copy();
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, copy, t -> {
+            t.putString("id", "signbuilder:letter_block_entity");
+            if (glowInked) {
+                t.putBoolean("IsGlowInked", true);
+            } else {
+                t.remove("IsGlowInked");
+            }
+        });
+        this.frontGlyph = copy;
         markRenderDirty();
         setChanged();
         sync();
@@ -256,15 +345,34 @@ public class GridSignBlockEntity extends BlockEntity {
                 return cell;
             }
         }
-        return null;
+        float bestDistSq = Float.MAX_VALUE;
+        CellData bestCell = null;
+        for (CellData cell : cells.values()) {
+            if (cell.isBack != isBack) continue;
+            float eps = 0.03f;
+            if (u >= cell.getU1() - eps && u <= cell.getU2() + eps && v >= cell.getV1() - eps && v <= cell.getV2() + eps) {
+                float cellMidU = (cell.getU1() + cell.getU2()) * 0.5f;
+                float cellMidV = (cell.getV1() + cell.getV2()) * 0.5f;
+                float distSq = (u - cellMidU) * (u - cellMidU) + (v - cellMidV) * (v - cellMidV);
+                if (distSq < bestDistSq) {
+                    bestDistSq = distSq;
+                    bestCell = cell;
+                }
+            }
+        }
+        return bestCell;
     }
 
-    public void setCell(int col, int row, int cellGridSize, boolean isBack, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+    public void setCell(int col, int row, int cellGridSize, boolean isBack, String character, SignMaterial material, int color, boolean rainbow, int lightMode, boolean glowInked) {
         int key = makeKey(isBack, cellGridSize, col, row);
-        cells.put(key, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack));
+        cells.put(key, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack, glowInked));
         markRenderDirty();
         setChanged();
         sync();
+    }
+
+    public void setCell(int col, int row, int cellGridSize, boolean isBack, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
+        setCell(col, row, cellGridSize, isBack, character, material, color, rainbow, lightMode, false);
     }
 
     public void setCell(int index, String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
@@ -302,6 +410,8 @@ public class GridSignBlockEntity extends BlockEntity {
         tag.putInt("BPBColor", backplateBackColor);
         tag.putBoolean("BPFRainbow", backplateFrontRainbow);
         tag.putBoolean("BPBRainbow", backplateBackRainbow);
+        tag.putBoolean("BPFrontGlowInked", backplateFrontGlowInked);
+        tag.putBoolean("BPBackGlowInked", backplateBackGlowInked);
         tag.putInt("FacingRotation", facingRotation);
         tag.putInt("WrenchMode", wrenchMode);
         tag.putBoolean("IsActive", isActive);
@@ -317,10 +427,14 @@ public class GridSignBlockEntity extends BlockEntity {
         tag.putBoolean("CustomLightPlayers", customLightPlayers);
         tag.putBoolean("CustomLightLowPower", customLightLowPower);
         tag.putBoolean("CustomLightLookOnly", customLightLookOnly);
+        tag.putBoolean("BackGlyphGlowInked", this.backGlyphGlowInked);
+        tag.putBoolean("FrontGlyphGlowInked", this.frontGlyphGlowInked);
         if (!this.backGlyph.isEmpty()) {
+            ensureBlockEntityDataId(this.backGlyph);
             tag.put("BackGlyph", this.backGlyph.save(lookup, new CompoundTag()));
         }
         if (!this.frontGlyph.isEmpty()) {
+            ensureBlockEntityDataId(this.frontGlyph);
             tag.put("FrontGlyph", this.frontGlyph.save(lookup, new CompoundTag()));
         }
 
@@ -337,6 +451,7 @@ public class GridSignBlockEntity extends BlockEntity {
             cellTag.putInt("Col", entry.getValue().col);
             cellTag.putInt("Row", entry.getValue().row);
             cellTag.putBoolean("IsBack", entry.getValue().isBack);
+            cellTag.putBoolean("GlowInked", entry.getValue().glowInked);
             list.add(cellTag);
         }
         tag.put("Cells", list);
@@ -346,23 +461,52 @@ public class GridSignBlockEntity extends BlockEntity {
     public void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider lookup) {
         super.loadAdditional(tag, lookup);
         this.gridSize = tag.getInt("GridSize");
-        if (this.gridSize < 2) this.gridSize = 3; // fallback
-        
+        if (this.gridSize < 2) this.gridSize = 3;
         this.hasBackplate = tag.getBoolean("HasBackplate");
-        try { this.backplateFrontMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPFMat")); } catch (Exception ignored) {}
-        try { this.backplateBackMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPBMat")); } catch (Exception ignored) {}
-        this.backplateFrontColor = tag.contains("BPFColor") ? tag.getInt("BPFColor") : 0xFFFFFF;
-        this.backplateBackColor = tag.contains("BPBColor") ? tag.getInt("BPBColor") : 0xFFFFFF;
-        this.backplateFrontRainbow = tag.getBoolean("BPFRainbow");
-        this.backplateBackRainbow = tag.getBoolean("BPBRainbow");
+        if (tag.contains("BPFMat")) {
+            try { this.backplateFrontMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPFMat")); } catch (Exception ignored) {}
+        } else if (tag.contains("BPFrontMat")) {
+            try { this.backplateFrontMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPFrontMat")); } catch (Exception ignored) {}
+        } else if (tag.contains("BackplateFrontMaterial")) {
+            try { this.backplateFrontMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BackplateFrontMaterial")); } catch (Exception ignored) {}
+        }
+
+        if (tag.contains("BPBMat")) {
+            try { this.backplateBackMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPBMat")); } catch (Exception ignored) {}
+        } else if (tag.contains("BPBackMat")) {
+            try { this.backplateBackMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BPBackMat")); } catch (Exception ignored) {}
+        } else if (tag.contains("BackplateBackMaterial")) {
+            try { this.backplateBackMaterial = com.boran.signbuilder.block.SignMaterial.valueOf(tag.getString("BackplateBackMaterial")); } catch (Exception ignored) {}
+        }
+
+        if (tag.contains("BPFColor")) this.backplateFrontColor = tag.getInt("BPFColor");
+        else if (tag.contains("BPFrontColor")) this.backplateFrontColor = tag.getInt("BPFrontColor");
+        else if (tag.contains("BackplateFrontColor")) this.backplateFrontColor = tag.getInt("BackplateFrontColor");
+        else this.backplateFrontColor = 0xFFFFFF;
+
+        if (tag.contains("BPBColor")) this.backplateBackColor = tag.getInt("BPBColor");
+        else if (tag.contains("BPBackColor")) this.backplateBackColor = tag.getInt("BPBackColor");
+        else if (tag.contains("BackplateBackColor")) this.backplateBackColor = tag.getInt("BackplateBackColor");
+        else this.backplateBackColor = 0xFFFFFF;
+
+        this.backplateFrontRainbow = tag.getBoolean("BPFRainbow") || tag.getBoolean("BPFrontRainbow") || tag.getBoolean("BackplateFrontRainbow");
+        this.backplateBackRainbow = tag.getBoolean("BPBRainbow") || tag.getBoolean("BPBackRainbow") || tag.getBoolean("BackplateBackRainbow");
+        this.backplateFrontGlowInked = tag.getBoolean("BPFrontGlowInked") || tag.getBoolean("BackplateFrontGlowInked") || tag.getBoolean("backplateFrontGlowInked");
+        this.backplateBackGlowInked = tag.getBoolean("BPBackGlowInked") || tag.getBoolean("BackplateBackGlowInked") || tag.getBoolean("backplateBackGlowInked");
         this.facingRotation = tag.getInt("FacingRotation");
         this.wrenchMode = tag.getInt("WrenchMode");
         this.isActive = tag.getBoolean("IsActive");
         this.detectsMonsters = !tag.contains("DetectsMonsters") || tag.getBoolean("DetectsMonsters");
         this.detectsAnimals = tag.getBoolean("DetectsAnimals");
         this.customLightOnTicks = tag.contains("CustomLightOnTicks") ? tag.getInt("CustomLightOnTicks") : 10;
+        this.backGlyphGlowInked = tag.getBoolean("BackGlyphGlowInked");
+        this.frontGlyphGlowInked = tag.getBoolean("FrontGlyphGlowInked");
         this.backGlyph = tag.contains("BackGlyph", 10) ? net.minecraft.world.item.ItemStack.parse(lookup, tag.getCompound("BackGlyph")).orElse(net.minecraft.world.item.ItemStack.EMPTY) : net.minecraft.world.item.ItemStack.EMPTY;
         this.frontGlyph = tag.contains("FrontGlyph", 10) ? net.minecraft.world.item.ItemStack.parse(lookup, tag.getCompound("FrontGlyph")).orElse(net.minecraft.world.item.ItemStack.EMPTY) : net.minecraft.world.item.ItemStack.EMPTY;
+        ensureBlockEntityDataId(this.backGlyph);
+        ensureBlockEntityDataId(this.frontGlyph);
+        if (!this.backGlyphGlowInked && isBackGlyphGlowInked()) this.backGlyphGlowInked = true;
+        if (!this.frontGlyphGlowInked && isFrontGlyphGlowInked()) this.frontGlyphGlowInked = true;
         this.customLightOffTicks = tag.contains("CustomLightOffTicks") ? tag.getInt("CustomLightOffTicks") : 10;
         this.customLightType = tag.getInt("CustomLightType");
         this.customLightRange = tag.contains("CustomLightRange") ? tag.getInt("CustomLightRange") : 8;
@@ -384,6 +528,7 @@ public class GridSignBlockEntity extends BlockEntity {
             int color = cellTag.getInt("Color");
             boolean rainbow = cellTag.getBoolean("Rainbow");
             int lightMode = cellTag.getInt("LightMode");
+            boolean glowInked = cellTag.getBoolean("GlowInked");
 
             int cellGridSize;
             int col;
@@ -403,7 +548,7 @@ public class GridSignBlockEntity extends BlockEntity {
                 row = localIndex / this.gridSize;
             }
 
-            cells.put(index, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack));
+            cells.put(index, new CellData(character, material, color, rainbow, lightMode, cellGridSize, col, row, isBack, glowInked));
         }
         markRenderDirty();
     }
@@ -617,9 +762,10 @@ public class GridSignBlockEntity extends BlockEntity {
         public int col;
         public int row;
         public boolean isBack;
+        public boolean glowInked;
 
         public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode,
-                        int gridSize, int col, int row, boolean isBack) {
+                        int gridSize, int col, int row, boolean isBack, boolean glowInked) {
             this.character = character;
             this.material = material;
             this.color = color;
@@ -629,10 +775,16 @@ public class GridSignBlockEntity extends BlockEntity {
             this.col = col;
             this.row = row;
             this.isBack = isBack;
+            this.glowInked = glowInked;
+        }
+
+        public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode,
+                        int gridSize, int col, int row, boolean isBack) {
+            this(character, material, color, rainbow, lightMode, gridSize, col, row, isBack, false);
         }
 
         public CellData(String character, SignMaterial material, int color, boolean rainbow, int lightMode) {
-            this(character, material, color, rainbow, lightMode, 3, 0, 0, false);
+            this(character, material, color, rainbow, lightMode, 3, 0, 0, false, false);
         }
 
         public float getU1() { return (float) col / gridSize; }

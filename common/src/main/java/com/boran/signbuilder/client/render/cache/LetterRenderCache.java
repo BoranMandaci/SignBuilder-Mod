@@ -93,6 +93,7 @@ public class LetterRenderCache {
     public final int backRawColor;
     public final boolean backRainbow;
     public final boolean backIsMaterial;
+    public final boolean backGlowInked;
 
     public LetterRenderCache(long version, Object modelManagerRef, boolean isBackplateBlock,
                              BlockState state, RenderType renderType,
@@ -109,7 +110,7 @@ public class LetterRenderCache {
                              boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel,
                              float backCenterLocalX, float backCenterLocalZ,
                              float backWallTransX, float backWallTransZ,
-                             int backRawColor, boolean backRainbow, boolean backIsMaterial) {
+                             int backRawColor, boolean backRainbow, boolean backIsMaterial, boolean backGlowInked) {
         this.version = version;
         this.modelManagerRef = modelManagerRef;
         this.isBackplateBlock = isBackplateBlock;
@@ -154,6 +155,7 @@ public class LetterRenderCache {
         this.backRawColor = backRawColor;
         this.backRainbow = backRainbow;
         this.backIsMaterial = backIsMaterial;
+        this.backGlowInked = backGlowInked;
     }
 
     public static LetterRenderCache getOrCreate(LetterBlockEntity entity, BlockRenderDispatcher dispatcher) {
@@ -177,8 +179,9 @@ public class LetterRenderCache {
             SignMaterial fMat = entity.getBackplateFrontMaterial();
             SignMaterial bMat = entity.getBackplateBackMaterial();
             BakedModel baseModel = dispatcher.getBlockModel(state);
-            BakedModel finalModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(baseModel, fMat, bMat, false)
+            boolean plateGlowInked = entity.isBackplateFrontGlowInked() || entity.isBackplateBackGlowInked();
+            BakedModel finalModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT || plateGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(baseModel, fMat, bMat, false, plateGlowInked)
                     : baseModel;
             List<BakedQuad> quads = LetterBlockEntityRenderer.getAllQuads(finalModel, state);
 
@@ -204,7 +207,7 @@ public class LetterRenderCache {
                     AttachFace.WALL, Direction.NORTH, 1, true, 0.0, 0.0, 1, 0,
                     false, null, null, Collections.emptyList(), 0f, 0f, false, Direction.NORTH,
                     null, 0f, 0f, 0f, 0f, true,
-                    false, null, null, 0f, 0f, 0f, 0f, 0xFFFFFF, false, false
+                    false, null, null, 0f, 0f, 0f, 0f, 0xFFFFFF, false, false, false
             );
         }
 
@@ -248,8 +251,9 @@ public class LetterRenderCache {
                     .setValue(BackplateBlock.FACING, plateFacing)
                     .setValue(BackplateBlock.FACE, face);
             BakedModel basePlateModel = dispatcher.getBlockModel(attachedPlateState);
-            attachedPlateModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT)
-                    ? LetterBlockEntityRenderer.getMaterialModel(basePlateModel, fMat, bMat, false)
+            boolean plateGlowInked = entity.isBackplateFrontGlowInked() || entity.isBackplateBackGlowInked();
+            attachedPlateModel = (fMat != SignMaterial.DEFAULT || bMat != SignMaterial.DEFAULT || plateGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(basePlateModel, fMat, bMat, false, plateGlowInked)
                     : basePlateModel;
             attachedPlateQuads = LetterBlockEntityRenderer.getAllQuads(attachedPlateModel, attachedPlateState);
 
@@ -263,8 +267,9 @@ public class LetterRenderCache {
 
         BakedModel letterModel = dispatcher.getBlockModel(state);
         SignMaterial letterMat = entity.getSavedMaterial();
-        BakedModel finalLetterModel = (letterMat != SignMaterial.DEFAULT)
-                ? LetterBlockEntityRenderer.getMaterialModel(letterModel, letterMat, SignMaterial.DEFAULT, true)
+        boolean glowInked = entity.isGlowInked();
+        BakedModel finalLetterModel = (letterMat != SignMaterial.DEFAULT || glowInked)
+                ? LetterBlockEntityRenderer.getMaterialModel(letterModel, letterMat, SignMaterial.DEFAULT, true, glowInked)
                 : letterModel;
 
         ModelCentering.Center letterTarget = hasBackplate && !wall
@@ -302,6 +307,7 @@ public class LetterRenderCache {
         int backRawColor = 0xFFFFFF;
         boolean backRainbow = false;
         boolean backIsMaterial = false;
+        boolean backGlowInked = false;
 
         if (!backGlyph.isEmpty() && backGlyph.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LetterBlock) {
             Block backBlock = blockItem.getBlock();
@@ -318,9 +324,10 @@ public class LetterRenderCache {
                     } catch (IllegalArgumentException ignored) {}
                 }
             }
+            backGlowInked = (backTag != null && backTag.getBoolean("IsGlowInked")) || entity.isBackGlyphGlowInked();
             BakedModel backBaseModel = dispatcher.getBlockModel(backState);
-            finalBackModel = backMaterial != SignMaterial.DEFAULT
-                    ? LetterBlockEntityRenderer.getMaterialModel(backBaseModel, backMaterial, SignMaterial.DEFAULT, true)
+            finalBackModel = (backMaterial != SignMaterial.DEFAULT || backGlowInked)
+                    ? LetterBlockEntityRenderer.getMaterialModel(backBaseModel, backMaterial, SignMaterial.DEFAULT, true, backGlowInked)
                     : backBaseModel;
 
             backIsMaterial = backMaterial != SignMaterial.DEFAULT;
@@ -364,7 +371,7 @@ public class LetterRenderCache {
                 attachedPlateCenterLocalX, attachedPlateCenterLocalZ, attachedPlateWidenDiagonal, plateFacing,
                 finalLetterModel, letterCenterLocalX, letterCenterLocalZ, letterWallTransX, letterWallTransZ, wall,
                 hasBackGlyph, backState, finalBackModel, backCenterLocalX, backCenterLocalZ,
-                backWallTransX, backWallTransZ, backRawColor, backRainbow, backIsMaterial
+                backWallTransX, backWallTransZ, backRawColor, backRainbow, backIsMaterial, backGlowInked
         );
     }
 

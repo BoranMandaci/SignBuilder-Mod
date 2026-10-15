@@ -62,7 +62,9 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             }
 
             VertexConsumer plateBuffer = bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(cache.plateState, false));
-            LetterBlockEntityRenderer.renderPlateQuads(poseStack.last(), plateBuffer, cache.plateQuads, fColor, bColor, plateLight, packedOverlay);
+            int fLight = (entity.isBackplateFrontGlowInked() || entity.isActive()) ? 15728880 : plateLight;
+            int bLight = (entity.isBackplateBackGlowInked() || entity.isActive()) ? 15728880 : plateLight;
+            LetterBlockEntityRenderer.renderPlateQuads(poseStack.last(), plateBuffer, cache.plateQuads, fColor, bColor, fLight, bLight, packedOverlay);
             poseStack.popPose();
         }
 
@@ -98,13 +100,14 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             poseStack.scale(cell.scale, cell.scale, cell.scale);
             poseStack.translate(-cell.pivotX, -cell.pivotY, -cell.pivotZ);
 
+            int cellLight = (cell.glowInked || entity.isActive()) ? 15728880 : plateLight;
             dispatcher.getModelRenderer().renderModel(
                     poseStack.last(),
                     buffer,
                     cell.letterState,
                     cell.finalLetterModel,
                     lr, lg, lb,
-                    plateLight,
+                    cellLight,
                     packedOverlay
             );
 
@@ -132,13 +135,14 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
 
             poseStack.pushPose();
             poseStack.translate(cache.backTransX, cache.backTransY, cache.backTransZ);
+            int backLight = (cache.backGlowInked || entity.isActive()) ? 15728880 : plateLight;
             dispatcher.getModelRenderer().renderModel(
                     poseStack.last(),
                     buffer,
                     cache.backState,
                     cache.finalBackModel,
                     lr, lg, lb,
-                    plateLight,
+                    backLight,
                     packedOverlay
             );
             poseStack.popPose();
@@ -165,13 +169,14 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
 
             poseStack.pushPose();
             poseStack.translate(cache.frontTransX, cache.frontTransY, cache.frontTransZ);
+            int frontLight = (cache.frontGlowInked || entity.isActive()) ? 15728880 : plateLight;
             dispatcher.getModelRenderer().renderModel(
                     poseStack.last(),
                     buffer,
                     cache.frontState,
                     cache.finalFrontModel,
                     lr, lg, lb,
-                    plateLight,
+                    frontLight,
                     packedOverlay
             );
             poseStack.popPose();

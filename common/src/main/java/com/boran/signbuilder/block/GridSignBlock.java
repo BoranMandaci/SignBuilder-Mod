@@ -25,10 +25,14 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -113,7 +117,7 @@ public class GridSignBlock extends Block implements EntityBlock {
 
         if (face == AttachFace.FLOOR) return FLOOR_AABB;
         if (face == AttachFace.CEILING) return CEILING_AABB;
-        
+
         return switch (facing) {
             case NORTH -> WALL_NORTH;
             case SOUTH -> WALL_SOUTH;
@@ -123,8 +127,245 @@ public class GridSignBlock extends Block implements EntityBlock {
         };
     }
 
+    public record GridHitRay(double u, double v, boolean isBack) {}
+
+    public static GridHitRay calculateHitRay(Level level, BlockPos pos, BlockState state, GridSignBlockEntity gridBe, @Nullable Player player, BlockHitResult hit) {
+        Direction face = hit.getDirection();
+        Vec3 loc = hit.getLocation();
+        double rx = loc.x - pos.getX();
+        double ry = loc.y - pos.getY();
+        double rz = loc.z - pos.getZ();
+
+        Direction facing = state.hasProperty(FACING) ? state.getValue(FACING) : face;
+        int rotation = gridBe.getFacingRotation();
+        AttachFace aFace = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
+
+        boolean isBack = false;
+        if (aFace == AttachFace.WALL) {
+            Direction blockFacing = state.hasProperty(FACING) ? state.getValue(FACING) : face;
+            if (face == blockFacing.getOpposite()) {
+                isBack = true;
+            } else if (face == blockFacing) {
+                isBack = false;
+            } else if (player != null) {
+                int rot = SignRotation.fromDirection(blockFacing);
+                double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rot)
+                        + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rot);
+                isBack = side < 0.0;
+            }
+        } else {
+            Direction frontDirection = SignRotation.cardinalDirection(rotation);
+            if (frontDirection != null && face == frontDirection.getOpposite()) {
+                isBack = true;
+            } else if (frontDirection != null && face == frontDirection) {
+                isBack = false;
+            } else if (player != null) {
+                Vec3 look = player.getLookAngle();
+                double dot = look.x * SignRotation.facingX(rotation) + look.z * SignRotation.facingZ(rotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
+                    isBack = side < 0.0;
+                }
+            }
+        }
+
+        int rotationDegrees = SignRotation.deltaDegrees(rotation, facing);
+        double radians = Math.toRadians(rotationDegrees);
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        double dx = rx - 0.5;
+        double dz = rz - 0.5;
+        double localX = dx * cos - dz * sin;
+        double localZ = dx * sin + dz * cos;
+
+        double widthFactor = (rotationDegrees != 0 && aFace != AttachFace.WALL) ? Math.sqrt(2.0) : 1.0;
+
+        Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
+        double u = switch (effectiveFacing) {
+            case NORTH -> 0.5 - (localX / widthFactor);
+            case SOUTH -> 0.5 + (localX / widthFactor);
+            case EAST  -> 0.5 - (localZ / widthFactor);
+            case WEST  -> 0.5 + (localZ / widthFactor);
+            default    -> 0.5;
+        };
+        double v = 1.0 - Math.max(0.0, Math.min(1.0, ry));
+        u = Math.max(0.0, Math.min(1.0, u));
+        v = Math.max(0.0, Math.min(1.0, v));
+
+        return new GridHitRay(u, v, isBack);
+    }
+
     @Override
     protected ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (held.is(Items.GLOW_INK_SAC) || held.is(Items.INK_SAC)) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof GridSignBlockEntity gridBe) {
+                GridHitRay ray = calculateHitRay(level, pos, state, gridBe, player, hit);
+                GridSignBlockEntity.CellData cell = gridBe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
+                boolean shiftDown = player.isShiftKeyDown();
+                boolean targetBackGlyph = ray.isBack() && !gridBe.getBackGlyph().isEmpty() && !shiftDown;
+                boolean targetFrontGlyph = !ray.isBack() && !gridBe.getFrontGlyph().isEmpty() && !shiftDown;
+
+                boolean targetBackplate = false;
+                if (gridBe.hasBackplate()) {
+                    if (shiftDown) {
+                        targetBackplate = true;
+                    } else if (cell == null && !targetBackGlyph && !targetFrontGlyph) {
+                        targetBackplate = true;
+                    }
+                }
+
+                if (held.is(Items.GLOW_INK_SAC)) {
+                    if (targetBackplate) {
+                        boolean currentGlow = ray.isBack() ? gridBe.isBackplateBackGlowInked() : gridBe.isBackplateFrontGlowInked();
+                        if (!currentGlow) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                if (ray.isBack()) {
+                                    gridBe.setBackplateBackGlowInked(true);
+                                } else {
+                                    gridBe.setBackplateFrontGlowInked(true);
+                                }
+                                if (!player.isCreative()) held.shrink(1);
+                                level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (targetBackGlyph) {
+                        if (!gridBe.isBackGlyphGlowInked()) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                gridBe.setBackGlyphGlowInked(true);
+                                if (!player.isCreative()) held.shrink(1);
+                                level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (targetFrontGlyph) {
+                        if (!gridBe.isFrontGlyphGlowInked()) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                gridBe.setFrontGlyphGlowInked(true);
+                                if (!player.isCreative()) held.shrink(1);
+                                level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (cell != null) {
+                        if (!cell.glowInked) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                cell.glowInked = true;
+                                gridBe.markRenderDirty();
+                                gridBe.setChanged();
+                                gridBe.sync();
+                                if (!player.isCreative()) held.shrink(1);
+                                level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    }
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                } else {
+                    if (targetBackplate) {
+                        boolean currentGlow = ray.isBack() ? gridBe.isBackplateBackGlowInked() : gridBe.isBackplateFrontGlowInked();
+                        if (currentGlow) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                if (ray.isBack()) {
+                                    gridBe.setBackplateBackGlowInked(false);
+                                } else {
+                                    gridBe.setBackplateFrontGlowInked(false);
+                                }
+                                if (!player.isCreative()) {
+                                    held.shrink(1);
+                                    ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, 1);
+                                    if (!player.getInventory().add(refund)) {
+                                        player.drop(refund, false);
+                                    }
+                                }
+                                level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (targetBackGlyph) {
+                        if (gridBe.isBackGlyphGlowInked()) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                gridBe.setBackGlyphGlowInked(false);
+                                if (!player.isCreative()) {
+                                    held.shrink(1);
+                                    ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, 1);
+                                    if (!player.getInventory().add(refund)) {
+                                        player.drop(refund, false);
+                                    }
+                                }
+                                level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (targetFrontGlyph) {
+                        if (gridBe.isFrontGlyphGlowInked()) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                gridBe.setFrontGlyphGlowInked(false);
+                                if (!player.isCreative()) {
+                                    held.shrink(1);
+                                    ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, 1);
+                                    if (!player.getInventory().add(refund)) {
+                                        player.drop(refund, false);
+                                    }
+                                }
+                                level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    } else if (cell != null) {
+                        if (cell.glowInked) {
+                            if (!player.isCreative() && held.getCount() < 1) {
+                                return ItemInteractionResult.FAIL;
+                            }
+                            if (!level.isClientSide()) {
+                                cell.glowInked = false;
+                                gridBe.markRenderDirty();
+                                gridBe.setChanged();
+                                gridBe.sync();
+                                if (!player.isCreative()) {
+                                    held.shrink(1);
+                                    ItemStack refund = new ItemStack(Items.GLOW_INK_SAC, 1);
+                                    if (!player.getInventory().add(refund)) {
+                                        player.drop(refund, false);
+                                    }
+                                }
+                                level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            }
+                            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        }
+                    }
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
+            }
+        }
+
         if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
             boolean isGridMode = level.isClientSide()
                     ? dev.architectury.utils.EnvExecutor.<Boolean>getInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.isGridModeActive()).orElse(false)
@@ -242,6 +483,12 @@ public class GridSignBlock extends Block implements EntityBlock {
                 ItemStack bStack = BackplateBlock.getItemForMaterial(gridBe.getBackplateBackMaterial());
                 if (!bStack.isEmpty()) Block.popResource(level, pos, bStack);
             }
+            if (gridBe.isBackplateFrontGlowInked()) {
+                Block.popResource(level, pos, new ItemStack(Items.GLOW_INK_SAC));
+            }
+            if (gridBe.isBackplateBackGlowInked()) {
+                Block.popResource(level, pos, new ItemStack(Items.GLOW_INK_SAC));
+            }
         }
         for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
             Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
@@ -254,12 +501,21 @@ public class GridSignBlock extends Block implements EntityBlock {
                     Block.popResource(level, pos, matStack);
                 }
             }
+            if (cell.glowInked) {
+                Block.popResource(level, pos, new ItemStack(Items.GLOW_INK_SAC));
+            }
         }
         if (!gridBe.getBackGlyph().isEmpty()) {
             Block.popResource(level, pos, gridBe.getBackGlyph().copy());
+            if (gridBe.isBackGlyphGlowInked()) {
+                Block.popResource(level, pos, new ItemStack(Items.GLOW_INK_SAC));
+            }
         }
         if (!gridBe.getFrontGlyph().isEmpty()) {
             Block.popResource(level, pos, gridBe.getFrontGlyph().copy());
+            if (gridBe.isFrontGlyphGlowInked()) {
+                Block.popResource(level, pos, new ItemStack(Items.GLOW_INK_SAC));
+            }
         }
         if (gridBe.isActive() || gridBe.getWrenchMode() != 0) {
             Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.GLOWSTONE_DUST));

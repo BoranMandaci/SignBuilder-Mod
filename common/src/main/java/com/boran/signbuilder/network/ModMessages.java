@@ -46,6 +46,9 @@ public class ModMessages {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, RemoveGridLetterC2SPacket.TYPE, RemoveGridLetterC2SPacket.STREAM_CODEC, (payload, context) -> {
             context.queue(() -> payload.handle(context));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ApplyBackplateInkC2SPacket.TYPE, ApplyBackplateInkC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -66,6 +69,8 @@ public class ModMessages {
         } else if (message instanceof SyncGridModeC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         } else if (message instanceof RemoveGridLetterC2SPacket packet) {
+            NetworkManager.sendToServer(packet);
+        } else if (message instanceof ApplyBackplateInkC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         }
     }

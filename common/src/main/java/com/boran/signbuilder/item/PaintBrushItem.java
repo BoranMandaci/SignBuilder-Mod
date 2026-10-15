@@ -17,10 +17,14 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -117,6 +121,18 @@ public class PaintBrushItem extends Item {
         boolean isLetterBlock = state.getBlock() instanceof LetterBlock;
 
         if (!isBackplateBlock && !isLetterBlock) {
+            BlockPos abovePos = pos.above();
+            if (level.getBlockState(abovePos).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && level.getBlockEntity(abovePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity aboveGridBe) {
+                BlockState aboveState = level.getBlockState(abovePos);
+                return handleGridSignInteraction(level, abovePos, aboveState, aboveGridBe, player, stack, context);
+            }
+            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                BlockPos neighborPos = abovePos.relative(dir);
+                if (level.getBlockState(neighborPos).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock && level.getBlockEntity(neighborPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity neighborGridBe) {
+                    BlockState neighborState = level.getBlockState(neighborPos);
+                    return handleGridSignInteraction(level, neighborPos, neighborState, neighborGridBe, player, stack, context);
+                }
+            }
             return InteractionResult.PASS;
         }
 
@@ -305,29 +321,41 @@ public class PaintBrushItem extends Item {
         return SignMaterial.DEFAULT;
     }
 
-    private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
-        ItemStack glyph = entity.getBackGlyph().copy();
-        if (glyph.isEmpty()) return;
+    private ItemStack applyToGlyph(ItemStack glyph, @Nullable SignMaterial newMaterial, int selectedColor, boolean hasMaterial) {
+        ItemStack copy = glyph.copy();
+        if (copy.isEmpty()) return copy;
 
-        if (newMaterial != null) {
-            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> { t.putString("SavedMaterial", newMaterial.name()); t.putString("id", "signbuilder:letter_block_entity"); });
+        if (hasMaterial && newMaterial != null) {
+            CustomData.update(DataComponents.BLOCK_ENTITY_DATA, copy, t -> {
+                t.putString("SavedMaterial", newMaterial.name());
+                t.putString("id", "signbuilder:letter_block_entity");
+            });
             if (newMaterial != SignMaterial.DEFAULT) {
-                glyph.set(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(com.boran.signbuilder.block.LetterBlock.MATERIAL, newMaterial));
+                copy.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LetterBlock.MATERIAL, newMaterial));
             } else {
-                glyph.remove(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+                copy.remove(DataComponents.BLOCK_STATE);
             }
         }
-        if (newMaterial == null || newMaterial == SignMaterial.DEFAULT) {
+        if (!hasMaterial || newMaterial == SignMaterial.DEFAULT) {
             if (selectedColor == -1) {
-                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> { t.putBoolean("IsRainbow", true); t.putString("id", "signbuilder:letter_block_entity"); });
+                CustomData.update(DataComponents.BLOCK_ENTITY_DATA, copy, t -> {
+                    t.putBoolean("IsRainbow", true);
+                    t.putString("id", "signbuilder:letter_block_entity");
+                });
             } else {
-                net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, glyph, t -> {
+                CustomData.update(DataComponents.BLOCK_ENTITY_DATA, copy, t -> {
                     t.putBoolean("IsRainbow", false);
-                    t.putInt("RGBColor", getActualHexColor(selectedColor)); t.putString("id", "signbuilder:letter_block_entity");
+                    t.putInt("RGBColor", getActualHexColor(selectedColor));
+                    t.putString("id", "signbuilder:letter_block_entity");
                 });
             }
         }
-        entity.setBackGlyph(glyph);
+        return copy;
+    }
+
+    private void applyToBackGlyph(LetterBlockEntity entity, @Nullable SignMaterial newMaterial, int selectedColor) {
+        ItemStack updated = applyToGlyph(entity.getBackGlyph(), newMaterial, selectedColor, newMaterial != null);
+        entity.setBackGlyph(updated);
     }
 
     private void applyColorToConnected(Level level, BlockPos startPos, Player player, ItemStack stack, InteractionHand hand, int selectedColor, @Nullable SignMaterial newMaterial, boolean hasMaterial, boolean targetBackplate, boolean targetBackGlyph, boolean isBackFace) {
@@ -588,11 +616,26 @@ public class PaintBrushItem extends Item {
         AttachFace aFace = state.hasProperty(BlockStateProperties.ATTACH_FACE) ? state.getValue(BlockStateProperties.ATTACH_FACE) : AttachFace.WALL;
 
         boolean isBack = false;
-        if (player != null && aFace != AttachFace.WALL) {
-            double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
-                    + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
-            if (side < 0.0) {
+        if (aFace == AttachFace.WALL) {
+            isBack = false;
+        } else {
+            Direction frontDirection = SignRotation.cardinalDirection(rotation);
+            if (frontDirection != null && face == frontDirection.getOpposite()) {
                 isBack = true;
+            } else if (frontDirection != null && face == frontDirection) {
+                isBack = false;
+            } else if (player != null) {
+                Vec3 look = player.getLookAngle();
+                double dot = look.x * SignRotation.facingX(rotation) + look.z * SignRotation.facingZ(rotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (pos.getX() + 0.5)) * SignRotation.facingX(rotation)
+                            + (player.getZ() - (pos.getZ() + 0.5)) * SignRotation.facingZ(rotation);
+                    isBack = side < 0.0;
+                }
             }
         }
 
@@ -616,29 +659,36 @@ public class PaintBrushItem extends Item {
             case WEST  -> u = 0.5 + (localZ / widthFactor);
             default    -> u = 0.5;
         }
+        if (ry < 0.0) ry = 0.0;
+        if (ry > 1.0) ry = 1.0;
         double v = 1.0 - ry;
 
         if (u < 0.0) u = 0.0;
-        if (u >= 1.0) u = 0.9999;
+        if (u > 1.0) u = 1.0;
         if (v < 0.0) v = 0.0;
-        if (v >= 1.0) v = 0.9999;
+        if (v > 1.0) v = 1.0;
 
         com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gridBe.getCellAt((float) u, (float) v, isBack);
 
+        boolean shiftDown = player != null && player.isShiftKeyDown();
+
+        boolean targetBackGlyph = isBack && !gridBe.getBackGlyph().isEmpty() && !shiftDown;
+        boolean targetFrontGlyph = !isBack && !gridBe.getFrontGlyph().isEmpty() && !shiftDown;
+
         boolean targetBackplate = false;
         if (gridBe.hasBackplate()) {
-            if (player != null && player.isShiftKeyDown()) {
+            if (shiftDown) {
                 targetBackplate = true;
-            } else if (cell == null) {
+            } else if (cell == null && !targetBackGlyph && !targetFrontGlyph) {
                 targetBackplate = true;
             }
         }
 
-        if (player != null && player.isShiftKeyDown() && !targetBackplate) {
+        if (shiftDown && !targetBackplate) {
             if (!level.isClientSide()) {
                 if (cell != null) {
                     int copiedColor = cell.rainbow ? -1 : cell.color;
-                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, t -> {
+                    CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
                         t.putInt("SelectedColor", copiedColor);
                         if (cell.material != SignMaterial.DEFAULT) {
                             t.putString("SelectedMaterial", cell.material.name());
@@ -654,10 +704,118 @@ public class PaintBrushItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
-        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         int selectedColor = tag != null && tag.contains("SelectedColor") ? tag.getInt("SelectedColor") : 0;
         boolean hasMaterial = tag != null && tag.contains("SelectedMaterial");
         SignMaterial newMaterial = hasMaterial ? parseMaterial(tag.getString("SelectedMaterial")) : null;
+        boolean isSmartFill = tag != null && tag.getBoolean("IsSmartFill");
+
+        if (targetBackGlyph || targetFrontGlyph) {
+            ItemStack glyph = targetBackGlyph ? gridBe.getBackGlyph() : gridBe.getFrontGlyph();
+            SignMaterial currentMat = getBackGlyphMaterial(glyph);
+            if (!hasMaterial && currentMat != SignMaterial.DEFAULT) {
+                return InteractionResult.PASS;
+            }
+
+            if (hasMaterial && newMaterial != currentMat) {
+                if (player != null && !player.isCreative()) {
+                    ItemStack costItem = BackplateBlock.getItemForMaterial(newMaterial);
+                    if (!costItem.isEmpty()) {
+                        if (countItemInInventory(player, costItem.getItem()) < 1) {
+                            player.displayClientMessage(Component.translatable("message.signbuilder.need_material", costItem.getHoverName()).withStyle(ChatFormatting.RED), true);
+                            return InteractionResult.FAIL;
+                        }
+                        consumeItemFromInventory(player, costItem.getItem(), 1);
+                    }
+                }
+            }
+
+            if (!level.isClientSide()) {
+                ItemStack updatedGlyph = applyToGlyph(glyph, newMaterial, selectedColor, hasMaterial);
+                if (targetBackGlyph) {
+                    gridBe.setBackGlyph(updatedGlyph);
+                } else {
+                    gridBe.setFrontGlyph(updatedGlyph);
+                }
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                if (player != null && !player.isCreative()) {
+                    stack.hurtAndBreak(1, player, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                }
+                level.sendBlockUpdated(pos, state, state, 3);
+            } else {
+                gridBe.markRenderDirty();
+                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        List<com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData> faceCells = new ArrayList<>();
+        for (com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData c : gridBe.getCells().values()) {
+            if (c.isBack == isBack) {
+                faceCells.add(c);
+            }
+        }
+
+        if (isSmartFill && !shiftDown && !faceCells.isEmpty()) {
+            int currentDamage = stack.getDamageValue();
+            int maxDamage = stack.getMaxDamage();
+            int cellsPainted = 0;
+            int failedMaterial = 0;
+            int failedDurability = 0;
+
+            ItemStack costItem = (hasMaterial && newMaterial != SignMaterial.DEFAULT) ? BackplateBlock.getItemForMaterial(newMaterial) : ItemStack.EMPTY;
+
+            for (com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData c : faceCells) {
+                if (player != null && !player.isCreative() && (currentDamage + cellsPainted) >= maxDamage) {
+                    failedDurability++;
+                    continue;
+                }
+
+                if (hasMaterial && newMaterial != c.material) {
+                    if (player != null && !player.isCreative() && !costItem.isEmpty()) {
+                        if (countItemInInventory(player, costItem.getItem()) < 1) {
+                            failedMaterial++;
+                            continue;
+                        }
+                        consumeItemFromInventory(player, costItem.getItem(), 1);
+                    }
+                }
+
+                if (!level.isClientSide()) {
+                    SignMaterial mat = hasMaterial ? newMaterial : c.material;
+                    boolean rainbow = (selectedColor == -1);
+                    int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
+                    gridBe.setCell(c.col, c.row, c.gridSize, c.isBack, c.character, mat, color, rainbow, c.lightMode, c.glowInked);
+                }
+                cellsPainted++;
+            }
+
+            if (!level.isClientSide()) {
+                if (cellsPainted > 0) {
+                    gridBe.markRenderDirty();
+                    gridBe.setChanged();
+                    gridBe.sync();
+                    level.sendBlockUpdated(pos, state, state, 3);
+                    level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    if (player != null && !player.isCreative()) {
+                        stack.hurtAndBreak(cellsPainted, player, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                    }
+                }
+                if (player != null) {
+                    if (failedMaterial > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_material", cellsPainted, failedMaterial).withStyle(ChatFormatting.YELLOW), true);
+                    } else if (failedDurability > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.partial_durability", cellsPainted, failedDurability).withStyle(ChatFormatting.YELLOW), true);
+                    } else if (cellsPainted > 0) {
+                        player.displayClientMessage(Component.translatable("message.signbuilder.smart_fill.success", cellsPainted).withStyle(ChatFormatting.GREEN), true);
+                    }
+                }
+            } else {
+                gridBe.markRenderDirty();
+                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
 
         if (targetBackplate) {
             SignMaterial currentMat = isBack ? gridBe.getBackplateBackMaterial() : gridBe.getBackplateFrontMaterial();
@@ -692,10 +850,11 @@ public class PaintBrushItem extends Item {
                 }
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (player != null && !player.isCreative()) {
-                    stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                    stack.hurtAndBreak(1, player, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 }
                 level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
@@ -717,17 +876,19 @@ public class PaintBrushItem extends Item {
                 SignMaterial mat = hasMaterial ? newMaterial : cell.material;
                 boolean rainbow = (selectedColor == -1);
                 int color = rainbow ? 0xFFFFFF : getActualHexColor(selectedColor);
-                gridBe.setCell(cell.col, cell.row, cell.gridSize, cell.isBack, cell.character, mat, color, rainbow, cell.lightMode);
+                gridBe.setCell(cell.col, cell.row, cell.gridSize, cell.isBack, cell.character, mat, color, rainbow, cell.lightMode, cell.glowInked);
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (player != null && !player.isCreative()) {
-                    stack.hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                    stack.hurtAndBreak(1, player, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 }
                 level.sendBlockUpdated(pos, state, state, 3);
             } else {
+                gridBe.markRenderDirty();
                 dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
+
         return InteractionResult.PASS;
     }
 }
