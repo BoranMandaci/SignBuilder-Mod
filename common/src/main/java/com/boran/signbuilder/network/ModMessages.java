@@ -12,6 +12,7 @@ public class ModMessages {
     public static final ResourceLocation BLUEPRINT_TEXT = ResourceLocation.fromNamespaceAndPath("signbuilder", "blueprint_text");
     public static final ResourceLocation SIGN_PRESS_CRAFT = ResourceLocation.fromNamespaceAndPath("signbuilder", "sign_press_craft");
     public static final ResourceLocation BLUEPRINT_UNDO = ResourceLocation.fromNamespaceAndPath("signbuilder", "blueprint_undo");
+    public static final ResourceLocation UPDATE_LCD_SCREEN = ResourceLocation.fromNamespaceAndPath("signbuilder", "update_lcd_screen");
 
     public static void register() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BrushColorPacket.TYPE, BrushColorPacket.STREAM_CODEC, (payload, context) -> {
@@ -49,6 +50,9 @@ public class ModMessages {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ApplyBackplateInkC2SPacket.TYPE, ApplyBackplateInkC2SPacket.STREAM_CODEC, (payload, context) -> {
             context.queue(() -> payload.handle(context));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, UpdateLcdScreenC2SPacket.TYPE, UpdateLcdScreenC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -71,6 +75,8 @@ public class ModMessages {
         } else if (message instanceof RemoveGridLetterC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         } else if (message instanceof ApplyBackplateInkC2SPacket packet) {
+            NetworkManager.sendToServer(packet);
+        } else if (message instanceof UpdateLcdScreenC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         }
     }

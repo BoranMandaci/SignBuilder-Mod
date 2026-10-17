@@ -14,6 +14,7 @@ import java.awt.Color;
 public class ColorPickerScreen extends Screen {
     private final ItemStack brushStack;
     private final Screen parentScreen;
+    private final java.util.function.Consumer<Integer> onColorSelected;
 
     private float hue = 0.0f;
     private float saturation = 1.0f;
@@ -28,19 +29,35 @@ public class ColorPickerScreen extends Screen {
     private EditBox rInput, gInput, bInput, hexInput;
 
     public ColorPickerScreen(ItemStack brushStack, Screen parentScreen) {
-        super(Component.translatable("gui.signbuilder.color_picker.title"));
-        this.brushStack = brushStack;
-        this.parentScreen = parentScreen;
+        this(brushStack, parentScreen, null);
+    }
 
-        CompoundTag tag = brushStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        if (tag.contains("SelectedColor")) {
-            int savedColor = tag.getInt("SelectedColor");
-            if (savedColor > 15) {
-                this.selectedColorHex = savedColor;
-                float[] hsb = Color.RGBtoHSB((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
-                this.hue = hsb[0];
-                this.saturation = hsb[1];
-                this.brightness = hsb[2];
+    public ColorPickerScreen(int initialColor, Screen parentScreen, java.util.function.Consumer<Integer> onColorSelected) {
+        this(ItemStack.EMPTY, parentScreen, onColorSelected);
+        this.selectedColorHex = initialColor;
+        float[] hsb = Color.RGBtoHSB((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
+        this.hue = hsb[0];
+        this.saturation = hsb[1];
+        this.brightness = hsb[2];
+    }
+
+    public ColorPickerScreen(ItemStack brushStack, Screen parentScreen, java.util.function.Consumer<Integer> onColorSelected) {
+        super(Component.translatable("gui.signbuilder.color_picker.title"));
+        this.brushStack = brushStack != null ? brushStack : ItemStack.EMPTY;
+        this.parentScreen = parentScreen;
+        this.onColorSelected = onColorSelected;
+
+        if (!this.brushStack.isEmpty()) {
+            CompoundTag tag = this.brushStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            if (tag.contains("SelectedColor")) {
+                int savedColor = tag.getInt("SelectedColor");
+                if (savedColor > 15) {
+                    this.selectedColorHex = savedColor;
+                    float[] hsb = Color.RGBtoHSB((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
+                    this.hue = hsb[0];
+                    this.saturation = hsb[1];
+                    this.brightness = hsb[2];
+                }
             }
         }
     }
@@ -60,19 +77,26 @@ public class ColorPickerScreen extends Screen {
         int buttonGap = scaled(10);
         int footerWidth = doneButtonWidth + cancelButtonWidth + buttonGap;
         int addButtonY = getHexInputY(centerY) + getRgbInputHeight() + scaled(4);
-        int footerButtonY = addButtonY + scaled(22);
+        int footerButtonY = this.brushStack.isEmpty() ? addButtonY : (addButtonY + scaled(22));
 
-        this.addRenderableWidget(Button.builder(addColorText, button -> {
-            addCustomColorToBrush();
-            com.boran.signbuilder.network.ModMessages.sendToServer(
-                    new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, true));
-            if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
-        }).bounds(centerX - addButtonWidth / 2, addButtonY, addButtonWidth, scaled(20)).build());
+        if (!this.brushStack.isEmpty()) {
+            this.addRenderableWidget(Button.builder(addColorText, button -> {
+                addCustomColorToBrush();
+                com.boran.signbuilder.network.ModMessages.sendToServer(
+                        new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, true));
+                if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
+            }).bounds(centerX - addButtonWidth / 2, addButtonY, addButtonWidth, scaled(20)).build());
+        }
 
         this.addRenderableWidget(Button.builder(doneText, button -> {
-            com.boran.signbuilder.network.ModMessages.sendToServer(
-                    new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, false));
-            if (this.minecraft != null) this.minecraft.setScreen(null);
+            if (this.onColorSelected != null) {
+                this.onColorSelected.accept(this.selectedColorHex);
+                if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
+            } else {
+                com.boran.signbuilder.network.ModMessages.sendToServer(
+                        new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, false));
+                if (this.minecraft != null) this.minecraft.setScreen(null);
+            }
         }).bounds(centerX - footerWidth / 2, footerButtonY, doneButtonWidth, scaled(20)).build());
 
         this.addRenderableWidget(Button.builder(cancelText, button -> {

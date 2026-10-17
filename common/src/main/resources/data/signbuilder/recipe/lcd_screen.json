@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "RLR",
+    "III"
+  ],
+  "key": {
+    "G": [
+      {
+        "item": "minecraft:glass"
+      },
+      {
+        "item": "minecraft:glass_pane"
+      }
+    ],
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "L": [
+      {
+        "item": "minecraft:glowstone_dust"
+      },
+      {
+        "item": "minecraft:glowstone"
+      }
+    ],
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "signbuilder:lcd_screen"
+  }
+}

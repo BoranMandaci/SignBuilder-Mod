@@ -35,6 +35,7 @@ public class SignBuilderNeoForge {
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.GridSignBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
     }
 
     private void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {

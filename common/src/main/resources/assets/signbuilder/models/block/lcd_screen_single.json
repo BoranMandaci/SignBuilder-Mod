@@ -1,0 +1,114 @@
+{
+  "credit": "SignBuilder Mod",
+  "textures": {
+    "frame": "signbuilder:block/lcd_frame",
+    "screen": "signbuilder:block/lcd_screen",
+    "particle": "signbuilder:block/lcd_frame"
+  },
+  "elements": [
+    {
+      "name": "backplate",
+      "from": [0, 0, 15.5],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#frame"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 0.5], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 0.5], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "screen_display",
+      "from": [0, 0, 14.5],
+      "to": [16, 16, 15],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#screen"},
+        "east":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 0.5], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 0.5], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_top",
+      "from": [0, 15.2, 14.15],
+      "to": [16, 16, 15.5],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 0.8], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 1.35, 0.8], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 1.35, 0.8], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 1.35], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 1.35], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_bottom",
+      "from": [0, 0, 14.15],
+      "to": [16, 0.8, 15.5],
+      "faces": {
+        "north": {"uv": [0, 15.2, 16, 16], "texture": "#frame"},
+        "east":  {"uv": [0, 15.2, 1.35, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 15.2, 1.35, 16], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 1.35], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 1.35], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_left",
+      "from": [15.2, 0, 14.15],
+      "to": [16, 16, 15.5],
+      "faces": {
+        "north": {"uv": [15.2, 0, 16, 16], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_right",
+      "from": [0, 0, 14.15],
+      "to": [0.8, 16, 15.5],
+      "faces": {
+        "north": {"uv": [0, 0, 0.8, 16], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"}
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [75, 45, 0],
+      "translation": [0, 2.5, 0],
+      "scale": [0.375, 0.375, 0.375]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [75, 45, 0],
+      "translation": [0, 2.5, 0],
+      "scale": [0.375, 0.375, 0.375]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 1.5, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 1.5, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "ground": {
+      "translation": [0, 3, 0],
+      "scale": [0.35, 0.35, 0.35]
+    },
+    "gui": {
+      "rotation": [30, 225, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.625, 0.625, 0.625]
+    },
+    "fixed": {
+      "rotation": [0, 180, 0],
+      "scale": [0.5, 0.5, 0.5]
+    }
+  }
+}

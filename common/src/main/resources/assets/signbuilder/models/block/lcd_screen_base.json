@@ -1,0 +1,35 @@
+{
+  "credit": "SignBuilder Mod",
+  "textures": {
+    "frame": "signbuilder:block/lcd_frame",
+    "screen": "signbuilder:block/lcd_screen",
+    "particle": "signbuilder:block/lcd_frame"
+  },
+  "elements": [
+    {
+      "name": "backplate",
+      "from": [0, 0, 15.5],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#frame"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 0.5], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 0.5], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "screen_display",
+      "from": [0, 0, 14.5],
+      "to": [16, 16, 15],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#screen"},
+        "east":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 0.5, 16], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 0.5], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 0.5], "texture": "#frame"}
+      }
+    }
+  ]
+}

@@ -1547,6 +1547,19 @@ public class ModBlocks {
                             default -> 0;
                         };
                     })));
+
+    public static final RegistrySupplier<Block> LCD_SCREEN = BLOCKS.register("lcd_screen",
+            () -> new LcdScreenBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .sound(net.minecraft.world.level.block.SoundType.GLASS)
+                    .strength(1.5f, 3.0f)
+                    .noOcclusion()
+                    .lightLevel(state -> {
+                        if (!state.hasProperty(LcdScreenBlock.LIT)) return 0;
+                        return state.getValue(LcdScreenBlock.LIT) ? 15 : 0;
+                    })));
+
+    public static final RegistrySupplier<Item> LCD_SCREEN_ITEM = BLOCK_ITEMS.register("lcd_screen",
+            () -> new BlockItem(LCD_SCREEN.get(), new Item.Properties()));
                     
     public static void register() {
         BLOCKS.register();

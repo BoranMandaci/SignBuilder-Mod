@@ -22,12 +22,14 @@ public class SignBuilderFabricClient implements ClientModInitializer {
 
         BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
         BlockEntityRendererRegistry.register(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
+        BlockEntityRendererRegistry.register(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
 
         for (var blockSupplier : ModBlocks.ALL_SIGN_BLOCKS) {
             BlockRenderLayerMap.INSTANCE.putBlock(blockSupplier.get(), RenderType.cutout());
         }
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.BACKPLATE.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.GRID_SIGN.get(), RenderType.cutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.LCD_SCREEN.get(), RenderType.cutout());
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());

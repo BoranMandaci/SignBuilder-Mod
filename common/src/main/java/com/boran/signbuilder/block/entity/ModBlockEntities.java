@@ -44,6 +44,10 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("grid_sign_block_entity", () ->
                     BlockEntityType.Builder.of(com.boran.signbuilder.block.entity.GridSignBlockEntity::new, ModBlocks.GRID_SIGN.get()).build(null));
 
+    public static final RegistrySupplier<BlockEntityType<LcdScreenBlockEntity>> LCD_SCREEN_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("lcd_screen_block_entity", () ->
+                    BlockEntityType.Builder.of(LcdScreenBlockEntity::new, ModBlocks.LCD_SCREEN.get()).build(null));
+
     public static void register() {
         BLOCK_ENTITIES.register();
     }
