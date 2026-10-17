@@ -31,6 +31,16 @@ public class LcdScreenBlockEntity extends BlockEntity {
     private int visualAnim = 0;
     public long lastRenderNanoTime = 0L;
 
+    public BlockPos cachedMasterPos = null;
+    public int cachedWidthBlocks = 1;
+    public int cachedHeightBlocks = 1;
+    public long lastCacheUpdateTick = -100L;
+
+    public void invalidateGridCache() {
+        this.cachedMasterPos = null;
+        this.lastCacheUpdateTick = -100L;
+    }
+
     public LcdScreenBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), pos, state);
     }
@@ -299,6 +309,6 @@ public class LcdScreenBlockEntity extends BlockEntity {
     }
 
     public AABB getRenderBoundingBox() {
-        return new AABB(this.worldPosition).inflate(256.0);
+        return new AABB(this.worldPosition).inflate(32.0);
     }
 }

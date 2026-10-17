@@ -47,10 +47,24 @@ public class LcdFontHelper {
         };
     }
 
+    public static final Style[] FONT_BASE_STYLES = new Style[] {
+            Style.EMPTY.withFont(FONT_DOT_MATRIX_LOC),
+            Style.EMPTY.withFont(FONT_DIGITAL_SEGMENT_LOC),
+            Style.EMPTY.withFont(FONT_MODERN_LCD_LOC),
+            Style.EMPTY.withFont(FONT_RETRO_ARCADE_LOC),
+            Style.EMPTY.withFont(Style.DEFAULT_FONT)
+    };
+
+    public static Style getBaseStyle(int fontStyle) {
+        if (fontStyle >= 0 && fontStyle < FONT_BASE_STYLES.length) {
+            return FONT_BASE_STYLES[fontStyle];
+        }
+        return FONT_BASE_STYLES[FONT_VANILLA];
+    }
+
     public static FormattedCharSequence toFormatted(String text, int fontStyle) {
         if (text == null || text.isEmpty()) return FormattedCharSequence.EMPTY;
-        ResourceLocation loc = getFontLocation(fontStyle);
-        Style baseStyle = Style.EMPTY.withFont(loc);
+        Style baseStyle = getBaseStyle(fontStyle);
         return sink -> StringDecomposer.iterateFormatted(text, 0, baseStyle, baseStyle, sink);
     }
 

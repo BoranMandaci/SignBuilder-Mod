@@ -145,6 +145,9 @@ public class LcdScreenBlock extends Block implements EntityBlock {
 
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if (level.getBlockEntity(pos) instanceof LcdScreenBlockEntity lcd) {
+            lcd.invalidateGridCache();
+        }
         Direction facing = state.getValue(FACING);
         AttachFace face = state.getValue(FACE);
         return state

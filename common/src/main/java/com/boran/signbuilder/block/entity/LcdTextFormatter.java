@@ -67,7 +67,7 @@ public class LcdTextFormatter {
     }
 
     public static String resolveSymbols(String text) {
-        if (text == null || text.isEmpty()) return "";
+        if (text == null || text.isEmpty() || !text.contains(":")) return text != null ? text : "";
         return text
                 .replace(":heart:", "❤")
                 .replace(":heart2:", "♥")
@@ -302,15 +302,29 @@ public class LcdTextFormatter {
         };
     }
 
+    private static java.lang.reflect.Method GET_FPS_METHOD = null;
+    private static Object MC_INSTANCE = null;
+    private static boolean REFLECTION_INITIALIZED = false;
+    private static int cachedFps = 60;
+    private static long lastFpsUpdateMs = 0L;
+
     public static String getFpsString() {
-        try {
-            Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-            Object mc = mcClass.getMethod("getInstance").invoke(null);
-            Object fps = mcClass.getMethod("getFps").invoke(mc);
-            return String.valueOf(fps);
-        } catch (Throwable ignored) {
-            return "60";
+        long now = System.currentTimeMillis();
+        if (now - lastFpsUpdateMs > 500L) {
+            lastFpsUpdateMs = now;
+            try {
+                if (!REFLECTION_INITIALIZED) {
+                    REFLECTION_INITIALIZED = true;
+                    Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+                    MC_INSTANCE = mcClass.getMethod("getInstance").invoke(null);
+                    GET_FPS_METHOD = mcClass.getMethod("getFps");
+                }
+                if (GET_FPS_METHOD != null && MC_INSTANCE != null) {
+                    cachedFps = (int) GET_FPS_METHOD.invoke(MC_INSTANCE);
+                }
+            } catch (Throwable ignored) {}
         }
+        return String.valueOf(cachedFps);
     }
 
     public static String getHealthString(@Nullable Level level, @Nullable BlockPos pos) {

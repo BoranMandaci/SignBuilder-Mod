@@ -40,11 +40,11 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LcdScreenBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(32.0);
     }
 
     public net.minecraft.world.phys.AABB getViewBoundingBox(LcdScreenBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(32.0);
     }
 
     private static boolean hasDisplayContent(LcdScreenBlockEntity be) {
@@ -65,7 +65,48 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         Direction facing = state.getValue(LcdScreenBlock.FACING);
         AttachFace face = state.getValue(LcdScreenBlock.FACE);
 
-        BlockPos masterPos = LcdScreenBlock.getMasterPos(level, entity.getBlockPos(), state);
+        long gameTime = level.getGameTime();
+        BlockPos masterPos;
+        int widthBlocks;
+        int heightBlocks;
+
+        if (entity.cachedMasterPos != null && gameTime - entity.lastCacheUpdateTick < 20L) {
+            masterPos = entity.cachedMasterPos;
+            widthBlocks = entity.cachedWidthBlocks;
+            heightBlocks = entity.cachedHeightBlocks;
+        } else {
+            masterPos = LcdScreenBlock.getMasterPos(level, entity.getBlockPos(), state);
+            Direction rightDir = LcdScreenBlock.getScreenRightDir(facing, face);
+            Direction downDir = LcdScreenBlock.getScreenDownDir(facing, face);
+
+            widthBlocks = 1;
+            BlockPos checkRight = masterPos;
+            for (int i = 1; i < 32; i++) {
+                if (LcdScreenBlock.isConnectedNeighbor(level, checkRight, rightDir, facing, face)) {
+                    widthBlocks++;
+                    checkRight = checkRight.relative(rightDir);
+                } else {
+                    break;
+                }
+            }
+
+            heightBlocks = 1;
+            BlockPos checkDown = masterPos;
+            for (int i = 1; i < 32; i++) {
+                if (LcdScreenBlock.isConnectedNeighbor(level, checkDown, downDir, facing, face)) {
+                    heightBlocks++;
+                    checkDown = checkDown.relative(downDir);
+                } else {
+                    break;
+                }
+            }
+
+            entity.cachedMasterPos = masterPos;
+            entity.cachedWidthBlocks = widthBlocks;
+            entity.cachedHeightBlocks = heightBlocks;
+            entity.lastCacheUpdateTick = gameTime;
+        }
+
         boolean isMaster = masterPos.equals(entity.getBlockPos());
         LcdScreenBlockEntity master;
         if (isMaster) {
@@ -84,31 +125,6 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             return;
         }
         master.lastRenderNanoTime = now;
-
-        Direction rightDir = LcdScreenBlock.getScreenRightDir(facing, face);
-        Direction downDir = LcdScreenBlock.getScreenDownDir(facing, face);
-
-        int widthBlocks = 1;
-        BlockPos checkRight = masterPos;
-        for (int i = 1; i < 32; i++) {
-            if (LcdScreenBlock.isConnectedNeighbor(level, checkRight, rightDir, facing, face)) {
-                widthBlocks++;
-                checkRight = checkRight.relative(rightDir);
-            } else {
-                break;
-            }
-        }
-
-        int heightBlocks = 1;
-        BlockPos checkDown = masterPos;
-        for (int i = 1; i < 32; i++) {
-            if (LcdScreenBlock.isConnectedNeighbor(level, checkDown, downDir, facing, face)) {
-                heightBlocks++;
-                checkDown = checkDown.relative(downDir);
-            } else {
-                break;
-            }
-        }
 
         String text = master.getText();
         boolean hasText = text != null && !text.trim().isEmpty();
