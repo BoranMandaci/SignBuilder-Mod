@@ -6,26 +6,28 @@
 
 # 🪧 Sign Builder
 
-A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs. Decorate your cities, build interactive Redstone keypad locks, and construct glowing neon shop fronts or towering billboards with a highly detailed, dynamic building system perfectly balanced for Survival mode.
+A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs and futuristic LCD screens. Decorate your cities, build interactive Redstone keypad locks, and construct glowing neon shop fronts, towering billboards, or animated displays with a highly detailed, dynamic building system perfectly balanced for Survival mode.
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Introduction
 
-Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fabric, Forge, and NeoForge** using the Architectury API. Rather than relying on simple vanilla signs, this mod introduces physical blocks for letters, numbers, symbols, sub-block mini letters, and modular backplates—accompanied by custom tools to construct, paint, texture, automate, and illuminate them dynamically.
+Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fabric, Forge, and NeoForge** using the Architectury API. Rather than relying on simple vanilla signs, this mod introduces physical blocks for letters, numbers, symbols, sub-block mini letters, modular backplates, and multi-block LCD screens—accompanied by custom tools to construct, paint, texture, automate, and illuminate them dynamically.
 
 ---
 
 ## ✨ Key Features
 
-* 🔤 **Grid Mode (Mini Letters) — *New in v1.3!*** — Toggle Grid Mode with `Shift + V` to fit 2x2 (4 chars), 3x3 (9 chars), or 4x4 (16 chars) sub-block mini letters inside a single block. Supports dual-sided placement, targeted raytracing, and pixel-perfect alignment across floors, ceilings, and 45° diagonal backplates.
-* 🏢 **Giant Multi-Blocks & Modular Backplates** — Placing matching sign blocks in a 2x2 or 3x3 square automatically merges them into massive **2.0x** and **3.0x** multi-block billboards with synchronized hitboxes. Mount signs on both sides of modular backplates, texture front/back independently, or rotate signs at 45° diagonal angles.
+* 🖥️ **Multi-Block LCD Screens — *New in v1.4!*** — Seamless connected displays with dynamic borders that automatically merge into single giant display surfaces. Features 5 digital fonts (Modern LCD, 7-Segment, Dot Matrix, Retro Arcade, Vanilla), real-time dynamic variables (`%player%`, `%time%`, `%fps%`, etc.), 15 color themes, and 24 procedural fullscreen animations (Pong, Snake, Tetris, Matrix Rain, etc.).
+* 🔤 **Grid Mode (Mini Letters & Multi-Grid) — *Expanded in v1.4!*** — Toggle Grid Mode with `Shift + V` to fit 2x2, 3x3, 4x4, or 5x5 sub-block mini letters inside a single block. Includes sub-cell collision allowing different letter sizes to coexist, `Shift + Right-Click` letter removal, and dual-sided placement across walls, floors, ceilings, and 45° diagonal backplates.
+* 🌟 **Glow Ink Illumination** — Apply Glow Ink Sacs to any letter, backplate, or grid sign to make its surface glow full-bright in the dark without altering world light levels. Revert anytime with a regular Ink Sac.
+* 🏢 **Giant Multi-Blocks & Modular Backplates** — Placing matching sign blocks in a 2x2 or 3x3 square automatically merges them into massive **2.0x** and **3.0x** multi-block billboards with synchronized hitboxes. Mount signs on both sides of modular backplates, attach 1x1 hybrid glyphs alongside grid letters, texture front/back independently, or rotate signs at 45° diagonal angles.
 * 🗺️ **Holographic Blueprint & Precision Stamping** — Type your text and preview it directly in the world via a real-time **3D ghost hologram** (green = valid, red = obstructed). Features crosshair-targeted Banner placement, backplate boundary overflow protection, continuous word flows, and an instant **Undo** system.
 * 🎨 **40 Dynamic Materials & Custom Dyeing** — Customize text with 40 distinct survival-balanced textures (wood, stone, copper, iron, gold, diamond, emerald, and more) using ingots and gems instead of full blocks. Mix custom Hex/RGB colors, activate dynamic cycling Rainbow mode, or use **Smart Fill** and the **Eyedropper** to style entire words in one click.
 * 💡 **Animated Neon Lighting & Light Emission** — Configure signs with 11 lighting presets (Blink, Flicker, Pulse, Wave, Motion Sensor, Night Only) emitting real world light (levels 6–15), or build custom light behaviors with timed cycles, day/night schedules, and proximity filters.
 * 🔴 **Interactive Buttons & PIN Keypad Locks** — Turn any character into a momentary Pulse button, Toggle lever, or continuous Hold-to-Activate control. Connect Redstone Comparators to number blocks (0–9) for analog readouts, or create secret PIN passcode locks that emit a 2-second Redstone pulse upon entering the correct sequence.
 * 🗜️ **The Sign Press & Survival Balance** — Manufacture all characters, symbols, and backplates in a dedicated, hopper-compatible 3D workstation. Breaking signs normally drops the block itself and any applied materials, while **Silk Touch** perfectly preserves all custom colors, light modes, and PIN configurations.
-* ⚡ **Zero-Lag Render Fast-Path** — Optimized client-side mesh caching eliminates frame drops and GC stutter, keeping rendering buttery-smooth around dense neon signage.
+* ⚡ **Zero-Lag Render Fast-Path** — Optimized client-side mesh caching eliminates frame drops and GC stutter, keeping rendering buttery-smooth around dense neon signage and LCD matrices.
 * 🌍 **Global Localization** — Fully translated into 13 languages: English, Turkish, German, French, Spanish, Italian, Russian, Simplified Chinese, Traditional Chinese, Japanese, Korean, Polish, and Brazilian Portuguese.
 
 ---
