@@ -162,6 +162,7 @@ public class ClientModEvents {
 
             BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
             BlockEntityRendererRegistry.register(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
+            BlockEntityRendererRegistry.register(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
 
             ColorHandlerRegistry.registerBlockColors((state, level, pos, tintIndex) -> {
                 if (level != null && pos != null) {

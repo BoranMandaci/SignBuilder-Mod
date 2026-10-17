@@ -16,6 +16,7 @@ public class ModMessages {
     public static final ResourceLocation SYNC_GRID_MODE = new ResourceLocation("signbuilder", "sync_grid_mode");
     public static final ResourceLocation REMOVE_GRID_LETTER = new ResourceLocation("signbuilder", "remove_grid_letter");
     public static final ResourceLocation APPLY_BACKPLATE_INK = new ResourceLocation("signbuilder", "apply_backplate_ink");
+    public static final ResourceLocation UPDATE_LCD_SCREEN = new ResourceLocation("signbuilder", "update_lcd_screen");
 
     public static void register() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BRUSH_COLOR, (buf, context) -> {
@@ -67,6 +68,11 @@ public class ModMessages {
             ApplyBackplateInkC2SPacket packet = new ApplyBackplateInkC2SPacket(buf);
             context.queue(() -> packet.handle(context));
         });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, UPDATE_LCD_SCREEN, (buf, context) -> {
+            UpdateLcdScreenC2SPacket packet = new UpdateLcdScreenC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -102,6 +108,9 @@ public class ModMessages {
         } else if (message instanceof ApplyBackplateInkC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(APPLY_BACKPLATE_INK, buf);
+        } else if (message instanceof UpdateLcdScreenC2SPacket packet) {
+            packet.toBytes(buf);
+            NetworkManager.sendToServer(UPDATE_LCD_SCREEN, buf);
         }
     }
 }

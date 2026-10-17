@@ -1,0 +1,21 @@
+{
+  "credit": "SignBuilder Mod",
+  "textures": {
+    "frame": "signbuilder:block/lcd_frame",
+    "particle": "signbuilder:block/lcd_frame"
+  },
+  "elements": [
+    {
+      "name": "frame_top",
+      "from": [0, 15.2, 14.15],
+      "to": [16, 16, 15.5],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 0.8], "texture": "#frame"},
+        "east":  {"uv": [0, 0, 1.35, 0.8], "texture": "#frame"},
+        "west":  {"uv": [0, 0, 1.35, 0.8], "texture": "#frame"},
+        "up":    {"uv": [0, 0, 16, 1.35], "texture": "#frame"},
+        "down":  {"uv": [0, 0, 16, 1.35], "texture": "#frame"}
+      }
+    }
+  ]
+}

@@ -19,6 +19,7 @@ public class SignBuilderFabricClient implements ClientModInitializer {
         }
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.BACKPLATE.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.GRID_SIGN.get(), RenderType.cutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.LCD_SCREEN.get(), RenderType.cutout());
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());
