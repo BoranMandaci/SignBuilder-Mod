@@ -33,7 +33,9 @@ public class ModBlocks {
     public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
 
     private static BlockBehaviour.Properties createLetterProperties() {
-        return BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
+        return BlockBehaviour.Properties.of()
+                .strength(0.8f)
+                .sound(net.minecraft.world.level.block.SoundType.STONE)
                 .noOcclusion()
                 .lightLevel(state -> {
                     if (!state.hasProperty(LetterBlock.LIGHT_MODE)) return 0;
@@ -1510,7 +1512,8 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_TROPHY = createTrophyBlock("symbol_trophy");
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
-            () -> new BackplateBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
+            () -> new BackplateBlock(BlockBehaviour.Properties.of()
+                    .strength(0.8f)
                     .sound(net.minecraft.world.level.block.SoundType.WOOD)
                     .noOcclusion()
                     .lightLevel(state -> {
@@ -1535,9 +1538,10 @@ public class ModBlocks {
             () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Block> GRID_SIGN = BLOCKS.register("grid_sign",
-            () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE)
+            () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.of()
+                    .strength(0.8f)
+                    .sound(net.minecraft.world.level.block.SoundType.STONE)
                     .noOcclusion()
-                    .strength(0.5f)
                     .isValidSpawn((s, l, p, e) -> false)
                     .lightLevel(state -> {
                         if (!state.hasProperty(com.boran.signbuilder.block.GridSignBlock.LIGHT_MODE)) return 0;
@@ -1549,9 +1553,9 @@ public class ModBlocks {
                     })));
 
     public static final RegistrySupplier<Block> LCD_SCREEN = BLOCKS.register("lcd_screen",
-            () -> new LcdScreenBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
-                    .sound(net.minecraft.world.level.block.SoundType.GLASS)
-                    .strength(1.5f, 3.0f)
+            () -> new LcdScreenBlock(BlockBehaviour.Properties.of()
+                    .strength(1.2f, 3.0f)
+                    .sound(net.minecraft.world.level.block.SoundType.METAL)
                     .noOcclusion()
                     .lightLevel(state -> {
                         if (!state.hasProperty(LcdScreenBlock.LIT)) return 0;

@@ -105,6 +105,7 @@
     "signbuilder:symbol_trophy",
     "signbuilder:sign_press",
     "signbuilder:backplate",
-    "signbuilder:grid_sign"
+    "signbuilder:grid_sign",
+    "signbuilder:lcd_screen"
   ]
-}
+}

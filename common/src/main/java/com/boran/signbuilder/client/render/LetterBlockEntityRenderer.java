@@ -70,11 +70,6 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         return 128;
     }
 
-    @Override
-    public boolean shouldRenderOffScreen(LetterBlockEntity blockEntity) {
-        return true;
-    }
-
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
         return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
     }

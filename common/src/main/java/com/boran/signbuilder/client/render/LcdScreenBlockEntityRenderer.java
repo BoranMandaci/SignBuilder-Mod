@@ -34,11 +34,6 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         return 256;
     }
 
-    @Override
-    public boolean shouldRenderOffScreen(LcdScreenBlockEntity blockEntity) {
-        return true;
-    }
-
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LcdScreenBlockEntity blockEntity) {
         return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(32.0);
     }
@@ -262,6 +257,46 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
                         align, mode2, speed, scaledPixelsPerSec, timeMs, color, master.isGlow(), light, fontStyle);
             }
             poseStack.popPose();
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.gameMode != null && mc.gameMode.isDestroying() && mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bhr) {
+            BlockPos hitPos = bhr.getBlockPos();
+            Direction rightDir = LcdScreenBlock.getScreenRightDir(facing, face);
+            Direction downDir = LcdScreenBlock.getScreenDownDir(facing, face);
+            int hitCol = -1;
+            int hitRow = -1;
+            for (int x = 0; x < widthBlocks; x++) {
+                for (int y = 0; y < heightBlocks; y++) {
+                    if (masterPos.relative(rightDir, x).relative(downDir, y).equals(hitPos)) {
+                        hitCol = x;
+                        hitRow = y;
+                        break;
+                    }
+                }
+                if (hitCol >= 0) break;
+            }
+            if (hitCol >= 0) {
+                int stage = mc.gameMode.getDestroyStage();
+                if (stage >= 0 && stage <= 9) {
+                    float colWidth = (maxX - minX) / widthBlocks;
+                    float rowHeight = (bottomY - topY) / heightBlocks;
+                    float crackX1 = minX + hitCol * colWidth;
+                    float crackX2 = minX + (hitCol + 1) * colWidth;
+                    float crackY1 = topY + hitRow * rowHeight;
+                    float crackY2 = topY + (hitRow + 1) * rowHeight;
+                    float crackZ = 0.12f;
+
+                    net.minecraft.resources.ResourceLocation crackTex = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/destroy_stage_" + stage + ".png");
+                    VertexConsumer crackConsumer = bufferSource.getBuffer(RenderType.text(crackTex));
+                    Matrix4f mat = poseStack.last().pose();
+
+                    crackConsumer.addVertex(mat, crackX1, crackY2, crackZ).setColor(255, 255, 255, 255).setUv(0.0f, 1.0f).setLight(15728880);
+                    crackConsumer.addVertex(mat, crackX2, crackY2, crackZ).setColor(255, 255, 255, 255).setUv(1.0f, 1.0f).setLight(15728880);
+                    crackConsumer.addVertex(mat, crackX2, crackY1, crackZ).setColor(255, 255, 255, 255).setUv(1.0f, 0.0f).setLight(15728880);
+                    crackConsumer.addVertex(mat, crackX1, crackY1, crackZ).setColor(255, 255, 255, 255).setUv(0.0f, 0.0f).setLight(15728880);
+                }
+            }
         }
 
         poseStack.popPose();
