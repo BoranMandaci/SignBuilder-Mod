@@ -28,11 +28,26 @@ public class LcdScreenBlockEntity extends BlockEntity {
     private int widgetBR = 0;
     private int fontStyle = 0;
     private int visualAnim = 0;
+    public long lastRenderNanoTime = 0L;
+    public long lastRenderGameTime = -1L;
+    public float lastRenderPartialTick = -1.0f;
+    public BlockPos activeRenderPos = null;
 
     public BlockPos cachedMasterPos = null;
     public int cachedWidthBlocks = 1;
     public int cachedHeightBlocks = 1;
     public long lastCacheUpdateTick = -100L;
+
+    public String cachedResolvedLine1 = "";
+    public String cachedResolvedLine2 = "";
+    public long lastResolvedTick = -100L;
+    public String lastResolvedRawText = null;
+
+    public String cachedWidgetTLText = "";
+    public String cachedWidgetTRText = "";
+    public String cachedWidgetBLText = "";
+    public String cachedWidgetBRText = "";
+    public long lastWidgetTick = -100L;
 
     public void invalidateGridCache() {
         this.cachedMasterPos = null;
@@ -49,6 +64,7 @@ public class LcdScreenBlockEntity extends BlockEntity {
 
     public void setText(String text) {
         this.text = text != null ? text : "";
+        this.lastResolvedRawText = null;
         setChanged();
         sync();
     }
@@ -211,7 +227,7 @@ public class LcdScreenBlockEntity extends BlockEntity {
     }
 
     public void setVisualAnim(int visualAnim) {
-        this.visualAnim = Math.max(0, Math.min(24, visualAnim));
+        this.visualAnim = Math.max(0, Math.min(60, visualAnim));
         setChanged();
         sync();
     }
@@ -234,6 +250,46 @@ public class LcdScreenBlockEntity extends BlockEntity {
         this.widgetBR = other.widgetBR;
         this.fontStyle = other.fontStyle;
         this.visualAnim = other.visualAnim;
+        this.lastResolvedRawText = null;
+        this.lastWidgetTick = -100L;
+    }
+
+    public String getResolvedLine(int line, @Nullable net.minecraft.world.level.Level level) {
+        String raw = getText();
+        long currentTick = level != null ? level.getGameTime() : 0L;
+        boolean hasVars = raw.indexOf('{') >= 0;
+        if (lastResolvedRawText == null || !lastResolvedRawText.equals(raw) || (hasVars && currentTick - lastResolvedTick >= 4L)) {
+            lastResolvedRawText = raw;
+            lastResolvedTick = currentTick;
+            String rawL1 = raw;
+            String rawL2 = "";
+            int nl = raw.indexOf('\n');
+            if (nl >= 0) {
+                rawL1 = raw.substring(0, nl);
+                rawL2 = raw.substring(nl + 1);
+            }
+            cachedResolvedLine1 = LcdTextFormatter.resolveAll(rawL1, level, this.worldPosition);
+            cachedResolvedLine2 = LcdTextFormatter.resolveAll(rawL2, level, this.worldPosition);
+        }
+        return line == 0 ? cachedResolvedLine1 : cachedResolvedLine2;
+    }
+
+    public String getResolvedWidgetText(int corner, @Nullable net.minecraft.world.level.Level level) {
+        long currentTick = level != null ? level.getGameTime() : 0L;
+        if (currentTick - lastWidgetTick >= 4L) {
+            lastWidgetTick = currentTick;
+            cachedWidgetTLText = widgetTL > 0 ? LcdTextFormatter.getWidgetText(widgetTL, level, this.worldPosition) : "";
+            cachedWidgetTRText = widgetTR > 0 ? LcdTextFormatter.getWidgetText(widgetTR, level, this.worldPosition) : "";
+            cachedWidgetBLText = widgetBL > 0 ? LcdTextFormatter.getWidgetText(widgetBL, level, this.worldPosition) : "";
+            cachedWidgetBRText = widgetBR > 0 ? LcdTextFormatter.getWidgetText(widgetBR, level, this.worldPosition) : "";
+        }
+        return switch (corner) {
+            case 0 -> cachedWidgetTLText;
+            case 1 -> cachedWidgetTRText;
+            case 2 -> cachedWidgetBLText;
+            case 3 -> cachedWidgetBRText;
+            default -> "";
+        };
     }
 
     public void sync() {

@@ -26,12 +26,43 @@ import java.awt.Color;
 
 public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScreenBlockEntity> {
 
+    private static final class LcdRenderTypes extends net.minecraft.client.renderer.RenderStateShard {
+        private static final RenderType CANVAS = RenderType.create(
+                "signbuilder_lcd_canvas",
+                com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+                com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS,
+                4096,
+                false,
+                false,
+                RenderType.CompositeState.builder()
+                        .setShaderState(RENDERTYPE_TEXT_BACKGROUND_SHADER)
+                        .setTextureState(NO_TEXTURE)
+                        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setLightmapState(LIGHTMAP)
+                        .setDepthTestState(LEQUAL_DEPTH_TEST)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .setCullState(NO_CULL)
+                        .createCompositeState(false)
+        );
+
+        private LcdRenderTypes(String name, Runnable setupState, Runnable clearState) {
+            super(name, setupState, clearState);
+        }
+    }
+
+    private static final StringBuilder ACTIVE_STYLE_BUILDER = new StringBuilder();
+
     public LcdScreenBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
     public int getViewDistance() {
         return 256;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(LcdScreenBlockEntity blockEntity) {
+        return true;
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LcdScreenBlockEntity blockEntity) {
@@ -102,11 +133,32 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             entity.lastCacheUpdateTick = gameTime;
         }
 
-        boolean isMaster = masterPos.equals(entity.getBlockPos());
-        if (!isMaster) {
+        BlockPos myPos = entity.getBlockPos();
+        boolean isMaster = masterPos.equals(myPos);
+        LcdScreenBlockEntity master;
+        if (isMaster) {
+            master = entity;
+        } else {
+            BlockEntity be = level.getBlockEntity(masterPos);
+            if (be instanceof LcdScreenBlockEntity masterBe) {
+                master = masterBe;
+            } else {
+                master = entity;
+            }
+        }
+
+        long now = System.nanoTime();
+        boolean newFrame = (gameTime != master.lastRenderGameTime)
+                || (partialTick != master.lastRenderPartialTick)
+                || (now - master.lastRenderNanoTime > 2_500_000L)
+                || myPos.equals(master.activeRenderPos);
+        if (!newFrame) {
             return;
         }
-        LcdScreenBlockEntity master = entity;
+        master.activeRenderPos = myPos;
+        master.lastRenderGameTime = gameTime;
+        master.lastRenderPartialTick = partialTick;
+        master.lastRenderNanoTime = now;
 
         String text = master.getText();
         boolean hasText = text != null && !text.trim().isEmpty();
@@ -117,19 +169,23 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         Font font = Minecraft.getInstance().font;
 
         poseStack.pushPose();
+        if (!isMaster) {
+            BlockPos offset = masterPos.subtract(myPos);
+            poseStack.translate(offset.getX(), offset.getY(), offset.getZ());
+        }
         poseStack.translate(0.5, 0.5, 0.5);
 
         if (face == AttachFace.WALL) {
             poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-            poseStack.translate(0.0, 0.0, -0.395);
+            poseStack.translate(0.0, 0.0, -0.402);
         } else if (face == AttachFace.FLOOR) {
             poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
-            poseStack.translate(0.0, 0.0, -0.395);
+            poseStack.translate(0.0, 0.0, -0.402);
         } else {
             poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
-            poseStack.translate(0.0, 0.0, -0.395);
+            poseStack.translate(0.0, 0.0, -0.402);
         }
 
         float centerX = (widthBlocks - 1.0f) * 0.5f;
@@ -171,7 +227,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
 
         renderScreenBackground(poseStack, bufferSource, master.getTheme(), master.getColor(), master.isRainbow(), minX, maxX, topY, bottomY, 15728880);
         if (bufferSource instanceof MultiBufferSource.BufferSource bs) {
-            bs.endBatch(RenderType.textBackground());
+            bs.endBatch(LcdRenderTypes.CANVAS);
         }
 
         if (hasWidgets && visualAnim == 0) {
@@ -185,27 +241,18 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
                 boolean lowDetail = distSq > 24.0 * 24.0;
                 poseStack.pushPose();
                 poseStack.translate(0.0, 0.0, 0.06f);
-                VertexConsumer vc = bufferSource.getBuffer(RenderType.textBackground());
+                VertexConsumer vc = bufferSource.getBuffer(LcdRenderTypes.CANVAS);
                 LcdVisualAnimator.render3D(vc, poseStack.last().pose(), light,
                         minX, maxX, topY, bottomY,
                         visualAnim, speed, color, master.isRainbow(), timeMs, lowDetail);
                 if (bufferSource instanceof MultiBufferSource.BufferSource bs) {
-                    bs.endBatch(RenderType.textBackground());
+                    bs.endBatch(LcdRenderTypes.CANVAS);
                 }
                 poseStack.popPose();
             }
         } else {
-            String rawText = text != null ? text : "";
-            String rawLine1 = rawText;
-            String rawLine2 = "";
-            if (rawText.contains("\n")) {
-                String[] parts = rawText.split("\n", 2);
-                rawLine1 = parts[0];
-                rawLine2 = parts.length > 1 ? parts[1] : "";
-            }
-
-            String line1 = LcdTextFormatter.resolveAll(rawLine1, level, masterPos);
-            String line2 = LcdTextFormatter.resolveAll(rawLine2, level, masterPos);
+            String line1 = master.getResolvedLine(0, level);
+            String line2 = master.getResolvedLine(1, level);
             boolean hasL1 = !line1.trim().isEmpty();
             boolean hasL2 = !line2.trim().isEmpty();
 
@@ -267,7 +314,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
                     float crackX2 = minX + (hitCol + 1) * colWidth;
                     float crackY1 = topY + hitRow * rowHeight;
                     float crackY2 = topY + (hitRow + 1) * rowHeight;
-                    float crackZ = 0.12f;
+                    float crackZ = 0.50f;
 
                     net.minecraft.resources.ResourceLocation crackTex = new net.minecraft.resources.ResourceLocation("minecraft", "textures/block/destroy_stage_" + stage + ".png");
                     VertexConsumer crackConsumer = bufferSource.getBuffer(RenderType.text(crackTex));
@@ -301,14 +348,14 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         int widgetColor = 0xDD000000 | (color & 0x00FFFFFF);
 
         if (entity.getWidgetTL() > 0) {
-            String str = LcdTextFormatter.getWidgetText(entity.getWidgetTL(), level, entity.getBlockPos());
+            String str = entity.getResolvedWidgetText(0, level);
             if (!str.isEmpty()) {
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
                 font.drawInBatch(seq, scaledMinX, scaledTopY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
             }
         }
         if (entity.getWidgetTR() > 0) {
-            String str = LcdTextFormatter.getWidgetText(entity.getWidgetTR(), level, entity.getBlockPos());
+            String str = entity.getResolvedWidgetText(1, level);
             if (!str.isEmpty()) {
                 float w = LcdFontHelper.getWidth(font, str, fontStyle);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
@@ -316,14 +363,14 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             }
         }
         if (entity.getWidgetBL() > 0) {
-            String str = LcdTextFormatter.getWidgetText(entity.getWidgetBL(), level, entity.getBlockPos());
+            String str = entity.getResolvedWidgetText(2, level);
             if (!str.isEmpty()) {
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
                 font.drawInBatch(seq, scaledMinX, scaledBottomY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
             }
         }
         if (entity.getWidgetBR() > 0) {
-            String str = LcdTextFormatter.getWidgetText(entity.getWidgetBR(), level, entity.getBlockPos());
+            String str = entity.getResolvedWidgetText(3, level);
             if (!str.isEmpty()) {
                 float w = LcdFontHelper.getWidth(font, str, fontStyle);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
@@ -446,7 +493,8 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         };
 
         float curX = startX;
-        StringBuilder activeStyle = new StringBuilder();
+        StringBuilder activeStyle = ACTIVE_STYLE_BUILDER;
+        activeStyle.setLength(0);
         int charIdx = 0;
 
         for (int i = 0; i < text.length(); ) {
@@ -492,7 +540,8 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         };
 
         float curX = startX;
-        StringBuilder activeStyle = new StringBuilder();
+        StringBuilder activeStyle = ACTIVE_STYLE_BUILDER;
+        activeStyle.setLength(0);
         int charIdx = 0;
 
         for (int i = 0; i < text.length(); ) {
@@ -538,7 +587,8 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         }
 
         float curX = startX;
-        StringBuilder activeStyle = new StringBuilder();
+        StringBuilder activeStyle = ACTIVE_STYLE_BUILDER;
+        activeStyle.setLength(0);
         for (int i = 0; i < text.length(); ) {
             char c = text.charAt(i);
             if (c == '§' && i + 1 < text.length()) {
@@ -644,7 +694,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             }
         }
 
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.textBackground());
+        VertexConsumer consumer = bufferSource.getBuffer(LcdRenderTypes.CANVAS);
         Matrix4f mat = poseStack.last().pose();
 
         float bgZ = 0.0f;

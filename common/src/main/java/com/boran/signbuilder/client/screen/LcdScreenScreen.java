@@ -126,9 +126,9 @@ public class LcdScreenScreen extends Screen {
         this.widgetBL = Math.max(0, Math.min(10, widgetBL));
         this.widgetBR = Math.max(0, Math.min(10, widgetBR));
         this.fontStyle = Math.max(0, Math.min(4, fontStyle));
-        this.visualAnim = Math.max(0, Math.min(24, visualAnim));
+        this.visualAnim = Math.max(0, Math.min(60, visualAnim));
         this.lastVisualAnim = (this.visualAnim > 0) ? this.visualAnim : 1;
-        this.visualPage = (this.visualAnim > 12) ? 1 : 0;
+        this.visualPage = (this.visualAnim > 0) ? ((this.visualAnim - 1) / 12) : 0;
         this.mainMode = (this.visualAnim > 0) ? 1 : 0;
         this.textTab = 0;
         this.visualTab = 0;
@@ -680,7 +680,8 @@ public class LcdScreenScreen extends Screen {
     }
 
     private void initVisualAnimationsTab(int panelX, int panelY) {
-        int totalAnims = 24;
+        int totalAnims = 60;
+        int totalPages = (totalAnims + 11) / 12;
         int startIndex = this.visualPage * 12;
         int endIndex = Math.min(startIndex + 12, totalAnims);
 
@@ -728,7 +729,7 @@ public class LcdScreenScreen extends Screen {
 
         this.addRenderableWidget(new PillButton(
                 panelX + 62, pageY, 232, 15,
-                Component.translatable("gui.signbuilder.lcd.page", (this.visualPage + 1), 2),
+                Component.translatable("gui.signbuilder.lcd.page", (this.visualPage + 1), totalPages),
                 () -> {},
                 () -> true,
                 0xFFFFAA00, 0xFF141C25
@@ -738,7 +739,7 @@ public class LcdScreenScreen extends Screen {
                 panelX + 298, pageY, 44, 15,
                 Component.translatable("gui.signbuilder.lcd.next_page"),
                 () -> {
-                    if (this.visualPage < 1) {
+                    if (this.visualPage < totalPages - 1) {
                         this.visualPage++;
                         this.clearWidgets();
                         this.init();
@@ -747,7 +748,7 @@ public class LcdScreenScreen extends Screen {
                 () -> false,
                 0xFFFFAA00, 0xFF2A1C10
         );
-        nextBtn.active = (this.visualPage < 1);
+        nextBtn.active = (this.visualPage < totalPages - 1);
         this.addRenderableWidget(nextBtn);
 
         String[] speedLabels = {
