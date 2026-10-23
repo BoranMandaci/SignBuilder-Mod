@@ -2,7 +2,7 @@ package com.boran.signbuilder.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 public final class SignBuilderUi {

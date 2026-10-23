@@ -314,7 +314,7 @@ public class LetterBlockEntity extends BlockEntity {
 
     public ItemStack getBackGlyph() { return this.backGlyph; }
     public void setBackGlyph(ItemStack stack) {
-        this.backGlyph = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        if (stack == null || stack.isEmpty()) { this.backGlyph = ItemStack.EMPTY; } else { ItemStack copy = stack.copy(); copy.setCount(1); this.backGlyph = copy; }
         if (this.backGlyph.isEmpty()) {
             this.backGlyphGlowInked = false;
         } else {
@@ -534,7 +534,7 @@ public class LetterBlockEntity extends BlockEntity {
                         member.applyPressedState(false, 0);
                     }
                 }
-                this.level.playSound(null, this.worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
+                this.level.playSound(null, this.worldPosition, SoundEvents.NOTE_BLOCK_BASS, SoundSource.BLOCKS, 1.0F, 0.5F);
             }
             controller.enteredBuffer = "";
             controller.enteredPositions.clear();
@@ -1013,7 +1013,7 @@ public class LetterBlockEntity extends BlockEntity {
                             entity.isAudioPlaying = false;
                             for (BlockPos p : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
                                 if (level.getBlockEntity(p) instanceof JukeboxBlockEntity jbe) {
-                                    if (jbe.isRecordPlaying()) { entity.isAudioPlaying = true; break; }
+                                    if (!jbe.getRecord().isEmpty()) { entity.isAudioPlaying = true; break; }
                                 }
                             }
                         }

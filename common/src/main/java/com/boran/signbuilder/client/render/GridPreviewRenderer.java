@@ -22,8 +22,8 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 
 import java.util.List;
 
@@ -129,12 +129,12 @@ public class GridPreviewRenderer {
         int rotationDegrees = com.boran.signbuilder.block.SignRotation.deltaDegrees(facingRotation, facing);
         if (rotationDegrees != 0) {
             poseStack.translate(0.5, 0.0, 0.5);
-            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDegrees));
+            poseStack.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(rotationDegrees));
             poseStack.translate(-0.5, 0.0, -0.5);
         }
 
-        org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
-        poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
+        com.mojang.math.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
+        poseStack.translate(baseTrans.x(), baseTrans.y(), baseTrans.z());
 
         float scale = 1.0f / gridSize;
 
@@ -145,21 +145,21 @@ public class GridPreviewRenderer {
             colShift *= 1.4142135f;
         }
 
-        org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
+        com.mojang.math.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
 
-        poseStack.translate(offsets.x, offsets.y, offsets.z);
+        poseStack.translate(offsets.x(), offsets.y(), offsets.z());
 
         boolean hasPlate = isBackplate || (targetState.getBlock() instanceof GridSignBlock && mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe && gbe.hasBackplate());
         if (hasPlate) {
-            org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, true);
-            poseStack.translate(cl.x, cl.y, cl.z);
+            com.mojang.math.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, true);
+            poseStack.translate(cl.x(), cl.y(), cl.z());
         }
 
-        org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
+        com.mojang.math.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
 
-        poseStack.translate(c.x, c.y, c.z);
+        poseStack.translate(c.x(), c.y(), c.z());
         poseStack.scale(scale, scale, scale);
-        poseStack.translate(-c.x, -c.y, -c.z);
+        poseStack.translate(-c.x(), -c.y(), -c.z());
 
         BakedModel model = mc.getBlockRenderer().getBlockModel(letterState);
 

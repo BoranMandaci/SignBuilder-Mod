@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -30,8 +30,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,7 +158,7 @@ public class BlueprintPreviewRenderer {
             for (int dy = 0; dy < size; dy++) {
                 for (int dx = 0; dx < size; dx++) {
                     SCRATCH_POS.set(basePos).move(rightX * dx, dy, rightZ * dx);
-                    if (!level.getBlockState(SCRATCH_POS).canBeReplaced()) {
+                    net.minecraft.world.level.block.state.BlockState curState = level.getBlockState(SCRATCH_POS); if (!curState.isAir() && !curState.getMaterial().isReplaceable()) {
                         canPlace = false;
                         break;
                     }
@@ -193,11 +193,11 @@ public class BlueprintPreviewRenderer {
             if (size == 1) {
                 if (rotationDelta != 0) {
                     poseStack.translate(0.5, 0.0, 0.5);
-                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDelta));
+                    poseStack.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(rotationDelta));
                     poseStack.translate(-0.5, 0.0, -0.5);
                 }
             } else if (rotationDelta != 0) {
-                poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDelta));
+                poseStack.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(rotationDelta));
             }
 
             double[] offsets = getRenderOffsets(attachFace, facing, size);
@@ -527,7 +527,7 @@ public class BlueprintPreviewRenderer {
             int rotationDegrees = SignRotation.deltaDegrees(facingRotation, facing);
             if (rotationDegrees != 0) {
                 poseStack.translate(0.5, 0.0, 0.5);
-                poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationDegrees));
+                poseStack.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(rotationDegrees));
                 poseStack.translate(-0.5, 0.0, -0.5);
             }
 
@@ -542,8 +542,8 @@ public class BlueprintPreviewRenderer {
                 renderGhostModel(poseStack, consumer, plateModel, plateState, bpR, bpG, bpB, 0.4F, 15728880);
             }
 
-            org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
-            poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
+            com.mojang.math.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
+            poseStack.translate(baseTrans.x(), baseTrans.y(), baseTrans.z());
 
             boolean hasPlate = stampExisting || (clickedIsStampable || withBackplate);
 
@@ -566,7 +566,7 @@ public class BlueprintPreviewRenderer {
                     row = index / gridSize;
                 }
                 String path = entry.getValue();
-                Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", path));
+                Block letterBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", path));
                 if (letterBlock == null || letterBlock == Blocks.AIR) continue;
 
                 BlockState letterState = letterBlock.defaultBlockState();
@@ -580,15 +580,15 @@ public class BlueprintPreviewRenderer {
                     colShift *= 1.4142135f;
                 }
 
-                org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
-                org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, hasPlate);
-                org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
+                com.mojang.math.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
+                com.mojang.math.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, hasPlate);
+                com.mojang.math.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
 
                 poseStack.pushPose();
-                poseStack.translate(offsets.x + cl.x, offsets.y + cl.y, offsets.z + cl.z);
-                poseStack.translate(c.x, c.y, c.z);
+                poseStack.translate(offsets.x() + cl.x(), offsets.y() + cl.y(), offsets.z() + cl.z());
+                poseStack.translate(c.x(), c.y(), c.z());
                 poseStack.scale(scale, scale, scale);
-                poseStack.translate(-c.x, -c.y, -c.z);
+                poseStack.translate(-c.x(), -c.y(), -c.z());
 
                 BakedModel letterModel = mc.getBlockRenderer().getBlockModel(letterState);
                 renderGhostModel(poseStack, consumer, letterModel, letterState, charR, charG, charB, 0.65F, 15728880);

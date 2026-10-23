@@ -9,7 +9,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -153,7 +153,7 @@ public class SignBlueprintItem extends Item {
                                     .append(Component.literal(nextGridSize + "x" + nextGridSize).withStyle(ChatFormatting.GOLD)),
                             true
                     );
-                    pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.2F);
+                    pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
                     return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
                 }
 
@@ -195,7 +195,7 @@ public class SignBlueprintItem extends Item {
                                         .withStyle(nextVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN)),
                         true
                 );
-                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.2F);
+                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
             }
         } else {
             if (pLevel.isClientSide()) {
@@ -269,7 +269,7 @@ public class SignBlueprintItem extends Item {
             if (!isVertical) {
                 if (size == 1) {
                     BlockPos currentPos = offsetRight(startPos, rightX, rightZ, effectiveIdx);
-                    if (!level.getBlockState(currentPos).canBeReplaced()) break;
+                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
 
                     if (!player.isCreative()) {
                         int bpCost = withBackplate ? blocksPerChar : 0;
@@ -289,8 +289,9 @@ public class SignBlueprintItem extends Item {
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
                     BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
-                    if (!level.getBlockState(basePos).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
-                            !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
+                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
+                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
+                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
                         break;
                     }
 
@@ -317,7 +318,7 @@ public class SignBlueprintItem extends Item {
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
                             BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            if (!level.getBlockState(p).canBeReplaced()) {
+                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
                                 canPlaceAll = false;
                                 break;
                             }
@@ -350,7 +351,7 @@ public class SignBlueprintItem extends Item {
                             : startPos.getY() - effectiveIdx;
 
                     BlockPos currentPos = new BlockPos(startPos.getX(), posY, startPos.getZ());
-                    if (!level.getBlockState(currentPos).canBeReplaced()) break;
+                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
 
                     if (!player.isCreative()) {
                         int bpCost = withBackplate ? blocksPerChar : 0;
@@ -374,8 +375,9 @@ public class SignBlueprintItem extends Item {
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
                     BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
 
-                    if (!level.getBlockState(basePos).canBeReplaced() || !level.getBlockState(p10).canBeReplaced() ||
-                            !level.getBlockState(p01).canBeReplaced() || !level.getBlockState(p11).canBeReplaced()) {
+                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
+                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
+                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
                         break;
                     }
 
@@ -406,7 +408,7 @@ public class SignBlueprintItem extends Item {
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
                             BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            if (!level.getBlockState(p).canBeReplaced()) {
+                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
                                 canPlaceAll = false;
                                 break;
                             }
@@ -848,7 +850,7 @@ public class SignBlueprintItem extends Item {
             return false;
         }
 
-        return targetState.canBeReplaced();
+        return targetState.isAir() || targetState.getMaterial().isReplaceable();
     }
 
     private InteractionResult useOnGrid(UseOnContext pContext, Level level, Player player, ItemStack stack, CompoundTag tag, boolean withBackplate) {
@@ -1038,7 +1040,7 @@ public class SignBlueprintItem extends Item {
                 }
 
                 for (String charPath : blocksCells.get(b).values()) {
-                    Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", charPath));
+                    Block block = Registry.BLOCK.get(new ResourceLocation("signbuilder", charPath));
                     if (block != Blocks.AIR) {
                         lettersNeeded.merge(block.asItem(), 1, Integer::sum);
                     }
@@ -1093,7 +1095,7 @@ public class SignBlueprintItem extends Item {
 
         String blockId = getBlockPathForChar(c);
         if (blockId != null) {
-            Block targetBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", blockId));
+            Block targetBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", blockId));
             if (targetBlock != Blocks.AIR) {
                 CHAR_BLOCK_CACHE.put(c, targetBlock);
                 return targetBlock;

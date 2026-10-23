@@ -6,10 +6,11 @@ import com.boran.signbuilder.network.BlueprintUndoC2SPacket;
 import com.boran.signbuilder.network.ModMessages;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.components.Tooltip;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -671,18 +672,18 @@ public class BlueprintScreen extends Screen {
         int btnIdx = 0;
         for (int i = 0; i < r1Count && btnIdx < this.symbolButtons.size(); i++, btnIdx++) {
             SymbolButton sb = this.symbolButtons.get(btnIdx);
-            sb.setX(row1X + i * (this.symbolSize + SYMBOL_GAP));
-            sb.setY(row1Y);
+            sb.x = row1X + i * (this.symbolSize + SYMBOL_GAP);
+            sb.y = row1Y;
         }
         for (int i = 0; i < r2Count && btnIdx < this.symbolButtons.size(); i++, btnIdx++) {
             SymbolButton sb = this.symbolButtons.get(btnIdx);
-            sb.setX(row2X + i * (this.symbolSize + SYMBOL_GAP));
-            sb.setY(row2Y);
+            sb.x = row2X + i * (this.symbolSize + SYMBOL_GAP);
+            sb.y = row2Y;
         }
         for (int i = 0; i < r3Count && btnIdx < this.symbolButtons.size(); i++, btnIdx++) {
             SymbolButton sb = this.symbolButtons.get(btnIdx);
-            sb.setX(row3X + i * (this.symbolSize + SYMBOL_GAP));
-            sb.setY(row3Y);
+            sb.x = row3X + i * (this.symbolSize + SYMBOL_GAP);
+            sb.y = row3Y;
         }
     }
 
@@ -801,8 +802,12 @@ public class BlueprintScreen extends Screen {
     }
 
     @Override
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+    }
+
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics.pose());
         SignBuilderUi.drawPanel(guiGraphics, this.panelX, this.panelY, this.panelWidth, this.panelHeight);
         SignBuilderUi.drawHeader(guiGraphics, this.font, this.panelX + 1, this.panelY + 1, this.panelWidth - 2, this.title, getHeaderDetail());
 
@@ -851,7 +856,7 @@ public class BlueprintScreen extends Screen {
         }
 
         guiGraphics.fill(contentX, this.panelY + scaledY(160), contentX + contentWidth, this.panelY + scaledY(161), 0x553B4654);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
     }
 
     private void renderVisualGrid(GuiGraphics guiGraphics, int mouseX, int mouseY) {
@@ -958,7 +963,7 @@ public class BlueprintScreen extends Screen {
 
                 if (button == 0) {
                     this.selectedGridCell = row * this.gridSize + col;
-                    if (this.gridTextField != null) this.gridTextField.setFocused(false);
+                    if (this.gridTextField != null) this.gridTextField.setFocus(false);
                     Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.2F));
                     return true;
                 } else if (button == 1) {
@@ -1213,6 +1218,7 @@ public class BlueprintScreen extends Screen {
 
     private class SymbolButton extends AbstractButton {
         private final String insert;
+        private Tooltip tooltip;
 
         private SymbolButton(int x, int y, int width, int height, String insert, String tooltipKey) {
             this(x, y, width, height, insert, insert, tooltipKey);
@@ -1224,16 +1230,27 @@ public class BlueprintScreen extends Screen {
             this.setTooltip(Tooltip.create(Component.translatable(tooltipKey)));
         }
 
+        public void setTooltip(Tooltip tooltip) {
+            this.tooltip = tooltip;
+        }
+
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
+
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int x = this.getX();
-            int y = this.getY();
+            int x = this.x;
+            int y = this.y;
             boolean hovered = this.isHoveredOrFocused();
             graphics.fillGradient(x, y, x + this.width, y + this.height,
                     hovered ? 0xFF465260 : 0xFF303844,
                     hovered ? 0xFF29323D : 0xFF1C222A);
             graphics.renderOutline(x, y, this.width, this.height, hovered ? SignBuilderUi.ACCENT : 0xFF657181);
             SignBuilderUi.drawCenteredStringNoShadow(graphics, BlueprintScreen.this.font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+            if (hovered && this.tooltip != null) {
+                graphics.renderTooltip(BlueprintScreen.this.font, this.tooltip.getMessage(), mouseX, mouseY);
+            }
         }
 
         @Override
@@ -1246,7 +1263,7 @@ public class BlueprintScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }
@@ -1255,6 +1272,7 @@ public class BlueprintScreen extends Screen {
         private final Runnable action;
         private int accentColor;
         private boolean active;
+        private Tooltip tooltip;
 
         private BlueprintActionButton(int x, int y, int width, int height, Component label, int accentColor, boolean active, Runnable action) {
             super(x, y, width, height, label);
@@ -1267,10 +1285,18 @@ public class BlueprintScreen extends Screen {
             this(x, y, width, BlueprintScreen.this.scaledY(24), label, accentColor, active, action);
         }
 
+        public void setTooltip(Tooltip tooltip) {
+            this.tooltip = tooltip;
+        }
+
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
+
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int x = this.getX();
-            int y = this.getY();
+            int x = this.x;
+            int y = this.y;
             boolean highlighted = this.isHoveredOrFocused() || this.active;
             graphics.fillGradient(x, y, x + this.width, y + this.height,
                     this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844,
@@ -1280,6 +1306,9 @@ public class BlueprintScreen extends Screen {
                 graphics.fill(x + 1, y + 1, x + 3, y + this.height - 1, this.accentColor);
             }
             SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, this.getMessage(), x + this.width / 2, y + (this.height - 8) / 2, SignBuilderUi.TEXT);
+            if ((this.isHoveredOrFocused() || this.active) && this.tooltip != null) {
+                graphics.renderTooltip(Minecraft.getInstance().font, this.tooltip.getMessage(), mouseX, mouseY);
+            }
         }
 
         private void setAccentColor(int accentColor) {
@@ -1296,7 +1325,7 @@ public class BlueprintScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }

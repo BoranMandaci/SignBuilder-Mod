@@ -1,6 +1,7 @@
 package com.boran.signbuilder.client.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -83,15 +84,15 @@ public class ColorPickerScreen extends Screen {
         int footerButtonY = this.brushStack.isEmpty() ? addButtonY : (addButtonY + scaled(22));
 
         if (!this.brushStack.isEmpty()) {
-            this.addRenderableWidget(Button.builder(addColorText, button -> {
+            this.addRenderableWidget(new Button(centerX - addButtonWidth / 2, addButtonY, addButtonWidth, scaled(20), addColorText, button -> {
                 addCustomColorToBrush();
                 com.boran.signbuilder.network.ModMessages.sendToServer(
                         new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, true));
                 if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
-            }).bounds(centerX - addButtonWidth / 2, addButtonY, addButtonWidth, scaled(20)).build());
+            }));
         }
 
-        this.addRenderableWidget(Button.builder(doneText, button -> {
+        this.addRenderableWidget(new Button(centerX - footerWidth / 2, footerButtonY, doneButtonWidth, scaled(20), doneText, button -> {
             if (this.onColorSelected != null) {
                 this.onColorSelected.accept(this.selectedColorHex);
                 if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
@@ -100,11 +101,11 @@ public class ColorPickerScreen extends Screen {
                         new com.boran.signbuilder.network.BrushColorPacket(this.selectedColorHex, false));
                 if (this.minecraft != null) this.minecraft.setScreen(null);
             }
-        }).bounds(centerX - footerWidth / 2, footerButtonY, doneButtonWidth, scaled(20)).build());
+        }));
 
-        this.addRenderableWidget(Button.builder(cancelText, button -> {
+        this.addRenderableWidget(new Button(centerX - footerWidth / 2 + doneButtonWidth + buttonGap, footerButtonY, cancelButtonWidth, scaled(20), cancelText, button -> {
             if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
-        }).bounds(centerX - footerWidth / 2 + doneButtonWidth + buttonGap, footerButtonY, cancelButtonWidth, scaled(20)).build());
+        }));
 
         int r = (selectedColorHex >> 16) & 0xFF;
         int g = (selectedColorHex >> 8) & 0xFF;
@@ -280,8 +281,12 @@ public class ColorPickerScreen extends Screen {
     }
 
     @Override
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+    }
+
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics.pose());
 
         int centerX = this.width / 2;
         int centerY = this.height / 2;
@@ -344,7 +349,7 @@ public class ColorPickerScreen extends Screen {
         guiGraphics.drawString(this.font, "B:", centerX + scaled(40), getRgbLabelY(centerY, 2), SignBuilderUi.ACCENT, false);
         guiGraphics.drawString(this.font, "#", centerX + scaled(38), hexInputY + (rgbInputHeight - 8) / 2, SignBuilderUi.ACCENT, false);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
     }
 
     @Override

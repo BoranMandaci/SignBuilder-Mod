@@ -4,7 +4,7 @@ import com.boran.signbuilder.block.entity.GridSignBlockEntity;
 import com.boran.signbuilder.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -493,7 +493,7 @@ public class GridSignBlock extends Block implements EntityBlock {
             }
         }
         for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
-            Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", cell.character));
+            Block letterBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", cell.character));
             if (letterBlock != null && letterBlock != Blocks.AIR) {
                 Block.popResource(level, pos, new ItemStack(letterBlock));
             }
@@ -539,7 +539,7 @@ public class GridSignBlock extends Block implements EntityBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder params) {
         return List.of();
     }
 }

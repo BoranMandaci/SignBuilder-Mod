@@ -6,7 +6,7 @@ import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +45,7 @@ public class BlueprintUndoC2SPacket {
 
         if (stack.hasTag() && stack.getTag().contains("UndoHistory")) {
             long[] history = stack.getTag().getLongArray("UndoHistory");
-            Level level = player.level();
+            Level level = player.level;
 
             List<ItemStack> itemsToRefund = new ArrayList<>();
             List<BlockPos> positionsToClear = new ArrayList<>();
@@ -54,14 +54,14 @@ public class BlueprintUndoC2SPacket {
                 BlockPos pos = BlockPos.of(posLong);
                 BlockState state = level.getBlockState(pos);
 
-                ResourceLocation blockKey = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+                ResourceLocation blockKey = Registry.BLOCK.getKey(state.getBlock());
                 if (blockKey != null && blockKey.getNamespace().equals("signbuilder")) {
                     BlockEntity be = level.getBlockEntity(pos);
                     if (be instanceof GridSignBlockEntity gridBe) {
                         gridBe.setSuppressDrops(true);
                         if (!player.isCreative()) {
                             for (GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
-                                Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", cell.character));
+                                Block letterBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", cell.character));
                                 if (letterBlock != null && letterBlock != Blocks.AIR) {
                                     itemsToRefund.add(new ItemStack(letterBlock.asItem()));
                                 }

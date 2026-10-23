@@ -6,7 +6,7 @@ import com.boran.signbuilder.block.entity.LcdTextFormatter;
 import com.boran.signbuilder.client.LcdFontHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.util.FormattedCharSequence;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix4f;
 
 import java.awt.Color;
 
@@ -35,7 +35,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
                 false,
                 false,
                 RenderType.CompositeState.builder()
-                        .setShaderState(RENDERTYPE_TEXT_BACKGROUND_SHADER)
+                        .setShaderState(POSITION_COLOR_LIGHTMAP_SHADER)
                         .setTextureState(NO_TEXTURE)
                         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                         .setLightmapState(LIGHTMAP)
@@ -176,15 +176,15 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         poseStack.translate(0.5, 0.5, 0.5);
 
         if (face == AttachFace.WALL) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(-facing.toYRot()));
             poseStack.translate(0.0, 0.0, -0.402);
         } else if (face == AttachFace.FLOOR) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-            poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(-facing.toYRot()));
+            poseStack.mulPose(Vector3f.XP.rotationDegrees(-90.0f));
             poseStack.translate(0.0, 0.0, -0.402);
         } else {
-            poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-            poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(-facing.toYRot()));
+            poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0f));
             poseStack.translate(0.0, 0.0, -0.402);
         }
 
@@ -306,7 +306,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
                 if (hitCol >= 0) break;
             }
             if (hitCol >= 0) {
-                int stage = mc.gameMode.getDestroyStage();
+                int stage = -1;
                 if (stage >= 0 && stage <= 9) {
                     float colWidth = (maxX - minX) / widthBlocks;
                     float rowHeight = (bottomY - topY) / heightBlocks;
@@ -351,7 +351,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             String str = entity.getResolvedWidgetText(0, level);
             if (!str.isEmpty()) {
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
-                font.drawInBatch(seq, scaledMinX, scaledTopY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, scaledMinX, scaledTopY, widgetColor, false, matrix, bufferSource, false, 0, light);
             }
         }
         if (entity.getWidgetTR() > 0) {
@@ -359,14 +359,14 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             if (!str.isEmpty()) {
                 float w = LcdFontHelper.getWidth(font, str, fontStyle);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
-                font.drawInBatch(seq, scaledMaxX - w, scaledTopY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, scaledMaxX - w, scaledTopY, widgetColor, false, matrix, bufferSource, false, 0, light);
             }
         }
         if (entity.getWidgetBL() > 0) {
             String str = entity.getResolvedWidgetText(2, level);
             if (!str.isEmpty()) {
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
-                font.drawInBatch(seq, scaledMinX, scaledBottomY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, scaledMinX, scaledBottomY, widgetColor, false, matrix, bufferSource, false, 0, light);
             }
         }
         if (entity.getWidgetBR() > 0) {
@@ -374,7 +374,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             if (!str.isEmpty()) {
                 float w = LcdFontHelper.getWidth(font, str, fontStyle);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(str, fontStyle);
-                font.drawInBatch(seq, scaledMaxX - w, scaledBottomY, widgetColor, false, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, scaledMaxX - w, scaledBottomY, widgetColor, false, matrix, bufferSource, false, 0, light);
             }
         }
 
@@ -519,7 +519,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             if (curX >= minX && (curX + chWidth) <= maxX) {
                 String toRender = activeStyle.isEmpty() ? chStr : (activeStyle + chStr);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(toRender, fontStyle);
-                font.drawInBatch(seq, curX, textY + waveY, color, glow, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, curX, textY + waveY, color, glow, matrix, bufferSource, false, 0, light);
             }
 
             curX += chWidth;
@@ -568,7 +568,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             if (curX >= minX && (curX + chWidth) <= maxX) {
                 String toRender = activeStyle.isEmpty() ? chStr : (activeStyle + chStr);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(toRender, fontStyle);
-                font.drawInBatch(seq, curX, textY, charColor, glow, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, curX, textY, charColor, glow, matrix, bufferSource, false, 0, light);
             }
 
             curX += chWidth;
@@ -582,7 +582,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         int totalWidth = LcdFontHelper.getWidth(font, text, fontStyle);
         if (startX >= minX && (startX + totalWidth) <= maxX) {
             FormattedCharSequence seq = LcdFontHelper.toFormatted(text, fontStyle);
-            font.drawInBatch(seq, startX, textY, color, glow, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+            font.drawInBatch(seq, startX, textY, color, glow, matrix, bufferSource, false, 0, light);
             return;
         }
 
@@ -610,7 +610,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
             if (curX >= minX && (curX + chWidth) <= maxX) {
                 String toRender = activeStyle.isEmpty() ? chStr : (activeStyle + chStr);
                 FormattedCharSequence seq = LcdFontHelper.toFormatted(toRender, fontStyle);
-                font.drawInBatch(seq, curX, textY, color, glow, matrix, bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, light);
+                font.drawInBatch(seq, curX, textY, color, glow, matrix, bufferSource, false, 0, light);
             }
 
             curX += chWidth;

@@ -43,7 +43,7 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
 
     public void handle(NetworkManager.PacketContext context) {
         Player player = context.getPlayer();
-        Level level = player.level();
+        Level level = player.level;
         if (level == null || !level.isLoaded(pos)) return;
 
         com.boran.signbuilder.server.ServerGridModeState.setGridSize(player.getUUID(), this.gridSize);
@@ -220,7 +220,7 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
             } else {
                 if (face == Direction.UP || face == Direction.DOWN) return;
                 targetPos = pos.relative(face);
-                if (!level.getBlockState(targetPos).canBeReplaced()) return;
+                targetState = level.getBlockState(targetPos); if (!targetState.isAir() && !targetState.getMaterial().isReplaceable()) return;
             }
 
             AttachFace attachFace = AttachFace.WALL;

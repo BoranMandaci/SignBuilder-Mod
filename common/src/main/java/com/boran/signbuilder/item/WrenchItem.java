@@ -154,7 +154,7 @@ public class WrenchItem extends Item {
                 boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
                 stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
                 pPlayer.displayClientMessage(Component.translatable("message.signbuilder.wrench.smart_fill_toggle").withStyle(ChatFormatting.YELLOW).append(Component.translatable(!isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)), true);
-                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
+                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
             return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
         }
@@ -167,7 +167,7 @@ public class WrenchItem extends Item {
                 if (tag.contains("DetectsMonsters")) dMonsters = tag.getBoolean("DetectsMonsters");
                 if (tag.contains("DetectsAnimals")) dAnimals = tag.getBoolean("DetectsAnimals");
             }
-            pPlayer.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5F, 1.2F);
+            pPlayer.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5F, 1.2F);
             int fc = cMode; boolean fm = dMonsters; boolean fa = dAnimals;
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openWrenchScreen(fc, fm, fa));
         }
@@ -198,7 +198,7 @@ public class WrenchItem extends Item {
                     if (current.length() < 16) {
                         current += symbol;
                         stack.getOrCreateTag().putString("RecordingPin", current);
-                        level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.6F, 1.6F);
+                        level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.6F, 1.6F);
                         if (player != null) {
                             player.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.recorded_char", symbol, current).withStyle(ChatFormatting.GOLD), true);
                         }

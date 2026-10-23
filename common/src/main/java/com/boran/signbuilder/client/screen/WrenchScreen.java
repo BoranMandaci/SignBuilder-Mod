@@ -5,7 +5,8 @@ import com.boran.signbuilder.network.WrenchModeC2SPacket;
 import com.boran.signbuilder.item.WrenchItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -218,16 +219,16 @@ public class WrenchScreen extends Screen {
         }
 
         @Override
-        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            int originalX = this.getX();
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            int originalX = this.x;
             int textWidth = this.textFont.width(this.getValue());
             if (textWidth < this.getWidth()) {
-                this.setX(originalX + (this.getWidth() - textWidth) / 2);
+                this.x = originalX + (this.getWidth() - textWidth) / 2;
             }
             try {
-                super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
+                super.renderButton(poseStack, mouseX, mouseY, partialTick);
             } finally {
-                this.setX(originalX);
+                this.x = originalX;
             }
         }
     }
@@ -239,17 +240,17 @@ public class WrenchScreen extends Screen {
         int buttonSize = getCycleControlButtonSize();
         int gap = getCycleControlGap();
         int valueX = getCycleControlX(startX, this.customLightOnTicks) + buttonSize + gap;
-        this.customOnInput.setX(valueX);
-        this.customOnInput.setY(contentStartY + scaledRedstone(62) + getCycleInputYOffset());
+        this.customOnInput.x = valueX;
+        this.customOnInput.y = contentStartY + scaledRedstone(62) + getCycleInputYOffset();
         valueX = getCycleControlX(startX, this.customLightOffTicks) + buttonSize + gap;
-        this.customOffInput.setX(valueX);
-        this.customOffInput.setY(contentStartY + scaledRedstone(84) + getCycleInputYOffset());
-        this.customRangeInput.setX(getRangeControlX(startX) + buttonSize + gap);
-        this.customRangeInput.setY(contentStartY + scaledRedstone(58) + getCycleInputYOffset());
-        this.customOffRangeInput.setX(getRangeControlX(startX) + buttonSize + gap);
-        this.customOffRangeInput.setY(contentStartY + scaledRedstone(78) + getCycleInputYOffset());
-        this.customCloseDelayInput.setX(getCycleControlX(startX, this.customLightCloseDelayTicks) + buttonSize + gap);
-        this.customCloseDelayInput.setY(contentStartY + scaledRedstone(98) + getCycleInputYOffset());
+        this.customOffInput.x = valueX;
+        this.customOffInput.y = contentStartY + scaledRedstone(84) + getCycleInputYOffset();
+        this.customRangeInput.x = getRangeControlX(startX) + buttonSize + gap;
+        this.customRangeInput.y = contentStartY + scaledRedstone(58) + getCycleInputYOffset();
+        this.customOffRangeInput.x = getRangeControlX(startX) + buttonSize + gap;
+        this.customOffRangeInput.y = contentStartY + scaledRedstone(78) + getCycleInputYOffset();
+        this.customCloseDelayInput.x = getCycleControlX(startX, this.customLightCloseDelayTicks) + buttonSize + gap;
+        this.customCloseDelayInput.y = contentStartY + scaledRedstone(98) + getCycleInputYOffset();
     }
 
     private void updateCustomInputVisibility() {
@@ -260,11 +261,11 @@ public class WrenchScreen extends Screen {
         this.customRangeInput.setVisible(editorVisible && this.customLightType == 1);
         this.customOffRangeInput.setVisible(editorVisible && this.customLightType == 1);
         this.customCloseDelayInput.setVisible(editorVisible && this.customLightType == 1);
-        if (!this.customOnInput.isVisible()) this.customOnInput.setFocused(false);
-        if (!this.customOffInput.isVisible()) this.customOffInput.setFocused(false);
-        if (!this.customRangeInput.isVisible()) this.customRangeInput.setFocused(false);
-        if (!this.customOffRangeInput.isVisible()) this.customOffRangeInput.setFocused(false);
-        if (!this.customCloseDelayInput.isVisible()) this.customCloseDelayInput.setFocused(false);
+        if (!this.customOnInput.isVisible()) this.customOnInput.setFocus(false);
+        if (!this.customOffInput.isVisible()) this.customOffInput.setFocus(false);
+        if (!this.customRangeInput.isVisible()) this.customRangeInput.setFocus(false);
+        if (!this.customOffRangeInput.isVisible()) this.customOffRangeInput.setFocus(false);
+        if (!this.customCloseDelayInput.isVisible()) this.customCloseDelayInput.setFocus(false);
         updatePanelHeight();
         updateCustomInputLayout();
     }
@@ -325,8 +326,8 @@ public class WrenchScreen extends Screen {
             int startX = (this.width - panelWidth) / 2;
             int startY = getPanelTop();
             int contentStartY = startY + 24;
-            this.pinInput.setX(startX + 12);
-            this.pinInput.setY(contentStartY + scaledRedstone(124));
+            this.pinInput.x = startX + 12;
+            this.pinInput.y = contentStartY + scaledRedstone(124);
         }
     }
 
@@ -336,7 +337,7 @@ public class WrenchScreen extends Screen {
         if (focusedCustomInput != null && keyCode != 256) {
             if (keyCode == 257 || keyCode == 335) {
                 commitCustomInputs();
-                focusedCustomInput.setFocused(false);
+                focusedCustomInput.setFocus(false);
                 this.setFocused(null);
                 return true;
             }
@@ -370,8 +371,12 @@ public class WrenchScreen extends Screen {
     }
 
     @Override
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+    }
+
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics.pose());
 
         int centerX = this.width / 2;
         int startX = centerX - (panelWidth / 2);
@@ -400,7 +405,7 @@ public class WrenchScreen extends Screen {
             guiGraphics.renderTooltip(this.font, tooltipToRender, mouseX, mouseY);
         }
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
     }
 
     private void renderTabs(GuiGraphics guiGraphics, int startX, int startY, int mouseX, int mouseY) {
@@ -600,19 +605,19 @@ public class WrenchScreen extends Screen {
 
     private boolean clickCustomInput(EditBox input, int rowY, double mouseX, double mouseY, int button) {
         int rowHeight = getCycleControlButtonSize();
-        if (!input.isVisible() || mouseX < input.getX() || mouseX > input.getX() + input.getWidth()
+        if (!input.isVisible() || mouseX < input.x || mouseX > input.x + input.getWidth()
                 || mouseY < rowY || mouseY > rowY + rowHeight) return false;
-        double inputY = Math.max(input.getY(), Math.min(mouseY, input.getY() + input.getHeight() - 1));
+        double inputY = Math.max(input.y, Math.min(mouseY, input.y + input.getHeight() - 1));
         input.mouseClicked(mouseX, inputY, button);
         return true;
     }
 
     private void focusCustomInput(EditBox focused) {
-        this.customOnInput.setFocused(focused == this.customOnInput);
-        this.customOffInput.setFocused(focused == this.customOffInput);
-        this.customRangeInput.setFocused(focused == this.customRangeInput);
-        this.customOffRangeInput.setFocused(focused == this.customOffRangeInput);
-        this.customCloseDelayInput.setFocused(focused == this.customCloseDelayInput);
+        this.customOnInput.setFocus(focused == this.customOnInput);
+        this.customOffInput.setFocus(focused == this.customOffInput);
+        this.customRangeInput.setFocus(focused == this.customRangeInput);
+        this.customOffRangeInput.setFocus(focused == this.customOffRangeInput);
+        this.customCloseDelayInput.setFocus(focused == this.customCloseDelayInput);
         this.setFocused(focused);
     }
 
@@ -719,7 +724,7 @@ public class WrenchScreen extends Screen {
         if (this.buttonMode == 3) {
             SignBuilderUi.drawSectionLabel(guiGraphics, this.font, Component.translatable("gui.signbuilder.wrench.pin.title"), startX + 10, contentStartY + scaledRedstone(112), panelWidth - 20);
             if (this.pinInput != null) {
-                this.pinInput.render(guiGraphics, mouseX, mouseY, partialTick);
+                this.pinInput.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
             }
 
             int recX = startX + panelWidth - 48;
@@ -823,11 +828,11 @@ public class WrenchScreen extends Screen {
                 return true;
             }
             boolean hadFocusedInput = this.customOnInput.isFocused() || this.customOffInput.isFocused() || this.customRangeInput.isFocused() || this.customOffRangeInput.isFocused() || this.customCloseDelayInput.isFocused();
-            this.customOnInput.setFocused(false);
-            this.customOffInput.setFocused(false);
-            this.customRangeInput.setFocused(false);
-            this.customOffRangeInput.setFocused(false);
-            this.customCloseDelayInput.setFocused(false);
+            this.customOnInput.setFocus(false);
+            this.customOffInput.setFocus(false);
+            this.customRangeInput.setFocus(false);
+            this.customOffRangeInput.setFocus(false);
+            this.customCloseDelayInput.setFocus(false);
             if (hadFocusedInput) commitCustomInputs();
             this.setFocused(null);
         }
@@ -848,7 +853,7 @@ public class WrenchScreen extends Screen {
                 updatePinVisibility();
                 sendSyncPacket(false);
                 if (this.minecraft != null && this.minecraft.player != null) {
-                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.5F, 1.0F);
+                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.5F, 1.0F);
                 }
                 return true;
             }
@@ -861,7 +866,7 @@ public class WrenchScreen extends Screen {
                 updatePinVisibility();
                 sendSyncPacket(false);
                 if (this.minecraft != null && this.minecraft.player != null) {
-                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.5F, 1.2F);
+                    this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.5F, 1.2F);
                 }
                 return true;
             }
@@ -918,7 +923,7 @@ public class WrenchScreen extends Screen {
                                             .append(Component.translatable(getModeTranslationKey(this.currentMode)).withStyle(ChatFormatting.AQUA)),
                                     true
                             );
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, 1.5F);
                         }
                         if (this.minecraft != null) this.minecraft.setScreen(null);
                         return true;
@@ -1087,7 +1092,7 @@ public class WrenchScreen extends Screen {
                                             .append(Component.translatable(MOD_KEYS[i]).withStyle(ChatFormatting.AQUA)),
                                     true
                             );
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, 1.5F);
                         }
                         if (this.minecraft != null) {
                             this.minecraft.setScreen(null);
@@ -1104,7 +1109,7 @@ public class WrenchScreen extends Screen {
                         this.minecraft.player.displayClientMessage(
                                 Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED), true
                         );
-                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
+                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, 1.5F);
                     }
                     if (this.minecraft != null) {
                         this.minecraft.setScreen(null);
@@ -1120,7 +1125,7 @@ public class WrenchScreen extends Screen {
                         updatePinVisibility();
                         sendSyncPacket(false);
                         if (this.minecraft != null && this.minecraft.player != null) {
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.2F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, 1.2F);
                         }
                         return true;
                     }
@@ -1134,7 +1139,7 @@ public class WrenchScreen extends Screen {
                     if (mouseX >= recX && mouseX <= recX + recWidth && mouseY >= recY && mouseY <= recY + recHeight) {
                         sendSyncPacket(true);
                         if (this.minecraft != null && this.minecraft.player != null) {
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 1.5F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, 1.5F);
                         }
                         if (this.minecraft != null) {
                             this.minecraft.setScreen(null);
@@ -1149,7 +1154,7 @@ public class WrenchScreen extends Screen {
                     this.syncWord = !this.syncWord;
                     sendSyncPacket(false);
                     if (this.minecraft != null && this.minecraft.player != null) {
-                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, this.syncWord ? 1.4F : 0.8F);
+                        this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 0.6F, this.syncWord ? 1.4F : 0.8F);
                     }
                     return true;
                 }

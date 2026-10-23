@@ -1,10 +1,11 @@
 package com.boran.signbuilder.client.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.components.Tooltip;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -68,7 +69,7 @@ public class MaterialPickerScreen extends Screen {
                 new ItemStack(Blocks.WHITE_CONCRETE),
                 new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS), new ItemStack(Blocks.BIRCH_PLANKS),
                 new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS), new ItemStack(Blocks.DARK_OAK_PLANKS),
-                new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.CHERRY_PLANKS), new ItemStack(Blocks.BAMBOO_PLANKS),
+                new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.PINK_CONCRETE), new ItemStack(Blocks.BAMBOO),
                 new ItemStack(Blocks.CRIMSON_PLANKS), new ItemStack(Blocks.WARPED_PLANKS),
                 new ItemStack(Blocks.BRICKS), new ItemStack(Blocks.STONE_BRICKS), new ItemStack(Blocks.MOSSY_STONE_BRICKS),
                 new ItemStack(Blocks.DEEPSLATE_BRICKS), new ItemStack(Blocks.MUD_BRICKS), new ItemStack(Blocks.NETHER_BRICKS),
@@ -131,27 +132,31 @@ public class MaterialPickerScreen extends Screen {
         int navY = startY + gridHeight + 6;
         int maxPages = (int) Math.ceil((double) ALL_MATERIALS.length / itemsPerPage);
 
-        this.addRenderableWidget(Button.builder(Component.literal("<"), btn -> {
+        this.addRenderableWidget(new Button(startX, navY, 24, 18, Component.literal("<"), btn -> {
             if (currentPage > 0) {
                 currentPage--;
                 this.init();
             }
-        }).bounds(startX, navY, 24, 18).build());
+        }));
 
-        this.addRenderableWidget(Button.builder(Component.literal(">"), btn -> {
+        this.addRenderableWidget(new Button(startX + gridWidth - 24, navY, 24, 18, Component.literal(">"), btn -> {
             if (currentPage < maxPages - 1) {
                 currentPage++;
                 this.init();
             }
-        }).bounds(startX + gridWidth - 24, navY, 24, 18).build());
+        }));
 
         int backBtnY = navY + 22;
         this.addRenderableWidget(new FlatBackButton(startX, backBtnY, gridWidth, 18, this.parentScreen));
     }
 
     @Override
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+    }
+
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics.pose());
 
         int pad = 10;
         int panelLeft = startX - pad;
@@ -170,7 +175,7 @@ public class MaterialPickerScreen extends Screen {
         int navY = startY + gridHeight + 11;
         graphics.drawCenteredString(this.font, (currentPage + 1) + " / " + maxPages, this.width / 2, navY, SignBuilderUi.MUTED);
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.render(graphics.pose(), mouseX, mouseY, partialTick);
     }
 
     private static class FlatBackButton extends AbstractButton {
@@ -182,12 +187,16 @@ public class MaterialPickerScreen extends Screen {
         }
 
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
+
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fillGradient(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+            graphics.fillGradient(this.x, this.y, this.x + this.width, this.y + this.height,
                     this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
             int outlineColor = this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181;
-            graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, outlineColor);
-            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
+            graphics.renderOutline(this.x - 1, this.y - 1, this.width + 2, this.height + 2, outlineColor);
+            graphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, 0xFFFFFF);
         }
 
         @Override
@@ -196,7 +205,7 @@ public class MaterialPickerScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }
@@ -204,6 +213,7 @@ public class MaterialPickerScreen extends Screen {
     private static class VisualMaterialButton extends AbstractButton {
         private final String materialId;
         private final ItemStack iconStack;
+        private Tooltip tooltip;
 
         public VisualMaterialButton(int x, int y, int width, int height, String materialId, String translationKey, ItemStack iconStack) {
             super(x, y, width, height, Component.translatable("material.signbuilder." + translationKey));
@@ -212,17 +222,29 @@ public class MaterialPickerScreen extends Screen {
             this.setTooltip(Tooltip.create(this.getMessage().copy().withStyle(net.minecraft.ChatFormatting.GOLD)));
         }
 
+        public void setTooltip(Tooltip tooltip) {
+            this.tooltip = tooltip;
+        }
+
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
+
         public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fillGradient(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
+            graphics.fillGradient(this.x, this.y, this.x + this.width, this.y + this.height,
                     this.isHoveredOrFocused() ? 0xFF465260 : 0xFF303844, 0xFF1C222A);
             int borderColor = this.isHoveredOrFocused() ? SignBuilderUi.ACCENT : 0xFF657181;
-            graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, borderColor);
+            graphics.renderOutline(this.x - 1, this.y - 1, this.width + 2, this.height + 2, borderColor);
 
-            int iconX = this.getX() + (this.width - 16) / 2;
-            int iconY = this.getY() + (this.height - 16) / 2;
+            int iconX = this.x + (this.width - 16) / 2;
+            int iconY = this.y + (this.height - 16) / 2;
 
             graphics.renderItem(this.iconStack, iconX, iconY);
+
+            if (this.isHoveredOrFocused() && this.tooltip != null) {
+                graphics.renderTooltip(Minecraft.getInstance().font, this.tooltip.getMessage(), mouseX, mouseY);
+            }
         }
 
         @Override
@@ -233,7 +255,7 @@ public class MaterialPickerScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(@NotNull NarrationElementOutput output) {
+        public void updateNarration(@NotNull NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }

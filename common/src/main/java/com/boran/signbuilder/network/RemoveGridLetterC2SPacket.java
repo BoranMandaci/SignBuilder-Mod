@@ -6,7 +6,7 @@ import com.boran.signbuilder.block.BackplateBlock;
 import com.boran.signbuilder.block.entity.GridSignBlockEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -30,7 +30,7 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) {
 
     public void handle(NetworkManager.PacketContext context) {
         Player player = context.getPlayer();
-        Level level = player.level();
+        Level level = player.level;
         if (level == null || !level.isLoaded(pos)) return;
         if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) return;
 
@@ -95,7 +95,7 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) {
                 gridBe.sync();
 
                 if (!player.isCreative()) {
-                    Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", removed.character));
+                    Block letterBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", removed.character));
                     if (letterBlock != null && letterBlock != Blocks.AIR) {
                         ItemStack letterStack = new ItemStack(letterBlock);
                         if (!player.getInventory().add(letterStack)) {

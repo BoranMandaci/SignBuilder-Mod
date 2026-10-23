@@ -8,10 +8,11 @@ import com.boran.signbuilder.network.UpdateLcdScreenC2SPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.components.Tooltip;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -287,8 +288,8 @@ public class LcdScreenScreen extends Screen {
         this.activeLine = lineIdx;
         if (this.textField1 != null && this.textField2 != null) {
             boolean isL1 = (lineIdx == 0);
-            this.textField1.setFocused(isL1);
-            this.textField2.setFocused(!isL1);
+            this.textField1.setFocus(isL1);
+            this.textField2.setFocus(!isL1);
             this.setFocused(isL1 ? this.textField1 : this.textField2);
         }
     }
@@ -311,7 +312,7 @@ public class LcdScreenScreen extends Screen {
             if (!s.isEmpty()) this.visualAnim = 0;
         });
         this.textField1.setTextColor(0xFFFFFFFF);
-        this.textField1.setFocused(this.activeLine == 0);
+        this.textField1.setFocus(this.activeLine == 0);
         this.addRenderableWidget(this.textField1);
 
         ModernActionButton clearBtn1 = new ModernActionButton(
@@ -343,7 +344,7 @@ public class LcdScreenScreen extends Screen {
             if (!s.isEmpty()) this.visualAnim = 0;
         });
         this.textField2.setTextColor(0xFFFFFFFF);
-        this.textField2.setFocused(this.activeLine == 1);
+        this.textField2.setFocus(this.activeLine == 1);
         this.addRenderableWidget(this.textField2);
 
         ModernActionButton clearBtn2 = new ModernActionButton(
@@ -1007,8 +1008,12 @@ public class LcdScreenScreen extends Screen {
     }
 
     @Override
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+    }
+
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics.pose());
         guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -1053,7 +1058,7 @@ public class LcdScreenScreen extends Screen {
             guiGraphics.drawString(this.font, net.minecraft.locale.Language.getInstance().getVisualOrder(trimmed), infoX + 8, infoY + 13, 0xFF8EA0B4, false);
         }
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
     }
 
     private void renderThemedMonitor(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -1421,23 +1426,28 @@ public class LcdScreenScreen extends Screen {
             this.activeBgColor = activeBgColor;
         }
 
+        protected Tooltip tooltip;
+        public void setTooltip(Tooltip tooltip) { this.tooltip = tooltip; }
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             boolean selected = this.isSelected != null && this.isSelected.getAsBoolean();
-            boolean hovered = this.isHovered();
+            boolean hovered = this.isHoveredOrFocused();
 
             int bg = selected ? this.activeBgColor : (hovered ? 0xFF2A3646 : 0xFF171E27);
             int border = selected ? this.activeBorderColor : (hovered ? 0xFF5B6E84 : 0xFF2C3949);
             int textColor = selected ? 0xFFFFFFFF : (hovered ? 0xFFE2EBF5 : 0xFFA0B2C4);
 
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bg);
-            graphics.renderOutline(this.getX(), this.getY(), this.width, this.height, border);
+            graphics.fill(this.x, this.y, this.x + this.width, this.y + this.height, bg);
+            graphics.renderOutline(this.x, this.y, this.width, this.height, border);
 
             if (selected) {
-                graphics.fill(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + 2, this.activeBorderColor);
+                graphics.fill(this.x + 1, this.y + 1, this.x + this.width - 1, this.y + 2, this.activeBorderColor);
             }
 
-            drawAutoScaledButtonText(graphics, Minecraft.getInstance().font, this.getMessage(), this.getX(), this.getY(), this.width, this.height, textColor);
+            drawAutoScaledButtonText(graphics, Minecraft.getInstance().font, this.getMessage(), this.x, this.y, this.width, this.height, textColor);
         }
 
         @Override
@@ -1448,7 +1458,7 @@ public class LcdScreenScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }
@@ -1466,19 +1476,24 @@ public class LcdScreenScreen extends Screen {
             this.setTooltip(Tooltip.create(Component.translatable(colorKey).withStyle(Style.EMPTY.withColor(colorHex))));
         }
 
+        protected Tooltip tooltip;
+        public void setTooltip(Tooltip tooltip) { this.tooltip = tooltip; }
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             boolean selected = this.isSelected != null && this.isSelected.getAsBoolean();
-            boolean hovered = this.isHovered();
+            boolean hovered = this.isHoveredOrFocused();
 
             int border = selected ? 0xFFFFFFFF : (hovered ? 0xFF9EABB8 : 0xFF283444);
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF0E131A);
-            graphics.renderOutline(this.getX(), this.getY(), this.width, this.height, border);
+            graphics.fill(this.x, this.y, this.x + this.width, this.y + this.height, 0xFF0E131A);
+            graphics.renderOutline(this.x, this.y, this.width, this.height, border);
 
-            graphics.fill(this.getX() + 2, this.getY() + 2, this.getX() + this.width - 2, this.getY() + this.height - 2, 0xFF000000 | this.colorHex);
+            graphics.fill(this.x + 2, this.y + 2, this.x + this.width - 2, this.y + this.height - 2, 0xFF000000 | this.colorHex);
 
             if (selected) {
-                graphics.renderOutline(this.getX() - 1, this.getY() - 1, this.width + 2, this.height + 2, 0xFFFFFFFF);
+                graphics.renderOutline(this.x - 1, this.y - 1, this.width + 2, this.height + 2, 0xFFFFFFFF);
             }
         }
 
@@ -1490,7 +1505,7 @@ public class LcdScreenScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }
@@ -1510,17 +1525,22 @@ public class LcdScreenScreen extends Screen {
             this.textColor = textColor;
         }
 
+        protected Tooltip tooltip;
+        public void setTooltip(Tooltip tooltip) { this.tooltip = tooltip; }
         @Override
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        }
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            boolean hovered = this.isHovered();
+            boolean hovered = this.isHoveredOrFocused();
             int bg = hovered ? (this.baseBg + 0x00151515) : this.baseBg;
             int bColor = hovered ? 0xFFFFFFFF : this.border;
 
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bg);
-            graphics.renderOutline(this.getX(), this.getY(), this.width, this.height, bColor);
+            graphics.fill(this.x, this.y, this.x + this.width, this.y + this.height, bg);
+            graphics.renderOutline(this.x, this.y, this.width, this.height, bColor);
 
             int textColor = hovered ? 0xFFFFFFFF : this.textColor;
-            drawAutoScaledButtonText(graphics, Minecraft.getInstance().font, this.getMessage(), this.getX(), this.getY(), this.width, this.height, textColor);
+            drawAutoScaledButtonText(graphics, Minecraft.getInstance().font, this.getMessage(), this.x, this.y, this.width, this.height, textColor);
         }
 
         @Override
@@ -1531,7 +1551,7 @@ public class LcdScreenScreen extends Screen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput output) {
             this.defaultButtonNarrationText(output);
         }
     }

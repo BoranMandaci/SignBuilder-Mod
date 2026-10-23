@@ -7,7 +7,7 @@ import com.boran.signbuilder.item.SignBlueprintItem;
 import com.boran.signbuilder.item.WrenchItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -39,7 +39,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -90,7 +90,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     public static String getCharacterFromBlock(Block block) {
-        String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        String path = Registry.BLOCK.getKey(block).getPath();
         return switch (path) {
             case "letter_a" -> "A";
             case "letter_a_de" -> "Ä";
@@ -201,7 +201,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     private int getDigitValue() {
-        String path = BuiltInRegistries.BLOCK.getKey(this).getPath();
+        String path = Registry.BLOCK.getKey(this).getPath();
         for (int i = 0; i <= 9; i++) {
             if (path.endsWith(String.valueOf(i)) || path.contains("_" + i)) {
                 return i;
@@ -481,7 +481,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     public static boolean isLateralDot(BlockState state) {
-        var blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var blockId = Registry.BLOCK.getKey(state.getBlock());
         return blockId != null
                 && blockId.getNamespace().equals("signbuilder")
                 && (blockId.getPath().equals("symbol_dot_left") || blockId.getPath().equals("symbol_dot_right"));
@@ -1630,7 +1630,7 @@ public class LetterBlock extends Block implements EntityBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder params) {
         return List.of();
     }
 

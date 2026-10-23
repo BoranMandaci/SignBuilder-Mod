@@ -108,7 +108,7 @@ public class UpdateLcdScreenC2SPacket {
     public void handle(NetworkManager.PacketContext context) {
         ServerPlayer player = (ServerPlayer) context.getPlayer();
         if (player == null) return;
-        Level level = player.level();
+        Level level = player.level;
         if (!level.isLoaded(this.pos)) return;
 
         BlockState masterState = level.getBlockState(this.pos);

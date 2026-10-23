@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "[43,)"
 #issueTrackerURL = ""
 license = "GPL-3.0"
 
@@ -16,20 +16,20 @@ A Minecraft mod for building custom signs.
 [[dependencies.signbuilder]]
 modId = "forge"
 mandatory = true
-versionRange = "[47,)"
+versionRange = "[43,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.signbuilder]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1,)"
+versionRange = "[1.19.2,1.20)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.signbuilder]]
 modId = "architectury"
 mandatory = true
-versionRange = "[9.1.12,)"
+versionRange = "[6.5.85,)"
 ordering = "AFTER"
 side = "BOTH"

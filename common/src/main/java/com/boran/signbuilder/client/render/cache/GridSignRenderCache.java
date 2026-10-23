@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import org.joml.Vector3f;
+import com.mojang.math.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -213,7 +213,7 @@ public class GridSignRenderCache {
         for (Map.Entry<Integer, GridSignBlockEntity.CellData> entry : entity.getCells().entrySet()) {
             GridSignBlockEntity.CellData data = entry.getValue();
 
-            Block letterBlock = BuiltInRegistries.BLOCK.get(new ResourceLocation("signbuilder", data.character));
+            Block letterBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", data.character));
             if (letterBlock == null || letterBlock == Blocks.AIR) continue;
 
             boolean isBack = data.isBack;
@@ -251,9 +251,9 @@ public class GridSignRenderCache {
             Vector3f cl = GridOffsetHelper.getClearance(face, effectiveFacing, hasBackplate);
             Vector3f c = GridOffsetHelper.getCenter(face, effectiveFacing);
 
-            float totalTransX = baseTrans.x + offsets.x + cl.x;
-            float totalTransY = baseTrans.y + offsets.y + cl.y;
-            float totalTransZ = baseTrans.z + offsets.z + cl.z;
+            float totalTransX = baseTrans.x() + offsets.x() + cl.x();
+            float totalTransY = baseTrans.y() + offsets.y() + cl.y();
+            float totalTransZ = baseTrans.z() + offsets.z() + cl.z();
 
             RenderType renderType = ItemBlockRenderTypes.getRenderType(letterState, false);
             BakedModel baseModel = dispatcher.getBlockModel(letterState);
@@ -267,7 +267,7 @@ public class GridSignRenderCache {
             cellList.add(new CachedCell(
                     letterState, finalLetterModel, renderType,
                     totalTransX, totalTransY, totalTransZ,
-                    c.x, c.y, c.z,
+                    c.x(), c.y(), c.z(),
                     cellScale, rawColor, data.rainbow, isMaterial, data.glowInked
             ));
         }

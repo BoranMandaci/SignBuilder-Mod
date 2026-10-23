@@ -3,10 +3,11 @@ package com.boran.signbuilder.client.screen;
 import com.boran.signbuilder.menu.SignPressMenu;
 import com.boran.signbuilder.network.ModMessages;
 import com.boran.signbuilder.network.SignPressCraftC2SPacket;
-import net.minecraft.client.gui.GuiGraphics;
+import com.boran.signbuilder.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.core.Registry;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -99,7 +100,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                         boolean isShift = Screen.hasShiftDown();
 
                         if (this.minecraft != null && this.minecraft.player != null) {
-                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 1.0F, 1.0F);
+                            this.minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F);
                         }
 
                         ModMessages.sendToServer(new SignPressCraftC2SPacket(this.selectedBlock, isShift));
@@ -145,10 +146,11 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        GuiGraphics guiGraphics = new GuiGraphics(poseStack);
+        this.renderBackground(poseStack);
+        super.render(poseStack, mouseX, mouseY, partialTick);
+        this.renderTooltip(poseStack, mouseX, mouseY);
 
         int startX = leftPos + 48;
         int startY = topPos + 16;
@@ -160,7 +162,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {
                     String blockName = allBlocks.get(blockIndex);
-                    ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
+                    ItemStack itemStack = new ItemStack(Registry.ITEM.get(new ResourceLocation("signbuilder", blockName)));
                     guiGraphics.renderTooltip(this.font, itemStack, mouseX, mouseY);
                 }
             }
@@ -168,7 +170,8 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(PoseStack poseStack, float partialTick, int mouseX, int mouseY) {
+        GuiGraphics guiGraphics = new GuiGraphics(poseStack);
         SignBuilderUi.drawPanel(guiGraphics, leftPos, topPos, imageWidth, imageHeight);
 
         guiGraphics.fillGradient(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + 14, 0xFF343F4E, 0xFF252D38);
@@ -195,7 +198,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                     guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF1B222B);
                 }
 
-                ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", blockName)));
+                ItemStack itemStack = new ItemStack(Registry.ITEM.get(new ResourceLocation("signbuilder", blockName)));
                 guiGraphics.renderItem(itemStack, slotX + 1, slotY + 1);
 
                 if (mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18) {
@@ -243,7 +246,8 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
+        GuiGraphics guiGraphics = new GuiGraphics(poseStack);
         guiGraphics.drawString(this.font, this.title, 8, 6, SignBuilderUi.TEXT, false);
         guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 73, SignBuilderUi.MUTED, false);
     }

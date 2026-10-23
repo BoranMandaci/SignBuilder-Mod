@@ -2,7 +2,7 @@ package com.boran.signbuilder.client.grid;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import org.joml.Vector3f;
+import com.mojang.math.Vector3f;
 
 public class GridOffsetHelper {
     public static Vector3f getOffset(AttachFace face, Direction facing, float colShift, float rowShift, float scale) {

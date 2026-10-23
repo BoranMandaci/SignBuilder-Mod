@@ -91,7 +91,7 @@ public class GridSignBlockEntity extends BlockEntity {
     private boolean backGlyphGlowInked = false;
     public net.minecraft.world.item.ItemStack getBackGlyph() { return this.backGlyph; }
     public void setBackGlyph(net.minecraft.world.item.ItemStack stack) {
-        this.backGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        if (stack == null || stack.isEmpty()) { this.backGlyph = net.minecraft.world.item.ItemStack.EMPTY; } else { net.minecraft.world.item.ItemStack copy = stack.copy(); copy.setCount(1); this.backGlyph = copy; }
         if (this.backGlyph.isEmpty()) {
             this.backGlyphGlowInked = false;
         } else {
@@ -134,7 +134,7 @@ public class GridSignBlockEntity extends BlockEntity {
     private boolean frontGlyphGlowInked = false;
     public net.minecraft.world.item.ItemStack getFrontGlyph() { return this.frontGlyph; }
     public void setFrontGlyph(net.minecraft.world.item.ItemStack stack) {
-        this.frontGlyph = stack == null || stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1);
+        if (stack == null || stack.isEmpty()) { this.frontGlyph = net.minecraft.world.item.ItemStack.EMPTY; } else { net.minecraft.world.item.ItemStack copy = stack.copy(); copy.setCount(1); this.frontGlyph = copy; }
         if (this.frontGlyph.isEmpty()) {
             this.frontGlyphGlowInked = false;
         } else {
@@ -594,7 +594,7 @@ public class GridSignBlockEntity extends BlockEntity {
                             entity.isAudioPlaying = false;
                             for (BlockPos p : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
                                 if (level.getBlockEntity(p) instanceof JukeboxBlockEntity jbe) {
-                                    if (jbe.isRecordPlaying()) { entity.isAudioPlaying = true; break; }
+                                    if (!jbe.getRecord().isEmpty()) { entity.isAudioPlaying = true; break; }
                                 }
                             }
                         }

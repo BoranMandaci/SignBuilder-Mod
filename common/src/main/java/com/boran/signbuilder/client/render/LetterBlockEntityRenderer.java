@@ -9,7 +9,7 @@ import com.boran.signbuilder.block.entity.LetterBlockEntity;
 import com.boran.signbuilder.client.render.cache.LetterRenderCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -243,7 +243,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         if (blockCentered) {
             poseStack.translate(0.5, 0.0, 0.5);
         }
-        poseStack.mulPose(Axis.YP.rotationDegrees(degrees));
+        poseStack.mulPose(Vector3f.YP.rotationDegrees(degrees));
         if (blockCentered) {
             poseStack.translate(-0.5, 0.0, -0.5);
         }

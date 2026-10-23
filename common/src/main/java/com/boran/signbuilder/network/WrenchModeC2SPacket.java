@@ -144,7 +144,7 @@ public class WrenchModeC2SPacket {
                     stack.getOrCreateTag().putBoolean("IsRecordingPin", true);
                     stack.getOrCreateTag().putString("RecordingPin", "");
                     player.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.record_start").withStyle(ChatFormatting.GOLD), true);
-                    player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.5F);
+                    player.level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.5F);
                 }
             }
         }

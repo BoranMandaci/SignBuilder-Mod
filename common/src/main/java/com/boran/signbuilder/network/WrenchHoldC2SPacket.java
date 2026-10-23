@@ -36,17 +36,17 @@ public class WrenchHoldC2SPacket {
 
     public void handle(NetworkManager.PacketContext context) {
         if (!(context.getPlayer() instanceof ServerPlayer player)) return;
-        if (!player.level().hasChunkAt(this.pos)) return;
+        if (!player.level.hasChunkAt(this.pos)) return;
         if (this.pressed) {
             if (player.distanceToSqr(Vec3.atCenterOf(this.pos)) > 100.0) return;
             HitResult hitResult = player.pick(8.0D, 1.0F, false);
             if (!(hitResult instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) return;
-            BlockEntity hitEntity = player.level().getBlockEntity(blockHit.getBlockPos());
+            BlockEntity hitEntity = player.level.getBlockEntity(blockHit.getBlockPos());
             if (!(hitEntity instanceof LetterBlockEntity hitLetter)
                     || !hitLetter.getEffectiveMaster().getBlockPos().equals(this.pos)) return;
         }
 
-        BlockEntity blockEntity = player.level().getBlockEntity(this.pos);
+        BlockEntity blockEntity = player.level.getBlockEntity(this.pos);
         if (!(blockEntity instanceof LetterBlockEntity rawLetter)) return;
         LetterBlockEntity letter = rawLetter.getEffectiveMaster();
         if (this.pressed) {

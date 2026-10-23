@@ -5,7 +5,7 @@ import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.item.PaintBrushItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
@@ -309,7 +309,7 @@ public class BackplateBlock extends Block implements EntityBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder params) {
         List<ItemStack> drops = new ArrayList<>();
         BlockEntity be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
@@ -537,7 +537,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     public static ItemStack getItemForMaterial(SignMaterial material) {
         if (material == null || material == SignMaterial.DEFAULT) return ItemStack.EMPTY;
         String regName = getRegistryNameForMaterial(material);
-        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
+        Item item = Registry.ITEM.get(new ResourceLocation(regName));
         if (item != null && item != Items.AIR) {
             return new ItemStack(item, 1);
         }

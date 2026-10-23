@@ -5,7 +5,7 @@ import com.boran.signbuilder.block.entity.GridSignBlockEntity;
 import com.boran.signbuilder.client.render.cache.GridSignRenderCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,7 +33,7 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
         poseStack.pushPose();
         if (cache.rotationDegrees != 0) {
             poseStack.translate(0.5, 0.0, 0.5);
-            poseStack.mulPose(Axis.YP.rotationDegrees(cache.rotationDegrees));
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(cache.rotationDegrees));
             poseStack.translate(-0.5, 0.0, -0.5);
         }
 

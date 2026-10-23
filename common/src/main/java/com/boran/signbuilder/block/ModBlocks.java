@@ -5,7 +5,7 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create("signbuilder", Registries.BLOCK);
-    public static final DeferredRegister<Item> BLOCK_ITEMS = DeferredRegister.create("signbuilder", Registries.ITEM);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create("signbuilder", Registry.BLOCK_REGISTRY);
+    public static final DeferredRegister<Item> BLOCK_ITEMS = DeferredRegister.create("signbuilder", Registry.ITEM_REGISTRY);
 
     public static final List<RegistrySupplier<Block>> ALL_SIGN_BLOCKS = new ArrayList<>();
     public static final List<RegistrySupplier<Item>> LETTER_ITEMS = new ArrayList<>();
@@ -33,7 +33,7 @@ public class ModBlocks {
     public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
 
     private static BlockBehaviour.Properties createLetterProperties() {
-        return BlockBehaviour.Properties.of()
+        return BlockBehaviour.Properties.copy(Blocks.STONE)
                 .strength(0.8f)
                 .sound(net.minecraft.world.level.block.SoundType.STONE)
                 .noOcclusion()
@@ -77,7 +77,13 @@ public class ModBlocks {
 
     private static RegistrySupplier<Block> registerLetterBlock(String name, Supplier<Block> supplier) {
         RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
-        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
+        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> {
+            Item.Properties props = new Item.Properties();
+            if (name.startsWith("letter_")) props.tab(com.boran.signbuilder.item.ModCreativeModeTabs.LETTERS_TAB);
+            else if (name.startsWith("number_")) props.tab(com.boran.signbuilder.item.ModCreativeModeTabs.NUMBERS_TAB);
+            else props.tab(com.boran.signbuilder.item.ModCreativeModeTabs.SYMBOLS_TAB);
+            return new BlockItem(blockReg.get(), props);
+        });
 
         ALL_SIGN_BLOCKS.add(blockReg);
         if (name.startsWith("letter_")) LETTER_ITEMS.add(itemReg);
@@ -1514,7 +1520,7 @@ public class ModBlocks {
     public static final RegistrySupplier<Block> SYMBOL_TROPHY = createTrophyBlock("symbol_trophy");
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
-            () -> new BackplateBlock(BlockBehaviour.Properties.of()
+            () -> new BackplateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS)
                     .strength(0.8f)
                     .sound(net.minecraft.world.level.block.SoundType.WOOD)
                     .noOcclusion()
@@ -1528,7 +1534,7 @@ public class ModBlocks {
                     })));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
-            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties()));
+            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties().tab(com.boran.signbuilder.item.ModCreativeModeTabs.LETTERS_TAB)));
 
     public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
             () -> new SignPressBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
@@ -1537,10 +1543,10 @@ public class ModBlocks {
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
-            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
+            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties().tab(com.boran.signbuilder.item.ModCreativeModeTabs.LETTERS_TAB)));
 
     public static final RegistrySupplier<Block> GRID_SIGN = BLOCKS.register("grid_sign",
-            () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.of()
+            () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
                     .strength(0.8f)
                     .sound(net.minecraft.world.level.block.SoundType.STONE)
                     .noOcclusion()
@@ -1555,14 +1561,14 @@ public class ModBlocks {
                     })));
 
     public static final RegistrySupplier<Block> LCD_SCREEN = BLOCKS.register("lcd_screen",
-            () -> new LcdScreenBlock(BlockBehaviour.Properties.of()
+            () -> new LcdScreenBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .strength(1.2f, 3.0f)
                     .sound(net.minecraft.world.level.block.SoundType.METAL)
                     .noOcclusion()
                     .lightLevel(state -> state.getValue(LcdScreenBlock.LIT) ? 12 : 0)));
 
     public static final RegistrySupplier<Item> LCD_SCREEN_ITEM = BLOCK_ITEMS.register("lcd_screen",
-            () -> new BlockItem(LCD_SCREEN.get(), new Item.Properties()));
+            () -> new BlockItem(LCD_SCREEN.get(), new Item.Properties().tab(com.boran.signbuilder.item.ModCreativeModeTabs.LETTERS_TAB)));
 
     public static void register() {
         BLOCKS.register();

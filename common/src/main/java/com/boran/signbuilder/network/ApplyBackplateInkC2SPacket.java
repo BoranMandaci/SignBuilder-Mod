@@ -52,7 +52,7 @@ public record ApplyBackplateInkC2SPacket(
 
     public void handle(NetworkManager.PacketContext context) {
         Player player = context.getPlayer();
-        Level level = player.level();
+        Level level = player.level;
         if (level == null || !level.isLoaded(pos)) return;
         if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) return;
 

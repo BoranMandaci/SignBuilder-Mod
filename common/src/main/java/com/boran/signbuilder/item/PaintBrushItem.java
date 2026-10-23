@@ -10,7 +10,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -89,7 +89,7 @@ public class PaintBrushItem extends Item {
                 boolean isSmartFill = stack.getOrCreateTag().getBoolean("IsSmartFill");
                 stack.getOrCreateTag().putBoolean("IsSmartFill", !isSmartFill);
                 player.displayClientMessage(Component.translatable("message.signbuilder.brush.smart_fill_toggle").withStyle(ChatFormatting.YELLOW).append(Component.translatable(!isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)), true);
-                level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
+                level.playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
         }
@@ -501,7 +501,7 @@ public class PaintBrushItem extends Item {
             case MOSSY_STONE_BRICKS -> "minecraft:mossy_stone_bricks";
             default -> "minecraft:white_concrete";
         };
-        return BuiltInRegistries.ITEM.get(new ResourceLocation(regName));
+        return Registry.ITEM.get(new ResourceLocation(regName));
     }
 
     private int countItemInInventory(Player player, Item item) {

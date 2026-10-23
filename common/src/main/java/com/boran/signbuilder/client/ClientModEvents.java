@@ -21,7 +21,7 @@ import dev.architectury.registry.client.rendering.BlockEntityRendererRegistry;
 import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -46,7 +46,7 @@ public class ClientModEvents {
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
-            if (player.level().isClientSide()) {
+            if (player.level.isClientSide()) {
                 Minecraft client = Minecraft.getInstance();
                 HitResult rawHit = client.hitResult;
                 if (rawHit instanceof BlockHitResult hit && hit.getType() != HitResult.Type.MISS) {
@@ -138,7 +138,7 @@ public class ClientModEvents {
 
                             ItemStack item = player.getItemInHand(hand);
                             if (item.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock letterBlock) {
-                                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(letterBlock);
+                                ResourceLocation blockId = Registry.BLOCK.getKey(letterBlock);
                                 String blockPath = blockId.getPath();
                                 ModMessages.sendToServer(
                                         new PlaceGridLetterC2SPacket(

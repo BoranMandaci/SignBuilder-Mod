@@ -3,7 +3,7 @@ package com.boran.signbuilder.block.entity;
 import com.boran.signbuilder.block.ModBlocks;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create("signbuilder", Registries.BLOCK_ENTITY_TYPE);
+            DeferredRegister.create("signbuilder", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
 
     public static final RegistrySupplier<BlockEntityType<LetterBlockEntity>> LETTER_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("letter_block_entity", () -> {

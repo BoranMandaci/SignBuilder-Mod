@@ -51,7 +51,7 @@ public class SignBuilder {
 
             if (hand == InteractionHand.MAIN_HAND) {
                 if (held.getItem() instanceof BlockItem bi && bi.getBlock() instanceof LetterBlock) {
-                    boolean isGridMode = !player.level().isClientSide()
+                    boolean isGridMode = !player.level.isClientSide()
                             ? com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1
                             : false;
                     if (isGridMode) {
@@ -61,7 +61,7 @@ public class SignBuilder {
             }
 
             if (player.isShiftKeyDown()) {
-                Level level = player.level();
+                Level level = player.level;
                 BlockState state = level.getBlockState(pos);
 
                 if (!level.isClientSide() && state.getBlock() instanceof GridSignBlock) {

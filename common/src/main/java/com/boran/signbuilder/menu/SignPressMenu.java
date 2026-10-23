@@ -2,7 +2,7 @@ package com.boran.signbuilder.menu;
 
 import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.block.entity.SignPressBlockEntity;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -27,7 +27,7 @@ public class SignPressMenu extends AbstractContainerMenu {
     private boolean isQuickCrafting = false;
 
     public SignPressMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
-        this(id, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
+        this(id, inv, inv.player.level.getBlockEntity(extraData.readBlockPos()));
     }
 
     public SignPressMenu(int id, Inventory inv, BlockEntity entity) {
@@ -57,7 +57,7 @@ public class SignPressMenu extends AbstractContainerMenu {
                     setupResultSlot();
                 }
 
-                player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_STONECUTTER_TAKE_RESULT, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+                player.level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_STONECUTTER_TAKE_RESULT, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
 
                 super.onTake(player, stack);
             }
@@ -79,7 +79,7 @@ public class SignPressMenu extends AbstractContainerMenu {
         if (!this.selectedBlock.isEmpty() && input.getItem() == Items.WHITE_CONCRETE && input.getCount() >= 4) {
             Item resultItem = this.selectedBlock.equals("backplate")
                     ? ModBlocks.BACKPLATE_ITEM.get()
-                    : BuiltInRegistries.ITEM.get(new ResourceLocation("signbuilder", this.selectedBlock));
+                    : Registry.ITEM.get(new ResourceLocation("signbuilder", this.selectedBlock));
 
             if (resultItem != null && resultItem != Items.AIR) {
                 int amountToCraft = 1;
