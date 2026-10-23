@@ -984,11 +984,7 @@ public class LetterBlockEntity extends BlockEntity {
                 dirty = true;
             }
 
-            if (dirty && level.getGameTime() % 5 == 0) {
-                dev.architectury.utils.EnvExecutor.runInEnv(dev.architectury.utils.Env.CLIENT, () -> () -> {
-                    net.minecraft.client.Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-                });
-            }
+
         }
 
         if (!level.isClientSide()) {

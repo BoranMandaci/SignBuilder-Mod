@@ -71,11 +71,11 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(6.0);
     }
 
     public net.minecraft.world.phys.AABB getViewBoundingBox(LetterBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(256.0);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(6.0);
     }
 
 

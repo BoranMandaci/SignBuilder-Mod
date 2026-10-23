@@ -28,8 +28,8 @@ public class LcdScreenScreen extends Screen {
     private final BlockPos masterPos;
     private String line1;
     private String line2;
-    private int activeLine = 0; // 0 = Line 1, 1 = Line 2
-    private int animEditLine = 0; // 0 = Editing Line 1 anim, 1 = Editing Line 2 anim
+    private int activeLine = 0;
+    private int animEditLine = 0;
     private int mode;
     private int mode2;
     private int align;
@@ -39,18 +39,18 @@ public class LcdScreenScreen extends Screen {
     private boolean rainbow;
     private boolean glow;
     private int theme;
-    private int widgetTL; // 0=None, 1=Time, 2=Weather, 3=Player, 4=Day, 5=Online, 6=Coords, 7=Biome, 8=Moon, 9=FPS, 10=Health
+    private int widgetTL;
     private int widgetTR;
     private int widgetBL;
     private int widgetBR;
-    private int fontStyle = 0; // 0=Dot Matrix, 1=Digital Segment, 2=Modern LCD, 3=Retro Arcade, 4=Vanilla
-    private int visualAnim; // 0 = Text Mode, 1..8 = Standalone Visual Animations
-    private int lastVisualAnim = 1; // remembers last visual animation (1..8)
+    private int fontStyle = 0;
+    private int visualAnim;
+    private int lastVisualAnim = 1;
 
     private int mainMode = 0;
-    private int textTab = 0;   // 0 = Metin & Değişkenler, 1 = Efektler & Bilgiler, 2 = Tema & Renk
-    private int visualTab = 0; // 0 = Animasyonlar & Hız, 1 = Tema & Renk
-    private int visualPage = 0; // 0 = Sayfa 1 (1..12), 1 = Sayfa 2 (13..22)
+    private int textTab = 0;
+    private int visualTab = 0;
+    private int visualPage = 0;
 
     private EditBox textField1;
     private EditBox textField2;
@@ -60,14 +60,14 @@ public class LcdScreenScreen extends Screen {
     private static final int PANEL_HEIGHT = 258;
 
     private static final int[] PRESET_COLORS = {
-            0x00FF66, // Neon Emerald
-            0x00E5FF, // Electric Cyan
-            0x3388FF, // Azure Blue
-            0xFFD700, // Amber Gold
-            0xFF3333, // Vivid Red
-            0xCC33FF, // Neon Purple
-            0xFF55A3, // Hot Pink
-            0xFFFFFF  // Clean White
+            0x00FF66,
+            0x00E5FF,
+            0x3388FF,
+            0xFFD700,
+            0xFF3333,
+            0xCC33FF,
+            0xFF55A3,
+            0xFFFFFF
     };
 
     private static final String[] PRESET_COLOR_KEYS = {
@@ -126,9 +126,9 @@ public class LcdScreenScreen extends Screen {
         this.widgetBL = Math.max(0, Math.min(10, widgetBL));
         this.widgetBR = Math.max(0, Math.min(10, widgetBR));
         this.fontStyle = Math.max(0, Math.min(4, fontStyle));
-        this.visualAnim = Math.max(0, Math.min(24, visualAnim));
+        this.visualAnim = Math.max(0, Math.min(60, visualAnim));
         this.lastVisualAnim = (this.visualAnim > 0) ? this.visualAnim : 1;
-        this.visualPage = (this.visualAnim > 12) ? 1 : 0;
+        this.visualPage = (this.visualAnim > 0) ? ((this.visualAnim - 1) / 12) : 0;
         this.mainMode = (this.visualAnim > 0) ? 1 : 0;
         this.textTab = 0;
         this.visualTab = 0;
@@ -680,7 +680,8 @@ public class LcdScreenScreen extends Screen {
     }
 
     private void initVisualAnimationsTab(int panelX, int panelY) {
-        int totalAnims = 24;
+        int totalAnims = 60;
+        int totalPages = (totalAnims + 11) / 12;
         int startIndex = this.visualPage * 12;
         int endIndex = Math.min(startIndex + 12, totalAnims);
 
@@ -728,7 +729,7 @@ public class LcdScreenScreen extends Screen {
 
         this.addRenderableWidget(new PillButton(
                 panelX + 62, pageY, 232, 15,
-                Component.translatable("gui.signbuilder.lcd.page", (this.visualPage + 1), 2),
+                Component.translatable("gui.signbuilder.lcd.page", (this.visualPage + 1), totalPages),
                 () -> {},
                 () -> true,
                 0xFFFFAA00, 0xFF141C25
@@ -738,7 +739,7 @@ public class LcdScreenScreen extends Screen {
                 panelX + 298, pageY, 44, 15,
                 Component.translatable("gui.signbuilder.lcd.next_page"),
                 () -> {
-                    if (this.visualPage < 1) {
+                    if (this.visualPage < totalPages - 1) {
                         this.visualPage++;
                         this.clearWidgets();
                         this.init();
@@ -747,7 +748,7 @@ public class LcdScreenScreen extends Screen {
                 () -> false,
                 0xFFFFAA00, 0xFF2A1C10
         );
-        nextBtn.active = (this.visualPage < 1);
+        nextBtn.active = (this.visualPage < totalPages - 1);
         this.addRenderableWidget(nextBtn);
 
         String[] speedLabels = {
@@ -924,20 +925,20 @@ public class LcdScreenScreen extends Screen {
     }
 
     private void applyThemeColorPreset(int t) {
-        if (t == 1) { this.color = 0x00FF44; this.rainbow = false; } // Matrix green
-        else if (t == 2) { this.color = 0xFFAA00; this.rainbow = false; } // Amber
-        else if (t == 3) { this.color = 0x00E5FF; this.rainbow = false; } // Cyber cyan
-        else if (t == 4) { this.color = 0xFF2233; this.rainbow = false; } // Red Alert
-        else if (t == 5) { this.color = 0xFF22AA; this.rainbow = false; } // Synthwave magenta
-        else if (t == 6) { this.color = 0x00D4FF; this.rainbow = false; } // Blueprint cyan
-        else if (t == 7) { this.color = 0x99B830; this.rainbow = false; } // Retro Arcade olive
-        else if (t == 8) { this.color = 0x22EE55; this.rainbow = false; } // Pip-Boy phosphor green
-        else if (t == 9) { this.color = 0x66EEFF; this.rainbow = false; } // Cryo sub-zero cyan
-        else if (t == 10) { this.color = 0xFF5500; this.rainbow = false; } // Magma molten orange
-        else if (t == 11) { this.color = 0xFF0055; this.rainbow = false; } // Glitch cyber pink
-        else if (t == 12) { this.color = 0x111822; this.rainbow = false; } // Paper E-Ink charcoal
-        else if (t == 13) { this.color = 0xFFD700; this.rainbow = false; } // Luxury royal gold
-        else if (t == 14) { this.color = 0xFF9922; this.rainbow = false; } // Steampunk brass-amber
+        if (t == 1) { this.color = 0x00FF44; this.rainbow = false; }
+        else if (t == 2) { this.color = 0xFFAA00; this.rainbow = false; }
+        else if (t == 3) { this.color = 0x00E5FF; this.rainbow = false; }
+        else if (t == 4) { this.color = 0xFF2233; this.rainbow = false; }
+        else if (t == 5) { this.color = 0xFF22AA; this.rainbow = false; }
+        else if (t == 6) { this.color = 0x00D4FF; this.rainbow = false; }
+        else if (t == 7) { this.color = 0x99B830; this.rainbow = false; }
+        else if (t == 8) { this.color = 0x22EE55; this.rainbow = false; }
+        else if (t == 9) { this.color = 0x66EEFF; this.rainbow = false; }
+        else if (t == 10) { this.color = 0xFF5500; this.rainbow = false; }
+        else if (t == 11) { this.color = 0xFF0055; this.rainbow = false; }
+        else if (t == 12) { this.color = 0x111822; this.rainbow = false; }
+        else if (t == 13) { this.color = 0xFFD700; this.rainbow = false; }
+        else if (t == 14) { this.color = 0xFF9922; this.rainbow = false; }
     }
 
     private boolean isPresetColor(int c) {
