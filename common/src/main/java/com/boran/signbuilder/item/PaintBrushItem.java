@@ -65,8 +65,7 @@ public class PaintBrushItem extends Item {
         Component valueComponent;
 
         if (selectedColor == -1) {
-            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-            int dynamicColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f);
+            int dynamicColor = com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
             valueComponent = Component.translatable("color.signbuilder.rainbow").withStyle(Style.EMPTY.withColor(dynamicColor));
         } else if (selectedColor <= 15) {
             valueComponent = Component.translatable(getColorNameKey(selectedColor)).withStyle(Style.EMPTY.withColor(getActualHexColor(selectedColor)));
@@ -591,15 +590,7 @@ public class PaintBrushItem extends Item {
     }
 
     public static int getActualHexColor(int colorValue) {
-        if (colorValue > 15 || colorValue < -1) {
-            return colorValue;
-        }
-
-        return switch (colorValue) {
-            case 0 -> 0xFFFFFF; case 1 -> 0xD87F33; case 2 -> 0xB24CD8; case 3 -> 0x6699D8; case 4 -> 0xE5E533; case 5 -> 0x7FCC19;
-            case 6 -> 0xF27FA5; case 7 -> 0x4C4C4C; case 8 -> 0x999999; case 9 -> 0x4C7F99; case 10 -> 0x7F3FB2; case 11 -> 0x334CB2;
-            case 12 -> 0x664C33; case 13 -> 0x667F33; case 14 -> 0xCF2323; case 15 -> 0x191919; default -> 0xFFFFFF;
-        };
+        return com.boran.signbuilder.util.RainbowColorHelper.getActualHexColor(colorValue);
     }
 
     private InteractionResult handleGridSignInteraction(Level level, BlockPos pos, BlockState state, com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe, Player player, ItemStack stack, UseOnContext context) {

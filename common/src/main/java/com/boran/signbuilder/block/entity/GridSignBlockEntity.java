@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -562,26 +561,6 @@ public class GridSignBlockEntity extends BlockEntity {
             }
         }
 
-        if (level.isClientSide) {
-            boolean dirty = false;
-            float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-
-            if (entity.isBackplateFrontRainbow()) {
-                entity.setBackplateFrontColor(rainbowRgb);
-                dirty = true;
-            }
-            if (entity.isBackplateBackRainbow()) {
-                entity.setBackplateBackColor(rainbowRgb);
-                dirty = true;
-            }
-
-            if (dirty && level.getGameTime() % 5 == 0) {
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-                    net.minecraft.client.Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-                });
-            }
-        }
 
         if (!level.isClientSide()) {
             if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {

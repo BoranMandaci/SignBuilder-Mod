@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.Color;
 import java.util.function.BooleanSupplier;
 
 public class LcdScreenScreen extends Screen {
@@ -1137,11 +1136,7 @@ public class LcdScreenScreen extends Screen {
 
         net.minecraft.world.level.Level clientLevel = this.minecraft != null ? this.minecraft.level : null;
 
-        int renderCol = this.color;
-        if (this.rainbow) {
-            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-            renderCol = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-        }
+        int renderCol = this.rainbow ? com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb() : this.color;
 
         if (this.mainMode == 0 && this.visualAnim == 0) {
             int widgetCol = 0xFF000000 | (renderCol & 0x00FFFFFF);
@@ -1394,7 +1389,7 @@ public class LcdScreenScreen extends Screen {
 
             float hue = (float) ((timeMs * flowSpeed + charIdx * 0.065) % 1.0);
             if (hue < 0) hue += 1.0f;
-            int charCol = 0xFF000000 | (Color.HSBtoRGB(hue, 0.88f, 1.0f) & 0xFFFFFF);
+            int charCol = 0xFF000000 | com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, 0.88f, 1.0f);
 
             String toRender = activeStyle.isEmpty() ? chStr : (activeStyle + chStr);
             guiGraphics.drawString(this.font, LcdFontHelper.toFormatted(toRender, this.fontStyle), (int) ((x / scale) + curX), (int) baseY, charCol, glow);

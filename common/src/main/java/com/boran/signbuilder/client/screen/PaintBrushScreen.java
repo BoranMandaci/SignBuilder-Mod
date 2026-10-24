@@ -216,8 +216,7 @@ public class PaintBrushScreen extends Screen {
         }
         @Override
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            float hue = (Minecraft.getInstance().level.getGameTime() % 120) / 120f;
-            renderColorButton(graphics, this.getX(), this.getY(), this.width, this.height, java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF, this.isHoveredOrFocused());
+            renderColorButton(graphics, this.getX(), this.getY(), this.width, this.height, com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb(), this.isHoveredOrFocused());
             SignBuilderUi.drawCenteredStringNoShadow(graphics, Minecraft.getInstance().font, "R", this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         }
         @Override

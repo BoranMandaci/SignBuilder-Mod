@@ -40,6 +40,7 @@ public class GridSignRenderCache {
         public final float totalTransX, totalTransY, totalTransZ;
         public final float pivotX, pivotY, pivotZ;
         public final float scale;
+        public final float prebakedTransX, prebakedTransY, prebakedTransZ;
         public final int rawColor;
         public final boolean isRainbow;
         public final boolean isMaterial;
@@ -59,6 +60,9 @@ public class GridSignRenderCache {
             this.pivotY = pivotY;
             this.pivotZ = pivotZ;
             this.scale = scale;
+            this.prebakedTransX = totalTransX + pivotX * (1.0f - scale);
+            this.prebakedTransY = totalTransY + pivotY * (1.0f - scale);
+            this.prebakedTransZ = totalTransZ + pivotZ * (1.0f - scale);
             this.rawColor = rawColor;
             this.isRainbow = isRainbow;
             this.isMaterial = isMaterial;
@@ -207,6 +211,13 @@ public class GridSignRenderCache {
             }
         }
 
+        Vector3f frontCenter = GridOffsetHelper.getCenter(face, facing);
+        Vector3f backCenter = GridOffsetHelper.getCenter(face, facing.getOpposite());
+        Vector3f frontBaseTrans = GridOffsetHelper.getBaseTranslation(face, facing, false);
+        Vector3f backBaseTrans = GridOffsetHelper.getBaseTranslation(face, facing.getOpposite(), true);
+        Vector3f frontCl = GridOffsetHelper.getClearance(face, facing, hasBackplate);
+        Vector3f backCl = GridOffsetHelper.getClearance(face, facing.getOpposite(), hasBackplate);
+
         List<CachedCell> cellList = new ArrayList<>();
         for (Map.Entry<Integer, GridSignBlockEntity.CellData> entry : entity.getCells().entrySet()) {
             GridSignBlockEntity.CellData data = entry.getValue();
@@ -245,9 +256,9 @@ public class GridSignRenderCache {
             }
 
             Vector3f offsets = GridOffsetHelper.getOffset(face, effectiveFacing, colShift, rowShift, cellScale);
-            Vector3f baseTrans = GridOffsetHelper.getBaseTranslation(face, effectiveFacing, isBack);
-            Vector3f cl = GridOffsetHelper.getClearance(face, effectiveFacing, hasBackplate);
-            Vector3f c = GridOffsetHelper.getCenter(face, effectiveFacing);
+            Vector3f baseTrans = isBack ? backBaseTrans : frontBaseTrans;
+            Vector3f cl = isBack ? backCl : frontCl;
+            Vector3f c = isBack ? backCenter : frontCenter;
 
             float totalTransX = baseTrans.x + offsets.x + cl.x;
             float totalTransY = baseTrans.y + offsets.y + cl.y;

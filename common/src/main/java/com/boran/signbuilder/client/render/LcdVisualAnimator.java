@@ -7,7 +7,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import org.joml.Matrix4f;
 
-import java.awt.Color;
 
 public class LcdVisualAnimator {
 

@@ -29,7 +29,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -913,13 +912,7 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     public static int getActualHexColor(int colorValue) {
-        if (colorValue > 15 || colorValue < -1) return colorValue;
-        return switch (colorValue) {
-            case 0 -> 0xFFFFFF; case 1 -> 0xD87F33; case 2 -> 0xB24CD8; case 3 -> 0x6699D8; case 4 -> 0xE5E533; case 5 -> 0x7FCC19;
-            case 6 -> 0xF27FA5; case 7 -> 0x4C4C4C; case 8 -> 0x999999; case 9 -> 0x4C7F99; case 10 -> 0x7F3FB2;
-            case 11 -> 0x334CB2; case 12 -> 0x664C33; case 13 -> 0x667F33; case 14 -> 0xCF2323; case 15 -> 0x191919;
-            default -> 0xFFFFFF;
-        };
+        return com.boran.signbuilder.util.RainbowColorHelper.getActualHexColor(colorValue);
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, LetterBlockEntity entity) {
@@ -966,26 +959,6 @@ public class LetterBlockEntity extends BlockEntity {
             }
         }
 
-        if (level.isClientSide) {
-            boolean dirty = false;
-            float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-
-            if (entity.isRainbow()) {
-                entity.rgbColor = rainbowRgb;
-                dirty = true;
-            }
-            if (entity.isBackplateFrontRainbow()) {
-                entity.backplateFrontColor = rainbowRgb;
-                dirty = true;
-            }
-            if (entity.isBackplateBackRainbow()) {
-                entity.backplateBackColor = rainbowRgb;
-                dirty = true;
-            }
-
-
-        }
 
         if (!level.isClientSide()) {
             if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {

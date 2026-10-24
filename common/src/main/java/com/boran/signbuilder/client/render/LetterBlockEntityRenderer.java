@@ -46,23 +46,13 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             return size() > 256;
         }
     });
-    private static long rainbowColorSlot = Long.MIN_VALUE;
-    private static int rainbowColor;
-
     private record MaterialModelKey(BakedModel model, SignMaterial front, SignMaterial back, boolean letter, boolean glowInked) {}
 
     public LetterBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     private int calculateRainbowColor() {
-        long currentTime = System.currentTimeMillis();
-        long slot = currentTime / 33L;
-        if (slot != rainbowColorSlot) {
-            float hue = (currentTime % 3000L) / 3000.0f;
-            rainbowColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-            rainbowColorSlot = slot;
-        }
-        return rainbowColor;
+        return com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
     }
 
     @Override

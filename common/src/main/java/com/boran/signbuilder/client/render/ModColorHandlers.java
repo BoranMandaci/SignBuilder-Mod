@@ -62,8 +62,7 @@ public class ModColorHandlers {
                 if (!fMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(fMat)) return 0xFFFFFF;
 
                 if (beTag.getBoolean("BackplateFrontRainbow") || beTag.getBoolean("backplateFrontRainbow")) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+                    return com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
                 }
                 if (beTag.contains("BackplateFrontColor")) return beTag.getInt("BackplateFrontColor");
                 if (beTag.contains("backplateFrontColor")) return beTag.getInt("backplateFrontColor");
@@ -72,8 +71,7 @@ public class ModColorHandlers {
                 if (!bMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(bMat)) return 0xFFFFFF;
 
                 if (beTag.getBoolean("BackplateBackRainbow") || beTag.getBoolean("backplateBackRainbow")) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+                    return com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
                 }
                 if (beTag.contains("BackplateBackColor")) return beTag.getInt("BackplateBackColor");
                 if (beTag.contains("backplateBackColor")) return beTag.getInt("backplateBackColor");
@@ -91,8 +89,7 @@ public class ModColorHandlers {
         }
 
         if (beTag.getBoolean("IsRainbow") || beTag.getBoolean("Rainbow") || beTag.getBoolean("isRainbow")) {
-            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-            return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+            return com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
         }
 
         if (beTag.contains("RgbColor")) return beTag.getInt("RgbColor");
