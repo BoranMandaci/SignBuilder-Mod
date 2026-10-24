@@ -68,8 +68,22 @@ public class LcdFontHelper {
         return sink -> StringDecomposer.iterateFormatted(text, 0, baseStyle, baseStyle, sink);
     }
 
+    private static final int[][] ASCII_CHAR_WIDTHS = new int[FONT_COUNT][128];
+
     public static int getWidth(Font font, String text, int fontStyle) {
         if (text == null || text.isEmpty() || font == null) return 0;
+        if (text.length() == 1) {
+            char c = text.charAt(0);
+            if (c < 128 && fontStyle >= 0 && fontStyle < FONT_COUNT) {
+                int cached = ASCII_CHAR_WIDTHS[fontStyle][c];
+                if (cached != 0) {
+                    return cached == -1 ? 0 : cached;
+                }
+                int w = font.width(toFormatted(text, fontStyle));
+                ASCII_CHAR_WIDTHS[fontStyle][c] = (w == 0) ? -1 : w;
+                return w;
+            }
+        }
         return font.width(toFormatted(text, fontStyle));
     }
 

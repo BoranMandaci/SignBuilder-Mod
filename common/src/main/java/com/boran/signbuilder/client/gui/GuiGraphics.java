@@ -1,6 +1,5 @@
 package com.boran.signbuilder.client.gui;
 
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -16,6 +15,7 @@ import java.util.List;
 
 public class GuiGraphics extends GuiComponent {
     private final PoseStack poseStack;
+    private static Runnable deferredTooltip = null;
 
     public GuiGraphics(PoseStack poseStack) {
         this.poseStack = poseStack;
@@ -100,30 +100,56 @@ public class GuiGraphics extends GuiComponent {
         RenderSystem.setShaderColor(red, green, blue, alpha);
     }
 
-
-
     public void renderItem(ItemStack stack, int x, int y) {
         Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(stack, x, y);
     }
 
     public void renderTooltip(Font font, ItemStack stack, int mouseX, int mouseY) {
-        Screen screen = Minecraft.getInstance().screen;
-        if (screen != null) {
-            screen.renderTooltip(poseStack, screen.getTooltipFromItem(stack), stack.getTooltipImage(), mouseX, mouseY);
-        }
+        PoseStack pose = this.poseStack;
+        deferredTooltip = () -> {
+            Screen screen = Minecraft.getInstance().screen;
+            if (screen != null) {
+                screen.renderTooltip(pose, screen.getTooltipFromItem(stack), stack.getTooltipImage(), mouseX, mouseY);
+            }
+        };
     }
 
     public void renderTooltip(Font font, Component text, int mouseX, int mouseY) {
-        Screen screen = Minecraft.getInstance().screen;
-        if (screen != null) {
-            screen.renderTooltip(poseStack, text, mouseX, mouseY);
-        }
+        PoseStack pose = this.poseStack;
+        deferredTooltip = () -> {
+            Screen screen = Minecraft.getInstance().screen;
+            if (screen != null) {
+                screen.renderTooltip(pose, text, mouseX, mouseY);
+            }
+        };
     }
 
     public void renderComponentTooltip(Font font, List<Component> text, int mouseX, int mouseY) {
-        Screen screen = Minecraft.getInstance().screen;
-        if (screen != null) {
-            screen.renderComponentTooltip(poseStack, text, mouseX, mouseY);
+        PoseStack pose = this.poseStack;
+        deferredTooltip = () -> {
+            Screen screen = Minecraft.getInstance().screen;
+            if (screen != null) {
+                screen.renderComponentTooltip(pose, text, mouseX, mouseY);
+            }
+        };
+    }
+
+    public void renderTooltip(Font font, List<? extends FormattedCharSequence> text, int mouseX, int mouseY) {
+        PoseStack pose = this.poseStack;
+        deferredTooltip = () -> {
+            Screen screen = Minecraft.getInstance().screen;
+            if (screen != null) {
+                screen.renderTooltip(pose, text, mouseX, mouseY);
+            }
+        };
+    }
+
+    public static void flushTooltip() {
+        if (deferredTooltip != null) {
+            Runnable action = deferredTooltip;
+            deferredTooltip = null;
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            action.run();
         }
     }
 }

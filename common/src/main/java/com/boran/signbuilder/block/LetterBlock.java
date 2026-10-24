@@ -1648,6 +1648,7 @@ public class LetterBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
         if (type == ModBlockEntities.LETTER_BLOCK_ENTITY.get()) {
             return (l, p, s, entity) -> LetterBlockEntity.tick(l, p, s, (LetterBlockEntity) entity);
         }

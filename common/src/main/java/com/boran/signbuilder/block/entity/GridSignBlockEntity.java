@@ -44,10 +44,14 @@ public class GridSignBlockEntity extends BlockEntity {
     private int facingRotation = -1;
 
     public transient Object clientRenderCache = null;
+    public transient AABB renderBoundingBox = null;
     private long renderVersion = 0;
     private boolean suppressDrops = false;
     public long getRenderVersion() { return renderVersion; }
-    public void markRenderDirty() { this.renderVersion++; }
+    public void markRenderDirty() {
+        this.renderVersion++;
+        this.renderBoundingBox = null;
+    }
     public boolean shouldSuppressDrops() { return suppressDrops; }
     public void setSuppressDrops(boolean suppress) { this.suppressDrops = suppress; }
 
@@ -438,7 +442,7 @@ public class GridSignBlockEntity extends BlockEntity {
     public void load(CompoundTag tag) {
         super.load(tag);
         this.gridSize = tag.getInt("GridSize");
-        if (this.gridSize < 2) this.gridSize = 3; // fallback
+        if (this.gridSize < 2) this.gridSize = 3;
         
         this.hasBackplate = tag.getBoolean("HasBackplate");
         if (tag.contains("BPFMat")) {
@@ -537,27 +541,6 @@ public class GridSignBlockEntity extends BlockEntity {
                 if (entity.customLightCloseDelayRemaining > 0) {
                     entity.customLightCloseDelayRemaining--;
                 }
-            }
-        }
-
-        if (level.isClientSide) {
-            boolean dirty = false;
-            float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-
-            if (entity.isBackplateFrontRainbow()) {
-                entity.setBackplateFrontColor(rainbowRgb);
-                dirty = true;
-            }
-            if (entity.isBackplateBackRainbow()) {
-                entity.setBackplateBackColor(rainbowRgb);
-                dirty = true;
-            }
-
-            if (dirty && level.getGameTime() % 5 == 0) {
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-                    net.minecraft.client.Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-                });
             }
         }
 

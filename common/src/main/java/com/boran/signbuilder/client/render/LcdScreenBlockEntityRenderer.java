@@ -57,7 +57,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
 
     @Override
     public int getViewDistance() {
-        return 256;
+        return 96;
     }
 
     @Override
@@ -66,11 +66,16 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LcdScreenBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(32.0);
+        if (blockEntity.renderBoundingBox == null) {
+            int w = Math.max(1, blockEntity.cachedWidthBlocks);
+            int h = Math.max(1, blockEntity.cachedHeightBlocks);
+            blockEntity.renderBoundingBox = new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(Math.max(w, h) + 1.0);
+        }
+        return blockEntity.renderBoundingBox;
     }
 
     public net.minecraft.world.phys.AABB getViewBoundingBox(LcdScreenBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(32.0);
+        return getRenderBoundingBox(blockEntity);
     }
 
     private static boolean hasDisplayContent(LcdScreenBlockEntity be) {
@@ -96,7 +101,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         int widthBlocks;
         int heightBlocks;
 
-        if (entity.cachedMasterPos != null && gameTime - entity.lastCacheUpdateTick < 20L) {
+        if (entity.cachedMasterPos != null && gameTime - entity.lastCacheUpdateTick < 100L) {
             masterPos = entity.cachedMasterPos;
             widthBlocks = entity.cachedWidthBlocks;
             heightBlocks = entity.cachedHeightBlocks;
@@ -135,15 +140,16 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
 
         BlockPos myPos = entity.getBlockPos();
         boolean isMaster = masterPos.equals(myPos);
-        LcdScreenBlockEntity master;
-        if (isMaster) {
-            master = entity;
-        } else {
+        if (!isMaster) {
+            if (level.isLoaded(masterPos)) {
+                return;
+            }
+        }
+        LcdScreenBlockEntity master = entity;
+        if (!isMaster) {
             BlockEntity be = level.getBlockEntity(masterPos);
             if (be instanceof LcdScreenBlockEntity masterBe) {
                 master = masterBe;
-            } else {
-                master = entity;
             }
         }
 
@@ -498,6 +504,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         int charIdx = 0;
 
         for (int i = 0; i < text.length(); ) {
+            if (curX > maxX) break;
             if (text.charAt(i) == '§' && i + 1 < text.length()) {
                 char code = text.charAt(i + 1);
                 if (code == 'r' || code == 'R') {
@@ -545,6 +552,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         int charIdx = 0;
 
         for (int i = 0; i < text.length(); ) {
+            if (curX > maxX) break;
             if (text.charAt(i) == '§' && i + 1 < text.length()) {
                 char code = text.charAt(i + 1);
                 if (code == 'r' || code == 'R') {
@@ -590,6 +598,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         StringBuilder activeStyle = ACTIVE_STYLE_BUILDER;
         activeStyle.setLength(0);
         for (int i = 0; i < text.length(); ) {
+            if (curX > maxX) break;
             char c = text.charAt(i);
             if (c == '§' && i + 1 < text.length()) {
                 char code = text.charAt(i + 1);

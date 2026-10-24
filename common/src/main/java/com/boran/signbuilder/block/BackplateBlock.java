@@ -548,7 +548,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         return switch (material) {
             case OAK -> "minecraft:oak_planks"; case SPRUCE -> "minecraft:spruce_planks"; case BIRCH -> "minecraft:birch_planks";
             case JUNGLE -> "minecraft:jungle_planks"; case ACACIA -> "minecraft:acacia_planks"; case DARK_OAK -> "minecraft:dark_oak_planks";
-            case MANGROVE -> "minecraft:mangrove_planks"; case CHERRY -> "minecraft:cherry_planks"; case BAMBOO -> "minecraft:bamboo_planks";
+            case MANGROVE -> "minecraft:mangrove_planks";
             case IRON -> "minecraft:iron_ingot"; case ANDESITE -> "minecraft:polished_andesite";
             case GOLD -> "minecraft:gold_ingot"; case DIAMOND -> "minecraft:diamond"; case LAPIS -> "minecraft:lapis_lazuli";
             case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
@@ -639,6 +639,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
         if (type == ModBlockEntities.LETTER_BLOCK_ENTITY.get()) {
             return (l, p, s, entity) -> LetterBlockEntity.tick(l, p, s, (LetterBlockEntity) entity);
         }

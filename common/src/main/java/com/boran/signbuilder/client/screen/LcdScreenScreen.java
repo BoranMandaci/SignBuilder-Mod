@@ -1010,6 +1010,7 @@ public class LcdScreenScreen extends Screen {
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        GuiGraphics.flushTooltip();
     }
 
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {

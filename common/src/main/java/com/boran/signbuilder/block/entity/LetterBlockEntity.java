@@ -95,9 +95,10 @@ public class LetterBlockEntity extends BlockEntity {
     private final List<BlockPos> enteredPositions = new ArrayList<>();
 
     public transient Object clientRenderCache = null;
+    public net.minecraft.world.phys.AABB renderBoundingBox = null;
     private long renderVersion = 0;
     public long getRenderVersion() { return renderVersion; }
-    public void markRenderDirty() { this.renderVersion++; }
+    public void markRenderDirty() { this.renderVersion++; this.renderBoundingBox = null; }
 
     public LetterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -389,7 +390,7 @@ public class LetterBlockEntity extends BlockEntity {
 
     public boolean isWoodMaterial() {
         return switch (this.savedMaterial) {
-            case OAK, SPRUCE, BIRCH, JUNGLE, ACACIA, DARK_OAK, MANGROVE, CHERRY, BAMBOO, CRIMSON_PLANKS, WARPED_PLANKS -> true;
+            case OAK, SPRUCE, BIRCH, JUNGLE, ACACIA, DARK_OAK, MANGROVE, CRIMSON_PLANKS, WARPED_PLANKS -> true;
             default -> false;
         };
     }
@@ -957,27 +958,6 @@ public class LetterBlockEntity extends BlockEntity {
                     entity.enteredPositions.clear();
                 }
             }
-        }
-
-        if (level.isClientSide) {
-            boolean dirty = false;
-            float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-
-            if (entity.isRainbow()) {
-                entity.rgbColor = rainbowRgb;
-                dirty = true;
-            }
-            if (entity.isBackplateFrontRainbow()) {
-                entity.backplateFrontColor = rainbowRgb;
-                dirty = true;
-            }
-            if (entity.isBackplateBackRainbow()) {
-                entity.backplateBackColor = rainbowRgb;
-                dirty = true;
-            }
-
-
         }
 
         if (!level.isClientSide()) {

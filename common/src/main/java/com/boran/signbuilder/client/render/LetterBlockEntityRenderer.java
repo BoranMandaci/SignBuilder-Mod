@@ -67,31 +67,28 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
     @Override
     public int getViewDistance() {
-        return 128;
+        return 64;
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(6.0);
+        if (blockEntity.renderBoundingBox == null) {
+            double inflate = Math.max(1.0, blockEntity.getSize()) + 1.0;
+            blockEntity.renderBoundingBox = new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(inflate);
+        }
+        return blockEntity.renderBoundingBox;
     }
 
     public net.minecraft.world.phys.AABB getViewBoundingBox(LetterBlockEntity blockEntity) {
-        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(6.0);
+        return getRenderBoundingBox(blockEntity);
     }
-
 
     @Override
     public void render(LetterBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (entity.isLinkedMultiblockPart()) {
             LetterBlockEntity master = entity.getEffectiveMaster();
             if (master != null && master != entity) {
-                
-                net.minecraft.core.BlockPos offset = master.getBlockPos().subtract(entity.getBlockPos());
-                poseStack.pushPose();
-                poseStack.translate(offset.getX(), offset.getY(), offset.getZ());
-                render(master, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
-                poseStack.popPose();
+                return;
             }
-            return;
         }
 
         if (entity.getLevel() == null) return;
@@ -177,15 +174,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         float lb = (letterCol & 0xFF) / 255.0f;
 
         int letterLight = (entity.isGlowInked() || entity.isActive()) ? 15728880 : light;
-        dispatcher.getModelRenderer().renderModel(
-                poseStack.last(),
-                buffer,
-                cache.state,
-                cache.finalLetterModel,
-                lr, lg, lb,
-                letterLight,
-                packedOverlay
-        );
+        renderPlateQuads(poseStack.last(), buffer, cache.letterQuads, letterCol, letterCol, letterLight, letterLight, packedOverlay);
         poseStack.popPose();
 
         if (cache.hasBackGlyph) {
@@ -201,7 +190,7 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             float bg = ((backColor >> 8) & 0xFF) / 255.0f;
             float bb = (backColor & 0xFF) / 255.0f;
             int backLight = (cache.backGlowInked || entity.isActive()) ? 15728880 : light;
-            dispatcher.getModelRenderer().renderModel(poseStack.last(), buffer, cache.backState, cache.finalBackModel, br, bg, bb, backLight, packedOverlay);
+            renderPlateQuads(poseStack.last(), buffer, cache.backQuads, backColor, backColor, backLight, backLight, packedOverlay);
             poseStack.popPose();
         }
 

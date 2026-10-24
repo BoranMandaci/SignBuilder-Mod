@@ -167,6 +167,7 @@ public class SignPressScreen extends AbstractContainerScreen<SignPressMenu> {
                 }
             }
         }
+        GuiGraphics.flushTooltip();
     }
 
     @Override

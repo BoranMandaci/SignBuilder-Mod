@@ -48,8 +48,11 @@ allprojects {
         options.release = 17
     }
 
-    java {
-        withSourcesJar()
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+        withSourcesJar()
     }
 
     tasks.withType(Jar) {

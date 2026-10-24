@@ -45,13 +45,13 @@ public class LcdTextFormatter {
 
     public static String getWidgetText(int widgetType, @Nullable Level level, @Nullable BlockPos pos) {
         return switch (widgetType) {
-            case WIDGET_TIME -> "⌚ " + getTimeString(level);
+            case WIDGET_TIME -> getTimeString(level);
             case WIDGET_WEATHER -> getWeatherString(level);
             case WIDGET_PLAYER -> getPlayerString(level, pos);
             case WIDGET_DAY -> getDayString(level);
-            case WIDGET_ONLINE -> "👥 " + getOnlineCountString(level);
-            case WIDGET_COORDS -> "⚲ " + (pos != null ? (pos.getX() + " " + pos.getY() + " " + pos.getZ()) : "0 0 0");
-            case WIDGET_BIOME -> "🌲 " + getBiomeString(level, pos);
+            case WIDGET_ONLINE -> getOnlineCountString(level) + " Plr";
+            case WIDGET_COORDS -> (pos != null ? (pos.getX() + " " + pos.getY() + " " + pos.getZ()) : "0 0 0");
+            case WIDGET_BIOME -> getBiomeString(level, pos);
             case WIDGET_MOON -> getMoonPhaseString(level);
             case WIDGET_FPS -> getFpsString() + " FPS";
             case WIDGET_HEALTH -> getHealthString(level, pos);
@@ -117,7 +117,20 @@ public class LcdTextFormatter {
                 .replace(":tri_up:", "▲")
                 .replace(":tri_down:", "▼")
                 .replace(":dleft:", "«")
-                .replace(":dright:", "»");
+                .replace(":dright:", "»")
+
+                .replace(":key:", "🗝")
+                .replace(":lock:", "🔒")
+                .replace(":trophy:", "🏆")
+                .replace(":cup:", "🏆")
+                .replace(":player:", "👤")
+                .replace(":user:", "👤")
+                .replace(":online:", "👥")
+                .replace(":users:", "👥")
+                .replace(":tree:", "🌲")
+                .replace(":biome:", "🌲")
+                .replace(":pin:", "⚲")
+                .replace(":moon:", "☽");
     }
 
     public static String resolveVariables(String text, @Nullable Level level, @Nullable BlockPos pos) {
@@ -231,7 +244,7 @@ public class LcdTextFormatter {
     }
 
     public static String getPlayerString(@Nullable Level level, @Nullable BlockPos pos) {
-        return "👤 " + getPlayerNameOnly(level, pos);
+        return getPlayerNameOnly(level, pos);
     }
 
     public static String getPlayerNameOnly(@Nullable Level level, @Nullable BlockPos pos) {
@@ -287,7 +300,7 @@ public class LcdTextFormatter {
     }
 
     public static String getMoonPhaseString(@Nullable Level level) {
-        if (level == null) return "○ --";
+        if (level == null) return "--";
         int phase = level.getMoonPhase();
         return switch (phase) {
             case 0 -> Component.translatable("gui.signbuilder.lcd.moon.full").getString();
@@ -298,7 +311,7 @@ public class LcdTextFormatter {
             case 5 -> Component.translatable("gui.signbuilder.lcd.moon.waxing_crescent").getString();
             case 6 -> Component.translatable("gui.signbuilder.lcd.moon.first_quarter").getString();
             case 7 -> Component.translatable("gui.signbuilder.lcd.moon.waxing_gibbous").getString();
-            default -> "○ --";
+            default -> "--";
         };
     }
 
@@ -333,10 +346,10 @@ public class LcdTextFormatter {
             if (p != null) {
                 int hp = (int) Math.ceil(p.getHealth());
                 int maxHp = (int) Math.ceil(p.getMaxHealth());
-                return hp + "/" + maxHp + "❤";
+                return hp + "/" + maxHp + " HP";
             }
         }
-        return "--❤";
+        return "-- HP";
     }
 
     public static String getHpNumberString(@Nullable Level level, @Nullable BlockPos pos) {

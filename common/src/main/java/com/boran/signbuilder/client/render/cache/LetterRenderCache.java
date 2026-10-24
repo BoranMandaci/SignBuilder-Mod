@@ -77,6 +77,7 @@ public class LetterRenderCache {
     public final Direction attachedPlateFacing;
 
     public final BakedModel finalLetterModel;
+    public final List<BakedQuad> letterQuads;
     public final float letterCenterLocalX;
     public final float letterCenterLocalZ;
     public final float letterWallTransX;
@@ -86,6 +87,7 @@ public class LetterRenderCache {
     public final boolean hasBackGlyph;
     public final BlockState backState;
     public final BakedModel finalBackModel;
+    public final List<BakedQuad> backQuads;
     public final float backCenterLocalX;
     public final float backCenterLocalZ;
     public final float backWallTransX;
@@ -105,9 +107,9 @@ public class LetterRenderCache {
                              boolean hasBackplate, BlockState attachedPlateState, BakedModel attachedPlateModel,
                              List<BakedQuad> attachedPlateQuads, float attachedPlateCenterLocalX, float attachedPlateCenterLocalZ,
                              boolean attachedPlateWidenDiagonal, Direction attachedPlateFacing,
-                             BakedModel finalLetterModel, float letterCenterLocalX, float letterCenterLocalZ,
+                             BakedModel finalLetterModel, List<BakedQuad> letterQuads, float letterCenterLocalX, float letterCenterLocalZ,
                              float letterWallTransX, float letterWallTransZ, boolean isLetterWall,
-                             boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel,
+                             boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel, List<BakedQuad> backQuads,
                              float backCenterLocalX, float backCenterLocalZ,
                              float backWallTransX, float backWallTransZ,
                              int backRawColor, boolean backRainbow, boolean backIsMaterial, boolean backGlowInked) {
@@ -140,6 +142,7 @@ public class LetterRenderCache {
         this.attachedPlateWidenDiagonal = attachedPlateWidenDiagonal;
         this.attachedPlateFacing = attachedPlateFacing;
         this.finalLetterModel = finalLetterModel;
+        this.letterQuads = letterQuads;
         this.letterCenterLocalX = letterCenterLocalX;
         this.letterCenterLocalZ = letterCenterLocalZ;
         this.letterWallTransX = letterWallTransX;
@@ -148,6 +151,7 @@ public class LetterRenderCache {
         this.hasBackGlyph = hasBackGlyph;
         this.backState = backState;
         this.finalBackModel = finalBackModel;
+        this.backQuads = backQuads;
         this.backCenterLocalX = backCenterLocalX;
         this.backCenterLocalZ = backCenterLocalZ;
         this.backWallTransX = backWallTransX;
@@ -206,8 +210,8 @@ public class LetterRenderCache {
                     finalModel, quads, plateCenterLocalX, plateCenterLocalZ, widenDiagonal, facing, rotationDegrees,
                     AttachFace.WALL, Direction.NORTH, 1, true, 0.0, 0.0, 1, 0,
                     false, null, null, Collections.emptyList(), 0f, 0f, false, Direction.NORTH,
-                    null, 0f, 0f, 0f, 0f, true,
-                    false, null, null, 0f, 0f, 0f, 0f, 0xFFFFFF, false, false, false
+                    null, Collections.emptyList(), 0f, 0f, 0f, 0f, true,
+                    false, null, null, Collections.emptyList(), 0f, 0f, 0f, 0f, 0xFFFFFF, false, false, false
             );
         }
 
@@ -362,14 +366,16 @@ public class LetterRenderCache {
             hasBackGlyph = true;
         }
 
+        List<BakedQuad> letterQuads = LetterBlockEntityRenderer.getAllQuads(finalLetterModel, state);
+        List<BakedQuad> backQuads = hasBackGlyph ? LetterBlockEntityRenderer.getAllQuads(finalBackModel, backState) : Collections.emptyList();
         return new LetterRenderCache(
                 entity.getRenderVersion(), modelManagerRef, false, state, renderType,
                 null, Collections.emptyList(), 0f, 0f, false, Direction.NORTH, 0,
                 face, facing, size, wall, offsetX, offsetZ, modelScale, rotationDegrees,
                 hasBackplate, attachedPlateState, attachedPlateModel, attachedPlateQuads,
                 attachedPlateCenterLocalX, attachedPlateCenterLocalZ, attachedPlateWidenDiagonal, plateFacing,
-                finalLetterModel, letterCenterLocalX, letterCenterLocalZ, letterWallTransX, letterWallTransZ, wall,
-                hasBackGlyph, backState, finalBackModel, backCenterLocalX, backCenterLocalZ,
+                finalLetterModel, letterQuads, letterCenterLocalX, letterCenterLocalZ, letterWallTransX, letterWallTransZ, wall,
+                hasBackGlyph, backState, finalBackModel, backQuads, backCenterLocalX, backCenterLocalZ,
                 backWallTransX, backWallTransZ, backRawColor, backRainbow, backIsMaterial, backGlowInked
         );
     }

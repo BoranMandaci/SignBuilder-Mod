@@ -473,7 +473,7 @@ public class PaintBrushItem extends Item {
         String regName = switch (material) {
             case OAK -> "minecraft:oak_planks"; case SPRUCE -> "minecraft:spruce_planks"; case BIRCH -> "minecraft:birch_planks";
             case JUNGLE -> "minecraft:jungle_planks"; case ACACIA -> "minecraft:acacia_planks"; case DARK_OAK -> "minecraft:dark_oak_planks";
-            case MANGROVE -> "minecraft:mangrove_planks"; case CHERRY -> "minecraft:cherry_planks"; case BAMBOO -> "minecraft:bamboo_planks";
+            case MANGROVE -> "minecraft:mangrove_planks";
             case IRON -> "minecraft:iron_ingot"; case ANDESITE -> "minecraft:polished_andesite";
             case GOLD -> "minecraft:gold_ingot"; case DIAMOND -> "minecraft:diamond"; case LAPIS -> "minecraft:lapis_lazuli";
             case SMOOTH_STONE -> "minecraft:smooth_stone"; case POLISHED_DIORITE -> "minecraft:polished_diorite";
@@ -533,7 +533,7 @@ public class PaintBrushItem extends Item {
         return switch (matString) {
             case "minecraft:oak_planks" -> SignMaterial.OAK; case "minecraft:spruce_planks" -> SignMaterial.SPRUCE; case "minecraft:birch_planks" -> SignMaterial.BIRCH;
             case "minecraft:jungle_planks" -> SignMaterial.JUNGLE; case "minecraft:acacia_planks" -> SignMaterial.ACACIA; case "minecraft:dark_oak_planks" -> SignMaterial.DARK_OAK;
-            case "minecraft:mangrove_planks" -> SignMaterial.MANGROVE; case "minecraft:cherry_planks" -> SignMaterial.CHERRY; case "minecraft:bamboo_planks" -> SignMaterial.BAMBOO;
+            case "minecraft:mangrove_planks" -> SignMaterial.MANGROVE;
             case "minecraft:iron_block" -> SignMaterial.IRON; case "minecraft:polished_andesite" -> SignMaterial.ANDESITE;
             case "minecraft:gold_block" -> SignMaterial.GOLD; case "minecraft:diamond_block" -> SignMaterial.DIAMOND; case "minecraft:lapis_block" -> SignMaterial.LAPIS;
             case "minecraft:smooth_stone" -> SignMaterial.SMOOTH_STONE; case "minecraft:polished_diorite" -> SignMaterial.POLISHED_DIORITE;

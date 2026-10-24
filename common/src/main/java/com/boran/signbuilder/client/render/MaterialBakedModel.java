@@ -36,6 +36,7 @@ public class MaterialBakedModel implements BakedModel {
             return size() > 1024;
         }
     });
+    private static final Map<SignMaterial, TextureAtlasSprite> SPRITE_CACHE = new java.util.EnumMap<>(SignMaterial.class);
 
     private record QuadCacheKey(BakedModel model, SignMaterial front, SignMaterial back, Direction direction, boolean letter, boolean glowInked) {}
 
@@ -153,6 +154,8 @@ public class MaterialBakedModel implements BakedModel {
     }
 
     public static TextureAtlasSprite getSpriteForMaterial(SignMaterial material) {
+        TextureAtlasSprite cached = SPRITE_CACHE.get(material);
+        if (cached != null) return cached;
         String path = switch (material) {
             case OAK -> "block/oak_planks";
             case SPRUCE -> "block/spruce_planks";
@@ -161,8 +164,6 @@ public class MaterialBakedModel implements BakedModel {
             case ACACIA -> "block/acacia_planks";
             case DARK_OAK -> "block/dark_oak_planks";
             case MANGROVE -> "block/mangrove_planks";
-            case CHERRY -> "block/cherry_planks";
-            case BAMBOO -> "block/bamboo_planks";
             case IRON -> "block/iron_block";
             case ANDESITE -> "block/polished_andesite";
             case GOLD -> "block/gold_block";
@@ -195,7 +196,9 @@ public class MaterialBakedModel implements BakedModel {
             case MOSSY_STONE_BRICKS -> "block/mossy_stone_bricks";
             default -> "block/white_concrete";
         };
-        return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", path));
+        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", path));
+        SPRITE_CACHE.put(material, sprite);
+        return sprite;
     }
 
     @Override public boolean useAmbientOcclusion() { return originalModel.useAmbientOcclusion(); }

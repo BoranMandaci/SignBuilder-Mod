@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "signbuilder:font/symbols_extra.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        "\uD83D\uDDDD\uD83D\uDD12\uD83C\uDFC6\uD83D\uDC64\uD83D\uDC65\uD83C\uDF32\u2602"
+      ]
+    }
+  ]
+}

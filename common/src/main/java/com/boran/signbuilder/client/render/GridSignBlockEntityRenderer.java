@@ -23,6 +23,23 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
     }
 
     @Override
+    public int getViewDistance() {
+        return 64;
+    }
+
+    public net.minecraft.world.phys.AABB getRenderBoundingBox(GridSignBlockEntity blockEntity) {
+        if (blockEntity.renderBoundingBox == null) {
+            blockEntity.renderBoundingBox = new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(1.0);
+        }
+        return blockEntity.renderBoundingBox;
+    }
+
+    public net.minecraft.world.phys.AABB getViewBoundingBox(GridSignBlockEntity blockEntity) {
+        return getRenderBoundingBox(blockEntity);
+    }
+
+
+    @Override
     public void render(GridSignBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (entity.getLevel() == null) return;
 
@@ -90,10 +107,6 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                 color = 0xFFFFFF;
             }
 
-            float lr = ((color >> 16) & 0xFF) / 255.0f;
-            float lg = ((color >> 8) & 0xFF) / 255.0f;
-            float lb = (color & 0xFF) / 255.0f;
-
             poseStack.pushPose();
             poseStack.translate(cell.totalTransX, cell.totalTransY, cell.totalTransZ);
             poseStack.translate(cell.pivotX, cell.pivotY, cell.pivotZ);
@@ -101,20 +114,19 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             poseStack.translate(-cell.pivotX, -cell.pivotY, -cell.pivotZ);
 
             int cellLight = (cell.glowInked || entity.isActive()) ? 15728880 : plateLight;
-            dispatcher.getModelRenderer().renderModel(
+            LetterBlockEntityRenderer.renderPlateQuads(
                     poseStack.last(),
                     buffer,
-                    cell.letterState,
-                    cell.finalLetterModel,
-                    lr, lg, lb,
-                    cellLight,
+                    cell.quads,
+                    color, color,
+                    cellLight, cellLight,
                     packedOverlay
             );
 
             poseStack.popPose();
         }
 
-        if (cache.hasBackGlyph && cache.finalBackModel != null) {
+        if (cache.hasBackGlyph && cache.backQuads != null && !cache.backQuads.isEmpty()) {
             VertexConsumer buffer = bufferSource.getBuffer(cache.backRenderType);
             int color = cache.backRawColor;
             if (cache.backRainbow) {
@@ -129,26 +141,21 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                 color = 0xFFFFFF;
             }
 
-            float lr = ((color >> 16) & 0xFF) / 255.0f;
-            float lg = ((color >> 8) & 0xFF) / 255.0f;
-            float lb = (color & 0xFF) / 255.0f;
-
             poseStack.pushPose();
             poseStack.translate(cache.backTransX, cache.backTransY, cache.backTransZ);
             int backLight = (cache.backGlowInked || entity.isActive()) ? 15728880 : plateLight;
-            dispatcher.getModelRenderer().renderModel(
+            LetterBlockEntityRenderer.renderPlateQuads(
                     poseStack.last(),
                     buffer,
-                    cache.backState,
-                    cache.finalBackModel,
-                    lr, lg, lb,
-                    backLight,
+                    cache.backQuads,
+                    color, color,
+                    backLight, backLight,
                     packedOverlay
             );
             poseStack.popPose();
         }
 
-        if (cache.hasFrontGlyph && cache.finalFrontModel != null) {
+        if (cache.hasFrontGlyph && cache.frontQuads != null && !cache.frontQuads.isEmpty()) {
             VertexConsumer buffer = bufferSource.getBuffer(cache.frontRenderType);
             int color = cache.frontRawColor;
             if (cache.frontRainbow) {
@@ -163,20 +170,15 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                 color = 0xFFFFFF;
             }
 
-            float lr = ((color >> 16) & 0xFF) / 255.0f;
-            float lg = ((color >> 8) & 0xFF) / 255.0f;
-            float lb = (color & 0xFF) / 255.0f;
-
             poseStack.pushPose();
             poseStack.translate(cache.frontTransX, cache.frontTransY, cache.frontTransZ);
             int frontLight = (cache.frontGlowInked || entity.isActive()) ? 15728880 : plateLight;
-            dispatcher.getModelRenderer().renderModel(
+            LetterBlockEntityRenderer.renderPlateQuads(
                     poseStack.last(),
                     buffer,
-                    cache.frontState,
-                    cache.finalFrontModel,
-                    lr, lg, lb,
-                    frontLight,
+                    cache.frontQuads,
+                    color, color,
+                    frontLight, frontLight,
                     packedOverlay
             );
             poseStack.popPose();

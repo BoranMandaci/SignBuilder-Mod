@@ -38,6 +38,7 @@ public class GridSignRenderCache {
     public static class CachedCell {
         public final BlockState letterState;
         public final BakedModel finalLetterModel;
+        public final List<BakedQuad> quads;
         public final RenderType renderType;
         public final float totalTransX, totalTransY, totalTransZ;
         public final float pivotX, pivotY, pivotZ;
@@ -47,12 +48,13 @@ public class GridSignRenderCache {
         public final boolean isMaterial;
         public final boolean glowInked;
 
-        public CachedCell(BlockState letterState, BakedModel finalLetterModel, RenderType renderType,
+        public CachedCell(BlockState letterState, BakedModel finalLetterModel, List<BakedQuad> quads, RenderType renderType,
                           float totalTransX, float totalTransY, float totalTransZ,
                           float pivotX, float pivotY, float pivotZ,
                           float scale, int rawColor, boolean isRainbow, boolean isMaterial, boolean glowInked) {
             this.letterState = letterState;
             this.finalLetterModel = finalLetterModel;
+            this.quads = quads;
             this.renderType = renderType;
             this.totalTransX = totalTransX;
             this.totalTransY = totalTransY;
@@ -89,6 +91,7 @@ public class GridSignRenderCache {
     public final boolean hasBackGlyph;
     public final BlockState backState;
     public final BakedModel finalBackModel;
+    public final List<BakedQuad> backQuads;
     public final RenderType backRenderType;
     public final float backTransX, backTransY, backTransZ;
     public final int backRawColor;
@@ -99,6 +102,7 @@ public class GridSignRenderCache {
     public final boolean hasFrontGlyph;
     public final BlockState frontState;
     public final BakedModel finalFrontModel;
+    public final List<BakedQuad> frontQuads;
     public final RenderType frontRenderType;
     public final float frontTransX, frontTransY, frontTransZ;
     public final int frontRawColor;
@@ -111,10 +115,10 @@ public class GridSignRenderCache {
                                List<BakedQuad> plateQuads, float plateCenterLocalX, float plateCenterLocalZ,
                                boolean widenDiagonal, Direction plateFacing, SignMaterial fMat, SignMaterial bMat,
                                List<CachedCell> cells,
-                               boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel,
+                               boolean hasBackGlyph, BlockState backState, BakedModel finalBackModel, List<BakedQuad> backQuads,
                                RenderType backRenderType, float backTransX, float backTransY, float backTransZ,
                                int backRawColor, boolean backRainbow, boolean backIsMaterial, boolean backGlowInked,
-                               boolean hasFrontGlyph, BlockState frontState, BakedModel finalFrontModel,
+                               boolean hasFrontGlyph, BlockState frontState, BakedModel finalFrontModel, List<BakedQuad> frontQuads,
                                RenderType frontRenderType, float frontTransX, float frontTransY, float frontTransZ,
                                int frontRawColor, boolean frontRainbow, boolean frontIsMaterial, boolean frontGlowInked) {
         this.version = version;
@@ -136,6 +140,7 @@ public class GridSignRenderCache {
         this.hasBackGlyph = hasBackGlyph;
         this.backState = backState;
         this.finalBackModel = finalBackModel;
+        this.backQuads = backQuads;
         this.backRenderType = backRenderType;
         this.backTransX = backTransX;
         this.backTransY = backTransY;
@@ -147,6 +152,7 @@ public class GridSignRenderCache {
         this.hasFrontGlyph = hasFrontGlyph;
         this.frontState = frontState;
         this.finalFrontModel = finalFrontModel;
+        this.frontQuads = frontQuads;
         this.frontRenderType = frontRenderType;
         this.frontTransX = frontTransX;
         this.frontTransY = frontTransY;
@@ -264,8 +270,9 @@ public class GridSignRenderCache {
             boolean isMaterial = data.material != SignMaterial.DEFAULT;
             int rawColor = data.color == 0 ? 0xFFFFFF : data.color;
 
+            List<BakedQuad> cellQuads = LetterBlockEntityRenderer.getAllQuads(finalLetterModel, letterState);
             cellList.add(new CachedCell(
-                    letterState, finalLetterModel, renderType,
+                    letterState, finalLetterModel, cellQuads, renderType,
                     totalTransX, totalTransY, totalTransZ,
                     c.x(), c.y(), c.z(),
                     cellScale, rawColor, data.rainbow, isMaterial, data.glowInked
@@ -447,15 +454,17 @@ public class GridSignRenderCache {
             hasFrontGlyph = true;
         }
 
+        List<BakedQuad> backQuads = hasBackGlyph ? LetterBlockEntityRenderer.getAllQuads(finalBackModel, backState) : Collections.emptyList();
+        List<BakedQuad> frontQuads = hasFrontGlyph ? LetterBlockEntityRenderer.getAllQuads(finalFrontModel, frontState) : Collections.emptyList();
         return new GridSignRenderCache(
                 entity.getRenderVersion(), modelManagerRef, face, facing, rotationDegrees,
                 hasBackplate, plateState, finalPlateModel, plateQuads,
                 plateCenterLocalX, plateCenterLocalZ, widenDiagonal, plateFacing, fMat, bMat,
                 cellList,
-                hasBackGlyph, backState, finalBackModel,
+                hasBackGlyph, backState, finalBackModel, backQuads,
                 backRenderType, backTransX, backTransY, backTransZ,
                 backRawColor, backRainbow, backIsMaterial, backGlowInked,
-                hasFrontGlyph, frontState, finalFrontModel,
+                hasFrontGlyph, frontState, finalFrontModel, frontQuads,
                 frontRenderType, frontTransX, frontTransY, frontTransZ,
                 frontRawColor, frontRainbow, frontIsMaterial, frontGlowInked
         );

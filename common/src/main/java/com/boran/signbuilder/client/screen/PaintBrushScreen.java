@@ -129,6 +129,7 @@ public class PaintBrushScreen extends Screen {
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        GuiGraphics.flushTooltip();
     }
 
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {

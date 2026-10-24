@@ -373,6 +373,7 @@ public class WrenchScreen extends Screen {
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        GuiGraphics.flushTooltip();
     }
 
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
@@ -401,11 +402,11 @@ public class WrenchScreen extends Screen {
         int promptY = Math.min(this.height - 10, startY + panelHeight + 6);
         guiGraphics.drawCenteredString(this.font, Component.translatable("gui.signbuilder.wrench.close_prompt"), centerX, promptY, 0x888888);
 
+        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
+
         if (tooltipToRender != null) {
             guiGraphics.renderTooltip(this.font, tooltipToRender, mouseX, mouseY);
         }
-
-        super.render(guiGraphics.pose(), mouseX, mouseY, partialTick);
     }
 
     private void renderTabs(GuiGraphics guiGraphics, int startX, int startY, int mouseX, int mouseY) {

@@ -27,7 +27,7 @@ public class MaterialPickerScreen extends Screen {
             "minecraft:white_concrete",
             "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
             "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
-            "minecraft:mangrove_planks", "minecraft:cherry_planks", "minecraft:bamboo_planks",
+            "minecraft:mangrove_planks",
             "minecraft:crimson_planks", "minecraft:warped_planks",
             "minecraft:bricks", "minecraft:stone_bricks", "minecraft:mossy_stone_bricks",
             "minecraft:deepslate_bricks", "minecraft:mud_bricks", "minecraft:nether_bricks",
@@ -45,7 +45,7 @@ public class MaterialPickerScreen extends Screen {
             "white_concrete",
             "oak_planks", "spruce_planks", "birch_planks",
             "jungle_planks", "acacia_planks", "dark_oak_planks",
-            "mangrove_planks", "cherry_planks", "bamboo_planks",
+            "mangrove_planks",
             "crimson_planks", "warped_planks",
             "bricks", "stone_bricks", "mossy_stone_bricks",
             "deepslate_bricks", "mud_bricks", "nether_bricks",
@@ -69,7 +69,7 @@ public class MaterialPickerScreen extends Screen {
                 new ItemStack(Blocks.WHITE_CONCRETE),
                 new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Blocks.SPRUCE_PLANKS), new ItemStack(Blocks.BIRCH_PLANKS),
                 new ItemStack(Blocks.JUNGLE_PLANKS), new ItemStack(Blocks.ACACIA_PLANKS), new ItemStack(Blocks.DARK_OAK_PLANKS),
-                new ItemStack(Blocks.MANGROVE_PLANKS), new ItemStack(Blocks.PINK_CONCRETE), new ItemStack(Blocks.BAMBOO),
+                new ItemStack(Blocks.MANGROVE_PLANKS),
                 new ItemStack(Blocks.CRIMSON_PLANKS), new ItemStack(Blocks.WARPED_PLANKS),
                 new ItemStack(Blocks.BRICKS), new ItemStack(Blocks.STONE_BRICKS), new ItemStack(Blocks.MOSSY_STONE_BRICKS),
                 new ItemStack(Blocks.DEEPSLATE_BRICKS), new ItemStack(Blocks.MUD_BRICKS), new ItemStack(Blocks.NETHER_BRICKS),
@@ -153,6 +153,7 @@ public class MaterialPickerScreen extends Screen {
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
+        GuiGraphics.flushTooltip();
     }
 
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

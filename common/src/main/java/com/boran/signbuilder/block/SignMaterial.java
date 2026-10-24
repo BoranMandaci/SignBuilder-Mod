@@ -11,8 +11,6 @@ public enum SignMaterial implements StringRepresentable {
     ACACIA("acacia"),
     DARK_OAK("dark_oak"),
     MANGROVE("mangrove"),
-    CHERRY("cherry"),
-    BAMBOO("bamboo"),
     IRON("iron"),
     ANDESITE("andesite"),
     GOLD("gold"),

@@ -1150,9 +1150,9 @@ public class SignBlueprintItem extends Item {
             case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
             case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
             case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
-            case 0x1F5DD -> "symbol_key";        // 🗝
-            case 0x1F512 -> "symbol_lock";       // 🔒
-            case 0x1F3C6 -> "symbol_trophy";     // 🏆
+            case 0x1F5DD -> "symbol_key";
+            case 0x1F512 -> "symbol_lock";
+            case 0x1F3C6 -> "symbol_trophy";
             case '⚡' -> "symbol_lightning";
             case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
             case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '₿' -> "symbol_bitcoin"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";

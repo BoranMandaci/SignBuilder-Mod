@@ -49,9 +49,12 @@ public class LcdScreenBlockEntity extends BlockEntity {
     public String cachedWidgetBRText = "";
     public long lastWidgetTick = -100L;
 
+    public net.minecraft.world.phys.AABB renderBoundingBox = null;
+
     public void invalidateGridCache() {
         this.cachedMasterPos = null;
         this.lastCacheUpdateTick = -100L;
+        this.renderBoundingBox = null;
     }
 
     public LcdScreenBlockEntity(BlockPos pos, BlockState state) {
