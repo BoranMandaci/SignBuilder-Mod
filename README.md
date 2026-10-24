@@ -8,11 +8,22 @@
 
 A full-featured, cross-platform Minecraft mod to seamlessly build, color, illuminate, and materialize custom 3D signs and futuristic LCD screens. Decorate your cities, build interactive Redstone keypad locks, and construct glowing neon shop fronts, towering billboards, or animated displays with a highly detailed, dynamic building system perfectly balanced for Survival mode.
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.19.2_%E2%80%94_1.21.4-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Introduction
 
 Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fabric, Forge, and NeoForge** using the Architectury API. Rather than relying on simple vanilla signs, this mod introduces physical blocks for letters, numbers, symbols, sub-block mini letters, modular backplates, and multi-block LCD screens—accompanied by custom tools to construct, paint, texture, automate, and illuminate them dynamically.
+
+---
+
+## 🎮 Supported Versions & Platforms
+
+| Minecraft Version | Fabric | Forge | NeoForge | Required Java |
+| :--- | :---: | :---: | :---: | :---: |
+| **1.21.4** | ✅ | — | ✅ | Java 21 |
+| **1.21.1** | ✅ | — | ✅ | Java 21 |
+| **1.20.1** | ✅ | ✅ | — | Java 17 |
+| **1.19.2** | ✅ | ✅ | — | Java 17 |
 
 ---
 
@@ -35,7 +46,7 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fa
 ## 🛠️ Tech Stack
 
 **Modding API & Languages**
-* ☕ **Java** — Core logic and backend.
+* ☕ **Java** — Core logic and backend (Java 17 for 1.19.2/1.20.1, Java 21 for 1.21.1/1.21.4).
 * 🧩 **Architectury API** — Cross-platform abstraction layer for simultaneous Forge, NeoForge, and Fabric development.
 * 🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Supported mod loaders.
 
@@ -48,8 +59,8 @@ Sign Builder is a cross-platform Minecraft mod built from the ground up for **Fa
 ## 🚀 Getting Started
 
 ### Prerequisites
-* Minecraft `1.20.1` or `1.21.1`
-* **Fabric**, **Forge**, or **NeoForge** Mod Loader
+* Minecraft `1.19.2`, `1.20.1`, `1.21.1`, or `1.21.4`
+* **Fabric**, **Forge**, or **NeoForge** Mod Loader (check the version table above)
 * [Architectury API](https://modrinth.com/mod/architectury-api) (Required Dependency on all loaders)
 * [Fabric API](https://modrinth.com/mod/fabric-api) (Required on Fabric only)
 

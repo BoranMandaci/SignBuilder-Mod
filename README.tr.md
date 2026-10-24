@@ -8,11 +8,22 @@
 
 Özel 3D tabelaları ve fütüristik LCD ekranları sorunsuzca inşa etmek, renklendirmek, aydınlatmak ve materyalleştirmek için tam özellikli, platformlar arası bir Minecraft modu. Hayatta Kalma (Survival) modu için dengelenmiş dinamik inşa sistemiyle şehirlerinizi süsleyin, etkileşimli Redstone tuş takımı kilitleri oluşturun, parlayan neon dükkan vitrinleri ya da animasyonlu devasa ekranlar inşa edin.
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1_%E2%80%94_1.21.1-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.19.2_%E2%80%94_1.21.4-238749?style=flat-square&logo=minecraft) ![Fabric](https://img.shields.io/badge/Fabric-Supported-D1C4AC?style=flat-square) ![Forge](https://img.shields.io/badge/Forge-Supported-DF9D6B?style=flat-square) ![NeoForge](https://img.shields.io/badge/NeoForge-Supported-EF7625?style=flat-square) ![Architectury](https://img.shields.io/badge/Architectury-API-1572B6?style=flat-square) ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
 ## 📖 Giriş
 
 Sign Builder, Architectury API kullanılarak **Fabric, Forge ve NeoForge** için sıfırdan geliştirilmiş, platformlar arası bir Minecraft modudur. Basit vanilla tabelalara bağlı kalmak yerine harfler, sayılar, semboller, blok içi mini harfler, modüler arka plakalar ve çoklu blok LCD ekranlar için fiziksel bloklar sağlarken; bunları dinamik olarak inşa etmek, boyamak, dokulandırmak, otomatikleştirmek ve aydınlatmak için özel araçlar sunar.
+
+---
+
+## 🎮 Desteklenen Sürümler ve Platformlar
+
+| Minecraft Sürümü | Fabric | Forge | NeoForge | Gerekli Java |
+| :--- | :---: | :---: | :---: | :---: |
+| **1.21.4** | ✅ | — | ✅ | Java 21 |
+| **1.21.1** | ✅ | — | ✅ | Java 21 |
+| **1.20.1** | ✅ | ✅ | — | Java 17 |
+| **1.19.2** | ✅ | ✅ | — | Java 17 |
 
 ---
 
@@ -35,7 +46,7 @@ Sign Builder, Architectury API kullanılarak **Fabric, Forge ve NeoForge** için
 ## 🛠️ Teknoloji Yığını
 
 **Modlama API'si & Diller**
-* ☕ **Java** — Çekirdek mantık ve arka uç.
+* ☕ **Java** — Çekirdek mantık ve arka uç (1.19.2/1.20.1 için Java 17, 1.21.1/1.21.4 için Java 21).
 * 🧩 **Architectury API** — Eşzamanlı Forge, NeoForge ve Fabric geliştirmesi için platformlar arası soyutlama katmanı.
 * 🦊 **Fabric** / 🔨 **Forge** / 🟠 **NeoForge** — Desteklenen mod yükleyicileri.
 
@@ -48,8 +59,8 @@ Sign Builder, Architectury API kullanılarak **Fabric, Forge ve NeoForge** için
 ## 🚀 Başlarken
 
 ### Gereksinimler
-* Minecraft `1.20.1` veya `1.21.1`
-* **Fabric**, **Forge** veya **NeoForge** Mod Yükleyicisi
+* Minecraft `1.19.2`, `1.20.1`, `1.21.1` veya `1.21.4`
+* **Fabric**, **Forge** veya **NeoForge** Mod Yükleyicisi (yukarıdaki sürüm tablosuna bakın)
 * [Architectury API](https://modrinth.com/mod/architectury-api) (Tüm yükleyiciler için zorunlu bağımlılık)
 * [Fabric API](https://modrinth.com/mod/fabric-api) (Yalnızca Fabric için gereklidir)
 
