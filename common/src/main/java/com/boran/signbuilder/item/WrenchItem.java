@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -136,7 +135,7 @@ public class WrenchItem extends Item {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
+    public @NotNull InteractionResult use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
 
         CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
@@ -145,13 +144,13 @@ public class WrenchItem extends Item {
                 if (!pLevel.isClientSide()) {
                     finishPinRecording(stack, pPlayer, pLevel);
                 }
-                return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+                return InteractionResult.SUCCESS;
             } else {
                 if (!pLevel.isClientSide()) {
                     String current = tagData.getString("RecordingPin");
                     pPlayer.displayClientMessage(Component.translatable("message.signbuilder.wrench.pin.recording_hint", current).withStyle(ChatFormatting.YELLOW), true);
                 }
-                return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -162,7 +161,7 @@ public class WrenchItem extends Item {
                 pPlayer.displayClientMessage(Component.translatable("message.signbuilder.wrench.smart_fill_toggle").withStyle(ChatFormatting.YELLOW).append(Component.translatable(!isSmartFill ? "gui.signbuilder.on" : "gui.signbuilder.off").withStyle(!isSmartFill ? ChatFormatting.GREEN : ChatFormatting.RED)), true);
                 pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, !isSmartFill ? 1.5F : 0.8F);
             }
-            return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (pLevel.isClientSide()) {
@@ -178,7 +177,7 @@ public class WrenchItem extends Item {
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openWrenchScreen(fc, fm, fa));
         }
 
-        return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -195,7 +194,7 @@ public class WrenchItem extends Item {
                 if (!level.isClientSide()) {
                     finishPinRecording(stack, player, level);
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
 
             if (clickedBlock.getBlock() instanceof LetterBlock) {
@@ -217,7 +216,7 @@ public class WrenchItem extends Item {
                         level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.PLAYERS, 1.0F, 0.8F);
                     }
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
             return InteractionResult.PASS;
         }
@@ -256,7 +255,7 @@ public class WrenchItem extends Item {
                     player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(getModeTranslationKey(copiedMode)).withStyle(ChatFormatting.AQUA)), true);
                     level.playSound(null, targetPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
 
             if (!level.isClientSide()) {
@@ -300,7 +299,7 @@ public class WrenchItem extends Item {
                             && (mode != 11 || customLightConfigurationMatches(letterEntity, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
 
                     if (noChange && !isSmartFill) {
-                        return InteractionResult.sidedSuccess(level.isClientSide());
+                        return InteractionResult.SUCCESS;
                     }
 
                     if (isSmartFill) {
@@ -346,7 +345,7 @@ public class WrenchItem extends Item {
 
                         boolean noChange = letterEntity.getButtonMode() == buttonMode && letterEntity.isSyncWord() == syncWord && letterEntity.getPinCode().equals(pinCode);
                         if (noChange) {
-                            return InteractionResult.sidedSuccess(level.isClientSide());
+                            return InteractionResult.SUCCESS;
                         }
 
                         if (player != null && !player.isCreative()) {
@@ -363,7 +362,7 @@ public class WrenchItem extends Item {
 
                 level.playSound(null, targetPos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
@@ -609,7 +608,7 @@ public class WrenchItem extends Item {
                 player.displayClientMessage(Component.translatable("message.signbuilder.wrench.mode_copied").withStyle(ChatFormatting.YELLOW).append(copiedMode == -1 ? Component.translatable("gui.signbuilder.wrench.mode.turn_off").withStyle(ChatFormatting.RED) : Component.translatable(getModeTranslationKey(copiedMode)).withStyle(ChatFormatting.AQUA)), true);
                 level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 1.5F);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         CompoundTag tagData = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
@@ -658,7 +657,7 @@ public class WrenchItem extends Item {
                     && (mode != 11 || customLightConfigurationMatchesGrid(gridBe, customLightOnTicks, customLightOffTicks, customLightType, customLightRange, customLightOffRange, customLightCloseDelayTicks, customLightNightOnly, customLightPlayers, customLightLowPower, customLightLookOnly, detectsMonsters, detectsAnimals));
 
             if (noChange && !isSmartFill) {
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
 
             if (!level.isClientSide()) {
@@ -688,7 +687,7 @@ public class WrenchItem extends Item {
                 }
                 level.playSound(null, pos, SoundEvents.COPPER_HIT, SoundSource.BLOCKS, 1.0F, 1.5F);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         return InteractionResult.PASS;

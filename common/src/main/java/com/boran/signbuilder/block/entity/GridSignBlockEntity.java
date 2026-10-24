@@ -349,7 +349,7 @@ public class GridSignBlockEntity extends BlockEntity {
         CellData bestCell = null;
         for (CellData cell : cells.values()) {
             if (cell.isBack != isBack) continue;
-            float eps = 0.03f;
+            float eps = 0.08f;
             if (u >= cell.getU1() - eps && u <= cell.getU2() + eps && v >= cell.getV1() - eps && v <= cell.getV2() + eps) {
                 float cellMidU = (cell.getU1() + cell.getU2()) * 0.5f;
                 float cellMidV = (cell.getV1() + cell.getV2()) * 0.5f;

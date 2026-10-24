@@ -19,7 +19,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -137,7 +136,7 @@ public class SignBlueprintItem extends Item {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
+    public @NotNull InteractionResult use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
 
         if (pPlayer.isShiftKeyDown()) {
@@ -157,7 +156,7 @@ public class SignBlueprintItem extends Item {
                             true
                     );
                     pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.2F);
-                    return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
 
                 int size = 1;
@@ -202,7 +201,7 @@ public class SignBlueprintItem extends Item {
                 );
                 pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.2F);
             }
-            return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (pLevel.isClientSide()) {
@@ -214,7 +213,7 @@ public class SignBlueprintItem extends Item {
 
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openBlueprintScreen(finalCurrentText));
         }
-        return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -251,7 +250,6 @@ public class SignBlueprintItem extends Item {
 
         if (!player.isCreative()) {
             int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
-        /* Pre-consumption removed */
         }
 
         Direction clickedFace = pContext.getClickedFace();
@@ -1056,7 +1054,7 @@ public class SignBlueprintItem extends Item {
                 }
 
                 for (String charPath : blocksCells.get(b).values()) {
-                    Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", charPath));
+                    Block block = BuiltInRegistries.BLOCK.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", charPath));
                     if (block != Blocks.AIR) {
                         lettersNeeded.merge(block.asItem(), 1, Integer::sum);
                     }
@@ -1111,7 +1109,7 @@ public class SignBlueprintItem extends Item {
 
         String blockId = getBlockPathForChar(c);
         if (blockId != null) {
-            Block targetBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", blockId));
+            Block targetBlock = BuiltInRegistries.BLOCK.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", blockId));
             if (targetBlock != Blocks.AIR) {
                 CHAR_BLOCK_CACHE.put(c, targetBlock);
                 return targetBlock;
@@ -1166,9 +1164,9 @@ public class SignBlueprintItem extends Item {
             case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
             case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
             case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
-            case 0x1F5DD -> "symbol_key";        // 🗝
-            case 0x1F512 -> "symbol_lock";       // 🔒
-            case 0x1F3C6 -> "symbol_trophy";     // 🏆
+            case 0x1F5DD -> "symbol_key";
+            case 0x1F512 -> "symbol_lock";
+            case 0x1F3C6 -> "symbol_trophy";
             case '⚡' -> "symbol_lightning";
             case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
             case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '₿' -> "symbol_bitcoin"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";

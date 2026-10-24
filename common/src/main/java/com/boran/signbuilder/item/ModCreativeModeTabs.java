@@ -43,7 +43,7 @@ public class ModCreativeModeTabs {
                         for (String name : letterOrder) {
                             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("signbuilder", name);
                             if (BuiltInRegistries.ITEM.containsKey(id)) {
-                                Item item = BuiltInRegistries.ITEM.get(id);
+                                Item item = BuiltInRegistries.ITEM.getValue(id);
                                 if (item != Items.AIR) {
                                     output.accept(item);
                                 }
@@ -87,7 +87,7 @@ public class ModCreativeModeTabs {
                         for (String name : symbolOrder) {
                             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("signbuilder", name);
                             if (BuiltInRegistries.ITEM.containsKey(id)) {
-                                Item item = BuiltInRegistries.ITEM.get(id);
+                                Item item = BuiltInRegistries.ITEM.getValue(id);
                                 if (item != Items.AIR) {
                                     output.accept(item);
                                 }

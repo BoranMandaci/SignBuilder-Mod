@@ -6,6 +6,8 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -32,8 +34,11 @@ public class ModBlocks {
     public static final List<RegistrySupplier<Item>> NUMBER_ITEMS = new ArrayList<>();
     public static final List<RegistrySupplier<Item>> SYMBOL_ITEMS = new ArrayList<>();
 
+    private static final ThreadLocal<String> CURRENT_REGISTERING_NAME = new ThreadLocal<>();
+
     private static BlockBehaviour.Properties createLetterProperties() {
-        return BlockBehaviour.Properties.of()
+        String name = CURRENT_REGISTERING_NAME.get();
+        BlockBehaviour.Properties props = BlockBehaviour.Properties.of()
                 .strength(0.8f)
                 .sound(net.minecraft.world.level.block.SoundType.STONE)
                 .noOcclusion()
@@ -45,6 +50,10 @@ public class ModBlocks {
                         default -> 0;
                     };
                 });
+        if (name != null) {
+            props.setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("signbuilder", name)));
+        }
+        return props;
     }
 
     public static BlockState getStandardPlacementState(BlockPlaceContext context, BlockState defaultState) {
@@ -53,7 +62,6 @@ public class ModBlocks {
 
         net.minecraft.world.item.component.BlockItemStateProperties stateProps = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
         if (stateProps != null && state.hasProperty(LetterBlock.MATERIAL)) {
-            // stateProps parsing is complex, we skip it and rely on BLOCK_ENTITY_DATA.
         }
         
         net.minecraft.world.item.component.CustomData beData = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
@@ -74,8 +82,16 @@ public class ModBlocks {
     }
 
     private static RegistrySupplier<Block> registerLetterBlock(String name, Supplier<Block> supplier) {
-        RegistrySupplier<Block> blockReg = BLOCKS.register(name, supplier);
-        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties()));
+        RegistrySupplier<Block> blockReg = BLOCKS.register(name, () -> {
+            CURRENT_REGISTERING_NAME.set(name);
+            try {
+                return supplier.get();
+            } finally {
+                CURRENT_REGISTERING_NAME.remove();
+            }
+        });
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("signbuilder", name));
+        RegistrySupplier<Item> itemReg = BLOCK_ITEMS.register(name, () -> new BlockItem(blockReg.get(), new Item.Properties().useBlockDescriptionPrefix().setId(itemKey)));
 
         ALL_SIGN_BLOCKS.add(blockReg);
         if (name.startsWith("letter_")) LETTER_ITEMS.add(itemReg);
@@ -1513,6 +1529,7 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> BACKPLATE = BLOCKS.register("backplate",
             () -> new BackplateBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("signbuilder", "backplate")))
                     .strength(0.8f)
                     .sound(net.minecraft.world.level.block.SoundType.WOOD)
                     .noOcclusion()
@@ -1526,19 +1543,21 @@ public class ModBlocks {
                     })));
 
     public static final RegistrySupplier<Item> BACKPLATE_ITEM = BLOCK_ITEMS.register("backplate",
-            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties()));
+            () -> new BackplateItem(BACKPLATE.get(), new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("signbuilder", "backplate")))));
 
     public static final RegistrySupplier<Block> SIGN_PRESS = BLOCKS.register("sign_press",
             () -> new SignPressBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("signbuilder", "sign_press")))
                     .strength(5.0f, 6.0f)
                     .requiresCorrectToolForDrops()
                     .noOcclusion()));
 
     public static final RegistrySupplier<Item> SIGN_PRESS_ITEM = BLOCK_ITEMS.register("sign_press",
-            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties()));
+            () -> new BlockItem(SIGN_PRESS.get(), new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("signbuilder", "sign_press")))));
 
     public static final RegistrySupplier<Block> GRID_SIGN = BLOCKS.register("grid_sign",
             () -> new com.boran.signbuilder.block.GridSignBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("signbuilder", "grid_sign")))
                     .strength(0.8f)
                     .sound(net.minecraft.world.level.block.SoundType.STONE)
                     .noOcclusion()
@@ -1554,6 +1573,7 @@ public class ModBlocks {
 
     public static final RegistrySupplier<Block> LCD_SCREEN = BLOCKS.register("lcd_screen",
             () -> new LcdScreenBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("signbuilder", "lcd_screen")))
                     .strength(1.2f, 3.0f)
                     .sound(net.minecraft.world.level.block.SoundType.METAL)
                     .noOcclusion()
@@ -1563,7 +1583,7 @@ public class ModBlocks {
                     })));
 
     public static final RegistrySupplier<Item> LCD_SCREEN_ITEM = BLOCK_ITEMS.register("lcd_screen",
-            () -> new BlockItem(LCD_SCREEN.get(), new Item.Properties()));
+            () -> new BlockItem(LCD_SCREEN.get(), new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("signbuilder", "lcd_screen")))));
                     
     public static void register() {
         BLOCKS.register();

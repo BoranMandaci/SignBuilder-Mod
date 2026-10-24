@@ -72,7 +72,7 @@ public class BlueprintUndoC2SPacket implements CustomPacketPayload {
                         gridBe.setSuppressDrops(true);
                         if (!player.isCreative()) {
                             for (com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell : gridBe.getCells().values()) {
-                                net.minecraft.world.level.block.Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
+                                net.minecraft.world.level.block.Block letterBlock = BuiltInRegistries.BLOCK.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", cell.character));
                                 if (letterBlock != null && letterBlock != Blocks.AIR) {
                                     itemsToRefund.add(new ItemStack(letterBlock.asItem()));
                                 }

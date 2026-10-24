@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +35,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -50,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BackplateBlock extends Block implements EntityBlock {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<AttachFace> FACE = BlockStateProperties.ATTACH_FACE;
     public static final EnumProperty<SignMaterial> MATERIAL = EnumProperty.create("material", SignMaterial.class);
     public static final net.minecraft.world.level.block.state.properties.IntegerProperty LIGHT_MODE = LetterBlock.LIGHT_MODE;
@@ -81,15 +79,15 @@ public class BackplateBlock extends Block implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
 
         if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         if (held.is(Items.GLOW_INK_SAC)) {
@@ -98,12 +96,12 @@ public class BackplateBlock extends Block implements EntityBlock {
                 int facingRotation = lbe.getFacingRotation();
                 boolean backSide = isOnBackSide(player, pos, facingRotation);
                 if (state.getValue(FACE) == AttachFace.WALL && backSide) {
-                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 boolean currentGlow = backSide ? lbe.isBackplateBackGlowInked() : lbe.isBackplateFrontGlowInked();
                 if (!currentGlow) {
                     if (!player.isCreative() && held.getCount() < 1) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         if (backSide) {
@@ -116,9 +114,9 @@ public class BackplateBlock extends Block implements EntityBlock {
                         }
                         level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
-                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -128,12 +126,12 @@ public class BackplateBlock extends Block implements EntityBlock {
                 int facingRotation = lbe.getFacingRotation();
                 boolean backSide = isOnBackSide(player, pos, facingRotation);
                 if (state.getValue(FACE) == AttachFace.WALL && backSide) {
-                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 boolean currentGlow = backSide ? lbe.isBackplateBackGlowInked() : lbe.isBackplateFrontGlowInked();
                 if (currentGlow) {
                     if (!player.isCreative() && held.getCount() < 1) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         if (backSide) {
@@ -150,9 +148,9 @@ public class BackplateBlock extends Block implements EntityBlock {
                         }
                         level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
-                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -178,7 +176,7 @@ public class BackplateBlock extends Block implements EntityBlock {
             Direction facing = state.getValue(FACING);
             boolean backSide = isOnBackSide(player, pos, facingRotation);
             if (face == AttachFace.WALL && backSide) {
-                return net.minecraft.world.ItemInteractionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             Direction sideFacing = backSide ? facing.getOpposite() : facing;
             int sideRotation = Math.floorMod(facingRotation + (backSide ? 4 : 0), 8);
@@ -258,7 +256,7 @@ public class BackplateBlock extends Block implements EntityBlock {
                         com.boran.signbuilder.client.ClientHooks.setBlocksDirty(pos)
                 );
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
@@ -306,7 +304,7 @@ public class BackplateBlock extends Block implements EntityBlock {
         BlockEntity be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
 
-        boolean hasSilkTouch = tool != null && EnchantmentHelper.getItemEnchantmentLevel(params.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
+        boolean hasSilkTouch = tool != null && EnchantmentHelper.getItemEnchantmentLevel(params.getLevel().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
 
         if (be instanceof LetterBlockEntity lbe) {
             if (hasSilkTouch) {
@@ -530,7 +528,7 @@ public class BackplateBlock extends Block implements EntityBlock {
     public static ItemStack getItemForMaterial(SignMaterial material) {
         if (material == null || material == SignMaterial.DEFAULT) return ItemStack.EMPTY;
         String regName = getRegistryNameForMaterial(material);
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(regName));
+        Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(regName));
         if (item != null && item != Items.AIR) {
             return new ItemStack(item, 1);
         }

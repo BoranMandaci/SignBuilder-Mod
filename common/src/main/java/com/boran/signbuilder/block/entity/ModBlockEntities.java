@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
@@ -30,23 +31,23 @@ public class ModBlockEntities {
                     }
                 } catch (Exception ignored) {}
 
-                return BlockEntityType.Builder.of(
+                return new BlockEntityType<>(
                         (pos, state) -> new LetterBlockEntity(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), pos, state),
-                        validBlocks.toArray(new Block[0])
-                ).build(null);
+                        Set.copyOf(validBlocks)
+                );
             });
 
     public static final RegistrySupplier<BlockEntityType<SignPressBlockEntity>> SIGN_PRESS_BE =
             BLOCK_ENTITIES.register("sign_press_be", () ->
-                    BlockEntityType.Builder.of(SignPressBlockEntity::new, ModBlocks.SIGN_PRESS.get()).build(null));
+                    new BlockEntityType<>(SignPressBlockEntity::new, Set.of(ModBlocks.SIGN_PRESS.get())));
 
     public static final RegistrySupplier<BlockEntityType<com.boran.signbuilder.block.entity.GridSignBlockEntity>> GRID_SIGN_BLOCK_ENTITY = 
             BLOCK_ENTITIES.register("grid_sign_block_entity", () ->
-                    BlockEntityType.Builder.of(com.boran.signbuilder.block.entity.GridSignBlockEntity::new, ModBlocks.GRID_SIGN.get()).build(null));
+                    new BlockEntityType<>(com.boran.signbuilder.block.entity.GridSignBlockEntity::new, Set.of(ModBlocks.GRID_SIGN.get())));
 
     public static final RegistrySupplier<BlockEntityType<LcdScreenBlockEntity>> LCD_SCREEN_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("lcd_screen_block_entity", () ->
-                    BlockEntityType.Builder.of(LcdScreenBlockEntity::new, ModBlocks.LCD_SCREEN.get()).build(null));
+                    new BlockEntityType<>(LcdScreenBlockEntity::new, Set.of(ModBlocks.LCD_SCREEN.get())));
 
     public static void register() {
         BLOCK_ENTITIES.register();

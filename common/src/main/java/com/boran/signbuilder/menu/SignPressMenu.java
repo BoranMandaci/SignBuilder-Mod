@@ -79,7 +79,7 @@ public class SignPressMenu extends AbstractContainerMenu {
         if (!this.selectedBlock.isEmpty() && input.getItem() == Items.WHITE_CONCRETE && input.getCount() >= 4) {
             Item resultItem = this.selectedBlock.equals("backplate")
                     ? ModBlocks.BACKPLATE_ITEM.get()
-                    : BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("signbuilder", this.selectedBlock));
+                    : BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", this.selectedBlock));
 
             if (resultItem != null && resultItem != Items.AIR) {
                 int amountToCraft = 1;

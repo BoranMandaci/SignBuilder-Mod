@@ -173,7 +173,7 @@ public class LetterRenderCache {
 
     private static LetterRenderCache build(LetterBlockEntity entity, BlockRenderDispatcher dispatcher, Object modelManagerRef) {
         BlockState state = entity.getBlockState();
-        RenderType renderType = ItemBlockRenderTypes.getRenderType(state, false);
+        RenderType renderType = ItemBlockRenderTypes.getRenderType(state);
 
         if (state.getBlock() instanceof BackplateBlock) {
             SignMaterial fMat = entity.getBackplateFrontMaterial();
@@ -295,7 +295,6 @@ public class LetterRenderCache {
             letterWallTransZ = (float) (normalZ * plateClearance / modelScale);
         }
 
-        // Back Glyph
         ItemStack backGlyph = entity.getBackGlyph();
         boolean hasBackGlyph = false;
         BlockState backState = null;

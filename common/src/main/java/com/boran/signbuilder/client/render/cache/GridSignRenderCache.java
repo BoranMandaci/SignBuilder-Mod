@@ -211,7 +211,7 @@ public class GridSignRenderCache {
         for (Map.Entry<Integer, GridSignBlockEntity.CellData> entry : entity.getCells().entrySet()) {
             GridSignBlockEntity.CellData data = entry.getValue();
 
-            Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", data.character));
+            Block letterBlock = BuiltInRegistries.BLOCK.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", data.character));
             if (letterBlock == null || letterBlock == Blocks.AIR) continue;
 
             boolean isBack = data.isBack;
@@ -253,7 +253,7 @@ public class GridSignRenderCache {
             float totalTransY = baseTrans.y + offsets.y + cl.y;
             float totalTransZ = baseTrans.z + offsets.z + cl.z;
 
-            RenderType renderType = ItemBlockRenderTypes.getRenderType(letterState, false);
+            RenderType renderType = ItemBlockRenderTypes.getRenderType(letterState);
             BakedModel baseModel = dispatcher.getBlockModel(letterState);
             BakedModel finalLetterModel = (data.material != SignMaterial.DEFAULT || data.glowInked)
                     ? LetterBlockEntityRenderer.getMaterialModel(baseModel, data.material, SignMaterial.DEFAULT, true, data.glowInked)
@@ -352,7 +352,7 @@ public class GridSignRenderCache {
                 }
             }
 
-            backRenderType = ItemBlockRenderTypes.getRenderType(backState, false);
+            backRenderType = ItemBlockRenderTypes.getRenderType(backState);
             backIsMaterial = backMaterial != SignMaterial.DEFAULT;
             backRainbow = backTag != null && backTag.getBoolean("IsRainbow");
             backGlowInked = backTag != null && backTag.getBoolean("IsGlowInked");
@@ -436,7 +436,7 @@ public class GridSignRenderCache {
                 frontTransZ = (float) (normalZ * plateClearance);
             }
 
-            frontRenderType = ItemBlockRenderTypes.getRenderType(frontState, false);
+            frontRenderType = ItemBlockRenderTypes.getRenderType(frontState);
             frontIsMaterial = frontMaterial != SignMaterial.DEFAULT;
             frontRainbow = frontTag != null && frontTag.getBoolean("IsRainbow");
             frontGlowInked = entity.isFrontGlyphGlowInked();

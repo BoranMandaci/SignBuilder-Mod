@@ -44,7 +44,7 @@ public class BackplateItem extends BlockItem {
 
                 if (player != null && player.isShiftKeyDown()) {
                     if (LetterBlock.tryDetachBackplate(level, pos, player)) {
-                        return InteractionResult.sidedSuccess(level.isClientSide());
+                        return InteractionResult.SUCCESS;
                     }
                     return InteractionResult.PASS;
                 } else if (!letter.hasBackplate()) {
@@ -88,7 +88,7 @@ public class BackplateItem extends BlockItem {
                             }
                         });
                     }
-                    return InteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             }
         }
@@ -108,7 +108,7 @@ public class BackplateItem extends BlockItem {
                             }
                             level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
                         }
-                        return InteractionResult.sidedSuccess(level.isClientSide());
+                        return InteractionResult.SUCCESS;
                     }
                     return InteractionResult.PASS;
                 } else if (!gbe.hasBackplate()) {
@@ -138,7 +138,7 @@ public class BackplateItem extends BlockItem {
                         }
                         level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return InteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             }
         }

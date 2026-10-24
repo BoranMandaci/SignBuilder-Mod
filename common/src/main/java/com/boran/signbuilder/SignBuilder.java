@@ -10,6 +10,7 @@ import com.boran.signbuilder.menu.ModMenuTypes;
 import com.boran.signbuilder.network.ModMessages;
 import com.mojang.logging.LogUtils;
 import dev.architectury.event.EventResult;
+import net.minecraft.world.InteractionResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -42,7 +43,7 @@ public class SignBuilder {
                     || player.getOffhandItem().is(net.minecraft.world.item.Items.INK_SAC);
 
             if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof com.boran.signbuilder.item.WrenchItem || held.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem || holdingInk) {
-                return EventResult.pass();
+                return InteractionResult.PASS;
             }
 
             if (hand == InteractionHand.MAIN_HAND) {
@@ -51,7 +52,7 @@ public class SignBuilder {
                             ? com.boran.signbuilder.server.ServerGridModeState.getGridSize(player.getUUID()) > 1
                             : false;
                     if (isGridMode) {
-                        return EventResult.interruptFalse();
+                        return InteractionResult.FAIL;
                     }
                 }
             }
@@ -61,17 +62,17 @@ public class SignBuilder {
                 BlockState state = level.getBlockState(pos);
 
                 if (!level.isClientSide() && state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
-                    return EventResult.interruptFalse();
+                    return InteractionResult.FAIL;
                 }
 
                 if (hand == InteractionHand.MAIN_HAND && !holdingInk && state.getBlock() instanceof LetterBlock) {
                     if (LetterBlock.tryDetachBackplate(level, pos, player)) {
-                        return EventResult.interruptTrue();
+                        return InteractionResult.SUCCESS;
                     }
                 }
             }
 
-            return EventResult.pass();
+            return InteractionResult.PASS;
         });
     }
 

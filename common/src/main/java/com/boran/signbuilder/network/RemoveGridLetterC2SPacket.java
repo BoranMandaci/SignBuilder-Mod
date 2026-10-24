@@ -105,7 +105,7 @@ public record RemoveGridLetterC2SPacket(BlockPos pos, int cellKey) implements Cu
                 gridBe.sync();
 
                 if (!player.isCreative()) {
-                    Block letterBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", removed.character));
+                    Block letterBlock = BuiltInRegistries.BLOCK.getValue(ResourceLocation.fromNamespaceAndPath("signbuilder", removed.character));
                     if (letterBlock != null && letterBlock != Blocks.AIR) {
                         ItemStack letterStack = new ItemStack(letterBlock);
                         if (!player.getInventory().add(letterStack)) {

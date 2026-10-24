@@ -3624,7 +3624,7 @@ public class LcdVisualAnimator {
                 boolean cold = false;
                 if (Minecraft.getInstance().player != null) {
                     BlockPos pos = Minecraft.getInstance().player.blockPosition();
-                    cold = level.getBiome(pos).value().coldEnoughToSnow(pos);
+                    cold = level.getBiome(pos).value().coldEnoughToSnow(pos, level.getSeaLevel());
                 }
                 state = cold ? 3 : 1;
             } else {

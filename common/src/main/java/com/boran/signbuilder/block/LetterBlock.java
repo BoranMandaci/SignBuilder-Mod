@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -38,7 +37,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -58,7 +56,7 @@ public class LetterBlock extends Block implements EntityBlock {
 
     public static final IntegerProperty LIGHT_MODE = IntegerProperty.create("light_mode", 0, 2);
     public static final EnumProperty<SignMaterial> MATERIAL = EnumProperty.create("material", SignMaterial.class);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<AttachFace> FACE = BlockStateProperties.ATTACH_FACE;
 
     public static final VoxelShape BP_WALL_NORTH = Block.box(0, 0, 15, 16, 16, 16);
@@ -288,7 +286,7 @@ public class LetterBlock extends Block implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
@@ -810,14 +808,14 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (hand != InteractionHand.MAIN_HAND) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof PaintBrushItem || held.getItem() instanceof WrenchItem || held.getItem() instanceof SignBlueprintItem) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         boolean holdingInk = player.getMainHandItem().is(Items.GLOW_INK_SAC)
@@ -827,9 +825,9 @@ public class LetterBlock extends Block implements EntityBlock {
 
         if (player.isShiftKeyDown() && !holdingInk) {
             if (tryDetachBackplate(level, pos, player)) {
-                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         BlockEntity rawBe = level.getBlockEntity(pos);
@@ -852,40 +850,40 @@ public class LetterBlock extends Block implements EntityBlock {
             if (targetBackGlyph) {
                 if (!master.isBackGlyphGlowInked()) {
                     if (!player.isCreative() && held.getCount() < cost) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         master.setBackGlyphGlowInked(true);
                         if (!player.isCreative()) held.shrink(cost);
                         level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             } else if (targetBackplate) {
                 boolean currentGlow = onBack ? master.isBackplateBackGlowInked() : master.isBackplateFrontGlowInked();
                 if (!currentGlow) {
                     if (!player.isCreative() && held.getCount() < cost) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         updateAllEntitiesBackplateGlow(level, mPos, mState, size, onBack, true);
                         if (!player.isCreative()) held.shrink(cost);
                         level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             } else if (!master.isGlowInked()) {
                 if (!player.isCreative() && held.getCount() < cost) {
-                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 if (!level.isClientSide()) {
                     master.setGlowInked(true);
                     if (!player.isCreative()) held.shrink(cost);
                     level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 }
-                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (held.is(Items.INK_SAC)) {
@@ -895,7 +893,7 @@ public class LetterBlock extends Block implements EntityBlock {
             if (targetBackGlyph) {
                 if (master.isBackGlyphGlowInked()) {
                     if (!player.isCreative() && held.getCount() < cost) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         master.setBackGlyphGlowInked(false);
@@ -908,13 +906,13 @@ public class LetterBlock extends Block implements EntityBlock {
                         }
                         level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             } else if (targetBackplate) {
                 boolean currentGlow = onBack ? master.isBackplateBackGlowInked() : master.isBackplateFrontGlowInked();
                 if (currentGlow) {
                     if (!player.isCreative() && held.getCount() < cost) {
-                        return net.minecraft.world.ItemInteractionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                     if (!level.isClientSide()) {
                         updateAllEntitiesBackplateGlow(level, mPos, mState, size, onBack, false);
@@ -927,11 +925,11 @@ public class LetterBlock extends Block implements EntityBlock {
                         }
                         level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
-                    return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                    return InteractionResult.SUCCESS;
                 }
             } else if (master.isGlowInked()) {
                 if (!player.isCreative() && held.getCount() < cost) {
-                    return net.minecraft.world.ItemInteractionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
                 if (!level.isClientSide()) {
                     master.setGlowInked(false);
@@ -944,9 +942,9 @@ public class LetterBlock extends Block implements EntityBlock {
                     }
                     level.playSound(null, pos, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
                 }
-                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (held.getItem() instanceof BlockItem blockItem
@@ -954,26 +952,26 @@ public class LetterBlock extends Block implements EntityBlock {
                 && master.hasBackplate()
                 && onBack) {
             if (!master.getBackGlyph().isEmpty()) {
-                return net.minecraft.world.ItemInteractionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             if (!player.isCreative() && held.getCount() < cost) {
-                return net.minecraft.world.ItemInteractionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             if (!level.isClientSide()) {
                 master.setBackGlyph(held);
                 if (!player.isCreative()) held.shrink(cost);
                 level.playSound(null, pos, net.minecraft.sounds.SoundEvents.WOOD_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         if (held.is(ModBlocks.BACKPLATE_ITEM.get())) {
             if (master.hasBackplate()) {
-                return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
 
             if (!player.isCreative() && held.getCount() < cost) {
-                return net.minecraft.world.ItemInteractionResult.FAIL;
+                return InteractionResult.FAIL;
             }
 
             if (!level.isClientSide()) {
@@ -1014,13 +1012,13 @@ public class LetterBlock extends Block implements EntityBlock {
                     }
                 });
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         AttachFace face = state.hasProperty(FACE) ? state.getValue(FACE) : AttachFace.WALL;
         if (face == AttachFace.WALL && master.getButtonMode() != 0) {
             if (master.getButtonMode() == 4) {
-                return net.minecraft.world.ItemInteractionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
             if (!level.isClientSide()) {
                 if (master.isSyncWord() && master.getButtonMode() != 3) {
@@ -1029,7 +1027,7 @@ public class LetterBlock extends Block implements EntityBlock {
                     master.triggerPress(player);
                 }
             }
-            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
@@ -1414,7 +1412,7 @@ public class LetterBlock extends Block implements EntityBlock {
     }
 
     private void spawnLetterDrops(Level level, BlockPos dropPos, BlockState dropState, LetterBlockEntity lbe, int multiplier, int groupSize, ItemStack tool) {
-        boolean hasSilkTouch = !tool.isEmpty() && EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
+        boolean hasSilkTouch = !tool.isEmpty() && EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), tool) > 0;
         LetterBlockEntity backplateSource = findBackplateSource(level, dropPos, dropState, lbe, groupSize);
 
         if (hasSilkTouch) {
@@ -1637,10 +1635,7 @@ public class LetterBlock extends Block implements EntityBlock {
         return List.of();
     }
 
-    @Override
-    public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-        super.neighborChanged(pState, pLevel, pPos, pBlock, pFromPos, pIsMoving);
-    }
+
 
     @Nullable
     @Override

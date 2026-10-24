@@ -128,14 +128,12 @@ public class PaintBrushScreen extends Screen {
 
     @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Leave empty to prevent double rendering
     }
 
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         int panelLeft = Math.min(startX, matBtnX) - dynamicPadding;
         int panelRight = Math.max(startX + gridWidth, matBtnX + matBtnWidth) + dynamicPadding;
@@ -163,7 +161,7 @@ public class PaintBrushScreen extends Screen {
 
         graphics.fill(x - 1, y - 1, x + 5, y + 5, glowColor);
         graphics.fill(x, y, x + 4, y + 4, color);
-        graphics.fill(x, y, x + 2, y + 2, 0xAAFFFFFF); // Minik beyaz yansıma
+        graphics.fill(x, y, x + 2, y + 2, 0xAAFFFFFF);
 
         if (mouseX >= x - 2 && mouseX <= x + 6 && mouseY >= y - 2 && mouseY <= y + 6) {
             Component sfPrefix = Component.translatable("gui.signbuilder.smart_fill");

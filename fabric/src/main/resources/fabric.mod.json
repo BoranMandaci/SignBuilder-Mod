@@ -12,6 +12,7 @@
     "sources": ""
   },
   "license": "GPL-3.0",
+  "accessWidener": "signbuilder.accesswidener",
   "icon": "assets/signbuilder/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -24,7 +25,7 @@
   },
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.20.1",
-    "architectury": ">=9.1.12"
+    "minecraft": ">=1.21.4",
+    "architectury": ">=15.0.0"
   }
 }

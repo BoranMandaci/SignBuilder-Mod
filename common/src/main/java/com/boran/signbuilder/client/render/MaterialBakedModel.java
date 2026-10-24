@@ -5,7 +5,6 @@ import com.boran.signbuilder.block.LetterBlock;
 import com.boran.signbuilder.block.SignMaterial;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -116,7 +115,7 @@ public class MaterialBakedModel implements BakedModel {
 
             if (targetMat == SignMaterial.DEFAULT) {
                 if (isGlowInked && quad.isShade()) {
-                    newQuads.add(new BakedQuad(quad.getVertices(), tint, quad.getDirection(), quad.getSprite(), false));
+                    newQuads.add(new BakedQuad(quad.getVertices(), tint, quad.getDirection(), quad.getSprite(), false, quad.getLightEmission()));
                 } else {
                     newQuads.add(quad);
                 }
@@ -147,7 +146,7 @@ public class MaterialBakedModel implements BakedModel {
                 newData[vIndex] = Float.floatToIntBits(newV0 + relV * (newV1 - newV0));
             }
 
-            newQuads.add(new BakedQuad(newData, tint, quad.getDirection(), newSprite, quadShade));
+            newQuads.add(new BakedQuad(newData, tint, quad.getDirection(), newSprite, quadShade, quad.getLightEmission()));
         }
         return newQuads;
     }
@@ -195,14 +194,12 @@ public class MaterialBakedModel implements BakedModel {
             case MOSSY_STONE_BRICKS -> "block/mossy_stone_bricks";
             default -> "block/white_concrete";
         };
-        return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath("minecraft", path));
+        return Minecraft.getInstance().getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.fromNamespaceAndPath("minecraft", path));
     }
 
     @Override public boolean useAmbientOcclusion() { return originalModel.useAmbientOcclusion(); }
     @Override public boolean isGui3d() { return originalModel.isGui3d(); }
     @Override public boolean usesBlockLight() { return originalModel.usesBlockLight(); }
-    @Override public boolean isCustomRenderer() { return originalModel.isCustomRenderer(); }
     @Override public @NotNull TextureAtlasSprite getParticleIcon() { return originalModel.getParticleIcon(); }
     @Override public @NotNull ItemTransforms getTransforms() { return originalModel.getTransforms(); }
-    @Override public @NotNull ItemOverrides getOverrides() { return ItemOverrides.EMPTY; }
 }

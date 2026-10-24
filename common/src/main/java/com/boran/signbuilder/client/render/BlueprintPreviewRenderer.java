@@ -684,7 +684,7 @@ public class BlueprintPreviewRenderer {
                     row = index / gridSize;
                 }
                 String path = entry.getValue();
-                Block letterBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("signbuilder", path));
+                Block letterBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("signbuilder", path));
                 if (letterBlock == null || letterBlock == net.minecraft.world.level.block.Blocks.AIR) continue;
 
                 BlockState letterState = letterBlock.defaultBlockState();

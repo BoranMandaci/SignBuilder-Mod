@@ -15,25 +15,6 @@ import java.util.List;
 public class ModColorHandlers {
 
     public static void register() {
-        List<ItemLike> signItems = new ArrayList<>();
-        for (RegistrySupplier<Block> supplier : ModBlocks.ALL_SIGN_BLOCKS) {
-            try {
-                if (supplier != null && supplier.isPresent()) {
-                    signItems.add(supplier.get());
-                }
-            } catch (Exception ignored) {}
-        }
-
-        if (!signItems.isEmpty()) {
-            ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, signItems.toArray(new ItemLike[0]));
-        }
-
-        try {
-            if (ModBlocks.BACKPLATE_ITEM.isPresent()) {
-                ColorHandlerRegistry.registerItemColors(ModColorHandlers::getItemColor, ModBlocks.BACKPLATE_ITEM.get());
-            }
-        } catch (Exception ignored) {}
-
         List<Block> blocks = new ArrayList<>();
         for (RegistrySupplier<Block> supplier : ModBlocks.ALL_SIGN_BLOCKS) {
             try {

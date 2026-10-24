@@ -61,7 +61,7 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                 }
             }
 
-            VertexConsumer plateBuffer = bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(cache.plateState, false));
+            VertexConsumer plateBuffer = bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(cache.plateState));
             int fLight = (entity.isBackplateFrontGlowInked() || entity.isActive()) ? 15728880 : plateLight;
             int bLight = (entity.isBackplateBackGlowInked() || entity.isActive()) ? 15728880 : plateLight;
             LetterBlockEntityRenderer.renderPlateQuads(poseStack.last(), plateBuffer, cache.plateQuads, fColor, bColor, fLight, bLight, packedOverlay);

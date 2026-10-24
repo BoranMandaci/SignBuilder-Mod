@@ -40,7 +40,7 @@ public class ClientModEvents {
                                     )
                             );
                             player.swing(hand);
-                            return dev.architectury.event.EventResult.interruptFalse();
+                            return net.minecraft.world.InteractionResult.FAIL;
                         }
                     }
 
@@ -55,7 +55,7 @@ public class ClientModEvents {
                             held.is(net.minecraft.world.item.Items.GLOW_INK_SAC) ||
                             held.is(net.minecraft.world.item.Items.INK_SAC) ||
                             holdingInk) {
-                        return dev.architectury.event.EventResult.pass();
+                        return net.minecraft.world.InteractionResult.PASS;
                     }
 
                     if (player.isShiftKeyDown()) {
@@ -65,29 +65,35 @@ public class ClientModEvents {
                                 com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
                                 if (cell != null) {
                                     int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
+                                    gbe.getCells().remove(cellKey);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
                                     );
                                     player.swing(hand);
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
-                                    return dev.architectury.event.EventResult.interruptFalse();
+                                    return net.minecraft.world.InteractionResult.FAIL;
                                 } else if (ray.isBack() && !gbe.getBackGlyph().isEmpty()) {
+                                    gbe.setBackGlyph(net.minecraft.world.item.ItemStack.EMPTY);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -1)
                                     );
                                     player.swing(hand);
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
-                                    return dev.architectury.event.EventResult.interruptFalse();
+                                    return net.minecraft.world.InteractionResult.FAIL;
                                 } else if (!ray.isBack() && !gbe.getFrontGlyph().isEmpty()) {
+                                    gbe.setFrontGlyph(net.minecraft.world.item.ItemStack.EMPTY);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -2)
                                     );
                                     player.swing(hand);
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
-                                    return dev.architectury.event.EventResult.interruptFalse();
+                                    return net.minecraft.world.InteractionResult.FAIL;
                                 }
                             }
-                            return dev.architectury.event.EventResult.pass();
+                            return net.minecraft.world.InteractionResult.PASS;
                         }
                     }
 
@@ -104,7 +110,7 @@ public class ClientModEvents {
                             if (client.level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
                                 if (gbe.hasCollision(gridSize, col, row, isBack)) {
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.VILLAGER_NO, 1.0F));
-                                    return dev.architectury.event.EventResult.interruptFalse();
+                                    return net.minecraft.world.InteractionResult.FAIL;
                                 }
                             }
 
@@ -119,14 +125,14 @@ public class ClientModEvents {
                                         )
                                 );
                                 player.swing(hand);
-                                return dev.architectury.event.EventResult.interruptFalse();
+                                return net.minecraft.world.InteractionResult.FAIL;
                             }
                         }
-                        return dev.architectury.event.EventResult.interruptFalse();
+                        return net.minecraft.world.InteractionResult.FAIL;
                     }
                 }
             }
-            return dev.architectury.event.EventResult.pass();
+            return net.minecraft.world.InteractionResult.PASS;
         });
     }
 }
