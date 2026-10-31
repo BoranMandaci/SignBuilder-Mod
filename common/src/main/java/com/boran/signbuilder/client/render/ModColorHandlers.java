@@ -77,30 +77,34 @@ public class ModColorHandlers {
 
         if (stack.is(ModBlocks.BACKPLATE_ITEM.get())) {
             if (tintIndex == 0) {
-                String fMat = getTagString(beTag, "BackplateFrontMaterial", "backplateFrontMaterial");
+                String fMat = getTagString(beTag, "BackplateFrontMaterial", "backplateFrontMaterial", "BPFrontMat", "BPFMat");
                 if (!fMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(fMat)) return 0xFFFFFF;
 
-                if (beTag.getBoolean("BackplateFrontRainbow") || beTag.getBoolean("backplateFrontRainbow")) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+                if (beTag.getBoolean("BackplateFrontRainbow") || beTag.getBoolean("backplateFrontRainbow")
+                        || beTag.getBoolean("BPFrontRainbow") || beTag.getBoolean("BPFRainbow")) {
+                    return calculateRainbow();
                 }
                 if (beTag.contains("BackplateFrontColor")) return beTag.getInt("BackplateFrontColor");
                 if (beTag.contains("backplateFrontColor")) return beTag.getInt("backplateFrontColor");
+                if (beTag.contains("BPFrontColor")) return beTag.getInt("BPFrontColor");
+                if (beTag.contains("BPFColor")) return beTag.getInt("BPFColor");
             } else if (tintIndex == 1) {
-                String bMat = getTagString(beTag, "BackplateBackMaterial", "backplateBackMaterial");
+                String bMat = getTagString(beTag, "BackplateBackMaterial", "backplateBackMaterial", "BPBackMat", "BPBMat");
                 if (!bMat.isEmpty() && !"DEFAULT".equalsIgnoreCase(bMat)) return 0xFFFFFF;
 
-                if (beTag.getBoolean("BackplateBackRainbow") || beTag.getBoolean("backplateBackRainbow")) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+                if (beTag.getBoolean("BackplateBackRainbow") || beTag.getBoolean("backplateBackRainbow")
+                        || beTag.getBoolean("BPBackRainbow") || beTag.getBoolean("BPBRainbow")) {
+                    return calculateRainbow();
                 }
                 if (beTag.contains("BackplateBackColor")) return beTag.getInt("BackplateBackColor");
                 if (beTag.contains("backplateBackColor")) return beTag.getInt("backplateBackColor");
+                if (beTag.contains("BPBackColor")) return beTag.getInt("BPBackColor");
+                if (beTag.contains("BPBColor")) return beTag.getInt("BPBColor");
             }
             return 0xFFFFFF;
         }
 
-        if (tintIndex != 0) {
+        if (tintIndex != 0 && tintIndex != 1) {
             return 0xFFFFFF;
         }
 
@@ -110,10 +114,10 @@ public class ModColorHandlers {
         }
 
         if (beTag.getBoolean("IsRainbow") || beTag.getBoolean("Rainbow") || beTag.getBoolean("isRainbow")) {
-            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-            return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+            return calculateRainbow();
         }
 
+        if (beTag.contains("RGBColor")) return beTag.getInt("RGBColor");
         if (beTag.contains("RgbColor")) return beTag.getInt("RgbColor");
         if (beTag.contains("rgbColor")) return beTag.getInt("rgbColor");
         if (beTag.contains("ColorIndex")) return PaintBrushItem.getActualHexColor(beTag.getInt("ColorIndex"));
@@ -127,6 +131,11 @@ public class ModColorHandlers {
         }
 
         return 0xFFFFFF;
+    }
+
+    private static int calculateRainbow() {
+        float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
+        return java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
     }
 
     private static String getTagString(CompoundTag tag, String... keys) {

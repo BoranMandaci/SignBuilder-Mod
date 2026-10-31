@@ -24,6 +24,7 @@ public class SignBuilderNeoForge {
             modEventBus.addListener(this::onClientSetup);
             modEventBus.addListener(this::registerRenderers);
             modEventBus.addListener(this::registerScreens);
+            modEventBus.addListener(this::onModifyBakingResult);
             NeoForge.EVENT_BUS.addListener(this::onRenderLevelStage);
         }
     }
@@ -40,6 +41,10 @@ public class SignBuilderNeoForge {
 
     private void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
         event.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
+    }
+
+    private void onModifyBakingResult(net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult event) {
+        com.boran.signbuilder.client.render.SignBuilderBakedModel.onModifyBakingResult(event.getModels());
     }
 
     private void onRenderLevelStage(RenderLevelStageEvent event) {

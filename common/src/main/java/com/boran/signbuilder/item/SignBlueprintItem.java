@@ -274,10 +274,17 @@ public class SignBlueprintItem extends Item {
         for (int i = 0; i < text.length(); ) {
             int c = text.codePointAt(i);
             i += Character.charCount(c);
-            if (c == ' ' || c == 0xFE0F) continue;
+            if (c == 0xFE0F) continue;
+            if (c == ' ') {
+                effectiveIdx++;
+                continue;
+            }
 
             Block blockToPlace = getBlockForChar(c);
-            if (blockToPlace == null) continue;
+            if (blockToPlace == null) {
+                effectiveIdx++;
+                continue;
+            }
 
             if (!isVertical) {
                 if (size == 1) {
