@@ -70,16 +70,14 @@ public class MaterialBakedModel implements BakedModel {
     public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, @NotNull RandomSource random) {
         List<BakedQuad> originalQuads = originalModel.getQuads(state, direction, random);
 
-        if (state == null) {
-            return originalQuads;
-        }
-
         SignMaterial currentFMat = this.frontMat;
-        if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(LetterBlock.MATERIAL)) {
-            currentFMat = state.getValue(LetterBlock.MATERIAL);
-        }
-        if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(BackplateBlock.MATERIAL)) {
-            currentFMat = state.getValue(BackplateBlock.MATERIAL);
+        if (state != null) {
+            if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(LetterBlock.MATERIAL)) {
+                currentFMat = state.getValue(LetterBlock.MATERIAL);
+            }
+            if (currentFMat == SignMaterial.DEFAULT && state.hasProperty(BackplateBlock.MATERIAL)) {
+                currentFMat = state.getValue(BackplateBlock.MATERIAL);
+            }
         }
 
         SignMaterial currentBMat = this.backMat;
@@ -106,8 +104,10 @@ public class MaterialBakedModel implements BakedModel {
             } else {
                 if (tint == 0) {
                     targetMat = fMat;
+                    if (fMat != SignMaterial.DEFAULT) tint = -1;
                 } else if (tint == 1) {
                     targetMat = bMat;
+                    if (bMat != SignMaterial.DEFAULT) tint = -1;
                 }
             }
 
@@ -149,6 +149,10 @@ public class MaterialBakedModel implements BakedModel {
             newQuads.add(new BakedQuad(newData, tint, quad.getDirection(), newSprite, quadShade, quad.getLightEmission()));
         }
         return newQuads;
+    }
+
+    public static void clearQuadCache() {
+        GLOBAL_QUAD_CACHE.clear();
     }
 
     public static TextureAtlasSprite getSpriteForMaterial(SignMaterial material) {

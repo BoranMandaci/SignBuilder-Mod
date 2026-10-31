@@ -16,6 +16,7 @@ public class ClientModEvents {
         GridModeManager.init();
         KeyMappingRegistry.register(GridModeManager.TOGGLE_GRID_KEY);
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
+        ClientTickEvent.CLIENT_POST.register(com.boran.signbuilder.client.render.SignBuilderItemModel::checkAndWrap);
         
         dev.architectury.event.events.common.InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             if (player.level().isClientSide()) {

@@ -222,6 +222,10 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
         return getMaterialModel(model, front, back, letter, false);
     }
 
+    public static void clearModelCache() {
+        MATERIAL_MODELS.clear();
+    }
+
     private static void applyRotation(PoseStack poseStack, BlockState state, LetterBlockEntity entity, boolean blockCentered) {
         if (!state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             return;
