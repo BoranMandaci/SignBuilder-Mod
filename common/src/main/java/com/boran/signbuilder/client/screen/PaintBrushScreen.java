@@ -234,8 +234,7 @@ public class PaintBrushScreen extends Screen {
             renderWidget(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
         }
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            float hue = (Minecraft.getInstance().level.getGameTime() % 120) / 120f;
-            renderColorButton(graphics, this.x, this.y, this.width, this.height, java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF, this.isHoveredOrFocused());
+            renderColorButton(graphics, this.x, this.y, this.width, this.height, com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb(), this.isHoveredOrFocused());
             graphics.drawCenteredString(Minecraft.getInstance().font, "R", this.x + this.width / 2, this.y + (this.height - 8) / 2, 0xFFFFFF);
             if (this.isHoveredOrFocused() && this.tooltip != null) {
                 graphics.renderTooltip(Minecraft.getInstance().font, this.tooltip.getMessage(), mouseX, mouseY);

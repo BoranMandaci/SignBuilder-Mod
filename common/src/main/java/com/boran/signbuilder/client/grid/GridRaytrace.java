@@ -99,6 +99,23 @@ public class GridRaytrace {
         }
 
         int rotationDegrees = com.boran.signbuilder.block.SignRotation.deltaDegrees(rotation, facing);
+
+        if (rotationDegrees != 0 && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL && player != null) {
+            double nx = com.boran.signbuilder.block.SignRotation.facingX(rotation);
+            double nz = com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+            net.minecraft.world.phys.Vec3 eye = player.getEyePosition();
+            net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+            double denom = look.x * nx + look.z * nz;
+            if (Math.abs(denom) > 1e-5) {
+                double t = ((pos.getX() + 0.5 - eye.x) * nx + (pos.getZ() + 0.5 - eye.z) * nz) / denom;
+                if (t > 0.0 && t < 12.0) {
+                    rx = eye.x + t * look.x - pos.getX();
+                    ry = eye.y + t * look.y - pos.getY();
+                    rz = eye.z + t * look.z - pos.getZ();
+                }
+            }
+        }
+
         double radians = Math.toRadians(rotationDegrees);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);
@@ -157,16 +174,30 @@ public class GridRaytrace {
         if (mc.level == null) return null;
         BlockState state = mc.level.getBlockState(pos);
         if (!(state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock)) {
-            BlockPos above = pos.above();
-            if (mc.level.getBlockState(above).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
-                pos = above;
-                state = mc.level.getBlockState(above);
+            if (mc.level.getBlockState(pos.above()).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+                pos = pos.above();
+                state = mc.level.getBlockState(pos);
+            } else if (mc.level.getBlockState(pos.below()).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+                pos = pos.below();
+                state = mc.level.getBlockState(pos);
             } else {
                 for (Direction dir : Direction.Plane.HORIZONTAL) {
-                    BlockPos neighbor = above.relative(dir);
+                    BlockPos neighbor = pos.relative(dir);
                     if (mc.level.getBlockState(neighbor).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
                         pos = neighbor;
                         state = mc.level.getBlockState(neighbor);
+                        break;
+                    }
+                    BlockPos neighborAbove = neighbor.above();
+                    if (mc.level.getBlockState(neighborAbove).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+                        pos = neighborAbove;
+                        state = mc.level.getBlockState(neighborAbove);
+                        break;
+                    }
+                    BlockPos neighborBelow = neighbor.below();
+                    if (mc.level.getBlockState(neighborBelow).getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+                        pos = neighborBelow;
+                        state = mc.level.getBlockState(neighborBelow);
                         break;
                     }
                 }
@@ -229,6 +260,23 @@ public class GridRaytrace {
         }
 
         int rotationDegrees = com.boran.signbuilder.block.SignRotation.deltaDegrees(rotation, facing);
+
+        if (rotationDegrees != 0 && aFace != net.minecraft.world.level.block.state.properties.AttachFace.WALL && player != null) {
+            double nx = com.boran.signbuilder.block.SignRotation.facingX(rotation);
+            double nz = com.boran.signbuilder.block.SignRotation.facingZ(rotation);
+            net.minecraft.world.phys.Vec3 eye = player.getEyePosition();
+            net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+            double denom = look.x * nx + look.z * nz;
+            if (Math.abs(denom) > 1e-5) {
+                double t = ((pos.getX() + 0.5 - eye.x) * nx + (pos.getZ() + 0.5 - eye.z) * nz) / denom;
+                if (t > 0.0 && t < 12.0) {
+                    rx = eye.x + t * look.x - pos.getX();
+                    ry = eye.y + t * look.y - pos.getY();
+                    rz = eye.z + t * look.z - pos.getZ();
+                }
+            }
+        }
+
         double radians = Math.toRadians(rotationDegrees);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);

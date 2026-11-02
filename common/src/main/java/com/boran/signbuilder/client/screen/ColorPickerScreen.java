@@ -10,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
-import java.awt.Color;
 
 public class ColorPickerScreen extends Screen {
     private final ItemStack brushStack;
@@ -35,7 +34,7 @@ public class ColorPickerScreen extends Screen {
         this.parentScreen = parentScreen;
         this.onColorSelected = onColorSelected;
         this.selectedColorHex = initialColor;
-        float[] hsb = Color.RGBtoHSB((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
+        float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
         this.hue = hsb[0];
         this.saturation = hsb[1];
         this.brightness = hsb[2];
@@ -53,7 +52,7 @@ public class ColorPickerScreen extends Screen {
                 int savedColor = tag.getInt("SelectedColor");
                 if (savedColor > 15) {
                     this.selectedColorHex = savedColor;
-                    float[] hsb = Color.RGBtoHSB((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
+                    float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
                     this.hue = hsb[0];
                     this.saturation = hsb[1];
                     this.brightness = hsb[2];
@@ -68,6 +67,10 @@ public class ColorPickerScreen extends Screen {
 
     @Override
     protected void init() {
+        super.init();
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        }
         this.layoutScale = Math.min(1.0F, Math.min((this.width - 24.0F) / 208.0F, (this.height - 24.0F) / 198.0F));
         this.layoutScale = Math.max(0.35F, this.layoutScale);
         int centerX = this.width / 2;
@@ -150,7 +153,7 @@ public class ColorPickerScreen extends Screen {
 
             if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
                 this.selectedColorHex = ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
-                float[] hsb = Color.RGBtoHSB(r, g, b, null);
+                float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb(r, g, b, null);
                 this.hue = hsb[0];
                 this.saturation = hsb[1];
                 this.brightness = hsb[2];
@@ -173,7 +176,7 @@ public class ColorPickerScreen extends Screen {
                 int g = (selectedColorHex >> 8) & 0xFF;
                 int b = selectedColorHex & 0xFF;
 
-                float[] hsb = Color.RGBtoHSB(r, g, b, null);
+                float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb(r, g, b, null);
                 this.hue = hsb[0];
                 this.saturation = hsb[1];
                 this.brightness = hsb[2];
@@ -269,14 +272,14 @@ public class ColorPickerScreen extends Screen {
         float b = 1.0f - ((float) (mouseY - (centerY - scaled(30))) / scaled(80));
         this.saturation = Mth.clamp(s, 0.0f, 1.0f);
         this.brightness = Mth.clamp(b, 0.0f, 1.0f);
-        this.selectedColorHex = Color.HSBtoRGB(hue, saturation, brightness) & 0xFFFFFF;
+        this.selectedColorHex = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, saturation, brightness) & 0xFFFFFF;
         updateInputFieldsFromPicker();
     }
 
     private void updateHue(double mouseY, int centerY) {
         float h = 1.0f - ((float) (mouseY - (centerY - scaled(30))) / scaled(80));
         this.hue = Mth.clamp(h, 0.0f, 1.0f);
-        this.selectedColorHex = Color.HSBtoRGB(hue, saturation, brightness) & 0xFFFFFF;
+        this.selectedColorHex = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, saturation, brightness) & 0xFFFFFF;
         updateInputFieldsFromPicker();
     }
 
@@ -312,8 +315,8 @@ public class ColorPickerScreen extends Screen {
         int gradientStep = Math.max(1, scaled(2));
         for (int x = 0; x < boxWidth; x += gradientStep) {
             float s = x / (float) boxWidth;
-            int topColor = Color.HSBtoRGB(hue, s, 1.0f);
-            int middleColor = Color.HSBtoRGB(hue, s, 0.5f);
+            int topColor = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 1.0f);
+            int middleColor = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 0.5f);
             int columnEnd = Math.min(boxWidth, x + gradientStep);
             guiGraphics.fillGradient(boxX + x, boxY, boxX + columnEnd, boxY + halfBoxHeight, topColor, middleColor);
             guiGraphics.fillGradient(boxX + x, boxY + halfBoxHeight, boxX + columnEnd, boxY + boxHeight, middleColor, 0xFF000000);
@@ -330,7 +333,7 @@ public class ColorPickerScreen extends Screen {
         int hueWidth = scaled(15);
         for (int y = 0; y < boxHeight; y += gradientStep) {
             float h = 1.0f - (y / (float) boxHeight);
-            int color = Color.HSBtoRGB(h, 1.0f, 1.0f);
+            int color = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(h, 1.0f, 1.0f);
             guiGraphics.fill(hueX, boxY + y, hueX + hueWidth, boxY + Math.min(boxHeight, y + gradientStep), color);
         }
         guiGraphics.renderOutline(hueX - 1, boxY - 1, hueWidth + 2, boxHeight + 2, 0xFF9AA7B5);
@@ -380,5 +383,30 @@ public class ColorPickerScreen extends Screen {
 
     private int getHexInputY(int centerY) {
         return getRgbInputY(centerY, 2) + getRgbInputHeight() + scaled(6);
+    }
+
+    @Override
+    public void removed() {
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+        }
+        super.removed();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.rInput != null) {
+            this.rInput.tick();
+        }
+        if (this.gInput != null) {
+            this.gInput.tick();
+        }
+        if (this.bInput != null) {
+            this.bInput.tick();
+        }
+        if (this.hexInput != null) {
+            this.hexInput.tick();
+        }
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import com.mojang.math.Matrix4f;
 
-import java.awt.Color;
 
 public class LcdVisualAnimator {
 
@@ -846,14 +845,13 @@ public class LcdVisualAnimator {
 
     private static void drawColon(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
                                   float x, float y, float w, float h, int activeColor, int dimColor, boolean active) {
+        if (!active) return;
         float dotSize = Math.max(1.0f, w * 0.70f);
         float cx = x + (w - dotSize) * 0.5f;
         float dot1Y = y + h * 0.28f;
         float dot2Y = y + h * 0.65f;
-        int col = active ? activeColor : dimColor;
-        int alpha = active ? 255 : 35;
-        q(vc, mat, light, g, cx, dot1Y, cx + dotSize, dot1Y + dotSize, col, alpha);
-        q(vc, mat, light, g, cx, dot2Y, cx + dotSize, dot2Y + dotSize, col, alpha);
+        q(vc, mat, light, g, cx, dot1Y, cx + dotSize, dot1Y + dotSize, activeColor, 255);
+        q(vc, mat, light, g, cx, dot2Y, cx + dotSize, dot2Y + dotSize, activeColor, 255);
     }
 
     private static void draw7SegmentDigit(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
@@ -875,9 +873,8 @@ public class LcdVisualAnimator {
 
     private static void renderSeg(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
                                   float x1, float y1, float x2, float y2, boolean on, int activeColor, int dimColor) {
-        if (!on && Math.max(x2 - x1, y2 - y1) < 2.2f) return;
-        int col = on ? activeColor : dimColor;
-        q(vc, mat, light, g, x1, y1, x2, y2, col, 255);
+        if (!on) return;
+        q(vc, mat, light, g, x1, y1, x2, y2, activeColor, 255);
     }
 
     private static void renderStarfield(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,

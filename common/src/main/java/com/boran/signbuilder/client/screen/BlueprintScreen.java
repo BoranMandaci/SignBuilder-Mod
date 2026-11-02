@@ -89,6 +89,9 @@ public class BlueprintScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        }
         this.symbolButtons.clear();
         this.panelWidth = Math.min(PANEL_WIDTH, Math.max(0, this.width - 32));
         this.layoutScaleY = Math.max(0.35F, Math.min(1.0F, (this.height - 24.0F) / PANEL_HEIGHT));
@@ -1169,7 +1172,9 @@ public class BlueprintScreen extends Screen {
                                 .append(modeComp.copy().withStyle(modeColor))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.literal(currentGridText + extraInfo).withStyle(ChatFormatting.WHITE))
-                                .append(Component.literal(" [▣ ").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(" [").withStyle(ChatFormatting.GRAY))
+                                .append(Component.translatable("block.signbuilder.backplate").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))
                                 .append(Component.literal("]").withStyle(ChatFormatting.GRAY)),
@@ -1196,7 +1201,9 @@ public class BlueprintScreen extends Screen {
                                 .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                                         .withStyle(this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
-                                .append(Component.literal("[▣ ").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal("[").withStyle(ChatFormatting.GRAY))
+                                .append(Component.translatable("block.signbuilder.backplate").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))
                                 .append(Component.literal("]").withStyle(ChatFormatting.GRAY)),
@@ -1206,6 +1213,25 @@ public class BlueprintScreen extends Screen {
         }
 
         super.onClose();
+    }
+
+    @Override
+    public void removed() {
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+        }
+        super.removed();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.textField != null) {
+            this.textField.tick();
+        }
+        if (this.gridTextField != null) {
+            this.gridTextField.tick();
+        }
     }
 
     @Override

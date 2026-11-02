@@ -52,6 +52,50 @@
     {
       "when": {
         "face": "wall",
+        "facing": "north",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
         "facing": "east"
       },
       "apply": {
@@ -100,6 +144,54 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "y": 90
       }
     },
@@ -160,6 +252,54 @@
     {
       "when": {
         "face": "wall",
+        "facing": "south",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
         "facing": "west"
       },
       "apply": {
@@ -208,6 +348,54 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "y": 270
       }
     },
@@ -268,6 +456,54 @@
     {
       "when": {
         "face": "floor",
+        "facing": "north",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
         "facing": "east"
       },
       "apply": {
@@ -320,6 +556,58 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "x": 90,
         "y": 90
       }
@@ -386,6 +674,58 @@
     {
       "when": {
         "face": "floor",
+        "facing": "south",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
         "facing": "west"
       },
       "apply": {
@@ -438,6 +778,58 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "x": 90,
         "y": 270
       }
@@ -499,6 +891,54 @@
     {
       "when": {
         "face": "ceiling",
+        "facing": "north",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
         "facing": "east"
       },
       "apply": {
@@ -551,6 +991,58 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "x": 270,
         "y": 90
       }
@@ -617,6 +1109,58 @@
     {
       "when": {
         "face": "ceiling",
+        "facing": "south",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
         "facing": "west"
       },
       "apply": {
@@ -669,6 +1213,58 @@
       },
       "apply": {
         "model": "signbuilder:block/lcd_screen_frame_right",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_top",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_left_bottom",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_top",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "signbuilder:block/lcd_screen_frame_right_bottom",
         "x": 270,
         "y": 270
       }

@@ -176,6 +176,23 @@ public class GridSignBlock extends Block implements EntityBlock {
         }
 
         int rotationDegrees = SignRotation.deltaDegrees(rotation, facing);
+
+        if (rotationDegrees != 0 && aFace != AttachFace.WALL && player != null) {
+            double nx = SignRotation.facingX(rotation);
+            double nz = SignRotation.facingZ(rotation);
+            Vec3 eye = player.getEyePosition();
+            Vec3 look = player.getLookAngle();
+            double denom = look.x * nx + look.z * nz;
+            if (Math.abs(denom) > 1e-5) {
+                double t = ((pos.getX() + 0.5 - eye.x) * nx + (pos.getZ() + 0.5 - eye.z) * nz) / denom;
+                if (t > 0.0 && t < 12.0) {
+                    rx = eye.x + t * look.x - pos.getX();
+                    ry = eye.y + t * look.y - pos.getY();
+                    rz = eye.z + t * look.z - pos.getZ();
+                }
+            }
+        }
+
         double radians = Math.toRadians(rotationDegrees);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);

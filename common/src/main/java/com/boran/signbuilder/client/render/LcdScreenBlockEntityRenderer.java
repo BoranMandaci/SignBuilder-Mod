@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import com.mojang.math.Matrix4f;
 
-import java.awt.Color;
 
 public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScreenBlockEntity> {
 
@@ -202,11 +201,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         float fontScale = (heightBlocks == 1) ? baseScale : (baseScale * (1.0f + (heightBlocks - 1) * 0.45f));
         poseStack.scale(fontScale, -fontScale, fontScale);
 
-        int color = master.getColor();
-        if (master.isRainbow()) {
-            float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-            color = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-        }
+        int color = master.isRainbow() ? com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb() : master.getColor();
 
         int light = master.isGlow() ? 15728880 : packedLight;
 
@@ -571,7 +566,7 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
 
             float hue = (float) ((timeMs * flowSpeed + charIdx * 0.065) % 1.0);
             if (hue < 0) hue += 1.0f;
-            int charColor = 0xFF000000 | (Color.HSBtoRGB(hue, 0.88f, 1.0f) & 0xFFFFFF);
+            int charColor = 0xFF000000 | com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, 0.88f, 1.0f);
 
             if (curX >= minX && (curX + chWidth) <= maxX) {
                 String toRender = activeStyle.isEmpty() ? chStr : (activeStyle + chStr);
@@ -707,31 +702,31 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         Matrix4f mat = poseStack.last().pose();
 
         float bgZ = 0.0f;
-        float borderZ = 0.01f;
+        float borderZ = 0.02f;
         consumer.vertex(mat, minX, bottomY, bgZ).color(r, g, b, a).uv2(light).endVertex();
         consumer.vertex(mat, maxX, bottomY, bgZ).color(r, g, b, a).uv2(light).endVertex();
         consumer.vertex(mat, maxX, topY, bgZ).color(r, g, b, a).uv2(light).endVertex();
         consumer.vertex(mat, minX, topY, bgZ).color(r, g, b, a).uv2(light).endVertex();
 
         float bw = 0.65f;
-        consumer.vertex(mat, minX + bw, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX - bw, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX - bw, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, minX + bw, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-
-        consumer.vertex(mat, minX + bw, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX - bw, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX - bw, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, minX + bw, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-
-        consumer.vertex(mat, minX, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, minX + bw, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, minX + bw, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
         consumer.vertex(mat, minX, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
 
-        consumer.vertex(mat, maxX - bw, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
         consumer.vertex(mat, maxX, bottomY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
-        consumer.vertex(mat, maxX - bw, topY, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+
+        consumer.vertex(mat, minX, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX + bw, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX + bw, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, minX, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+
+        consumer.vertex(mat, maxX - bw, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX, bottomY - bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
+        consumer.vertex(mat, maxX - bw, topY + bw, borderZ).color(br, bg, bb, ba).uv2(light).endVertex();
     }
 }

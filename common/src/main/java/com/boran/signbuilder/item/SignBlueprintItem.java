@@ -1,1249 +1,1256 @@
-package com.boran.signbuilder.item;
-
-import com.boran.signbuilder.block.LetterBlock;
-import com.boran.signbuilder.block.ModBlocks;
-import com.boran.signbuilder.block.SignRotation;
-import com.boran.signbuilder.block.entity.LetterBlockEntity;
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class SignBlueprintItem extends Item {
-
-    private static final Map<Integer, Block> CHAR_BLOCK_CACHE = new HashMap<>(128);
-
-    public SignBlueprintItem(Properties pProperties) {
-        super(pProperties.durability(32));
-    }
-
-    @Override
-    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
-        String currentText = "";
-        int size = 1;
-        boolean isVertical = false;
-        boolean withBackplate = false;
-        boolean isGridMode = false;
-        int gridSize = 3;
-        String gridText = "";
-
-        CompoundTag tag = pStack.getTag();
-        if (tag != null) {
-            if (tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
-            if (tag.contains("Size")) size = tag.getInt("Size");
-            else if (tag.getBoolean("Is2x2")) size = 2;
-            if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
-            if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
-            if (tag.contains("IsGridMode")) isGridMode = tag.getBoolean("IsGridMode");
-            if (tag.contains("GridSize")) gridSize = tag.getInt("GridSize");
-            if (tag.contains("GridText")) gridText = tag.getString("GridText");
-        }
-
-        if (isGridMode) {
-            boolean isBannerMode = tag.contains("IsBannerMode") ? tag.getBoolean("IsBannerMode") : true;
-            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.mode.grid")
-                    .withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal(" (" + gridSize + "x" + gridSize + ")").withStyle(ChatFormatting.GOLD)));
-
-            boolean isVert = tag.getBoolean("IsVertical");
-            Component modeComp;
-            if (isBannerMode) {
-                modeComp = Component.translatable(isVert ? "gui.signbuilder.blueprint.mode_banner_vert" : "gui.signbuilder.blueprint.mode_banner_horiz")
-                        .withStyle(isVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN);
-            } else {
-                modeComp = Component.translatable("gui.signbuilder.blueprint.mode_single")
-                        .withStyle(ChatFormatting.AQUA);
-            }
-            pTooltipComponents.add(Component.literal("Mode: ").withStyle(ChatFormatting.GRAY).append(modeComp));
-
-            if (!gridText.isEmpty()) {
-                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
-                        .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
-                        .append(Component.literal(gridText).withStyle(ChatFormatting.AQUA)));
-            } else {
-                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.empty")
-                        .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-            }
-
-            pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
-                            .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
-
-            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
-                    .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-            super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
-            return;
-        }
-
-        if (!currentText.isEmpty()) {
-            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
-                    .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
-                    .append(Component.literal(currentText).withStyle(ChatFormatting.AQUA)));
-        } else {
-            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.empty")
-                    .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-        }
-
-        String sizeText = (size == 3) ? "3x3 Multi-Block" : (size == 2 ? "2x2 Multi-Block" : "1x1 Normal");
-        ChatFormatting sizeColor = (size == 3) ? ChatFormatting.LIGHT_PURPLE : (size == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
-        pTooltipComponents.add(Component.literal("Size: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(sizeText).withStyle(sizeColor)));
-
-        pTooltipComponents.add(Component.literal("Direction: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.translatable(isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
-                        .withStyle(isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN)));
-
-        pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
-                        .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
-
-        pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
-                .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
-    }
-
-    @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
-        ItemStack stack = pPlayer.getItemInHand(pUsedHand);
-
-        if (pPlayer.isShiftKeyDown()) {
-            if (!pLevel.isClientSide()) {
-                CompoundTag currentTag = stack.getTag() != null ? stack.getTag() : new CompoundTag();
-                boolean isGrid = currentTag.getBoolean("IsGridMode");
-                if (isGrid) {
-                    int gSize = currentTag.contains("GridSize") ? currentTag.getInt("GridSize") : 3;
-                    if (gSize < 2) gSize = 3;
-                    int nextGridSize = (gSize == 2) ? 3 : ((gSize == 3) ? 4 : 2);
-                    stack.getOrCreateTag().putInt("GridSize", nextGridSize);
-                    pPlayer.displayClientMessage(
-                            Component.literal("Blueprint Grid: ").withStyle(ChatFormatting.YELLOW)
-                                    .append(Component.literal(nextGridSize + "x" + nextGridSize).withStyle(ChatFormatting.GOLD)),
-                            true
-                    );
-                    pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
-                    return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
-                }
-
-                int size = 1;
-                if (currentTag.contains("Size")) size = currentTag.getInt("Size");
-                else if (currentTag.getBoolean("Is2x2")) size = 2;
-
-                boolean isVert = currentTag.getBoolean("IsVertical");
-
-                int nextSize;
-                boolean nextVert;
-
-                if (size == 1 && !isVert) {
-                    nextSize = 1; nextVert = true;
-                } else if (size == 1) {
-                    nextSize = 2; nextVert = false;
-                } else if (size == 2 && !isVert) {
-                    nextSize = 2; nextVert = true;
-                } else if (size == 2) {
-                    nextSize = 3; nextVert = false;
-                } else if (size == 3 && !isVert) {
-                    nextSize = 3; nextVert = true;
-                } else {
-                    nextSize = 1; nextVert = false;
-                }
-
-                stack.getOrCreateTag().putInt("Size", nextSize);
-                stack.getOrCreateTag().putBoolean("Is2x2", nextSize == 2);
-                stack.getOrCreateTag().putBoolean("IsVertical", nextVert);
-
-                String sizeStr = (nextSize == 3) ? "3x3" : (nextSize == 2 ? "2x2" : "1x1");
-                ChatFormatting color = (nextSize == 3) ? ChatFormatting.LIGHT_PURPLE : (nextSize == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
-
-                pPlayer.displayClientMessage(
-                        Component.literal("Blueprint: ").withStyle(ChatFormatting.YELLOW)
-                                .append(Component.literal(sizeStr).withStyle(color))
-                                .append(Component.literal(" "))
-                                .append(Component.translatable(nextVert ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
-                                        .withStyle(nextVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN)),
-                        true
-                );
-                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
-            }
-        } else {
-            if (pLevel.isClientSide()) {
-                String currentText = "";
-                CompoundTag tag = stack.getTag();
-                if (tag != null && tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
-                String finalCurrentText = currentText;
-
-                pPlayer.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openBlueprintScreen(finalCurrentText));
-            }
-        }
-        return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
-    }
-
-    @Override
-    public @NotNull InteractionResult useOn(@NotNull UseOnContext pContext) {
-        Level level = pContext.getLevel();
-        Player player = pContext.getPlayer();
-        ItemStack stack = pContext.getItemInHand();
-
-        if (level.isClientSide() || player == null) return InteractionResult.SUCCESS;
-
-        String text = "";
-        int size = 1;
-        boolean isVertical = false;
-        boolean withBackplate = false;
-        CompoundTag tag = stack.getTag();
-        if (tag != null) {
-            if (tag.contains("BlueprintText")) text = tag.getString("BlueprintText");
-            if (tag.contains("Size")) size = tag.getInt("Size");
-            else if (tag.getBoolean("Is2x2")) size = 2;
-            if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
-            if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
-        }
-
-        if (tag != null && tag.getBoolean("IsGridMode")) {
-            return useOnGrid(pContext, level, player, stack, tag, withBackplate);
-        }
-
-        if (text.isEmpty()) {
-            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.empty").withStyle(ChatFormatting.RED), true);
-            return InteractionResult.FAIL;
-        }
-
-        Direction clickedFace = pContext.getClickedFace();
-        BlockPos startPos = pContext.getClickedPos().relative(clickedFace);
-        boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
-        int rotation = wall
-                ? SignRotation.fromDirection(clickedFace)
-                : size > 1
-                ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
-                : SignRotation.fromYaw(player.getYRot(), -2);
-        int rightX = SignRotation.horizontalStepX(rotation, wall);
-        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
-
-        int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
-        int blocksPlaced = 0;
-        List<Long> placedPositions = new ArrayList<>();
-
-        int effectiveIdx = 0;
-        int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
-        for (int i = 0; i < text.length(); ) {
-            int c = text.codePointAt(i);
-            i += Character.charCount(c);
-            if (c == ' ' || c == 0xFE0F) continue;
-
-            Block blockToPlace = getBlockForChar(c);
-            if (blockToPlace == null) continue;
-
-            if (!isVertical) {
-                if (size == 1) {
-                    BlockPos currentPos = offsetRight(startPos, rightX, rightZ, effectiveIdx);
-                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
-                    blocksPlaced++;
-                    placedPositions.add(currentPos.asLong());
-                } else if (size == 2) {
-                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 2);
-                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
-                    BlockPos p01 = basePos.relative(Direction.UP, 1);
-                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
-
-                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
-                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
-                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
-                        break;
-                    }
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    BlockPos[] quad = {basePos, p10, p01, p11};
-                    for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
-                        blocksPlaced++;
-                    }
-                } else {
-                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 3);
-                    boolean canPlaceAll = true;
-                    BlockPos[] grid = new BlockPos[9];
-                    int gIdx = 0;
-                    for (int dy = 0; dy < 3; dy++) {
-                        for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
-                                canPlaceAll = false;
-                                break;
-                            }
-                            grid[gIdx++] = p;
-                        }
-                        if (!canPlaceAll) break;
-                    }
-
-                    if (!canPlaceAll) break;
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
-                        blocksPlaced++;
-                    }
-                }
-            } else {
-                if (size == 1) {
-                    int posY = (stepDirY == 1)
-                            ? startPos.getY() + effectiveIdx
-                            : startPos.getY() - effectiveIdx;
-
-                    BlockPos currentPos = new BlockPos(startPos.getX(), posY, startPos.getZ());
-                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
-                    blocksPlaced++;
-                    placedPositions.add(currentPos.asLong());
-                } else if (size == 2) {
-                    int baseY = (stepDirY == 1)
-                            ? startPos.getY() + (effectiveIdx * 2)
-                            : startPos.getY() - 1 - (effectiveIdx * 2);
-
-                    BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
-                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
-                    BlockPos p01 = basePos.relative(Direction.UP, 1);
-                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
-
-                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
-                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
-                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
-                        break;
-                    }
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    BlockPos[] quad = {basePos, p10, p01, p11};
-                    for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
-                        blocksPlaced++;
-                    }
-                } else {
-                    int baseY = (stepDirY == 1)
-                            ? startPos.getY() + (effectiveIdx * 3)
-                            : startPos.getY() - 2 - (effectiveIdx * 3);
-
-                    BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
-                    boolean canPlaceAll = true;
-                    BlockPos[] grid = new BlockPos[9];
-                    int gIdx = 0;
-                    for (int dy = 0; dy < 3; dy++) {
-                        for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
-                                canPlaceAll = false;
-                                break;
-                            }
-                            grid[gIdx++] = p;
-                        }
-                        if (!canPlaceAll) break;
-                    }
-
-                    if (!canPlaceAll) break;
-
-                    if (!player.isCreative()) {
-                        int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
-                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
-                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
-                    }
-
-                    for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
-                        blocksPlaced++;
-                    }
-                }
-            }
-
-            effectiveIdx++;
-        }
-
-        if (blocksPlaced > 0) {
-            level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-
-            long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
-            stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
-
-            if (!player.isCreative()) {
-                stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
-            }
-        }
-        return InteractionResult.SUCCESS;
-    }
-
-    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate, int rotation, int size) {
-        BlockHitResult hitResult = new BlockHitResult(pContext.getClickLocation(), clickedFace, pos, pContext.isInside());
-        UseOnContext offsetContext = new UseOnContext(player, pContext.getHand(), hitResult);
-        BlockPlaceContext placeContext = new BlockPlaceContext(offsetContext);
-        BlockState stateToPlace = blockToPlace.getStateForPlacement(placeContext);
-        if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();
-
-        level.setBlock(pos, stateToPlace, 3);
-        ItemStack placedStack = new ItemStack(blockToPlace);
-        if (size > 1) {
-            CompoundTag blockEntityTag = placedStack.getOrCreateTagElement("BlockEntityTag");
-            blockEntityTag.putInt("FacingRotation", rotation);
-            blockEntityTag.putString("id", "signbuilder:letter_block_entity");
-        }
-        blockToPlace.setPlacedBy(level, pos, stateToPlace, player, placedStack);
-
-        if (withBackplate) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof LetterBlockEntity letterBe) {
-                letterBe.setHasBackplate(true);
-            }
-        }
-    }
-
-    private static BlockPos offsetRight(BlockPos pos, int rightX, int rightZ, int distance) {
-        return pos.offset(rightX * distance, 0, rightZ * distance);
-    }
-
-    private int countItemInInventory(Player player, Item item) {
-        int count = 0;
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            if (stack.getItem() == item) count += stack.getCount();
-        }
-        return count;
-    }
-
-    private void consumeItemFromInventory(Player player, Item item, int amount) {
-        int amountLeftToRemove = amount;
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            if (stack.getItem() == item) {
-                if (stack.getCount() >= amountLeftToRemove) {
-                    stack.shrink(amountLeftToRemove);
-                    break;
-                } else {
-                    amountLeftToRemove -= stack.getCount();
-                    stack.setCount(0);
-                }
-            }
-        }
-    }
-
-    public static int getHitSubCellRow(Vec3 hitLocation, int gridSize) {
-        double fy = hitLocation.y - Math.floor(hitLocation.y);
-        double v = 1.0 - fy;
-        return Mth.clamp((int) Math.floor(v * gridSize), 0, gridSize - 1);
-    }
-
-    public static int getHitSubCellCol(Direction face, Vec3 hitLocation, int gridSize) {
-        boolean wall = face.getAxis() != Direction.Axis.Y;
-        int stepRotation = wall ? SignRotation.fromDirection(face) : 0;
-        int rightX = SignRotation.horizontalStepX(stepRotation, wall);
-        int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
-        double u;
-        if (rightX != 0) {
-            double fx = hitLocation.x - Math.floor(hitLocation.x);
-            u = (rightX > 0) ? fx : (1.0 - fx);
-        } else {
-            double fz = hitLocation.z - Math.floor(hitLocation.z);
-            u = (rightZ > 0) ? fz : (1.0 - fz);
-        }
-        return Mth.clamp((int) Math.floor(u * gridSize), 0, gridSize - 1);
-    }
-
-    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize) {
-        int targetRow = (gridSize == 2) ? 0 : 1;
-        return getBannerCellsForBlock(text, blockIdx, gridSize, false, targetRow, 0);
-    }
-
-    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine) {
-        return getBannerCellsForBlock(text, blockIdx, gridSize, isVertical, targetLine, 0);
-    }
-
-    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine, int startOffset) {
-        Map<Integer, String> cells = new HashMap<>();
-        if (text == null || text.isEmpty()) return cells;
-
-        int textStart;
-        int count;
-        int lineOffset;
-
-        if (blockIdx == 0) {
-            textStart = 0;
-            count = Math.min(gridSize - startOffset, text.length());
-            lineOffset = startOffset;
-        } else {
-            textStart = (gridSize - startOffset) + (blockIdx - 1) * gridSize;
-            if (textStart >= text.length()) return cells;
-            count = Math.min(gridSize, text.length() - textStart);
-            lineOffset = 0;
-        }
-
-        String sub = text.substring(textStart, textStart + count);
-        for (int i = 0; i < sub.length(); i++) {
-            char ch = sub.charAt(i);
-            if (ch != ' ') {
-                int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
-                String path = getBlockPathForChar(cp);
-                if (path != null) {
-                    int cellIndex = isVertical
-                            ? ((lineOffset + i) * gridSize + targetLine)
-                            : (targetLine * gridSize + (lineOffset + i));
-                    cells.put(cellIndex, path);
-                }
-            }
-        }
-        return cells;
-    }
-
-    private void stampOrPlaceGridSign(Level level, Player player, BlockPos targetPos, Direction clickedFace, int gridSize, Map<Integer, String> cells, boolean withBackplate, boolean isBannerMode, boolean isVertical, int targetLine, int lineStartOffset, boolean isBack) {
-        BlockState currentState = level.getBlockState(targetPos);
-        boolean isBackplate = currentState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
-        boolean isGridSign = currentState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
-        boolean isLetter = currentState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock;
-
-        if (isGridSign) {
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
-                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
-                    int cIdx = entry.getKey();
-                    int cellGridSize = gridSize;
-                    int col, row;
-                    if (cIdx >= 200) {
-                        cellGridSize = (cIdx % 10000) / 100;
-                        row = (cIdx % 100) / 10;
-                        col = cIdx % 10;
-                    } else {
-                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
-                        col = cIdx % gridSize;
-                        row = cIdx / gridSize;
-                    }
-                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
-                }
-                gridBe.markRenderDirty();
-                gridBe.setChanged();
-                gridBe.sync();
-            }
-        } else if (isBackplate || (isLetter && isBack)) {
-            com.boran.signbuilder.block.SignMaterial bpFMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
-            com.boran.signbuilder.block.SignMaterial bpBMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
-            int bpFColor = 0xFFFFFF, bpBColor = 0xFFFFFF;
-            boolean bpFRainbow = false, bpBRainbow = false;
-            int bpFacingRotation = 0;
-            int bpWrenchMode = 0;
-            boolean bpActive = false;
-            boolean bpDetectsMonsters = true, bpDetectsAnimals = false;
-            int bpOnTicks = 10, bpOffTicks = 10, bpType = 0, bpRange = 8, bpOffRange = 8, bpCloseDelay = 0;
-            boolean bpNightOnly = true, bpPlayers = true, bpLowPower = false, bpLookOnly = true;
-            ItemStack oldFrontGlyph = ItemStack.EMPTY;
-
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
-                if (isLetter) {
-                    oldFrontGlyph = effective.getDroppedItemStack(currentState);
-                    CompoundTag itemTag = oldFrontGlyph.getTag();
-                    if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
-                        CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
-                        beTag.remove("BackGlyph");
-                        beTag.remove("HasBackplate");
-                        beTag.remove("BPFrontMat");
-                        beTag.remove("BPBackMat");
-                        beTag.remove("BPFrontColor");
-                        beTag.remove("BPBackColor");
-                        beTag.remove("BPFrontRainbow");
-                        beTag.remove("BPBackRainbow");
-                        beTag.remove("BackplateFrontMaterial");
-                        beTag.remove("BackplateBackMaterial");
-                        beTag.remove("BackplateFrontColor");
-                        beTag.remove("BackplateBackColor");
-                        beTag.remove("BackplateFrontRainbow");
-                        beTag.remove("BackplateBackRainbow");
-                        if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
-                    }
-                    ItemStack bpBackGlyph = effective.getBackGlyph();
-                    if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
-                        if (!player.isCreative()) {
-                            net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
-                        }
-                    }
-                }
-                bpFMat = effective.getBackplateFrontMaterial();
-                bpBMat = effective.getBackplateBackMaterial();
-                bpFColor = effective.getBackplateFrontColor();
-                bpBColor = effective.getBackplateBackColor();
-                bpFRainbow = effective.isBackplateFrontRainbow();
-                bpBRainbow = effective.isBackplateBackRainbow();
-                bpFacingRotation = effective.getFacingRotation();
-                if (isLetter && currentState.hasProperty(BlockStateProperties.ATTACH_FACE) && currentState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
-                    bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
-                }
-                bpWrenchMode = effective.getWrenchMode();
-                bpActive = effective.isActive();
-                bpDetectsMonsters = effective.doesDetectMonsters();
-                bpDetectsAnimals = effective.doesDetectAnimals();
-                bpOnTicks = effective.getCustomLightOnTicks();
-                bpOffTicks = effective.getCustomLightOffTicks();
-                bpType = effective.getCustomLightType();
-                bpRange = effective.getCustomLightRange();
-                bpOffRange = effective.getCustomLightOffRange();
-                bpCloseDelay = effective.getCustomLightCloseDelayTicks();
-                bpNightOnly = effective.isCustomLightNightOnly();
-                bpPlayers = effective.doesCustomLightDetectPlayers();
-                bpLowPower = effective.isCustomLightLowPower();
-                bpLookOnly = effective.isCustomLightLookOnly();
-            } else if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                bpFacingRotation = SignRotation.fromDirection(currentState.getValue(BlockStateProperties.HORIZONTAL_FACING));
-            }
-
-            if (currentState.hasProperty(com.boran.signbuilder.block.BackplateBlock.MATERIAL) && bpFMat == com.boran.signbuilder.block.SignMaterial.DEFAULT) {
-                bpFMat = currentState.getValue(com.boran.signbuilder.block.BackplateBlock.MATERIAL);
-            }
-
-            AttachFace attachFace = AttachFace.WALL;
-            if (currentState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
-                attachFace = currentState.getValue(BlockStateProperties.ATTACH_FACE);
-            }
-            Direction blockFacing = clickedFace;
-            if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                blockFacing = currentState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (isLetter && attachFace != AttachFace.WALL) {
-                    blockFacing = blockFacing.getCounterClockWise();
-                }
-            }
-
-            BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
-                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACE, attachFace)
-                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACING, blockFacing);
-            level.setBlock(targetPos, newState, 3);
-
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
-                gridBe.setHasBackplate(true);
-                gridBe.setBackplateFrontMaterial(bpFMat);
-                gridBe.setBackplateBackMaterial(bpBMat);
-                gridBe.setBackplateFrontColor(bpFColor);
-                gridBe.setBackplateBackColor(bpBColor);
-                gridBe.setBackplateFrontRainbow(bpFRainbow);
-                gridBe.setBackplateBackRainbow(bpBRainbow);
-                gridBe.setFacingRotation(bpFacingRotation);
-                gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
-                if (!oldFrontGlyph.isEmpty()) {
-                    gridBe.setFrontGlyph(oldFrontGlyph);
-                }
-                com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
-
-                gridBe.setGridSize(gridSize);
-                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
-                    int cIdx = entry.getKey();
-                    int cellGridSize = gridSize;
-                    int col, row;
-                    if (cIdx >= 200) {
-                        cellGridSize = (cIdx % 10000) / 100;
-                        row = (cIdx % 100) / 10;
-                        col = cIdx % 10;
-                    } else {
-                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
-                        col = cIdx % gridSize;
-                        row = cIdx / gridSize;
-                    }
-                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
-                }
-                gridBe.markRenderDirty();
-                gridBe.setChanged();
-                gridBe.sync();
-            }
-        } else {
-            AttachFace attachFace;
-            Direction blockFacing;
-            if (clickedFace.getAxis() != Direction.Axis.Y) {
-                attachFace = AttachFace.WALL;
-                blockFacing = clickedFace;
-            } else if (clickedFace == Direction.UP) {
-                attachFace = AttachFace.FLOOR;
-                blockFacing = player.getDirection().getOpposite();
-            } else {
-                attachFace = AttachFace.CEILING;
-                blockFacing = player.getDirection().getOpposite();
-            }
-
-            BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
-                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACE, attachFace)
-                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACING, blockFacing);
-            level.setBlock(targetPos, newState, 3);
-
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
-                gridBe.setGridSize(gridSize);
-                int rot = SignRotation.fromDirection(blockFacing);
-                gridBe.setFacingRotation(rot);
-                gridBe.setHasBackplate(withBackplate);
-                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
-                    int cIdx = entry.getKey();
-                    int cellGridSize = gridSize;
-                    int col, row;
-                    if (cIdx >= 200) {
-                        cellGridSize = (cIdx % 10000) / 100;
-                        row = (cIdx % 100) / 10;
-                        col = cIdx % 10;
-                    } else {
-                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
-                        col = cIdx % gridSize;
-                        row = cIdx / gridSize;
-                    }
-                    gridBe.setCell(col, row, cellGridSize, false, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
-                }
-                gridBe.markRenderDirty();
-                gridBe.setChanged();
-                gridBe.sync();
-            }
-        }
-    }
-
-    public static boolean isStampableTarget(Level level, BlockPos pos, BlockState state) {
-        if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) return true;
-        if (state.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) return true;
-        if (state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
-            if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                return lbe.getEffectiveMaster().hasBackplate() && lbe.getEffectiveMaster().getSize() == 1;
-            }
-        }
-        return false;
-    }
-
-    public static boolean canPlaceGridBlock(Level level, BlockPos targetPos, Direction effectiveFace, int gridSize, Map<Integer, String> cellMap, boolean isBack) {
-        BlockState targetState = level.getBlockState(targetPos);
-        if (targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
-            AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.GridSignBlock.FACE)
-                    ? targetState.getValue(com.boran.signbuilder.block.GridSignBlock.FACE)
-                    : AttachFace.WALL;
-            if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
-                if (targetState.hasProperty(com.boran.signbuilder.block.GridSignBlock.FACING)) {
-                    Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.GridSignBlock.FACING);
-                    if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
-                }
-            }
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
-                for (Map.Entry<Integer, String> entry : cellMap.entrySet()) {
-                    int cIdx = entry.getKey();
-                    int cellGridSize = gridSize;
-                    int col, row;
-                    if (cIdx >= 200) {
-                        cellGridSize = (cIdx % 10000) / 100;
-                        row = (cIdx % 100) / 10;
-                        col = cIdx % 10;
-                    } else {
-                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
-                        col = cIdx % gridSize;
-                        row = cIdx / gridSize;
-                    }
-                    if (gbe.hasAnyCollision(cellGridSize, col, row, isBack)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-
-        if (targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) {
-            AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.FACE)
-                    ? targetState.getValue(com.boran.signbuilder.block.BackplateBlock.FACE)
-                    : AttachFace.WALL;
-            if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
-                if (targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.FACING)) {
-                    Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.BackplateBlock.FACING);
-                    if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
-                }
-            }
-            return true;
-        }
-
-        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                com.boran.signbuilder.block.entity.LetterBlockEntity master = lbe.getEffectiveMaster();
-                if (master.hasBackplate() && master.getSize() == 1 && isBack) {
-                    AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACE)
-                            ? targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACE)
-                            : AttachFace.WALL;
-                    if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
-                        if (targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACING)) {
-                            Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACING);
-                            if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        return targetState.isAir() || targetState.getMaterial().isReplaceable();
-    }
-
-    private InteractionResult useOnGrid(UseOnContext pContext, Level level, Player player, ItemStack stack, CompoundTag tag, boolean withBackplate) {
-        int gridSize = tag.contains("GridSize") ? tag.getInt("GridSize") : 3;
-        if (gridSize < 2) gridSize = 3;
-        boolean isBannerMode = tag.contains("IsBannerMode") ? tag.getBoolean("IsBannerMode") : true;
-        String gridText = tag.getString("GridText");
-
-        BlockPos clickedPos = pContext.getClickedPos();
-        Direction clickedFace = pContext.getClickedFace();
-        BlockState clickedState = level.getBlockState(clickedPos);
-
-        boolean clickedIsStampable = isStampableTarget(level, clickedPos, clickedState);
-
-        if (clickedFace.getAxis() == Direction.Axis.Y && !clickedIsStampable) {
-            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.wall_only").withStyle(ChatFormatting.RED), true);
-            return InteractionResult.FAIL;
-        }
-
-        Direction effectiveFace = clickedFace;
-        AttachFace clickedAttachFace = AttachFace.WALL;
-        Direction clickedFacing = effectiveFace;
-        int clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
-
-        if (clickedIsStampable) {
-            if (clickedState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
-                clickedAttachFace = clickedState.getValue(BlockStateProperties.ATTACH_FACE);
-            }
-            if (clickedState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                clickedFacing = clickedState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-            }
-            if (level.getBlockEntity(clickedPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
-                clickedFacingRotation = gbe.getFacingRotation();
-            } else if (level.getBlockEntity(clickedPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                clickedFacingRotation = lbe.getEffectiveMaster().getFacingRotation();
-            } else {
-                clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
-            }
-            if (clickedState.getBlock() instanceof LetterBlock && clickedAttachFace != AttachFace.WALL) {
-                clickedFacing = clickedFacing.getCounterClockWise();
-                clickedFacingRotation = Math.floorMod(clickedFacingRotation - 2, 8);
-            }
-            if (clickedAttachFace != AttachFace.WALL) {
-                effectiveFace = clickedFacing;
-            }
-        }
-
-        boolean wall = (clickedAttachFace == AttachFace.WALL);
-        int stepRotation = clickedIsStampable
-                ? clickedFacingRotation
-                : (wall ? SignRotation.fromDirection(effectiveFace) : SignRotation.fromDirection(player.getDirection().getCounterClockWise()));
-        int rightX = SignRotation.horizontalStepX(stepRotation, wall);
-        int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
-
-        BlockPos startPos = clickedIsStampable ? clickedPos : clickedPos.relative(clickedFace);
-
-        boolean isVertical = tag.getBoolean("IsVertical");
-        Vec3 hitLoc = pContext.getClickLocation();
-        int targetLine;
-        int startOffset;
-        if (isVertical) {
-            targetLine = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
-            startOffset = getHitSubCellRow(hitLoc, gridSize);
-        } else {
-            targetLine = getHitSubCellRow(hitLoc, gridSize);
-            startOffset = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
-        }
-
-        int numBlocks;
-        List<Map<Integer, String>> blocksCells = new ArrayList<>();
-
-        if (isBannerMode && !gridText.isEmpty()) {
-            int firstBlockCap = gridSize - startOffset;
-            if (gridText.length() <= firstBlockCap) {
-                numBlocks = 1;
-            } else {
-                int rem = gridText.length() - firstBlockCap;
-                numBlocks = 1 + (rem + gridSize - 1) / gridSize;
-            }
-            for (int b = 0; b < numBlocks; b++) {
-                blocksCells.add(getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
-            }
-        } else {
-            numBlocks = 1;
-            Map<Integer, String> blueprintCells = new HashMap<>();
-            if (tag.contains("GridCells", net.minecraft.nbt.Tag.TAG_LIST)) {
-                net.minecraft.nbt.ListTag list = tag.getList("GridCells", net.minecraft.nbt.Tag.TAG_COMPOUND);
-                for (int i = 0; i < list.size(); i++) {
-                    CompoundTag ctag = list.getCompound(i);
-                    int idx;
-                    if (ctag.contains("Col") && ctag.contains("Row")) {
-                        int gSize = ctag.contains("GridSize") ? ctag.getInt("GridSize") : gridSize;
-                        int col = ctag.getInt("Col");
-                        int row = ctag.getInt("Row");
-                        idx = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, gSize, col, row);
-                    } else {
-                        idx = ctag.getInt("Index");
-                    }
-                    String cPath = ctag.getString("Char");
-                    if (!cPath.isEmpty()) {
-                        blueprintCells.put(idx, cPath);
-                    }
-                }
-            }
-            if (blueprintCells.isEmpty() && !gridText.isEmpty()) {
-                int max = Math.min(gridText.length(), gridSize * gridSize);
-                for (int i = 0; i < max; i++) {
-                    char ch = gridText.charAt(i);
-                    if (ch != ' ') {
-                        String path = getBlockPathForChar(ch);
-                        if (path != null) blueprintCells.put(i, path);
-                    }
-                }
-            }
-            if (blueprintCells.isEmpty()) {
-                player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.empty").withStyle(ChatFormatting.RED), true);
-                return InteractionResult.FAIL;
-            }
-            blocksCells.add(blueprintCells);
-        }
-
-        boolean isBack = false;
-        if (clickedIsStampable) {
-            if (clickedAttachFace == AttachFace.WALL) {
-                if (effectiveFace == clickedFacing.getOpposite()) {
-                    isBack = true;
-                } else if (effectiveFace != clickedFacing) {
-                    double side = (player.getX() - (clickedPos.getX() + 0.5)) * SignRotation.facingX(clickedFacingRotation)
-                            + (player.getZ() - (clickedPos.getZ() + 0.5)) * SignRotation.facingZ(clickedFacingRotation);
-                    if (side < 0.0) isBack = true;
-                }
-            } else {
-                Vec3 look = player.getLookAngle();
-                double dot = look.x * SignRotation.facingX(clickedFacingRotation) + look.z * SignRotation.facingZ(clickedFacingRotation);
-                if (dot > 0.05) {
-                    isBack = true;
-                } else if (dot < -0.05) {
-                    isBack = false;
-                } else {
-                    double side = (player.getX() - (clickedPos.getX() + 0.5)) * SignRotation.facingX(clickedFacingRotation)
-                            + (player.getZ() - (clickedPos.getZ() + 0.5)) * SignRotation.facingZ(clickedFacingRotation);
-                    isBack = side < 0.0;
-                }
-            }
-        }
-
-        List<BlockPos> targetPositions = new ArrayList<>();
-        List<Integer> validBlockIndices = new ArrayList<>();
-        for (int b = 0; b < numBlocks; b++) {
-            BlockPos bPos = (isBannerMode && isVertical)
-                    ? startPos.below(b)
-                    : offsetRight(startPos, rightX, rightZ, b);
-            targetPositions.add(bPos);
-
-            BlockState bState = level.getBlockState(bPos);
-            boolean bStamp = isStampableTarget(level, bPos, bState);
-            boolean canPlace;
-            if (clickedIsStampable) {
-                canPlace = bStamp && canPlaceGridBlock(level, bPos, effectiveFace, gridSize, blocksCells.get(b), isBack);
-            } else {
-                canPlace = canPlaceGridBlock(level, bPos, effectiveFace, gridSize, blocksCells.get(b), isBack);
-            }
-
-            if (canPlace) {
-                validBlockIndices.add(b);
-            } else if (!clickedIsStampable) {
-                player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
-                return InteractionResult.FAIL;
-            }
-        }
-
-        if (validBlockIndices.isEmpty()) {
-            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
-            return InteractionResult.FAIL;
-        }
-
-        if (!player.isCreative()) {
-            int backplatesNeeded = 0;
-            Map<Item, Integer> lettersNeeded = new HashMap<>();
-
-            for (int b : validBlockIndices) {
-                BlockPos bPos = targetPositions.get(b);
-                BlockState bState = level.getBlockState(bPos);
-                boolean bStamp = isStampableTarget(level, bPos, bState);
-                if (!bStamp && withBackplate) {
-                    backplatesNeeded++;
-                }
-
-                for (String charPath : blocksCells.get(b).values()) {
-                    Block block = Registry.BLOCK.get(new ResourceLocation("signbuilder", charPath));
-                    if (block != Blocks.AIR) {
-                        lettersNeeded.merge(block.asItem(), 1, Integer::sum);
-                    }
-                }
-            }
-
-            if (backplatesNeeded > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < backplatesNeeded) {
-                player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
-                return InteractionResult.FAIL;
-            }
-
-            for (Map.Entry<Item, Integer> req : lettersNeeded.entrySet()) {
-                if (countItemInInventory(player, req.getKey()) < req.getValue()) {
-                    player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
-                    return InteractionResult.FAIL;
-                }
-            }
-
-            if (backplatesNeeded > 0) {
-                consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), backplatesNeeded);
-            }
-            for (Map.Entry<Item, Integer> req : lettersNeeded.entrySet()) {
-                consumeItemFromInventory(player, req.getKey(), req.getValue());
-            }
-        }
-
-        List<Long> placedPositions = new ArrayList<>();
-        for (int b : validBlockIndices) {
-            BlockPos bPos = targetPositions.get(b);
-            int lineStartOffset = (b == 0) ? startOffset : 0;
-            stampOrPlaceGridSign(level, player, bPos, effectiveFace, gridSize, blocksCells.get(b), withBackplate, isBannerMode, isVertical, targetLine, lineStartOffset, isBack);
-            placedPositions.add(bPos.asLong());
-        }
-
-        level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-        long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
-        stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
-
-        if (!player.isCreative()) {
-            stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
-        }
-        return InteractionResult.SUCCESS;
-    }
-
-    public static Block getBlockForChar(char c) {
-        return getBlockForChar((int) c);
-    }
-
-    public static Block getBlockForChar(int c) {
-        Block cached = CHAR_BLOCK_CACHE.get(c);
-        if (cached != null) return cached;
-
-        String blockId = getBlockPathForChar(c);
-        if (blockId != null) {
-            Block targetBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", blockId));
-            if (targetBlock != Blocks.AIR) {
-                CHAR_BLOCK_CACHE.put(c, targetBlock);
-                return targetBlock;
-            }
-        }
-        return null;
-    }
-
-    public static String getBlockPathForChar(int c) {
-        return switch (c) {
-            case 'A', 'a' -> "letter_a";
-            case 'Ä', 'ä' -> "letter_a_de";
-            case 'B', 'b' -> "letter_b";
-            case 'C', 'c' -> "letter_c";
-            case 'Ç', 'ç' -> "letter_c_tr";
-            case 'D', 'd' -> "letter_d";
-            case 'E', 'e' -> "letter_e";
-            case 'F', 'f' -> "letter_f";
-            case 'G', 'g' -> "letter_g";
-            case 'Ğ', 'ğ' -> "letter_g_tr";
-            case 'H', 'h' -> "letter_h";
-            case 'I', 'i', 'ı' -> "letter_i";
-            case 'İ' -> "letter_i_tr";
-            case 'J', 'j' -> "letter_j";
-            case 'K', 'k' -> "letter_k";
-            case 'L', 'l' -> "letter_l";
-            case 'M', 'm' -> "letter_m";
-            case 'N', 'n' -> "letter_n";
-            case 'O', 'o' -> "letter_o";
-            case 'Ö', 'ö' -> "letter_o_tr";
-            case 'P', 'p' -> "letter_p";
-            case 'Q', 'q' -> "letter_q";
-            case 'R', 'r' -> "letter_r";
-            case 'S', 's' -> "letter_s";
-            case 'Ş', 'ş' -> "letter_s_tr";
-            case 'T', 't' -> "letter_t";
-            case 'U', 'u' -> "letter_u";
-            case 'Ü', 'ü' -> "letter_u_tr";
-            case 'V', 'v' -> "letter_v";
-            case 'W', 'w' -> "letter_w";
-            case 'X', 'x' -> "letter_x";
-            case 'Y', 'y' -> "letter_y";
-            case 'Z', 'z' -> "letter_z";
-            case 'ß' -> "letter_eszett";
-            case '0' -> "number_0";
-            case '1' -> "number_1"; case '2' -> "number_2"; case '3' -> "number_3"; case '4' -> "number_4";
-            case '5' -> "number_5"; case '6' -> "number_6"; case '7' -> "number_7"; case '8' -> "number_8";
-            case '9' -> "number_9";
-            case '+' -> "symbol_plus"; case '-' -> "symbol_minus"; case '✗', '×' -> "symbol_cross"; case '/' -> "symbol_slash";
-            case '\\' -> "symbol_backslash"; case '#' -> "symbol_hashtag";
-            case '*' -> "symbol_asterisk"; case '★' -> "symbol_star";
-            case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
-            case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
-            case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
-            case 0x1F5DD -> "symbol_key";
-            case 0x1F512 -> "symbol_lock";
-            case 0x1F3C6 -> "symbol_trophy";
-            case '⚡' -> "symbol_lightning";
-            case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
-            case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '₿' -> "symbol_bitcoin"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
-            case ',' -> "symbol_comma"; case '%' -> "symbol_percent";
-            case '<' -> "symbol_less_than"; case '>' -> "symbol_greater_than"; case '~' -> "symbol_tilde";
-            case '«' -> "symbol_dot_left"; case '•' -> "symbol_dot_center"; case '»' -> "symbol_dot_right";
-            case '(' -> "symbol_bracket_left"; case ')' -> "symbol_bracket_right"; case '|' -> "symbol_bracket_double";
-            case '[' -> "symbol_square_bracket_left"; case ']' -> "symbol_square_bracket_right"; case '¦' -> "symbol_square_bracket_double";
-            case '↑' -> "arrow_up"; case '↓' -> "arrow_down"; case '←' -> "arrow_left"; case '→' -> "arrow_right";
-            case '↖' -> "arrow_left_up"; case '↗' -> "arrow_right_up"; case '↙' -> "arrow_left_down"; case '↘' -> "arrow_right_down";
-            case ':' -> "symbol_colon"; case ';' -> "symbol_semicolon"; case '!' -> "symbol_exclamation";
-            case '?' -> "symbol_question"; case '=' -> "symbol_equals"; case '÷' -> "symbol_divide";
-            case '\'' -> "symbol_apostrophe"; case '"' -> "symbol_quotes";
-            default -> null;
-        };
-    }
-
-    private static final Map<String, String> PATH_TO_DISPLAY = new HashMap<>(128);
-    static {
-        for (char c = 'A'; c <= 'Z'; c++) PATH_TO_DISPLAY.put("letter_" + Character.toLowerCase(c), String.valueOf(c));
-        PATH_TO_DISPLAY.put("letter_a_de", "Ä");
-        PATH_TO_DISPLAY.put("letter_eszett", "ß");
-        PATH_TO_DISPLAY.put("letter_c_tr", "Ç");
-        PATH_TO_DISPLAY.put("letter_g_tr", "Ğ");
-        PATH_TO_DISPLAY.put("letter_i_tr", "İ");
-        PATH_TO_DISPLAY.put("letter_o_tr", "Ö");
-        PATH_TO_DISPLAY.put("letter_s_tr", "Ş");
-        PATH_TO_DISPLAY.put("letter_u_tr", "Ü");
-        for (int i = 0; i <= 9; i++) PATH_TO_DISPLAY.put("number_" + i, String.valueOf(i));
-        PATH_TO_DISPLAY.put("symbol_plus", "+");
-        PATH_TO_DISPLAY.put("symbol_minus", "-");
-        PATH_TO_DISPLAY.put("symbol_cross", "×");
-        PATH_TO_DISPLAY.put("symbol_divide", "÷");
-        PATH_TO_DISPLAY.put("symbol_equals", "=");
-        PATH_TO_DISPLAY.put("symbol_percent", "%");
-        PATH_TO_DISPLAY.put("symbol_hashtag", "#");
-        PATH_TO_DISPLAY.put("symbol_slash", "/");
-        PATH_TO_DISPLAY.put("symbol_backslash", "\\");
-        PATH_TO_DISPLAY.put("symbol_asterisk", "*");
-        PATH_TO_DISPLAY.put("symbol_star", "★");
-        PATH_TO_DISPLAY.put("symbol_heart", "♥");
-        PATH_TO_DISPLAY.put("symbol_checkmark", "✓");
-        PATH_TO_DISPLAY.put("symbol_infinity", "∞");
-        PATH_TO_DISPLAY.put("symbol_circle", "●");
-        PATH_TO_DISPLAY.put("symbol_diamond", "◆");
-        PATH_TO_DISPLAY.put("symbol_note", "♪");
-        PATH_TO_DISPLAY.put("symbol_note_double", "♫");
-        PATH_TO_DISPLAY.put("symbol_skull", "☠");
-        PATH_TO_DISPLAY.put("symbol_lightning", "⚡");
-        PATH_TO_DISPLAY.put("symbol_euro", "€");
-        PATH_TO_DISPLAY.put("symbol_dollar", "$");
-        PATH_TO_DISPLAY.put("symbol_pound", "£");
-        PATH_TO_DISPLAY.put("symbol_yen", "¥");
-        PATH_TO_DISPLAY.put("symbol_tl", "₺");
-        PATH_TO_DISPLAY.put("symbol_bitcoin", "₿");
-        PATH_TO_DISPLAY.put("symbol_at", "@");
-        PATH_TO_DISPLAY.put("symbol_ampersand", "&");
-        PATH_TO_DISPLAY.put("symbol_comma", ",");
-        PATH_TO_DISPLAY.put("symbol_colon", ":");
-        PATH_TO_DISPLAY.put("symbol_semicolon", ";");
-        PATH_TO_DISPLAY.put("symbol_exclamation", "!");
-        PATH_TO_DISPLAY.put("symbol_question", "?");
-        PATH_TO_DISPLAY.put("symbol_apostrophe", "'");
-        PATH_TO_DISPLAY.put("symbol_quotes", "\"");
-        PATH_TO_DISPLAY.put("symbol_less_than", "<");
-        PATH_TO_DISPLAY.put("symbol_greater_than", ">");
-        PATH_TO_DISPLAY.put("symbol_tilde", "~");
-        PATH_TO_DISPLAY.put("symbol_dot_left", "«");
-        PATH_TO_DISPLAY.put("symbol_dot_center", "•");
-        PATH_TO_DISPLAY.put("symbol_dot_right", "»");
-        PATH_TO_DISPLAY.put("symbol_bracket_left", "(");
-        PATH_TO_DISPLAY.put("symbol_bracket_right", ")");
-        PATH_TO_DISPLAY.put("symbol_bracket_double", "|");
-        PATH_TO_DISPLAY.put("symbol_square_bracket_left", "[");
-        PATH_TO_DISPLAY.put("symbol_square_bracket_right", "]");
-        PATH_TO_DISPLAY.put("symbol_square_bracket_double", "¦");
-        PATH_TO_DISPLAY.put("arrow_up", "↑");
-        PATH_TO_DISPLAY.put("arrow_down", "↓");
-        PATH_TO_DISPLAY.put("arrow_left", "←");
-        PATH_TO_DISPLAY.put("arrow_right", "→");
-        PATH_TO_DISPLAY.put("arrow_left_up", "↖");
-        PATH_TO_DISPLAY.put("arrow_right_up", "↗");
-        PATH_TO_DISPLAY.put("arrow_left_down", "↙");
-        PATH_TO_DISPLAY.put("arrow_right_down", "↘");
-        PATH_TO_DISPLAY.put("symbol_key", "🗝");
-        PATH_TO_DISPLAY.put("symbol_lock", "🔒");
-        PATH_TO_DISPLAY.put("symbol_trophy", "🏆");
-    }
-
-    public static String getDisplayCharForBlockPath(String path) {
-        if (path == null || path.isEmpty()) return "";
-        return PATH_TO_DISPLAY.getOrDefault(path, path.replace("letter_", "").replace("number_", "").replace("symbol_", "").toUpperCase());
-    }
+package com.boran.signbuilder.item;
+
+import com.boran.signbuilder.block.LetterBlock;
+import com.boran.signbuilder.block.ModBlocks;
+import com.boran.signbuilder.block.SignRotation;
+import com.boran.signbuilder.block.entity.LetterBlockEntity;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class SignBlueprintItem extends Item {
+
+    private static final Map<Integer, Block> CHAR_BLOCK_CACHE = new HashMap<>(128);
+
+    public SignBlueprintItem(Properties pProperties) {
+        super(pProperties.durability(32));
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
+        String currentText = "";
+        int size = 1;
+        boolean isVertical = false;
+        boolean withBackplate = false;
+        boolean isGridMode = false;
+        int gridSize = 3;
+        String gridText = "";
+
+        CompoundTag tag = pStack.getTag();
+        if (tag != null) {
+            if (tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
+            if (tag.contains("Size")) size = tag.getInt("Size");
+            else if (tag.getBoolean("Is2x2")) size = 2;
+            if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
+            if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
+            if (tag.contains("IsGridMode")) isGridMode = tag.getBoolean("IsGridMode");
+            if (tag.contains("GridSize")) gridSize = tag.getInt("GridSize");
+            if (tag.contains("GridText")) gridText = tag.getString("GridText");
+        }
+
+        if (isGridMode) {
+            boolean isBannerMode = tag.contains("IsBannerMode") ? tag.getBoolean("IsBannerMode") : true;
+            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.mode.grid")
+                    .withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal(" (" + gridSize + "x" + gridSize + ")").withStyle(ChatFormatting.GOLD)));
+
+            boolean isVert = tag.getBoolean("IsVertical");
+            Component modeComp;
+            if (isBannerMode) {
+                modeComp = Component.translatable(isVert ? "gui.signbuilder.blueprint.mode_banner_vert" : "gui.signbuilder.blueprint.mode_banner_horiz")
+                        .withStyle(isVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN);
+            } else {
+                modeComp = Component.translatable("gui.signbuilder.blueprint.mode_single")
+                        .withStyle(ChatFormatting.AQUA);
+            }
+            pTooltipComponents.add(Component.literal("Mode: ").withStyle(ChatFormatting.GRAY).append(modeComp));
+
+            if (!gridText.isEmpty()) {
+                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
+                        .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
+                        .append(Component.literal(gridText).withStyle(ChatFormatting.AQUA)));
+            } else {
+                pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.empty")
+                        .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+            }
+
+            pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
+                            .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
+
+            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
+                    .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+            super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+            return;
+        }
+
+        if (!currentText.isEmpty()) {
+            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
+                    .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
+                    .append(Component.literal(currentText).withStyle(ChatFormatting.AQUA)));
+        } else {
+            pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.empty")
+                    .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        }
+
+        String sizeText = (size == 3) ? "3x3 Multi-Block" : (size == 2 ? "2x2 Multi-Block" : "1x1 Normal");
+        ChatFormatting sizeColor = (size == 3) ? ChatFormatting.LIGHT_PURPLE : (size == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
+        pTooltipComponents.add(Component.literal("Size: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(sizeText).withStyle(sizeColor)));
+
+        pTooltipComponents.add(Component.literal("Direction: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.translatable(isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
+                        .withStyle(isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN)));
+
+        pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
+                        .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
+
+        pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
+                .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+    }
+
+    @Override
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer, @NotNull InteractionHand pUsedHand) {
+        ItemStack stack = pPlayer.getItemInHand(pUsedHand);
+
+        if (pPlayer.isShiftKeyDown()) {
+            if (!pLevel.isClientSide()) {
+                CompoundTag currentTag = stack.getTag() != null ? stack.getTag() : new CompoundTag();
+                boolean isGrid = currentTag.getBoolean("IsGridMode");
+                if (isGrid) {
+                    int gSize = currentTag.contains("GridSize") ? currentTag.getInt("GridSize") : 3;
+                    if (gSize < 2) gSize = 3;
+                    int nextGridSize = (gSize == 2) ? 3 : ((gSize == 3) ? 4 : 2);
+                    stack.getOrCreateTag().putInt("GridSize", nextGridSize);
+                    pPlayer.displayClientMessage(
+                            Component.literal("Blueprint Grid: ").withStyle(ChatFormatting.YELLOW)
+                                    .append(Component.literal(nextGridSize + "x" + nextGridSize).withStyle(ChatFormatting.GOLD)),
+                            true
+                    );
+                    pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
+                    return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+                }
+
+                int size = 1;
+                if (currentTag.contains("Size")) size = currentTag.getInt("Size");
+                else if (currentTag.getBoolean("Is2x2")) size = 2;
+
+                boolean isVert = currentTag.getBoolean("IsVertical");
+
+                int nextSize;
+                boolean nextVert;
+
+                if (size == 1 && !isVert) {
+                    nextSize = 1; nextVert = true;
+                } else if (size == 1) {
+                    nextSize = 2; nextVert = false;
+                } else if (size == 2 && !isVert) {
+                    nextSize = 2; nextVert = true;
+                } else if (size == 2) {
+                    nextSize = 3; nextVert = false;
+                } else if (size == 3 && !isVert) {
+                    nextSize = 3; nextVert = true;
+                } else {
+                    nextSize = 1; nextVert = false;
+                }
+
+                stack.getOrCreateTag().putInt("Size", nextSize);
+                stack.getOrCreateTag().putBoolean("Is2x2", nextSize == 2);
+                stack.getOrCreateTag().putBoolean("IsVertical", nextVert);
+
+                String sizeStr = (nextSize == 3) ? "3x3" : (nextSize == 2 ? "2x2" : "1x1");
+                ChatFormatting color = (nextSize == 3) ? ChatFormatting.LIGHT_PURPLE : (nextSize == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA);
+
+                pPlayer.displayClientMessage(
+                        Component.literal("Blueprint: ").withStyle(ChatFormatting.YELLOW)
+                                .append(Component.literal(sizeStr).withStyle(color))
+                                .append(Component.literal(" "))
+                                .append(Component.translatable(nextVert ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
+                                        .withStyle(nextVert ? ChatFormatting.YELLOW : ChatFormatting.GREEN)),
+                        true
+                );
+                pLevel.playSound(null, pPlayer.blockPosition(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.5F, 1.2F);
+            }
+        } else {
+            if (pLevel.isClientSide()) {
+                String currentText = "";
+                CompoundTag tag = stack.getTag();
+                if (tag != null && tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
+                String finalCurrentText = currentText;
+
+                pPlayer.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
+                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openBlueprintScreen(finalCurrentText));
+            }
+        }
+        return InteractionResultHolder.sidedSuccess(stack, pLevel.isClientSide());
+    }
+
+    @Override
+    public @NotNull InteractionResult useOn(@NotNull UseOnContext pContext) {
+        Level level = pContext.getLevel();
+        Player player = pContext.getPlayer();
+        ItemStack stack = pContext.getItemInHand();
+
+        if (level.isClientSide() || player == null) return InteractionResult.SUCCESS;
+
+        String text = "";
+        int size = 1;
+        boolean isVertical = false;
+        boolean withBackplate = false;
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            if (tag.contains("BlueprintText")) text = tag.getString("BlueprintText");
+            if (tag.contains("Size")) size = tag.getInt("Size");
+            else if (tag.getBoolean("Is2x2")) size = 2;
+            if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
+            if (tag.contains("WithBackplate")) withBackplate = tag.getBoolean("WithBackplate");
+        }
+
+        if (tag != null && tag.getBoolean("IsGridMode")) {
+            return useOnGrid(pContext, level, player, stack, tag, withBackplate);
+        }
+
+        if (text.isEmpty()) {
+            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.empty").withStyle(ChatFormatting.RED), true);
+            return InteractionResult.FAIL;
+        }
+
+        Direction clickedFace = pContext.getClickedFace();
+        BlockPos startPos = pContext.getClickedPos().relative(clickedFace);
+        boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
+        int rotation = wall
+                ? SignRotation.fromDirection(clickedFace)
+                : size > 1
+                ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
+                : SignRotation.fromYaw(player.getYRot(), -2);
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
+
+        int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
+        int blocksPlaced = 0;
+        List<Long> placedPositions = new ArrayList<>();
+
+        int effectiveIdx = 0;
+        int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
+        for (int i = 0; i < text.length(); ) {
+            int c = text.codePointAt(i);
+            i += Character.charCount(c);
+            if (c == 0xFE0F) continue;
+            if (c == ' ') {
+                effectiveIdx++;
+                continue;
+            }
+
+            Block blockToPlace = getBlockForChar(c);
+            if (blockToPlace == null) {
+                effectiveIdx++;
+                continue;
+            }
+
+            if (!isVertical) {
+                if (size == 1) {
+                    BlockPos currentPos = offsetRight(startPos, rightX, rightZ, effectiveIdx);
+                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
+                    blocksPlaced++;
+                    placedPositions.add(currentPos.asLong());
+                } else if (size == 2) {
+                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 2);
+                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
+                    BlockPos p01 = basePos.relative(Direction.UP, 1);
+                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
+
+                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
+                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
+                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
+                        break;
+                    }
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    BlockPos[] quad = {basePos, p10, p01, p11};
+                    for (BlockPos p : quad) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
+                } else {
+                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 3);
+                    boolean canPlaceAll = true;
+                    BlockPos[] grid = new BlockPos[9];
+                    int gIdx = 0;
+                    for (int dy = 0; dy < 3; dy++) {
+                        for (int dx = 0; dx < 3; dx++) {
+                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
+                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
+                                canPlaceAll = false;
+                                break;
+                            }
+                            grid[gIdx++] = p;
+                        }
+                        if (!canPlaceAll) break;
+                    }
+
+                    if (!canPlaceAll) break;
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    for (BlockPos p : grid) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
+                }
+            } else {
+                if (size == 1) {
+                    int posY = (stepDirY == 1)
+                            ? startPos.getY() + effectiveIdx
+                            : startPos.getY() - effectiveIdx;
+
+                    BlockPos currentPos = new BlockPos(startPos.getX(), posY, startPos.getZ());
+                    BlockState curSt = level.getBlockState(currentPos); if (!curSt.isAir() && !curSt.getMaterial().isReplaceable()) break;
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
+                    blocksPlaced++;
+                    placedPositions.add(currentPos.asLong());
+                } else if (size == 2) {
+                    int baseY = (stepDirY == 1)
+                            ? startPos.getY() + (effectiveIdx * 2)
+                            : startPos.getY() - 1 - (effectiveIdx * 2);
+
+                    BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
+                    BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
+                    BlockPos p01 = basePos.relative(Direction.UP, 1);
+                    BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
+
+                    BlockState s00 = level.getBlockState(basePos), s10 = level.getBlockState(p10), s01 = level.getBlockState(p01), s11 = level.getBlockState(p11);
+                    if ((!s00.isAir() && !s00.getMaterial().isReplaceable()) || (!s10.isAir() && !s10.getMaterial().isReplaceable()) ||
+                            (!s01.isAir() && !s01.getMaterial().isReplaceable()) || (!s11.isAir() && !s11.getMaterial().isReplaceable())) {
+                        break;
+                    }
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    BlockPos[] quad = {basePos, p10, p01, p11};
+                    for (BlockPos p : quad) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
+                } else {
+                    int baseY = (stepDirY == 1)
+                            ? startPos.getY() + (effectiveIdx * 3)
+                            : startPos.getY() - 2 - (effectiveIdx * 3);
+
+                    BlockPos basePos = new BlockPos(startPos.getX(), baseY, startPos.getZ());
+                    boolean canPlaceAll = true;
+                    BlockPos[] grid = new BlockPos[9];
+                    int gIdx = 0;
+                    for (int dy = 0; dy < 3; dy++) {
+                        for (int dx = 0; dx < 3; dx++) {
+                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
+                            BlockState sp = level.getBlockState(p); if (!sp.isAir() && !sp.getMaterial().isReplaceable()) {
+                                canPlaceAll = false;
+                                break;
+                            }
+                            grid[gIdx++] = p;
+                        }
+                        if (!canPlaceAll) break;
+                    }
+
+                    if (!canPlaceAll) break;
+
+                    if (!player.isCreative()) {
+                        int bpCost = withBackplate ? blocksPerChar : 0;
+                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
+
+                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                        if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
+                    }
+
+                    for (BlockPos p : grid) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
+                        placedPositions.add(p.asLong());
+                        blocksPlaced++;
+                    }
+                }
+            }
+
+            effectiveIdx++;
+        }
+
+        if (blocksPlaced > 0) {
+            level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+
+            long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
+            stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
+
+            if (!player.isCreative()) {
+                stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
+            }
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate, int rotation, int size) {
+        BlockHitResult hitResult = new BlockHitResult(pContext.getClickLocation(), clickedFace, pos, pContext.isInside());
+        UseOnContext offsetContext = new UseOnContext(player, pContext.getHand(), hitResult);
+        BlockPlaceContext placeContext = new BlockPlaceContext(offsetContext);
+        BlockState stateToPlace = blockToPlace.getStateForPlacement(placeContext);
+        if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();
+
+        level.setBlock(pos, stateToPlace, 3);
+        ItemStack placedStack = new ItemStack(blockToPlace);
+        if (size > 1) {
+            CompoundTag blockEntityTag = placedStack.getOrCreateTagElement("BlockEntityTag");
+            blockEntityTag.putInt("FacingRotation", rotation);
+            blockEntityTag.putString("id", "signbuilder:letter_block_entity");
+        }
+        blockToPlace.setPlacedBy(level, pos, stateToPlace, player, placedStack);
+
+        if (withBackplate) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LetterBlockEntity letterBe) {
+                letterBe.setHasBackplate(true);
+            }
+        }
+    }
+
+    private static BlockPos offsetRight(BlockPos pos, int rightX, int rightZ, int distance) {
+        return pos.offset(rightX * distance, 0, rightZ * distance);
+    }
+
+    private int countItemInInventory(Player player, Item item) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) count += stack.getCount();
+        }
+        return count;
+    }
+
+    private void consumeItemFromInventory(Player player, Item item, int amount) {
+        int amountLeftToRemove = amount;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.getItem() == item) {
+                if (stack.getCount() >= amountLeftToRemove) {
+                    stack.shrink(amountLeftToRemove);
+                    break;
+                } else {
+                    amountLeftToRemove -= stack.getCount();
+                    stack.setCount(0);
+                }
+            }
+        }
+    }
+
+    public static int getHitSubCellRow(Vec3 hitLocation, int gridSize) {
+        double fy = hitLocation.y - Math.floor(hitLocation.y);
+        double v = 1.0 - fy;
+        return Mth.clamp((int) Math.floor(v * gridSize), 0, gridSize - 1);
+    }
+
+    public static int getHitSubCellCol(Direction face, Vec3 hitLocation, int gridSize) {
+        boolean wall = face.getAxis() != Direction.Axis.Y;
+        int stepRotation = wall ? SignRotation.fromDirection(face) : 0;
+        int rightX = SignRotation.horizontalStepX(stepRotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
+        double u;
+        if (rightX != 0) {
+            double fx = hitLocation.x - Math.floor(hitLocation.x);
+            u = (rightX > 0) ? fx : (1.0 - fx);
+        } else {
+            double fz = hitLocation.z - Math.floor(hitLocation.z);
+            u = (rightZ > 0) ? fz : (1.0 - fz);
+        }
+        return Mth.clamp((int) Math.floor(u * gridSize), 0, gridSize - 1);
+    }
+
+    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize) {
+        int targetRow = (gridSize == 2) ? 0 : 1;
+        return getBannerCellsForBlock(text, blockIdx, gridSize, false, targetRow, 0);
+    }
+
+    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine) {
+        return getBannerCellsForBlock(text, blockIdx, gridSize, isVertical, targetLine, 0);
+    }
+
+    public static Map<Integer, String> getBannerCellsForBlock(String text, int blockIdx, int gridSize, boolean isVertical, int targetLine, int startOffset) {
+        Map<Integer, String> cells = new HashMap<>();
+        if (text == null || text.isEmpty()) return cells;
+
+        int textStart;
+        int count;
+        int lineOffset;
+
+        if (blockIdx == 0) {
+            textStart = 0;
+            count = Math.min(gridSize - startOffset, text.length());
+            lineOffset = startOffset;
+        } else {
+            textStart = (gridSize - startOffset) + (blockIdx - 1) * gridSize;
+            if (textStart >= text.length()) return cells;
+            count = Math.min(gridSize, text.length() - textStart);
+            lineOffset = 0;
+        }
+
+        String sub = text.substring(textStart, textStart + count);
+        for (int i = 0; i < sub.length(); i++) {
+            char ch = sub.charAt(i);
+            if (ch != ' ') {
+                int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
+                String path = getBlockPathForChar(cp);
+                if (path != null) {
+                    int cellIndex = isVertical
+                            ? ((lineOffset + i) * gridSize + targetLine)
+                            : (targetLine * gridSize + (lineOffset + i));
+                    cells.put(cellIndex, path);
+                }
+            }
+        }
+        return cells;
+    }
+
+    private void stampOrPlaceGridSign(Level level, Player player, BlockPos targetPos, Direction clickedFace, int gridSize, Map<Integer, String> cells, boolean withBackplate, boolean isBannerMode, boolean isVertical, int targetLine, int lineStartOffset, boolean isBack) {
+        BlockState currentState = level.getBlockState(targetPos);
+        boolean isBackplate = currentState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
+        boolean isGridSign = currentState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock;
+        boolean isLetter = currentState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock;
+
+        if (isGridSign) {
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
+                    int cIdx = entry.getKey();
+                    int cellGridSize = gridSize;
+                    int col, row;
+                    if (cIdx >= 200) {
+                        cellGridSize = (cIdx % 10000) / 100;
+                        row = (cIdx % 100) / 10;
+                        col = cIdx % 10;
+                    } else {
+                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
+                        col = cIdx % gridSize;
+                        row = cIdx / gridSize;
+                    }
+                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+                }
+                gridBe.markRenderDirty();
+                gridBe.setChanged();
+                gridBe.sync();
+            }
+        } else if (isBackplate || (isLetter && isBack)) {
+            com.boran.signbuilder.block.SignMaterial bpFMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
+            com.boran.signbuilder.block.SignMaterial bpBMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
+            int bpFColor = 0xFFFFFF, bpBColor = 0xFFFFFF;
+            boolean bpFRainbow = false, bpBRainbow = false;
+            int bpFacingRotation = 0;
+            int bpWrenchMode = 0;
+            boolean bpActive = false;
+            boolean bpDetectsMonsters = true, bpDetectsAnimals = false;
+            int bpOnTicks = 10, bpOffTicks = 10, bpType = 0, bpRange = 8, bpOffRange = 8, bpCloseDelay = 0;
+            boolean bpNightOnly = true, bpPlayers = true, bpLowPower = false, bpLookOnly = true;
+            ItemStack oldFrontGlyph = ItemStack.EMPTY;
+
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
+                if (isLetter) {
+                    oldFrontGlyph = effective.getDroppedItemStack(currentState);
+                    CompoundTag itemTag = oldFrontGlyph.getTag();
+                    if (itemTag != null && itemTag.contains("BlockEntityTag", 10)) {
+                        CompoundTag beTag = itemTag.getCompound("BlockEntityTag");
+                        beTag.remove("BackGlyph");
+                        beTag.remove("HasBackplate");
+                        beTag.remove("BPFrontMat");
+                        beTag.remove("BPBackMat");
+                        beTag.remove("BPFrontColor");
+                        beTag.remove("BPBackColor");
+                        beTag.remove("BPFrontRainbow");
+                        beTag.remove("BPBackRainbow");
+                        beTag.remove("BackplateFrontMaterial");
+                        beTag.remove("BackplateBackMaterial");
+                        beTag.remove("BackplateFrontColor");
+                        beTag.remove("BackplateBackColor");
+                        beTag.remove("BackplateFrontRainbow");
+                        beTag.remove("BackplateBackRainbow");
+                        if (beTag.isEmpty()) itemTag.remove("BlockEntityTag");
+                    }
+                    ItemStack bpBackGlyph = effective.getBackGlyph();
+                    if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
+                        if (!player.isCreative()) {
+                            net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
+                        }
+                    }
+                }
+                bpFMat = effective.getBackplateFrontMaterial();
+                bpBMat = effective.getBackplateBackMaterial();
+                bpFColor = effective.getBackplateFrontColor();
+                bpBColor = effective.getBackplateBackColor();
+                bpFRainbow = effective.isBackplateFrontRainbow();
+                bpBRainbow = effective.isBackplateBackRainbow();
+                bpFacingRotation = effective.getFacingRotation();
+                if (isLetter && currentState.hasProperty(BlockStateProperties.ATTACH_FACE) && currentState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                    bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
+                }
+                bpWrenchMode = effective.getWrenchMode();
+                bpActive = effective.isActive();
+                bpDetectsMonsters = effective.doesDetectMonsters();
+                bpDetectsAnimals = effective.doesDetectAnimals();
+                bpOnTicks = effective.getCustomLightOnTicks();
+                bpOffTicks = effective.getCustomLightOffTicks();
+                bpType = effective.getCustomLightType();
+                bpRange = effective.getCustomLightRange();
+                bpOffRange = effective.getCustomLightOffRange();
+                bpCloseDelay = effective.getCustomLightCloseDelayTicks();
+                bpNightOnly = effective.isCustomLightNightOnly();
+                bpPlayers = effective.doesCustomLightDetectPlayers();
+                bpLowPower = effective.isCustomLightLowPower();
+                bpLookOnly = effective.isCustomLightLookOnly();
+            } else if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                bpFacingRotation = SignRotation.fromDirection(currentState.getValue(BlockStateProperties.HORIZONTAL_FACING));
+            }
+
+            if (currentState.hasProperty(com.boran.signbuilder.block.BackplateBlock.MATERIAL) && bpFMat == com.boran.signbuilder.block.SignMaterial.DEFAULT) {
+                bpFMat = currentState.getValue(com.boran.signbuilder.block.BackplateBlock.MATERIAL);
+            }
+
+            AttachFace attachFace = AttachFace.WALL;
+            if (currentState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                attachFace = currentState.getValue(BlockStateProperties.ATTACH_FACE);
+            }
+            Direction blockFacing = clickedFace;
+            if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                blockFacing = currentState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                if (isLetter && attachFace != AttachFace.WALL) {
+                    blockFacing = blockFacing.getCounterClockWise();
+                }
+            }
+
+            BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
+                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACE, attachFace)
+                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACING, blockFacing);
+            level.setBlock(targetPos, newState, 3);
+
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+                gridBe.setHasBackplate(true);
+                gridBe.setBackplateFrontMaterial(bpFMat);
+                gridBe.setBackplateBackMaterial(bpBMat);
+                gridBe.setBackplateFrontColor(bpFColor);
+                gridBe.setBackplateBackColor(bpBColor);
+                gridBe.setBackplateFrontRainbow(bpFRainbow);
+                gridBe.setBackplateBackRainbow(bpBRainbow);
+                gridBe.setFacingRotation(bpFacingRotation);
+                gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
+                if (!oldFrontGlyph.isEmpty()) {
+                    gridBe.setFrontGlyph(oldFrontGlyph);
+                }
+                com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
+
+                gridBe.setGridSize(gridSize);
+                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
+                    int cIdx = entry.getKey();
+                    int cellGridSize = gridSize;
+                    int col, row;
+                    if (cIdx >= 200) {
+                        cellGridSize = (cIdx % 10000) / 100;
+                        row = (cIdx % 100) / 10;
+                        col = cIdx % 10;
+                    } else {
+                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
+                        col = cIdx % gridSize;
+                        row = cIdx / gridSize;
+                    }
+                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+                }
+                gridBe.markRenderDirty();
+                gridBe.setChanged();
+                gridBe.sync();
+            }
+        } else {
+            AttachFace attachFace;
+            Direction blockFacing;
+            if (clickedFace.getAxis() != Direction.Axis.Y) {
+                attachFace = AttachFace.WALL;
+                blockFacing = clickedFace;
+            } else if (clickedFace == Direction.UP) {
+                attachFace = AttachFace.FLOOR;
+                blockFacing = player.getDirection().getOpposite();
+            } else {
+                attachFace = AttachFace.CEILING;
+                blockFacing = player.getDirection().getOpposite();
+            }
+
+            BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
+                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACE, attachFace)
+                    .setValue(com.boran.signbuilder.block.GridSignBlock.FACING, blockFacing);
+            level.setBlock(targetPos, newState, 3);
+
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
+                gridBe.setGridSize(gridSize);
+                int rot = SignRotation.fromDirection(blockFacing);
+                gridBe.setFacingRotation(rot);
+                gridBe.setHasBackplate(withBackplate);
+                for (Map.Entry<Integer, String> entry : cells.entrySet()) {
+                    int cIdx = entry.getKey();
+                    int cellGridSize = gridSize;
+                    int col, row;
+                    if (cIdx >= 200) {
+                        cellGridSize = (cIdx % 10000) / 100;
+                        row = (cIdx % 100) / 10;
+                        col = cIdx % 10;
+                    } else {
+                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
+                        col = cIdx % gridSize;
+                        row = cIdx / gridSize;
+                    }
+                    gridBe.setCell(col, row, cellGridSize, false, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+                }
+                gridBe.markRenderDirty();
+                gridBe.setChanged();
+                gridBe.sync();
+            }
+        }
+    }
+
+    public static boolean isStampableTarget(Level level, BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) return true;
+        if (state.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) return true;
+        if (state.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+            if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                return lbe.getEffectiveMaster().hasBackplate() && lbe.getEffectiveMaster().getSize() == 1;
+            }
+        }
+        return false;
+    }
+
+    public static boolean canPlaceGridBlock(Level level, BlockPos targetPos, Direction effectiveFace, int gridSize, Map<Integer, String> cellMap, boolean isBack) {
+        BlockState targetState = level.getBlockState(targetPos);
+        if (targetState.getBlock() instanceof com.boran.signbuilder.block.GridSignBlock) {
+            AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.GridSignBlock.FACE)
+                    ? targetState.getValue(com.boran.signbuilder.block.GridSignBlock.FACE)
+                    : AttachFace.WALL;
+            if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
+                if (targetState.hasProperty(com.boran.signbuilder.block.GridSignBlock.FACING)) {
+                    Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.GridSignBlock.FACING);
+                    if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
+                }
+            }
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                for (Map.Entry<Integer, String> entry : cellMap.entrySet()) {
+                    int cIdx = entry.getKey();
+                    int cellGridSize = gridSize;
+                    int col, row;
+                    if (cIdx >= 200) {
+                        cellGridSize = (cIdx % 10000) / 100;
+                        row = (cIdx % 100) / 10;
+                        col = cIdx % 10;
+                    } else {
+                        if (cIdx < 0 || cIdx >= gridSize * gridSize) continue;
+                        col = cIdx % gridSize;
+                        row = cIdx / gridSize;
+                    }
+                    if (gbe.hasAnyCollision(cellGridSize, col, row, isBack)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        if (targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock) {
+            AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.FACE)
+                    ? targetState.getValue(com.boran.signbuilder.block.BackplateBlock.FACE)
+                    : AttachFace.WALL;
+            if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
+                if (targetState.hasProperty(com.boran.signbuilder.block.BackplateBlock.FACING)) {
+                    Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.BackplateBlock.FACING);
+                    if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
+                }
+            }
+            return true;
+        }
+
+        if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
+            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                com.boran.signbuilder.block.entity.LetterBlockEntity master = lbe.getEffectiveMaster();
+                if (master.hasBackplate() && master.getSize() == 1 && isBack) {
+                    AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACE)
+                            ? targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACE)
+                            : AttachFace.WALL;
+                    if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
+                        if (targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACING)) {
+                            Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACING);
+                            if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return targetState.isAir() || targetState.getMaterial().isReplaceable();
+    }
+
+    private InteractionResult useOnGrid(UseOnContext pContext, Level level, Player player, ItemStack stack, CompoundTag tag, boolean withBackplate) {
+        int gridSize = tag.contains("GridSize") ? tag.getInt("GridSize") : 3;
+        if (gridSize < 2) gridSize = 3;
+        boolean isBannerMode = tag.contains("IsBannerMode") ? tag.getBoolean("IsBannerMode") : true;
+        String gridText = tag.getString("GridText");
+
+        BlockPos clickedPos = pContext.getClickedPos();
+        Direction clickedFace = pContext.getClickedFace();
+        BlockState clickedState = level.getBlockState(clickedPos);
+
+        boolean clickedIsStampable = isStampableTarget(level, clickedPos, clickedState);
+
+        if (clickedFace.getAxis() == Direction.Axis.Y && !clickedIsStampable) {
+            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.wall_only").withStyle(ChatFormatting.RED), true);
+            return InteractionResult.FAIL;
+        }
+
+        Direction effectiveFace = clickedFace;
+        AttachFace clickedAttachFace = AttachFace.WALL;
+        Direction clickedFacing = effectiveFace;
+        int clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
+
+        if (clickedIsStampable) {
+            if (clickedState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                clickedAttachFace = clickedState.getValue(BlockStateProperties.ATTACH_FACE);
+            }
+            if (clickedState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                clickedFacing = clickedState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            }
+            if (level.getBlockEntity(clickedPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                clickedFacingRotation = gbe.getFacingRotation();
+            } else if (level.getBlockEntity(clickedPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
+                clickedFacingRotation = lbe.getEffectiveMaster().getFacingRotation();
+            } else {
+                clickedFacingRotation = SignRotation.fromDirection(clickedFacing);
+            }
+            if (clickedState.getBlock() instanceof LetterBlock && clickedAttachFace != AttachFace.WALL) {
+                clickedFacing = clickedFacing.getCounterClockWise();
+                clickedFacingRotation = Math.floorMod(clickedFacingRotation - 2, 8);
+            }
+            if (clickedAttachFace != AttachFace.WALL) {
+                effectiveFace = clickedFacing;
+            }
+        }
+
+        boolean wall = (clickedAttachFace == AttachFace.WALL);
+        int stepRotation = clickedIsStampable
+                ? clickedFacingRotation
+                : (wall ? SignRotation.fromDirection(effectiveFace) : SignRotation.fromDirection(player.getDirection().getCounterClockWise()));
+        int rightX = SignRotation.horizontalStepX(stepRotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
+
+        BlockPos startPos = clickedIsStampable ? clickedPos : clickedPos.relative(clickedFace);
+
+        boolean isVertical = tag.getBoolean("IsVertical");
+        Vec3 hitLoc = pContext.getClickLocation();
+        int targetLine;
+        int startOffset;
+        if (isVertical) {
+            targetLine = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
+            startOffset = getHitSubCellRow(hitLoc, gridSize);
+        } else {
+            targetLine = getHitSubCellRow(hitLoc, gridSize);
+            startOffset = getHitSubCellCol(effectiveFace, hitLoc, gridSize);
+        }
+
+        int numBlocks;
+        List<Map<Integer, String>> blocksCells = new ArrayList<>();
+
+        if (isBannerMode && !gridText.isEmpty()) {
+            int firstBlockCap = gridSize - startOffset;
+            if (gridText.length() <= firstBlockCap) {
+                numBlocks = 1;
+            } else {
+                int rem = gridText.length() - firstBlockCap;
+                numBlocks = 1 + (rem + gridSize - 1) / gridSize;
+            }
+            for (int b = 0; b < numBlocks; b++) {
+                blocksCells.add(getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
+            }
+        } else {
+            numBlocks = 1;
+            Map<Integer, String> blueprintCells = new HashMap<>();
+            if (tag.contains("GridCells", net.minecraft.nbt.Tag.TAG_LIST)) {
+                net.minecraft.nbt.ListTag list = tag.getList("GridCells", net.minecraft.nbt.Tag.TAG_COMPOUND);
+                for (int i = 0; i < list.size(); i++) {
+                    CompoundTag ctag = list.getCompound(i);
+                    int idx;
+                    if (ctag.contains("Col") && ctag.contains("Row")) {
+                        int gSize = ctag.contains("GridSize") ? ctag.getInt("GridSize") : gridSize;
+                        int col = ctag.getInt("Col");
+                        int row = ctag.getInt("Row");
+                        idx = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, gSize, col, row);
+                    } else {
+                        idx = ctag.getInt("Index");
+                    }
+                    String cPath = ctag.getString("Char");
+                    if (!cPath.isEmpty()) {
+                        blueprintCells.put(idx, cPath);
+                    }
+                }
+            }
+            if (blueprintCells.isEmpty() && !gridText.isEmpty()) {
+                int max = Math.min(gridText.length(), gridSize * gridSize);
+                for (int i = 0; i < max; i++) {
+                    char ch = gridText.charAt(i);
+                    if (ch != ' ') {
+                        String path = getBlockPathForChar(ch);
+                        if (path != null) blueprintCells.put(i, path);
+                    }
+                }
+            }
+            if (blueprintCells.isEmpty()) {
+                player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.empty").withStyle(ChatFormatting.RED), true);
+                return InteractionResult.FAIL;
+            }
+            blocksCells.add(blueprintCells);
+        }
+
+        boolean isBack = false;
+        if (clickedIsStampable) {
+            if (clickedAttachFace == AttachFace.WALL) {
+                if (effectiveFace == clickedFacing.getOpposite()) {
+                    isBack = true;
+                } else if (effectiveFace != clickedFacing) {
+                    double side = (player.getX() - (clickedPos.getX() + 0.5)) * SignRotation.facingX(clickedFacingRotation)
+                            + (player.getZ() - (clickedPos.getZ() + 0.5)) * SignRotation.facingZ(clickedFacingRotation);
+                    if (side < 0.0) isBack = true;
+                }
+            } else {
+                Vec3 look = player.getLookAngle();
+                double dot = look.x * SignRotation.facingX(clickedFacingRotation) + look.z * SignRotation.facingZ(clickedFacingRotation);
+                if (dot > 0.05) {
+                    isBack = true;
+                } else if (dot < -0.05) {
+                    isBack = false;
+                } else {
+                    double side = (player.getX() - (clickedPos.getX() + 0.5)) * SignRotation.facingX(clickedFacingRotation)
+                            + (player.getZ() - (clickedPos.getZ() + 0.5)) * SignRotation.facingZ(clickedFacingRotation);
+                    isBack = side < 0.0;
+                }
+            }
+        }
+
+        List<BlockPos> targetPositions = new ArrayList<>();
+        List<Integer> validBlockIndices = new ArrayList<>();
+        for (int b = 0; b < numBlocks; b++) {
+            BlockPos bPos = (isBannerMode && isVertical)
+                    ? startPos.below(b)
+                    : offsetRight(startPos, rightX, rightZ, b);
+            targetPositions.add(bPos);
+
+            BlockState bState = level.getBlockState(bPos);
+            boolean bStamp = isStampableTarget(level, bPos, bState);
+            boolean canPlace;
+            if (clickedIsStampable) {
+                canPlace = bStamp && canPlaceGridBlock(level, bPos, effectiveFace, gridSize, blocksCells.get(b), isBack);
+            } else {
+                canPlace = canPlaceGridBlock(level, bPos, effectiveFace, gridSize, blocksCells.get(b), isBack);
+            }
+
+            if (canPlace) {
+                validBlockIndices.add(b);
+            } else if (!clickedIsStampable) {
+                player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
+                return InteractionResult.FAIL;
+            }
+        }
+
+        if (validBlockIndices.isEmpty()) {
+            player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
+            return InteractionResult.FAIL;
+        }
+
+        if (!player.isCreative()) {
+            int backplatesNeeded = 0;
+            Map<Item, Integer> lettersNeeded = new HashMap<>();
+
+            for (int b : validBlockIndices) {
+                BlockPos bPos = targetPositions.get(b);
+                BlockState bState = level.getBlockState(bPos);
+                boolean bStamp = isStampableTarget(level, bPos, bState);
+                if (!bStamp && withBackplate) {
+                    backplatesNeeded++;
+                }
+
+                for (String charPath : blocksCells.get(b).values()) {
+                    Block block = Registry.BLOCK.get(new ResourceLocation("signbuilder", charPath));
+                    if (block != Blocks.AIR) {
+                        lettersNeeded.merge(block.asItem(), 1, Integer::sum);
+                    }
+                }
+            }
+
+            if (backplatesNeeded > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < backplatesNeeded) {
+                player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
+                return InteractionResult.FAIL;
+            }
+
+            for (Map.Entry<Item, Integer> req : lettersNeeded.entrySet()) {
+                if (countItemInInventory(player, req.getKey()) < req.getValue()) {
+                    player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
+                    return InteractionResult.FAIL;
+                }
+            }
+
+            if (backplatesNeeded > 0) {
+                consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), backplatesNeeded);
+            }
+            for (Map.Entry<Item, Integer> req : lettersNeeded.entrySet()) {
+                consumeItemFromInventory(player, req.getKey(), req.getValue());
+            }
+        }
+
+        List<Long> placedPositions = new ArrayList<>();
+        for (int b : validBlockIndices) {
+            BlockPos bPos = targetPositions.get(b);
+            int lineStartOffset = (b == 0) ? startOffset : 0;
+            stampOrPlaceGridSign(level, player, bPos, effectiveFace, gridSize, blocksCells.get(b), withBackplate, isBannerMode, isVertical, targetLine, lineStartOffset, isBack);
+            placedPositions.add(bPos.asLong());
+        }
+
+        level.playSound(null, startPos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        long[] posArray = placedPositions.stream().mapToLong(l -> l).toArray();
+        stack.getOrCreateTag().putLongArray("UndoHistory", posArray);
+
+        if (!player.isCreative()) {
+            stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(pContext.getHand()));
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    public static Block getBlockForChar(char c) {
+        return getBlockForChar((int) c);
+    }
+
+    public static Block getBlockForChar(int c) {
+        Block cached = CHAR_BLOCK_CACHE.get(c);
+        if (cached != null) return cached;
+
+        String blockId = getBlockPathForChar(c);
+        if (blockId != null) {
+            Block targetBlock = Registry.BLOCK.get(new ResourceLocation("signbuilder", blockId));
+            if (targetBlock != Blocks.AIR) {
+                CHAR_BLOCK_CACHE.put(c, targetBlock);
+                return targetBlock;
+            }
+        }
+        return null;
+    }
+
+    public static String getBlockPathForChar(int c) {
+        return switch (c) {
+            case 'A', 'a' -> "letter_a";
+            case 'Ä', 'ä' -> "letter_a_de";
+            case 'B', 'b' -> "letter_b";
+            case 'C', 'c' -> "letter_c";
+            case 'Ç', 'ç' -> "letter_c_tr";
+            case 'D', 'd' -> "letter_d";
+            case 'E', 'e' -> "letter_e";
+            case 'F', 'f' -> "letter_f";
+            case 'G', 'g' -> "letter_g";
+            case 'Ğ', 'ğ' -> "letter_g_tr";
+            case 'H', 'h' -> "letter_h";
+            case 'I', 'i', 'ı' -> "letter_i";
+            case 'İ' -> "letter_i_tr";
+            case 'J', 'j' -> "letter_j";
+            case 'K', 'k' -> "letter_k";
+            case 'L', 'l' -> "letter_l";
+            case 'M', 'm' -> "letter_m";
+            case 'N', 'n' -> "letter_n";
+            case 'O', 'o' -> "letter_o";
+            case 'Ö', 'ö' -> "letter_o_tr";
+            case 'P', 'p' -> "letter_p";
+            case 'Q', 'q' -> "letter_q";
+            case 'R', 'r' -> "letter_r";
+            case 'S', 's' -> "letter_s";
+            case 'Ş', 'ş' -> "letter_s_tr";
+            case 'T', 't' -> "letter_t";
+            case 'U', 'u' -> "letter_u";
+            case 'Ü', 'ü' -> "letter_u_tr";
+            case 'V', 'v' -> "letter_v";
+            case 'W', 'w' -> "letter_w";
+            case 'X', 'x' -> "letter_x";
+            case 'Y', 'y' -> "letter_y";
+            case 'Z', 'z' -> "letter_z";
+            case 'ß' -> "letter_eszett";
+            case '0' -> "number_0";
+            case '1' -> "number_1"; case '2' -> "number_2"; case '3' -> "number_3"; case '4' -> "number_4";
+            case '5' -> "number_5"; case '6' -> "number_6"; case '7' -> "number_7"; case '8' -> "number_8";
+            case '9' -> "number_9";
+            case '+' -> "symbol_plus"; case '-' -> "symbol_minus"; case '✗', '×' -> "symbol_cross"; case '/' -> "symbol_slash";
+            case '\\' -> "symbol_backslash"; case '#' -> "symbol_hashtag";
+            case '*' -> "symbol_asterisk"; case '★' -> "symbol_star";
+            case '✓' -> "symbol_checkmark"; case '∞' -> "symbol_infinity";
+            case '○', '●' -> "symbol_circle"; case '◆', '◇' -> "symbol_diamond";
+            case '♪' -> "symbol_note"; case '♫' -> "symbol_note_double"; case '☠' -> "symbol_skull";
+            case 0x1F5DD -> "symbol_key";
+            case 0x1F512 -> "symbol_lock";
+            case 0x1F3C6 -> "symbol_trophy";
+            case '⚡' -> "symbol_lightning";
+            case '♥' -> "symbol_heart"; case '€' -> "symbol_euro"; case '$' -> "symbol_dollar"; case '£' -> "symbol_pound";
+            case '¥' -> "symbol_yen"; case '₺' -> "symbol_tl"; case '₿' -> "symbol_bitcoin"; case '@' -> "symbol_at"; case '&' -> "symbol_ampersand";
+            case ',' -> "symbol_comma"; case '%' -> "symbol_percent";
+            case '<' -> "symbol_less_than"; case '>' -> "symbol_greater_than"; case '~' -> "symbol_tilde";
+            case '«' -> "symbol_dot_left"; case '•' -> "symbol_dot_center"; case '»' -> "symbol_dot_right";
+            case '(' -> "symbol_bracket_left"; case ')' -> "symbol_bracket_right"; case '|' -> "symbol_bracket_double";
+            case '[' -> "symbol_square_bracket_left"; case ']' -> "symbol_square_bracket_right"; case '¦' -> "symbol_square_bracket_double";
+            case '↑' -> "arrow_up"; case '↓' -> "arrow_down"; case '←' -> "arrow_left"; case '→' -> "arrow_right";
+            case '↖' -> "arrow_left_up"; case '↗' -> "arrow_right_up"; case '↙' -> "arrow_left_down"; case '↘' -> "arrow_right_down";
+            case ':' -> "symbol_colon"; case ';' -> "symbol_semicolon"; case '!' -> "symbol_exclamation";
+            case '?' -> "symbol_question"; case '=' -> "symbol_equals"; case '÷' -> "symbol_divide";
+            case '\'' -> "symbol_apostrophe"; case '"' -> "symbol_quotes";
+            default -> null;
+        };
+    }
+
+    private static final Map<String, String> PATH_TO_DISPLAY = new HashMap<>(128);
+    static {
+        for (char c = 'A'; c <= 'Z'; c++) PATH_TO_DISPLAY.put("letter_" + Character.toLowerCase(c), String.valueOf(c));
+        PATH_TO_DISPLAY.put("letter_a_de", "Ä");
+        PATH_TO_DISPLAY.put("letter_eszett", "ß");
+        PATH_TO_DISPLAY.put("letter_c_tr", "Ç");
+        PATH_TO_DISPLAY.put("letter_g_tr", "Ğ");
+        PATH_TO_DISPLAY.put("letter_i_tr", "İ");
+        PATH_TO_DISPLAY.put("letter_o_tr", "Ö");
+        PATH_TO_DISPLAY.put("letter_s_tr", "Ş");
+        PATH_TO_DISPLAY.put("letter_u_tr", "Ü");
+        for (int i = 0; i <= 9; i++) PATH_TO_DISPLAY.put("number_" + i, String.valueOf(i));
+        PATH_TO_DISPLAY.put("symbol_plus", "+");
+        PATH_TO_DISPLAY.put("symbol_minus", "-");
+        PATH_TO_DISPLAY.put("symbol_cross", "×");
+        PATH_TO_DISPLAY.put("symbol_divide", "÷");
+        PATH_TO_DISPLAY.put("symbol_equals", "=");
+        PATH_TO_DISPLAY.put("symbol_percent", "%");
+        PATH_TO_DISPLAY.put("symbol_hashtag", "#");
+        PATH_TO_DISPLAY.put("symbol_slash", "/");
+        PATH_TO_DISPLAY.put("symbol_backslash", "\\");
+        PATH_TO_DISPLAY.put("symbol_asterisk", "*");
+        PATH_TO_DISPLAY.put("symbol_star", "★");
+        PATH_TO_DISPLAY.put("symbol_heart", "♥");
+        PATH_TO_DISPLAY.put("symbol_checkmark", "✓");
+        PATH_TO_DISPLAY.put("symbol_infinity", "∞");
+        PATH_TO_DISPLAY.put("symbol_circle", "●");
+        PATH_TO_DISPLAY.put("symbol_diamond", "◆");
+        PATH_TO_DISPLAY.put("symbol_note", "♪");
+        PATH_TO_DISPLAY.put("symbol_note_double", "♫");
+        PATH_TO_DISPLAY.put("symbol_skull", "☠");
+        PATH_TO_DISPLAY.put("symbol_lightning", "⚡");
+        PATH_TO_DISPLAY.put("symbol_euro", "€");
+        PATH_TO_DISPLAY.put("symbol_dollar", "$");
+        PATH_TO_DISPLAY.put("symbol_pound", "£");
+        PATH_TO_DISPLAY.put("symbol_yen", "¥");
+        PATH_TO_DISPLAY.put("symbol_tl", "₺");
+        PATH_TO_DISPLAY.put("symbol_bitcoin", "₿");
+        PATH_TO_DISPLAY.put("symbol_at", "@");
+        PATH_TO_DISPLAY.put("symbol_ampersand", "&");
+        PATH_TO_DISPLAY.put("symbol_comma", ",");
+        PATH_TO_DISPLAY.put("symbol_colon", ":");
+        PATH_TO_DISPLAY.put("symbol_semicolon", ";");
+        PATH_TO_DISPLAY.put("symbol_exclamation", "!");
+        PATH_TO_DISPLAY.put("symbol_question", "?");
+        PATH_TO_DISPLAY.put("symbol_apostrophe", "'");
+        PATH_TO_DISPLAY.put("symbol_quotes", "\"");
+        PATH_TO_DISPLAY.put("symbol_less_than", "<");
+        PATH_TO_DISPLAY.put("symbol_greater_than", ">");
+        PATH_TO_DISPLAY.put("symbol_tilde", "~");
+        PATH_TO_DISPLAY.put("symbol_dot_left", "«");
+        PATH_TO_DISPLAY.put("symbol_dot_center", "•");
+        PATH_TO_DISPLAY.put("symbol_dot_right", "»");
+        PATH_TO_DISPLAY.put("symbol_bracket_left", "(");
+        PATH_TO_DISPLAY.put("symbol_bracket_right", ")");
+        PATH_TO_DISPLAY.put("symbol_bracket_double", "|");
+        PATH_TO_DISPLAY.put("symbol_square_bracket_left", "[");
+        PATH_TO_DISPLAY.put("symbol_square_bracket_right", "]");
+        PATH_TO_DISPLAY.put("symbol_square_bracket_double", "¦");
+        PATH_TO_DISPLAY.put("arrow_up", "↑");
+        PATH_TO_DISPLAY.put("arrow_down", "↓");
+        PATH_TO_DISPLAY.put("arrow_left", "←");
+        PATH_TO_DISPLAY.put("arrow_right", "→");
+        PATH_TO_DISPLAY.put("arrow_left_up", "↖");
+        PATH_TO_DISPLAY.put("arrow_right_up", "↗");
+        PATH_TO_DISPLAY.put("arrow_left_down", "↙");
+        PATH_TO_DISPLAY.put("arrow_right_down", "↘");
+        PATH_TO_DISPLAY.put("symbol_key", "🗝");
+        PATH_TO_DISPLAY.put("symbol_lock", "🔒");
+        PATH_TO_DISPLAY.put("symbol_trophy", "🏆");
+    }
+
+    public static String getDisplayCharForBlockPath(String path) {
+        if (path == null || path.isEmpty()) return "";
+        return PATH_TO_DISPLAY.getOrDefault(path, path.replace("letter_", "").replace("number_", "").replace("symbol_", "").toUpperCase());
+    }
 }

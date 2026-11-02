@@ -7,12 +7,12 @@
   "elements": [
     {
       "name": "frame_left",
-      "from": [15.2, 0, 14.15],
-      "to": [16, 16, 15.5],
+      "from": [15.2, 0.8, 14.15],
+      "to": [16, 15.2, 15.5],
       "faces": {
-        "north": {"uv": [15.2, 0, 16, 16], "texture": "#frame"},
-        "east":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"},
-        "west":  {"uv": [0, 0, 1.35, 16], "texture": "#frame"},
+        "north": {"uv": [15.2, 0.8, 16, 15.2], "texture": "#frame"},
+        "east":  {"uv": [0, 0.8, 1.35, 15.2], "texture": "#frame"},
+        "west":  {"uv": [0, 0.8, 1.35, 15.2], "texture": "#frame"},
         "up":    {"uv": [15.2, 0, 16, 1.35], "texture": "#frame"},
         "down":  {"uv": [15.2, 0, 16, 1.35], "texture": "#frame"}
       }

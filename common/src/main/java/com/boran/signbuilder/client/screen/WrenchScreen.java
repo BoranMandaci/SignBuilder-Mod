@@ -88,6 +88,9 @@ public class WrenchScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        }
 
         panelWidth = Math.min(236, Math.max(0, this.width - 24));
         rowHeight = 18;
@@ -1189,4 +1192,35 @@ public class WrenchScreen extends Screen {
         return Math.max(1, Math.round(value * redstoneScale));
     }
 
+
+    @Override
+    public void removed() {
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+        }
+        super.removed();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.pinInput != null) {
+            this.pinInput.tick();
+        }
+        if (this.customOnInput != null) {
+            this.customOnInput.tick();
+        }
+        if (this.customOffInput != null) {
+            this.customOffInput.tick();
+        }
+        if (this.customRangeInput != null) {
+            this.customRangeInput.tick();
+        }
+        if (this.customOffRangeInput != null) {
+            this.customOffRangeInput.tick();
+        }
+        if (this.customCloseDelayInput != null) {
+            this.customCloseDelayInput.tick();
+        }
+    }
 }

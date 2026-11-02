@@ -46,23 +46,13 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
             return size() > 256;
         }
     });
-    private static long rainbowColorSlot = Long.MIN_VALUE;
-    private static int rainbowColor;
-
     private record MaterialModelKey(BakedModel model, SignMaterial front, SignMaterial back, boolean letter, boolean glowInked) {}
 
     public LetterBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     private int calculateRainbowColor() {
-        long currentTime = System.currentTimeMillis();
-        long slot = currentTime / 33L;
-        if (slot != rainbowColorSlot) {
-            float hue = (currentTime % 3000L) / 3000.0f;
-            rainbowColor = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
-            rainbowColorSlot = slot;
-        }
-        return rainbowColor;
+        return com.boran.signbuilder.util.RainbowColorHelper.getRainbowRgb();
     }
 
     @Override
@@ -213,12 +203,23 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
     }
 
     public static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter, boolean glowInked) {
-        return MATERIAL_MODELS.computeIfAbsent(new MaterialModelKey(model, front, back, letter, glowInked),
+        BakedModel base = model;
+        while (base instanceof MaterialBakedModel mbm) {
+            base = mbm.originalModel();
+        }
+        while (base instanceof SignBuilderBakedModel sbbm) {
+            base = sbbm.getOriginalModel();
+        }
+        return MATERIAL_MODELS.computeIfAbsent(new MaterialModelKey(base, front, back, letter, glowInked),
                 key -> new MaterialBakedModel(key.model(), key.front(), key.back(), key.letter(), key.glowInked()));
     }
 
     public static BakedModel getMaterialModel(BakedModel model, SignMaterial front, SignMaterial back, boolean letter) {
         return getMaterialModel(model, front, back, letter, false);
+    }
+
+    public static void clearModelCache() {
+        MATERIAL_MODELS.clear();
     }
 
     private static void applyRotation(PoseStack poseStack, BlockState state, LetterBlockEntity entity, boolean blockCentered) {
