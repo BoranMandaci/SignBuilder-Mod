@@ -7,9 +7,11 @@ import com.boran.signbuilder.client.render.GridPreviewRenderer;
 import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
+import com.boran.signbuilder.client.render.SignBuilderBakedModel;
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -28,6 +30,7 @@ public class SignBuilderForge {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             modEventBus.addListener(this::onClientSetup);
             modEventBus.addListener(this::registerRenderers);
+            modEventBus.addListener(this::onModifyBakingResult);
             MinecraftForge.EVENT_BUS.addListener(this::onRenderLevelStage);
         });
     }
@@ -40,6 +43,10 @@ public class SignBuilderForge {
         event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
+    }
+
+    private void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        SignBuilderBakedModel.onModifyBakingResult(event.getModels());
     }
 
     private void onRenderLevelStage(RenderLevelStageEvent event) {

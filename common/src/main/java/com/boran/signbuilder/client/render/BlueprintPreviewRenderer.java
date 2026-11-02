@@ -136,7 +136,11 @@ public class BlueprintPreviewRenderer {
         for (int i = 0; i < textLen; ) {
             int c = text.codePointAt(i);
             i += Character.charCount(c);
-            if (c == ' ' || c == 0xFE0F) continue;
+            if (c == 0xFE0F) continue;
+            if (c == ' ') {
+                effectiveIdx++;
+                continue;
+            }
 
             Block block = SignBlueprintItem.getBlockForChar(c);
             if (block == null) {

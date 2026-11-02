@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -326,7 +325,7 @@ public class GridSignBlockEntity extends BlockEntity {
         CellData bestCell = null;
         for (CellData cell : cells.values()) {
             if (cell.isBack != isBack) continue;
-            float eps = 0.03f;
+            float eps = 0.08f;
             if (u >= cell.getU1() - eps && u <= cell.getU2() + eps && v >= cell.getV1() - eps && v <= cell.getV2() + eps) {
                 float cellMidU = (cell.getU1() + cell.getU2()) * 0.5f;
                 float cellMidV = (cell.getV1() + cell.getV2()) * 0.5f;
@@ -438,7 +437,7 @@ public class GridSignBlockEntity extends BlockEntity {
     public void load(CompoundTag tag) {
         super.load(tag);
         this.gridSize = tag.getInt("GridSize");
-        if (this.gridSize < 2) this.gridSize = 3; // fallback
+        if (this.gridSize < 2) this.gridSize = 3;
         
         this.hasBackplate = tag.getBoolean("HasBackplate");
         if (tag.contains("BPFMat")) {
@@ -540,26 +539,7 @@ public class GridSignBlockEntity extends BlockEntity {
             }
         }
 
-        if (level.isClientSide) {
-            boolean dirty = false;
-            float hue = (level.getGameTime() % 120) / 120f;
-            int rainbowRgb = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
 
-            if (entity.isBackplateFrontRainbow()) {
-                entity.setBackplateFrontColor(rainbowRgb);
-                dirty = true;
-            }
-            if (entity.isBackplateBackRainbow()) {
-                entity.setBackplateBackColor(rainbowRgb);
-                dirty = true;
-            }
-
-            if (dirty && level.getGameTime() % 5 == 0) {
-                EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-                    net.minecraft.client.Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-                });
-            }
-        }
 
         if (!level.isClientSide()) {
             if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {

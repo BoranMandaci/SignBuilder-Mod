@@ -3,6 +3,7 @@ package com.boran.signbuilder.client.render;
 import com.boran.signbuilder.block.SignMaterial;
 import com.boran.signbuilder.block.entity.GridSignBlockEntity;
 import com.boran.signbuilder.client.render.cache.GridSignRenderCache;
+import com.boran.signbuilder.util.RainbowColorHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -14,7 +15,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 
-import java.awt.Color;
 import java.util.List;
 
 public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSignBlockEntity> {
@@ -42,14 +42,11 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
                 : 15728880;
         int plateLight = entity.isActive() ? activeLight : packedLight;
 
+        int currentRainbow = RainbowColorHelper.getRainbowRgb();
+
         if (cache.hasBackplate && cache.plateState != null) {
             int rawFColor = entity.getBackplateFrontColor();
             int rawBColor = entity.getBackplateBackColor();
-            int currentRainbow = 0xFFFFFF;
-            if (entity.isBackplateFrontRainbow() || entity.isBackplateBackRainbow() || (cache.hasBackGlyph && cache.backRainbow) || (cache.hasFrontGlyph && cache.frontRainbow)) {
-                float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
-            }
             int fColor = (cache.fMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isBackplateFrontRainbow() ? currentRainbow : (rawFColor == 0 ? 0xFFFFFF : rawFColor));
             int bColor = (cache.bMat != SignMaterial.DEFAULT) ? 0xFFFFFF : (entity.isBackplateBackRainbow() ? currentRainbow : (rawBColor == 0 ? 0xFFFFFF : rawBColor));
 
@@ -68,9 +65,6 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             poseStack.popPose();
         }
 
-        int currentRainbow = 0;
-        boolean hasRainbowCalculated = false;
-
         List<GridSignRenderCache.CachedCell> cells = cache.cells;
         int cellSize = cells.size();
         for (int i = 0; i < cellSize; i++) {
@@ -79,11 +73,6 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
 
             int color = cell.rawColor;
             if (cell.isRainbow) {
-                if (!hasRainbowCalculated) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
-                    hasRainbowCalculated = true;
-                }
                 color = currentRainbow;
             }
             if (cell.isMaterial) {
@@ -95,10 +84,8 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             float lb = (color & 0xFF) / 255.0f;
 
             poseStack.pushPose();
-            poseStack.translate(cell.totalTransX, cell.totalTransY, cell.totalTransZ);
-            poseStack.translate(cell.pivotX, cell.pivotY, cell.pivotZ);
+            poseStack.translate(cell.prebakedTransX, cell.prebakedTransY, cell.prebakedTransZ);
             poseStack.scale(cell.scale, cell.scale, cell.scale);
-            poseStack.translate(-cell.pivotX, -cell.pivotY, -cell.pivotZ);
 
             int cellLight = (cell.glowInked || entity.isActive()) ? 15728880 : plateLight;
             dispatcher.getModelRenderer().renderModel(
@@ -118,11 +105,6 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             VertexConsumer buffer = bufferSource.getBuffer(cache.backRenderType);
             int color = cache.backRawColor;
             if (cache.backRainbow) {
-                if (!hasRainbowCalculated) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
-                    hasRainbowCalculated = true;
-                }
                 color = currentRainbow;
             }
             if (cache.backIsMaterial) {
@@ -152,11 +134,6 @@ public class GridSignBlockEntityRenderer implements BlockEntityRenderer<GridSign
             VertexConsumer buffer = bufferSource.getBuffer(cache.frontRenderType);
             int color = cache.frontRawColor;
             if (cache.frontRainbow) {
-                if (!hasRainbowCalculated) {
-                    float hue = (System.currentTimeMillis() % 3000L) / 3000.0f;
-                    currentRainbow = Color.HSBtoRGB(hue, 1.0f, 1.0f);
-                    hasRainbowCalculated = true;
-                }
                 color = currentRainbow;
             }
             if (cache.frontIsMaterial) {

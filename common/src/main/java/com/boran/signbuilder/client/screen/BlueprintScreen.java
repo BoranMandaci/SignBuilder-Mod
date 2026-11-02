@@ -1163,7 +1163,9 @@ public class BlueprintScreen extends Screen {
                                 .append(modeComp.copy().withStyle(modeColor))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.literal(currentGridText + extraInfo).withStyle(ChatFormatting.WHITE))
-                                .append(Component.literal(" [▣ ").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(" [").withStyle(ChatFormatting.GRAY))
+                                .append(Component.translatable("block.signbuilder.backplate").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))
                                 .append(Component.literal("]").withStyle(ChatFormatting.GRAY)),
@@ -1190,7 +1192,9 @@ public class BlueprintScreen extends Screen {
                                 .append(Component.translatable(this.isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                                         .withStyle(this.isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN))
                                 .append(Component.literal("] ").withStyle(ChatFormatting.GRAY))
-                                .append(Component.literal("[▣ ").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal("[").withStyle(ChatFormatting.GRAY))
+                                .append(Component.translatable("block.signbuilder.backplate").withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                                 .append(Component.translatable(this.withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
                                         .withStyle(this.withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY))
                                 .append(Component.literal("]").withStyle(ChatFormatting.GRAY)),

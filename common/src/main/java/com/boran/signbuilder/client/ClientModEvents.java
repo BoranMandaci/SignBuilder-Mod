@@ -44,6 +44,7 @@ public class ClientModEvents {
 
         GridModeManager.init();
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
+        ClientTickEvent.CLIENT_POST.register(com.boran.signbuilder.client.render.SignBuilderBakedModel::checkAndWrap);
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             if (player.level().isClientSide()) {
@@ -93,6 +94,8 @@ public class ClientModEvents {
                                 com.boran.signbuilder.block.entity.GridSignBlockEntity.CellData cell = gbe.getCellAt((float) ray.u(), (float) ray.v(), ray.isBack());
                                 if (cell != null) {
                                     int cellKey = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cell.isBack, cell.gridSize, cell.col, cell.row);
+                                    gbe.getCells().remove(cellKey);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), cellKey)
                                     );
@@ -100,6 +103,8 @@ public class ClientModEvents {
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
                                     return EventResult.interruptFalse();
                                 } else if (ray.isBack() && !gbe.getBackGlyph().isEmpty()) {
+                                    gbe.setBackGlyph(net.minecraft.world.item.ItemStack.EMPTY);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -1)
                                     );
@@ -107,6 +112,8 @@ public class ClientModEvents {
                                     client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0F));
                                     return EventResult.interruptFalse();
                                 } else if (!ray.isBack() && !gbe.getFrontGlyph().isEmpty()) {
+                                    gbe.setFrontGlyph(net.minecraft.world.item.ItemStack.EMPTY);
+                                    gbe.markRenderDirty();
                                     com.boran.signbuilder.network.ModMessages.sendToServer(
                                             new com.boran.signbuilder.network.RemoveGridLetterC2SPacket(ray.pos(), -2)
                                     );
