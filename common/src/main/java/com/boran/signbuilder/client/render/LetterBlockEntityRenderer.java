@@ -57,19 +57,15 @@ public class LetterBlockEntityRenderer implements BlockEntityRenderer<LetterBloc
 
     @Override
     public int getViewDistance() {
-        return 64;
+        return 128;
     }
 
     public net.minecraft.world.phys.AABB getRenderBoundingBox(LetterBlockEntity blockEntity) {
-        if (blockEntity.renderBoundingBox == null) {
-            double inflate = Math.max(1.0, blockEntity.getSize()) + 1.0;
-            blockEntity.renderBoundingBox = new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(inflate);
-        }
-        return blockEntity.renderBoundingBox;
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(1000000.0);
     }
 
     public net.minecraft.world.phys.AABB getViewBoundingBox(LetterBlockEntity blockEntity) {
-        return getRenderBoundingBox(blockEntity);
+        return new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(1000000.0);
     }
 
     @Override

@@ -1,58 +1,117 @@
-package com.boran.signbuilder.forge;
-
-import com.boran.signbuilder.SignBuilder;
-import com.boran.signbuilder.block.entity.ModBlockEntities;
-import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
-import com.boran.signbuilder.client.render.GridPreviewRenderer;
-import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
-import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
-import com.boran.signbuilder.client.render.ModColorHandlers;
-import com.boran.signbuilder.client.render.SignBuilderBakedModel;
-import net.minecraftforge.client.event.ModelEvent;
-import dev.architectury.platform.forge.EventBuses;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-@Mod("signbuilder")
-public class SignBuilderForge {
-    public SignBuilderForge() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        EventBuses.registerModEventBus("signbuilder", modEventBus);
-        SignBuilder.init();
-
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            modEventBus.addListener(this::onClientSetup);
-            modEventBus.addListener(this::registerRenderers);
-            modEventBus.addListener(this::onModifyBakingResult);
-            MinecraftForge.EVENT_BUS.addListener(this::onRenderLevelStage);
-        });
-    }
-
-    private void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(ModColorHandlers::register);
-    }
-
-    private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
-    }
-
-    private void onModifyBakingResult(ModelEvent.BakingCompleted event) {
-        SignBuilderBakedModel.onModifyBakingResult(event.getModels(), event.getModelBakery());
-    }
-
-    private void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
-            BlueprintPreviewRenderer.render(event.getPoseStack());
-            GridPreviewRenderer.render(event.getPoseStack());
-        }
-    }
+package com.boran.signbuilder.forge;
+
+
+
+import com.boran.signbuilder.SignBuilder;
+
+import com.boran.signbuilder.block.entity.ModBlockEntities;
+
+import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
+
+import com.boran.signbuilder.client.render.GridPreviewRenderer;
+
+import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
+
+import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
+
+import com.boran.signbuilder.client.render.ModColorHandlers;
+
+import com.boran.signbuilder.client.render.SignBuilderBakedModel;
+
+import net.minecraftforge.client.event.ModelEvent;
+
+import dev.architectury.platform.forge.EventBuses;
+
+import net.minecraftforge.api.distmarker.Dist;
+
+import net.minecraftforge.client.event.EntityRenderersEvent;
+
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+
+import net.minecraftforge.common.MinecraftForge;
+
+import net.minecraftforge.eventbus.api.IEventBus;
+
+import net.minecraftforge.fml.DistExecutor;
+
+import net.minecraftforge.fml.common.Mod;
+
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+
+
+@Mod("signbuilder")
+
+public class SignBuilderForge {
+
+    public SignBuilderForge() {
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        EventBuses.registerModEventBus("signbuilder", modEventBus);
+
+        SignBuilder.init();
+
+
+
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+
+            modEventBus.addListener(this::onClientSetup);
+
+            modEventBus.addListener(this::registerRenderers);
+
+            modEventBus.addListener(this::onModifyBakingResult);
+
+            MinecraftForge.EVENT_BUS.addListener(this::onRenderLevelStage);
+            MinecraftForge.EVENT_BUS.addListener(this::onMouseScroll);
+
+        });
+
+    }
+
+
+
+    private void onClientSetup(FMLClientSetupEvent event) {
+
+        event.enqueueWork(ModColorHandlers::register);
+
+    }
+
+
+
+    private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+
+        event.registerBlockEntityRenderer(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
+
+        event.registerBlockEntityRenderer(ModBlockEntities.GRID_SIGN_BLOCK_ENTITY.get(), GridSignBlockEntityRenderer::new);
+
+        event.registerBlockEntityRenderer(ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get(), com.boran.signbuilder.client.render.LcdScreenBlockEntityRenderer::new);
+
+    }
+
+
+
+    private void onModifyBakingResult(ModelEvent.BakingCompleted event) {
+
+        SignBuilderBakedModel.onModifyBakingResult(event.getModels(), event.getModelBakery());
+
+    }
+
+
+
+    private void onRenderLevelStage(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            BlueprintPreviewRenderer.render(event.getPoseStack());
+            GridPreviewRenderer.render(event.getPoseStack());
+        }
+    }
+
+    private void onMouseScroll(net.minecraftforge.client.event.InputEvent.MouseScrollingEvent event) {
+        if (com.boran.signbuilder.client.ClientModEvents.onMouseScrolled(0.0, event.getScrollDelta())) {
+            event.setCanceled(true);
+        }
+    }
+
 }

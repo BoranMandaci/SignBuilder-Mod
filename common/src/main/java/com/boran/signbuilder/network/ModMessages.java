@@ -10,6 +10,7 @@ public class ModMessages {
     public static final ResourceLocation WRENCH_MODE = new ResourceLocation("signbuilder", "wrench_mode");
     public static final ResourceLocation WRENCH_HOLD = new ResourceLocation("signbuilder", "wrench_hold");
     public static final ResourceLocation BLUEPRINT_TEXT = new ResourceLocation("signbuilder", "blueprint_text");
+    public static final ResourceLocation BLUEPRINT_DIRECTION = new ResourceLocation("signbuilder", "blueprint_direction");
     public static final ResourceLocation SIGN_PRESS_CRAFT = new ResourceLocation("signbuilder", "sign_press_craft");
     public static final ResourceLocation BLUEPRINT_UNDO = new ResourceLocation("signbuilder", "blueprint_undo");
     public static final ResourceLocation PLACE_GRID_LETTER = new ResourceLocation("signbuilder", "place_grid_letter");
@@ -36,6 +37,11 @@ public class ModMessages {
 
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BLUEPRINT_TEXT, (buf, context) -> {
             BlueprintTextC2SPacket packet = new BlueprintTextC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BLUEPRINT_DIRECTION, (buf, context) -> {
+            BlueprintDirectionC2SPacket packet = new BlueprintDirectionC2SPacket(buf);
             context.queue(() -> packet.handle(context));
         });
 
@@ -90,6 +96,9 @@ public class ModMessages {
         } else if (message instanceof BlueprintTextC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(BLUEPRINT_TEXT, buf);
+        } else if (message instanceof BlueprintDirectionC2SPacket packet) {
+            packet.encode(buf);
+            NetworkManager.sendToServer(BLUEPRINT_DIRECTION, buf);
         } else if (message instanceof SignPressCraftC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(SIGN_PRESS_CRAFT, buf);

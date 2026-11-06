@@ -49,6 +49,7 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
         com.boran.signbuilder.server.ServerGridModeState.setGridSize(player.getUUID(), this.gridSize);
 
         BlockState targetState = level.getBlockState(pos);
+        if (targetState.getBlock() instanceof LetterBlock) return;
         BlockPos targetPos = pos;
 
         int targetIndex = this.index;
@@ -118,11 +119,6 @@ public record PlaceGridLetterC2SPacket(BlockPos pos, Direction face, Direction p
 
         if (!(targetState.getBlock() instanceof GridSignBlock)) {
             boolean isBackplate = targetState.getBlock() instanceof com.boran.signbuilder.block.BackplateBlock;
-            if (!isBackplate && targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
-                if (level.getBlockEntity(pos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                    isBackplate = lbe.getEffectiveMaster().hasBackplate();
-                }
-            }
             boolean hasBackplateProperties = false;
             com.boran.signbuilder.block.SignMaterial bpFMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
             com.boran.signbuilder.block.SignMaterial bpBMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;

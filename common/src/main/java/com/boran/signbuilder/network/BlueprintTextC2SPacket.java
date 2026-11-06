@@ -14,9 +14,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class BlueprintTextC2SPacket {
-    public record GridCellSpec(int gridSize, int col, int row, String charPath) {}
+    public record GridCellSpec(int gridSize, int col, int row, boolean isBack, String charPath) {}
 
     private final String text;
+    private final String backText;
     private final int size;
     private final boolean is2x2;
     private final boolean isVertical;
@@ -25,11 +26,13 @@ public class BlueprintTextC2SPacket {
     private final int gridSize;
     private final boolean isBannerMode;
     private final String gridText;
+    private final String gridBackText;
     private final List<String> gridCells;
     private final List<GridCellSpec> multiGridCells;
 
-    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells, List<GridCellSpec> multiGridCells) {
-        this.text = text;
+    public BlueprintTextC2SPacket(String text, String backText, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, String gridBackText, List<String> gridCells, List<GridCellSpec> multiGridCells) {
+        this.text = text != null ? text : "";
+        this.backText = backText != null ? backText : "";
         this.size = size;
         this.is2x2 = (size == 2);
         this.isVertical = isVertical;
@@ -38,20 +41,29 @@ public class BlueprintTextC2SPacket {
         this.gridSize = gridSize;
         this.isBannerMode = isBannerMode;
         this.gridText = gridText != null ? gridText : "";
+        this.gridBackText = gridBackText != null ? gridBackText : "";
         this.gridCells = gridCells != null ? new ArrayList<>(gridCells) : Collections.emptyList();
         this.multiGridCells = multiGridCells != null ? new ArrayList<>(multiGridCells) : Collections.emptyList();
     }
 
+    public BlueprintTextC2SPacket(String text, String backText, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells) {
+        this(text, backText, size, isVertical, withBackplate, isGridMode, gridSize, isBannerMode, gridText, "", gridCells, Collections.emptyList());
+    }
+
+    public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells, List<GridCellSpec> multiGridCells) {
+        this(text, "", size, isVertical, withBackplate, isGridMode, gridSize, isBannerMode, gridText, "", gridCells, multiGridCells);
+    }
+
     public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, boolean isBannerMode, String gridText, List<String> gridCells) {
-        this(text, size, isVertical, withBackplate, isGridMode, gridSize, isBannerMode, gridText, gridCells, Collections.emptyList());
+        this(text, "", size, isVertical, withBackplate, isGridMode, gridSize, isBannerMode, gridText, "", gridCells, Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate, boolean isGridMode, int gridSize, String gridText, List<String> gridCells) {
-        this(text, size, isVertical, withBackplate, isGridMode, gridSize, true, gridText, gridCells, Collections.emptyList());
+        this(text, "", size, isVertical, withBackplate, isGridMode, gridSize, true, gridText, "", gridCells, Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, int size, boolean isVertical, boolean withBackplate) {
-        this(text, size, isVertical, withBackplate, false, 3, true, "", Collections.emptyList(), Collections.emptyList());
+        this(text, "", size, isVertical, withBackplate, false, 3, true, "", "", Collections.emptyList(), Collections.emptyList());
     }
 
     public BlueprintTextC2SPacket(String text, boolean is2x2, boolean isVertical, boolean withBackplate) {
@@ -72,6 +84,7 @@ public class BlueprintTextC2SPacket {
 
     public BlueprintTextC2SPacket(FriendlyByteBuf buf) {
         this.text = buf.readUtf();
+        this.backText = buf.readUtf();
         this.size = buf.readInt();
         this.is2x2 = (this.size == 2);
         this.isVertical = buf.readBoolean();
@@ -80,6 +93,7 @@ public class BlueprintTextC2SPacket {
         this.gridSize = buf.readInt();
         this.isBannerMode = buf.readBoolean();
         this.gridText = buf.readUtf();
+        this.gridBackText = buf.readUtf();
         int count = buf.readInt();
         this.gridCells = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -88,12 +102,13 @@ public class BlueprintTextC2SPacket {
         int multiCount = buf.readInt();
         this.multiGridCells = new ArrayList<>(multiCount);
         for (int i = 0; i < multiCount; i++) {
-            this.multiGridCells.add(new GridCellSpec(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf()));
+            this.multiGridCells.add(new GridCellSpec(buf.readInt(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readUtf()));
         }
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeUtf(this.text);
+        buf.writeUtf(this.backText);
         buf.writeInt(this.size);
         buf.writeBoolean(this.isVertical);
         buf.writeBoolean(this.withBackplate);
@@ -101,6 +116,7 @@ public class BlueprintTextC2SPacket {
         buf.writeInt(this.gridSize);
         buf.writeBoolean(this.isBannerMode);
         buf.writeUtf(this.gridText);
+        buf.writeUtf(this.gridBackText);
         buf.writeInt(this.gridCells.size());
         for (String cell : this.gridCells) {
             buf.writeUtf(cell != null ? cell : "");
@@ -110,6 +126,7 @@ public class BlueprintTextC2SPacket {
             buf.writeInt(spec.gridSize());
             buf.writeInt(spec.col());
             buf.writeInt(spec.row());
+            buf.writeBoolean(spec.isBack());
             buf.writeUtf(spec.charPath() != null ? spec.charPath() : "");
         }
     }
@@ -125,6 +142,11 @@ public class BlueprintTextC2SPacket {
             if (stack.getItem() instanceof SignBlueprintItem) {
                 CompoundTag tag = stack.getOrCreateTag();
                 tag.putString("BlueprintText", this.text);
+                if (!this.backText.isEmpty()) {
+                    tag.putString("BlueprintBackText", this.backText);
+                } else {
+                    tag.remove("BlueprintBackText");
+                }
                 tag.putInt("Size", this.size);
                 tag.putBoolean("Is2x2", this.is2x2);
                 tag.putBoolean("IsVertical", this.isVertical);
@@ -133,6 +155,11 @@ public class BlueprintTextC2SPacket {
                 tag.putInt("GridSize", this.gridSize);
                 tag.putBoolean("IsBannerMode", this.isBannerMode);
                 tag.putString("GridText", this.gridText);
+                if (!this.gridBackText.isEmpty()) {
+                    tag.putString("GridBackText", this.gridBackText);
+                } else {
+                    tag.remove("GridBackText");
+                }
                 ListTag list = new ListTag();
                 if (!this.multiGridCells.isEmpty()) {
                     for (GridCellSpec spec : this.multiGridCells) {
@@ -140,8 +167,9 @@ public class BlueprintTextC2SPacket {
                         cellTag.putInt("GridSize", spec.gridSize());
                         cellTag.putInt("Col", spec.col());
                         cellTag.putInt("Row", spec.row());
+                        cellTag.putBoolean("IsBack", spec.isBack());
                         cellTag.putString("Char", spec.charPath());
-                        cellTag.putInt("Index", spec.gridSize() * 100 + spec.row() * 10 + spec.col());
+                        cellTag.putInt("Index", com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(spec.isBack(), spec.gridSize(), spec.col(), spec.row()));
                         list.add(cellTag);
                     }
                 } else {
@@ -150,6 +178,7 @@ public class BlueprintTextC2SPacket {
                         cellTag.putInt("GridSize", this.gridSize);
                         cellTag.putInt("Col", i % this.gridSize);
                         cellTag.putInt("Row", i / this.gridSize);
+                        cellTag.putBoolean("IsBack", false);
                         cellTag.putString("Char", this.gridCells.get(i));
                         cellTag.putInt("Index", i);
                         list.add(cellTag);
