@@ -25,6 +25,7 @@ public class SignBuilderNeoForge {
             modEventBus.addListener(this::registerRenderers);
             modEventBus.addListener(this::registerScreens);
             NeoForge.EVENT_BUS.addListener(this::onRenderLevelStage);
+            NeoForge.EVENT_BUS.addListener(this::onMouseScroll);
         }
     }
 
@@ -46,6 +47,11 @@ public class SignBuilderNeoForge {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             BlueprintPreviewRenderer.render(event.getPoseStack());
             com.boran.signbuilder.client.render.GridPreviewRenderer.render(event.getPoseStack());
+        }
+    }
+    private void onMouseScroll(net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent event) {
+        if (com.boran.signbuilder.client.ClientModEvents.onMouseScrolled(event.getScrollDeltaX(), event.getScrollDeltaY())) {
+            event.setCanceled(true);
         }
     }
 }

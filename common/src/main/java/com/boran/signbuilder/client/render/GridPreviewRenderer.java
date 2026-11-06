@@ -27,11 +27,15 @@ import net.minecraft.world.phys.HitResult;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class GridPreviewRenderer {
     
     private static final RandomSource RANDOM = RandomSource.create();
+    private static final Map<BakedModel, List<BakedQuad>> GHOST_QUADS_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
     
     public static void render(PoseStack poseStack) {
         if (!GridModeManager.isGridModeActive()) return;
@@ -174,7 +178,9 @@ public class GridPreviewRenderer {
         if (!(targetState.getBlock() instanceof GridSignBlock) && !isBackplate) {
             targetBePos = targetBePos.relative(gridHit.face());
         }
-        if (mc.level.getBlockEntity(targetBePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+        if (targetState.getBlock() instanceof LetterBlock) {
+            hasCollision = true;
+        } else if (mc.level.getBlockEntity(targetBePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
             hasCollision = gbe.hasCollision(gridSize, col, row, isBack);
         } else if (mc.level.getBlockEntity(basePos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe2) {
             hasCollision = gbe2.hasCollision(gridSize, col, row, isBack);
@@ -194,16 +200,9 @@ public class GridPreviewRenderer {
             alpha = 140;
         }
 
-        for (Direction d : Direction.values()) {
-            RANDOM.setSeed(42L);
-            List<BakedQuad> quads = model.getQuads(letterState, d, RANDOM);
-            for (BakedQuad quad : quads) {
-                renderGhostQuad(pose, consumer, quad, red, green, blue, alpha, light);
-            }
-        }
-        RANDOM.setSeed(42L);
-        List<BakedQuad> unculledQuads = model.getQuads(letterState, null, RANDOM);
-        for (BakedQuad quad : unculledQuads) {
+        final BlockState finalLetterState = letterState;
+        List<BakedQuad> allQuads = GHOST_QUADS_CACHE.computeIfAbsent(model, m -> LetterBlockEntityRenderer.getAllQuads(m, finalLetterState));
+        for (BakedQuad quad : allQuads) {
             renderGhostQuad(pose, consumer, quad, red, green, blue, alpha, light);
         }
         

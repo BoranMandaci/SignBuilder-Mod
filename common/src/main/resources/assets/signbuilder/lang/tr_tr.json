@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 Yanardağ",
   "gui.signbuilder.lcd.visual.59.tooltip": "Püsküren lav akıntıları, ateş topları ve volkanik duman",
   "gui.signbuilder.lcd.visual.60": "🐠 Akvaryum",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Piksel deniz altı - Salınan su yosunları, yükselen hava kabarcıkları ve yüzen renkli balıklar"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Piksel deniz altı - Salınan su yosunları, yükselen hava kabarcıkları ve yüzen renkli balıklar",
+  "gui.signbuilder.blueprint.side_front": "Ön Yüz",
+  "gui.signbuilder.blueprint.side_back": "Arka Yüz",
+  "gui.signbuilder.blueprint.copy_front": "Ön Yüzü Kopyala",
+  "gui.signbuilder.blueprint.double_sided": "Çift Taraflı",
+  "gui.signbuilder.blueprint.single_sided": "Tek Taraflı",
+  "gui.signbuilder.blueprint.dir.left_to_right": "Soldan Sağa",
+  "gui.signbuilder.blueprint.dir.forward": "Bakış Yönü",
+  "gui.signbuilder.blueprint.dir.right_to_left": "Sağdan Sola",
+  "message.signbuilder.blueprint.direction_changed": "Yerleştirme Yönü: %s"
 }

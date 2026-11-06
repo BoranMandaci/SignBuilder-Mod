@@ -553,23 +553,21 @@ public class GridSignBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, GridSignBlockEntity entity) {
-        if (!level.isClientSide()) {
-            if (entity.getWrenchMode() == 11 && entity.customLightType == 1 && entity.customLightCloseDelayPending) {
-                if (entity.customLightCloseDelayRemaining > 0) {
-                    entity.customLightCloseDelayRemaining--;
-                }
+        if (level.isClientSide()) {
+            return;
+        }
+        if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {
+            int expectedMode = entity.getEmittedLightMode();
+            if (state.hasProperty(GridSignBlock.LIGHT_MODE) && state.getValue(GridSignBlock.LIGHT_MODE) != expectedMode) {
+                GridSignBlock.updateLightLevel(level, pos, state, entity);
+            }
+            return;
+        }
+        if (entity.getWrenchMode() == 11 && entity.customLightType == 1 && entity.customLightCloseDelayPending) {
+            if (entity.customLightCloseDelayRemaining > 0) {
+                entity.customLightCloseDelayRemaining--;
             }
         }
-
-
-        if (!level.isClientSide()) {
-            if (entity.getWrenchMode() == 0 || entity.getWrenchMode() == 10) {
-                int expectedMode = entity.getEmittedLightMode();
-                if (state.hasProperty(GridSignBlock.LIGHT_MODE) && state.getValue(GridSignBlock.LIGHT_MODE) != expectedMode) {
-                    GridSignBlock.updateLightLevel(level, pos, state, entity);
-                }
-                return;
-            }
 
             boolean isCurrentlyGlowing = entity.isActive();
             boolean shouldGlow = false;
@@ -716,7 +714,6 @@ public class GridSignBlockEntity extends BlockEntity {
                     GridSignBlock.updateLightLevel(level, pos, state, entity);
                 }
             }
-        }
     }
 
     @Override

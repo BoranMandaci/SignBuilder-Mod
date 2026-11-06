@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 Vulcão em Erupção",
   "gui.signbuilder.lcd.visual.59.tooltip": "Rios de lava, bolas de fogo e nuvens de cinzas",
   "gui.signbuilder.lcd.visual.60": "🐠 Aquarium",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish",
+  "gui.signbuilder.blueprint.side_front": "Frente",
+  "gui.signbuilder.blueprint.side_back": "Verso",
+  "gui.signbuilder.blueprint.copy_front": "Copiar frente",
+  "gui.signbuilder.blueprint.double_sided": "Frente e verso",
+  "gui.signbuilder.blueprint.single_sided": "Um lado",
+  "gui.signbuilder.blueprint.dir.left_to_right": "Da esquerda para a direita",
+  "gui.signbuilder.blueprint.dir.forward": "Para frente",
+  "gui.signbuilder.blueprint.dir.right_to_left": "Da direita para a esquerda",
+  "message.signbuilder.blueprint.direction_changed": "Direção de colocação: %s"
 }

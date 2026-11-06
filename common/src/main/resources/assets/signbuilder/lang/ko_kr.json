@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 화산 폭발",
   "gui.signbuilder.lcd.visual.59.tooltip": "분출하는 용암류와 화산탄, 피어오르는 화산재 구름",
   "gui.signbuilder.lcd.visual.60": "🐠 Aquarium",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish",
+  "gui.signbuilder.blueprint.side_front": "전면",
+  "gui.signbuilder.blueprint.side_back": "후면",
+  "gui.signbuilder.blueprint.copy_front": "전면 복사",
+  "gui.signbuilder.blueprint.double_sided": "양면",
+  "gui.signbuilder.blueprint.single_sided": "단면",
+  "gui.signbuilder.blueprint.dir.left_to_right": "왼쪽에서 오른쪽",
+  "gui.signbuilder.blueprint.dir.forward": "앞으로",
+  "gui.signbuilder.blueprint.dir.right_to_left": "오른쪽에서 왼쪽",
+  "message.signbuilder.blueprint.direction_changed": "배치 방향: %s"
 }
