@@ -716,14 +716,14 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         consumer.addVertex(mat, maxX, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
         consumer.addVertex(mat, minX, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
 
-        consumer.addVertex(mat, minX, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, minX + bw, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, minX + bw, topY + bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, minX, topY + bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, minX, bottomY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, minX + bw, bottomY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, minX + bw, topY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, minX, topY, borderZ).setColor(br, bg, bb, ba).setLight(light);
 
-        consumer.addVertex(mat, maxX - bw, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, maxX, bottomY - bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, maxX, topY + bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
-        consumer.addVertex(mat, maxX - bw, topY + bw, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, maxX - bw, bottomY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, maxX, bottomY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, maxX, topY, borderZ).setColor(br, bg, bb, ba).setLight(light);
+        consumer.addVertex(mat, maxX - bw, topY, borderZ).setColor(br, bg, bb, ba).setLight(light);
     }
 }

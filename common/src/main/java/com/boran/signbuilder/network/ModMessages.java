@@ -53,6 +53,9 @@ public class ModMessages {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, UpdateLcdScreenC2SPacket.TYPE, UpdateLcdScreenC2SPacket.STREAM_CODEC, (payload, context) -> {
             context.queue(() -> payload.handle(context));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, BlueprintDirectionC2SPacket.TYPE, BlueprintDirectionC2SPacket.STREAM_CODEC, (payload, context) -> {
+            context.queue(() -> payload.handle(context));
+        });
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -77,6 +80,8 @@ public class ModMessages {
         } else if (message instanceof ApplyBackplateInkC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         } else if (message instanceof UpdateLcdScreenC2SPacket packet) {
+            NetworkManager.sendToServer(packet);
+        } else if (message instanceof BlueprintDirectionC2SPacket packet) {
             NetworkManager.sendToServer(packet);
         }
     }

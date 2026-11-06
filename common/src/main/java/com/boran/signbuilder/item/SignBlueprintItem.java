@@ -12,7 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -41,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +59,7 @@ public class SignBlueprintItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack pStack, @NotNull net.minecraft.world.item.Item.TooltipContext pContext, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         String currentText = "";
+        String backText = "";
         int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
@@ -64,6 +69,7 @@ public class SignBlueprintItem extends Item {
         CompoundTag tag = pStack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (!tag.isEmpty()) {
             if (tag.contains("BlueprintText")) currentText = tag.getString("BlueprintText");
+            if (tag.contains("BlueprintBackText")) backText = tag.getString("BlueprintBackText");
             if (tag.contains("Size")) size = tag.getInt("Size");
             else if (tag.getBoolean("Is2x2")) size = 2;
             if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
@@ -90,18 +96,36 @@ public class SignBlueprintItem extends Item {
             }
             pTooltipComponents.add(Component.literal("Mode: ").withStyle(ChatFormatting.GRAY).append(modeComp));
 
-            if (!gridText.isEmpty()) {
+            boolean hasCells = false;
+            if (tag.contains("GridCells", Tag.TAG_LIST)) {
+                ListTag cellList = tag.getList("GridCells", Tag.TAG_COMPOUND);
+                hasCells = !cellList.isEmpty();
+            }
+
+            if (!gridText.isEmpty() || hasCells) {
                 pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
                         .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
-                        .append(Component.literal(gridText).withStyle(ChatFormatting.AQUA)));
+                        .append(Component.literal(gridText.isEmpty() ? (isBannerMode ? "-" : gridSize + "x" + gridSize) : gridText).withStyle(ChatFormatting.AQUA)));
             } else {
                 pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.empty")
                         .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
             }
 
-            pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
-                            .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
+            if (withBackplate) {
+                pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
+                        .append(Component.translatable("gui.signbuilder.on").withStyle(ChatFormatting.GREEN)));
+            } else {
+                pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
+                        .append(Component.translatable("gui.signbuilder.off").withStyle(ChatFormatting.DARK_GRAY)));
+            }
+
+            int placementDir = tag.getInt("PlacementDirection");
+            Component dirComp = switch (placementDir) {
+                case 1 -> Component.translatable("gui.signbuilder.blueprint.dir.forward").withStyle(ChatFormatting.AQUA);
+                case 2 -> Component.translatable("gui.signbuilder.blueprint.dir.right_to_left").withStyle(ChatFormatting.YELLOW);
+                default -> Component.translatable("gui.signbuilder.blueprint.dir.left_to_right").withStyle(ChatFormatting.GREEN);
+            };
+            pTooltipComponents.add(Component.literal("Placement: ").withStyle(ChatFormatting.GRAY).append(dirComp));
 
             pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
@@ -109,7 +133,14 @@ public class SignBlueprintItem extends Item {
             return;
         }
 
-        if (!currentText.isEmpty()) {
+        if (withBackplate && !backText.isEmpty()) {
+            pTooltipComponents.add(Component.translatable("gui.signbuilder.blueprint.side_front")
+                    .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
+                    .append(Component.literal(currentText.isEmpty() ? "-" : currentText).withStyle(ChatFormatting.AQUA)));
+            pTooltipComponents.add(Component.translatable("gui.signbuilder.blueprint.side_back")
+                    .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
+                    .append(Component.literal(backText).withStyle(ChatFormatting.GOLD)));
+        } else if (!currentText.isEmpty()) {
             pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.current_text")
                     .withStyle(ChatFormatting.GRAY).append(Component.literal(": "))
                     .append(Component.literal(currentText).withStyle(ChatFormatting.AQUA)));
@@ -127,9 +158,24 @@ public class SignBlueprintItem extends Item {
                 .append(Component.translatable(isVertical ? "gui.signbuilder.blueprint.vertical" : "gui.signbuilder.blueprint.horizontal")
                         .withStyle(isVertical ? ChatFormatting.YELLOW : ChatFormatting.GREEN)));
 
-        pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.translatable(withBackplate ? "gui.signbuilder.on" : "gui.signbuilder.off")
-                        .withStyle(withBackplate ? ChatFormatting.GREEN : ChatFormatting.GRAY)));
+        if (withBackplate) {
+            boolean isDouble = !backText.isEmpty();
+            Component bpComp = isDouble
+                    ? Component.translatable("gui.signbuilder.blueprint.double_sided").withStyle(ChatFormatting.GOLD)
+                    : Component.translatable("gui.signbuilder.on").withStyle(ChatFormatting.GREEN);
+            pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY).append(bpComp));
+        } else {
+            pTooltipComponents.add(Component.literal("Backplate: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.translatable("gui.signbuilder.off").withStyle(ChatFormatting.GRAY)));
+        }
+
+        int placementDir = tag.getInt("PlacementDirection");
+        Component dirComp = switch (placementDir) {
+            case 1 -> Component.translatable("gui.signbuilder.blueprint.dir.forward").withStyle(ChatFormatting.AQUA);
+            case 2 -> Component.translatable("gui.signbuilder.blueprint.dir.right_to_left").withStyle(ChatFormatting.YELLOW);
+            default -> Component.translatable("gui.signbuilder.blueprint.dir.left_to_right").withStyle(ChatFormatting.GREEN);
+        };
+        pTooltipComponents.add(Component.literal("Placement: ").withStyle(ChatFormatting.GRAY).append(dirComp));
 
         pTooltipComponents.add(Component.translatable("tooltip.signbuilder.blueprint.usage")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
@@ -226,12 +272,14 @@ public class SignBlueprintItem extends Item {
         if (level.isClientSide() || player == null) return InteractionResult.SUCCESS;
 
         String text = "";
+        String backText = "";
         int size = 1;
         boolean isVertical = false;
         boolean withBackplate = false;
         CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
         if (tag != null) {
             if (tag.contains("BlueprintText")) text = tag.getString("BlueprintText");
+            if (tag.contains("BlueprintBackText")) backText = tag.getString("BlueprintBackText");
             if (tag.contains("Size")) size = tag.getInt("Size");
             else if (tag.getBoolean("Is2x2")) size = 2;
             if (tag.contains("IsVertical")) isVertical = tag.getBoolean("IsVertical");
@@ -247,23 +295,56 @@ public class SignBlueprintItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        
-
-        if (!player.isCreative()) {
-            int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
-        /* Pre-consumption removed */
-        }
-
         Direction clickedFace = pContext.getClickedFace();
         BlockPos startPos = pContext.getClickedPos().relative(clickedFace);
         boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
-        int rotation = wall
-                ? SignRotation.fromDirection(clickedFace)
-                : size > 1
-                ? SignRotation.fromDirection(player.getDirection().getCounterClockWise())
-                : SignRotation.fromYaw(player.getYRot(), -2);
+        boolean isDoubleSided = withBackplate && !wall && !backText.isEmpty();
+
+        List<Integer> frontCodePoints = new ArrayList<>();
+        for (int i = 0; i < text.length(); ) {
+            int c = text.codePointAt(i);
+            i += Character.charCount(c);
+            if (c != 0xFE0F) frontCodePoints.add(c);
+        }
+
+        List<Integer> backCodePoints = new ArrayList<>();
+        if (isDoubleSided) {
+            for (int i = 0; i < backText.length(); ) {
+                int c = backText.codePointAt(i);
+                i += Character.charCount(c);
+                if (c != 0xFE0F) backCodePoints.add(c);
+            }
+        }
+
+        int placementDir = wall ? 0 : tag.getInt("PlacementDirection");
+        Direction facing;
+        int rotation;
+        if (wall) {
+            rotation = SignRotation.fromDirection(clickedFace);
+            facing = clickedFace;
+        } else if (placementDir == 1) {
+            facing = player.getDirection().getOpposite();
+            rotation = size > 1
+                    ? SignRotation.fromDirection(facing)
+                    : SignRotation.fromYaw(player.getYRot(), 4);
+        } else {
+            facing = player.getDirection().getCounterClockWise();
+            rotation = size > 1
+                    ? SignRotation.fromDirection(facing)
+                    : SignRotation.fromYaw(player.getYRot(), -2);
+        }
         int rightX = SignRotation.horizontalStepX(rotation, wall);
         int rightZ = SignRotation.horizontalStepZ(rotation, wall);
+        int stepX = rightX;
+        int stepZ = rightZ;
+        if (placementDir == 1 && size > 1) {
+            Direction forwardDir = player.getDirection();
+            stepX = forwardDir.getStepX();
+            stepZ = forwardDir.getStepZ();
+        } else if (placementDir == 2) {
+            stepX = -rightX;
+            stepZ = -rightZ;
+        }
 
         int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
         int blocksPlaced = 0;
@@ -271,10 +352,65 @@ public class SignBlueprintItem extends Item {
 
         int effectiveIdx = 0;
         int blocksPerChar = (size == 3) ? 9 : (size == 2 ? 4 : 1);
-        for (int i = 0; i < text.length(); ) {
-            int c = text.codePointAt(i);
-            i += Character.charCount(c);
-            if (c == 0xFE0F) continue;
+        int frontTotal = frontCodePoints.size();
+
+        if (!player.isCreative()) {
+            int totalBackplatesNeeded = 0;
+            Map<Item, Integer> totalLettersNeeded = new LinkedHashMap<>();
+
+            for (int p = 0; p < frontTotal; p++) {
+                int c = frontCodePoints.get(p);
+                if (c == ' ') continue;
+
+                Block blockToPlace = getBlockForChar(c);
+                if (blockToPlace == null) continue;
+
+                Block backBlockToPlace = null;
+                if (isDoubleSided && !backCodePoints.isEmpty()) {
+                    int backIdx = !isVertical ? ((frontTotal - 1) - p) : p;
+                    if (backIdx >= 0 && backIdx < backCodePoints.size()) {
+                        int backC = backCodePoints.get(backIdx);
+                        if (backC != ' ') {
+                            backBlockToPlace = getBlockForChar(backC);
+                        }
+                    }
+                }
+
+                if (withBackplate) {
+                    totalBackplatesNeeded += blocksPerChar;
+                }
+                if (backBlockToPlace == blockToPlace) {
+                    totalLettersNeeded.merge(blockToPlace.asItem(), blocksPerChar * 2, Integer::sum);
+                } else {
+                    totalLettersNeeded.merge(blockToPlace.asItem(), blocksPerChar, Integer::sum);
+                    if (backBlockToPlace != null) {
+                        totalLettersNeeded.merge(backBlockToPlace.asItem(), blocksPerChar, Integer::sum);
+                    }
+                }
+            }
+
+            Map<Item, Integer> missing = new LinkedHashMap<>();
+            if (totalBackplatesNeeded > 0) {
+                int count = countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get());
+                if (count < totalBackplatesNeeded) {
+                    missing.put(com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), totalBackplatesNeeded - count);
+                }
+            }
+            for (Map.Entry<Item, Integer> req : totalLettersNeeded.entrySet()) {
+                int count = countItemInInventory(player, req.getKey());
+                if (count < req.getValue()) {
+                    missing.put(req.getKey(), req.getValue() - count);
+                }
+            }
+
+            if (!missing.isEmpty()) {
+                sendMissingMaterialsMessage(player, missing);
+                return InteractionResult.FAIL;
+            }
+        }
+
+        for (int p = 0; p < frontTotal; p++) {
+            int c = frontCodePoints.get(p);
             if (c == ' ') {
                 effectiveIdx++;
                 continue;
@@ -286,26 +422,46 @@ public class SignBlueprintItem extends Item {
                 continue;
             }
 
+            Block backBlockToPlace = null;
+            if (isDoubleSided && !backCodePoints.isEmpty()) {
+                int backIdx = !isVertical ? ((frontTotal - 1) - p) : p;
+                if (backIdx >= 0 && backIdx < backCodePoints.size()) {
+                    int backC = backCodePoints.get(backIdx);
+                    if (backC != ' ') {
+                        backBlockToPlace = getBlockForChar(backC);
+                    }
+                }
+            }
+
             if (!isVertical) {
                 if (size == 1) {
-                    BlockPos currentPos = offsetRight(startPos, rightX, rightZ, effectiveIdx);
+                    BlockPos currentPos = offsetRight(startPos, stepX, stepZ, effectiveIdx);
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
                     if (!player.isCreative()) {
-                        
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
+                    placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, currentPos, clickedFace, withBackplate, rotation, size, facing);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
                 } else if (size == 2) {
-                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 2);
+                    BlockPos basePos = offsetRight(startPos, stepX, stepZ, effectiveIdx * 2);
                     BlockPos p10 = offsetRight(basePos, rightX, rightZ, 1);
                     BlockPos p01 = basePos.relative(Direction.UP, 1);
                     BlockPos p11 = offsetRight(basePos, rightX, rightZ, 1).relative(Direction.UP, 1);
@@ -316,34 +472,43 @@ public class SignBlueprintItem extends Item {
                     }
 
                     if (!player.isCreative()) {
-                        
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
                     BlockPos[] quad = {basePos, p10, p01, p11};
-                    for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
+                    for (BlockPos pPos : quad) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, pPos, clickedFace, withBackplate, rotation, size, facing);
+                        placedPositions.add(pPos.asLong());
                         blocksPlaced++;
                     }
                 } else {
-                    BlockPos basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * 3);
+                    BlockPos basePos = offsetRight(startPos, stepX, stepZ, effectiveIdx * 3);
                     boolean canPlaceAll = true;
                     BlockPos[] grid = new BlockPos[9];
                     int gIdx = 0;
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            if (!level.getBlockState(p).canBeReplaced()) {
+                            BlockPos pPos = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
+                            if (!level.getBlockState(pPos).canBeReplaced()) {
                                 canPlaceAll = false;
                                 break;
                             }
-                            grid[gIdx++] = p;
+                            grid[gIdx++] = pPos;
                         }
                         if (!canPlaceAll) break;
                     }
@@ -351,18 +516,27 @@ public class SignBlueprintItem extends Item {
                     if (!canPlaceAll) break;
 
                     if (!player.isCreative()) {
-                        
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
-                    for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
+                    for (BlockPos pPos : grid) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, pPos, clickedFace, withBackplate, rotation, size, facing);
+                        placedPositions.add(pPos.asLong());
                         blocksPlaced++;
                     }
                 }
@@ -376,16 +550,25 @@ public class SignBlueprintItem extends Item {
                     if (!level.getBlockState(currentPos).canBeReplaced()) break;
 
                     if (!player.isCreative()) {
-                        
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
-                    placeSingleBlock(level, player, pContext, blockToPlace, currentPos, clickedFace, withBackplate, rotation, size);
+                    placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, currentPos, clickedFace, withBackplate, rotation, size, facing);
                     blocksPlaced++;
                     placedPositions.add(currentPos.asLong());
                 } else if (size == 2) {
@@ -404,19 +587,28 @@ public class SignBlueprintItem extends Item {
                     }
 
                     if (!player.isCreative()) {
-                        
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
                     BlockPos[] quad = {basePos, p10, p01, p11};
-                    for (BlockPos p : quad) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
+                    for (BlockPos pPos : quad) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, pPos, clickedFace, withBackplate, rotation, size, facing);
+                        placedPositions.add(pPos.asLong());
                         blocksPlaced++;
                     }
                 } else {
@@ -430,12 +622,12 @@ public class SignBlueprintItem extends Item {
                     int gIdx = 0;
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 3; dx++) {
-                            BlockPos p = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
-                            if (!level.getBlockState(p).canBeReplaced()) {
+                            BlockPos pPos = offsetRight(basePos, rightX, rightZ, dx).relative(Direction.UP, dy);
+                            if (!level.getBlockState(pPos).canBeReplaced()) {
                                 canPlaceAll = false;
                                 break;
                             }
-                            grid[gIdx++] = p;
+                            grid[gIdx++] = pPos;
                         }
                         if (!canPlaceAll) break;
                     }
@@ -444,16 +636,26 @@ public class SignBlueprintItem extends Item {
 
                     if (!player.isCreative()) {
                         int bpCost = withBackplate ? blocksPerChar : 0;
-                        if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                        if (backBlockToPlace == blockToPlace) {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar * 2) break;
+                        } else {
+                            if (countItemInInventory(player, blockToPlace.asItem()) < blocksPerChar) break;
+                            if (backBlockToPlace != null && countItemInInventory(player, backBlockToPlace.asItem()) < blocksPerChar) break;
+                        }
                         if (bpCost > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < bpCost) break;
-                        
-                        consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+
+                        if (backBlockToPlace == blockToPlace) {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar * 2);
+                        } else {
+                            consumeItemFromInventory(player, blockToPlace.asItem(), blocksPerChar);
+                            if (backBlockToPlace != null) consumeItemFromInventory(player, backBlockToPlace.asItem(), blocksPerChar);
+                        }
                         if (bpCost > 0) consumeItemFromInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), bpCost);
                     }
 
-                    for (BlockPos p : grid) {
-                        placeSingleBlock(level, player, pContext, blockToPlace, p, clickedFace, withBackplate, rotation, size);
-                        placedPositions.add(p.asLong());
+                    for (BlockPos pPos : grid) {
+                        placeSingleBlock(level, player, pContext, blockToPlace, backBlockToPlace, pPos, clickedFace, withBackplate, rotation, size, facing);
+                        placedPositions.add(pPos.asLong());
                         blocksPlaced++;
                     }
                 }
@@ -485,24 +687,32 @@ public class SignBlueprintItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate, int rotation, int size) {
+    private void placeSingleBlock(Level level, Player player, UseOnContext pContext, Block blockToPlace, @Nullable Block backBlockToPlace, BlockPos pos, Direction clickedFace, boolean withBackplate, int rotation, int size, Direction facing) {
         BlockHitResult hitResult = new BlockHitResult(pContext.getClickLocation(), clickedFace, pos, pContext.isInside());
         UseOnContext offsetContext = new UseOnContext(player, pContext.getHand(), hitResult);
         BlockPlaceContext placeContext = new BlockPlaceContext(offsetContext);
         BlockState stateToPlace = blockToPlace.getStateForPlacement(placeContext);
         if (stateToPlace == null) stateToPlace = blockToPlace.defaultBlockState();
+        if (clickedFace.getAxis() == Direction.Axis.Y && stateToPlace.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            stateToPlace = stateToPlace.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING, facing);
+        }
 
         level.setBlock(pos, stateToPlace, 3);
         ItemStack placedStack = new ItemStack(blockToPlace);
-        if (size > 1) {
-            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, placedStack, t -> { t.putInt("FacingRotation", rotation); t.putString("id", "signbuilder:letter_block_entity"); });
-        }
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, placedStack, t -> {
+            t.putInt("FacingRotation", rotation);
+            t.putString("id", "signbuilder:letter_block_entity");
+        });
         blockToPlace.setPlacedBy(level, pos, stateToPlace, player, placedStack);
 
-        if (withBackplate) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof LetterBlockEntity letterBe) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof LetterBlockEntity letterBe) {
+            letterBe.setFacingRotation(rotation);
+            if (withBackplate) {
                 letterBe.setHasBackplate(true);
+                if (backBlockToPlace != null && clickedFace.getAxis() == Direction.Axis.Y) {
+                    letterBe.setBackGlyph(new ItemStack(backBlockToPlace));
+                }
             }
         }
     }
@@ -534,6 +744,28 @@ public class SignBlueprintItem extends Item {
                 }
             }
         }
+    }
+
+    private void sendMissingMaterialsMessage(Player player, Map<Item, Integer> missing) {
+        MutableComponent msg = Component.translatable("message.signbuilder.blueprint.missing_materials")
+                .withStyle(ChatFormatting.RED)
+                .append(Component.literal(": ").withStyle(ChatFormatting.DARK_GRAY));
+        boolean first = true;
+        int shown = 0;
+        for (Map.Entry<Item, Integer> entry : missing.entrySet()) {
+            if (shown >= 4) {
+                msg.append(Component.literal(", ...").withStyle(ChatFormatting.GRAY));
+                break;
+            }
+            if (!first) {
+                msg.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
+            }
+            first = false;
+            msg.append(Component.literal(entry.getValue() + "x ").withStyle(ChatFormatting.YELLOW))
+                    .append(new ItemStack(entry.getKey()).getHoverName().copy().withStyle(ChatFormatting.WHITE));
+            shown++;
+        }
+        player.displayClientMessage(msg, true);
     }
 
     public static int getHitSubCellRow(Vec3 hitLocation, int gridSize) {
@@ -590,7 +822,7 @@ public class SignBlueprintItem extends Item {
         for (int i = 0; i < sub.length(); i++) {
             char ch = sub.charAt(i);
             if (ch != ' ') {
-                int cp = (ch != 'ß') ? Character.toUpperCase(ch) : ch;
+                int cp = toUpperChar(ch);
                 String path = getBlockPathForChar(cp);
                 if (path != null) {
                     int cellIndex = isVertical
@@ -614,6 +846,7 @@ public class SignBlueprintItem extends Item {
             if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gridBe) {
                 for (Map.Entry<Integer, String> entry : cells.entrySet()) {
                     int cIdx = entry.getKey();
+                    boolean cellIsBack = isBack || (cIdx >= 10000);
                     int cellGridSize = gridSize;
                     int col, row;
                     if (cIdx >= 200) {
@@ -625,13 +858,13 @@ public class SignBlueprintItem extends Item {
                         col = cIdx % gridSize;
                         row = cIdx / gridSize;
                     }
-                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+                    gridBe.setCell(col, row, cellGridSize, cellIsBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
                 }
                 gridBe.markRenderDirty();
                 gridBe.setChanged();
                 gridBe.sync();
             }
-        } else if (isBackplate || (isLetter && isBack)) {
+        } else if (isBackplate) {
             com.boran.signbuilder.block.SignMaterial bpFMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
             com.boran.signbuilder.block.SignMaterial bpBMat = com.boran.signbuilder.block.SignMaterial.DEFAULT;
             int bpFColor = 0xFFFFFF, bpBColor = 0xFFFFFF;
@@ -642,39 +875,9 @@ public class SignBlueprintItem extends Item {
             boolean bpDetectsMonsters = true, bpDetectsAnimals = false;
             int bpOnTicks = 10, bpOffTicks = 10, bpType = 0, bpRange = 8, bpOffRange = 8, bpCloseDelay = 0;
             boolean bpNightOnly = true, bpPlayers = true, bpLowPower = false, bpLookOnly = true;
-            ItemStack oldFrontGlyph = ItemStack.EMPTY;
 
             if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
                 com.boran.signbuilder.block.entity.LetterBlockEntity effective = lbe.getEffectiveMaster();
-                if (isLetter) {
-                    oldFrontGlyph = effective.getDroppedItemStack(currentState);
-                    net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, oldFrontGlyph, beTag -> {
-                        beTag.remove("BackGlyph");
-                        beTag.remove("HasBackplate");
-                        beTag.remove("BPFrontMat");
-                        beTag.remove("BPBackMat");
-                        beTag.remove("BPFrontColor");
-                        beTag.remove("BPBackColor");
-                        beTag.remove("BPFrontRainbow");
-                        beTag.remove("BPBackRainbow");
-                        beTag.remove("BackplateFrontMaterial");
-                        beTag.remove("BackplateBackMaterial");
-                        beTag.remove("BackplateFrontColor");
-                        beTag.remove("BackplateBackColor");
-                        beTag.remove("BackplateFrontRainbow");
-                        beTag.remove("BackplateBackRainbow");
-                    });
-                    net.minecraft.world.item.component.CustomData cd = oldFrontGlyph.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
-                    if (cd != null && cd.isEmpty()) {
-                        oldFrontGlyph.remove(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
-                    }
-                    ItemStack bpBackGlyph = effective.getBackGlyph();
-                    if (bpBackGlyph != null && !bpBackGlyph.isEmpty()) {
-                        if (!player.isCreative()) {
-                            net.minecraft.world.level.block.Block.popResource(level, targetPos, bpBackGlyph.copy());
-                        }
-                    }
-                }
                 bpFMat = effective.getBackplateFrontMaterial();
                 bpBMat = effective.getBackplateBackMaterial();
                 bpFColor = effective.getBackplateFrontColor();
@@ -682,9 +885,6 @@ public class SignBlueprintItem extends Item {
                 bpFRainbow = effective.isBackplateFrontRainbow();
                 bpBRainbow = effective.isBackplateBackRainbow();
                 bpFacingRotation = effective.getFacingRotation();
-                if (isLetter && currentState.hasProperty(BlockStateProperties.ATTACH_FACE) && currentState.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
-                    bpFacingRotation = Math.floorMod(bpFacingRotation - 2, 8);
-                }
                 bpWrenchMode = effective.getWrenchMode();
                 bpActive = effective.isActive();
                 bpDetectsMonsters = effective.doesDetectMonsters();
@@ -710,9 +910,6 @@ public class SignBlueprintItem extends Item {
             Direction blockFacing = clickedFace;
             if (currentState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 blockFacing = currentState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                if (isLetter && attachFace != AttachFace.WALL) {
-                    blockFacing = blockFacing.getCounterClockWise();
-                }
             }
 
             BlockState newState = com.boran.signbuilder.block.ModBlocks.GRID_SIGN.get().defaultBlockState()
@@ -730,14 +927,12 @@ public class SignBlueprintItem extends Item {
                 gridBe.setBackplateBackRainbow(bpBRainbow);
                 gridBe.setFacingRotation(bpFacingRotation);
                 gridBe.setLightConfiguration(bpWrenchMode, bpActive, bpDetectsMonsters, bpDetectsAnimals, bpOnTicks, bpOffTicks, bpType, bpRange, bpOffRange, bpCloseDelay, bpNightOnly, bpPlayers, bpLowPower, bpLookOnly);
-                if (!oldFrontGlyph.isEmpty()) {
-                    gridBe.setFrontGlyph(oldFrontGlyph);
-                }
                 com.boran.signbuilder.block.GridSignBlock.updateLightLevel(level, targetPos, newState, gridBe);
 
                 gridBe.setGridSize(gridSize);
                 for (Map.Entry<Integer, String> entry : cells.entrySet()) {
                     int cIdx = entry.getKey();
+                    boolean cellIsBack = isBack || (cIdx >= 10000);
                     int cellGridSize = gridSize;
                     int col, row;
                     if (cIdx >= 200) {
@@ -749,7 +944,7 @@ public class SignBlueprintItem extends Item {
                         col = cIdx % gridSize;
                         row = cIdx / gridSize;
                     }
-                    gridBe.setCell(col, row, cellGridSize, isBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
+                    gridBe.setCell(col, row, cellGridSize, cellIsBack, entry.getValue(), com.boran.signbuilder.block.SignMaterial.DEFAULT, 0xFFFFFF, false, 0);
                 }
                 gridBe.markRenderDirty();
                 gridBe.setChanged();
@@ -822,6 +1017,8 @@ public class SignBlueprintItem extends Item {
                 }
             }
             if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.GridSignBlockEntity gbe) {
+                if (!isBack && !gbe.getFrontGlyph().isEmpty()) return false;
+                if (isBack && !gbe.getBackGlyph().isEmpty()) return false;
                 for (Map.Entry<Integer, String> entry : cellMap.entrySet()) {
                     int cIdx = entry.getKey();
                     int cellGridSize = gridSize;
@@ -835,7 +1032,8 @@ public class SignBlueprintItem extends Item {
                         col = cIdx % gridSize;
                         row = cIdx / gridSize;
                     }
-                    if (gbe.hasAnyCollision(cellGridSize, col, row, isBack)) {
+                    boolean cellIsBack = isBack || (cIdx >= 10000);
+                    if (gbe.hasAnyCollision(cellGridSize, col, row, cellIsBack)) {
                         return false;
                     }
                 }
@@ -855,21 +1053,6 @@ public class SignBlueprintItem extends Item {
         }
 
         if (targetState.getBlock() instanceof com.boran.signbuilder.block.LetterBlock) {
-            if (level.getBlockEntity(targetPos) instanceof com.boran.signbuilder.block.entity.LetterBlockEntity lbe) {
-                com.boran.signbuilder.block.entity.LetterBlockEntity master = lbe.getEffectiveMaster();
-                if (master.hasBackplate() && master.getSize() == 1 && isBack) {
-                    AttachFace attachFace = targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACE)
-                            ? targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACE)
-                            : AttachFace.WALL;
-                    if (attachFace == AttachFace.WALL && effectiveFace.getAxis() != Direction.Axis.Y) {
-                        if (targetState.hasProperty(com.boran.signbuilder.block.LetterBlock.FACING)) {
-                            Direction blockFacing = targetState.getValue(com.boran.signbuilder.block.LetterBlock.FACING);
-                            if (blockFacing != effectiveFace && (!isBack || blockFacing != effectiveFace.getOpposite())) return false;
-                        }
-                    }
-                    return true;
-                }
-            }
             return false;
         }
 
@@ -922,11 +1105,23 @@ public class SignBlueprintItem extends Item {
         }
 
         boolean wall = (clickedAttachFace == AttachFace.WALL);
+
         int stepRotation = clickedIsStampable
                 ? clickedFacingRotation
                 : (wall ? SignRotation.fromDirection(effectiveFace) : SignRotation.fromDirection(player.getDirection().getCounterClockWise()));
         int rightX = SignRotation.horizontalStepX(stepRotation, wall);
         int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
+        int placementDir = wall ? 0 : tag.getInt("PlacementDirection");
+        int stepX = rightX;
+        int stepZ = rightZ;
+        if (placementDir == 1) {
+            Direction forwardDir = player.getDirection();
+            stepX = forwardDir.getStepX();
+            stepZ = forwardDir.getStepZ();
+        } else if (placementDir == 2) {
+            stepX = -rightX;
+            stepZ = -rightZ;
+        }
 
         BlockPos startPos = clickedIsStampable ? clickedPos : clickedPos.relative(clickedFace);
 
@@ -953,6 +1148,7 @@ public class SignBlueprintItem extends Item {
                 int rem = gridText.length() - firstBlockCap;
                 numBlocks = 1 + (rem + gridSize - 1) / gridSize;
             }
+
             for (int b = 0; b < numBlocks; b++) {
                 blocksCells.add(getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
             }
@@ -963,12 +1159,14 @@ public class SignBlueprintItem extends Item {
                 net.minecraft.nbt.ListTag list = tag.getList("GridCells", net.minecraft.nbt.Tag.TAG_COMPOUND);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag ctag = list.getCompound(i);
+                    boolean cellIsBack = ctag.contains("IsBack") ? ctag.getBoolean("IsBack") : (ctag.getInt("Index") >= 10000);
+                    if (wall && cellIsBack) continue;
                     int idx;
                     if (ctag.contains("Col") && ctag.contains("Row")) {
                         int gSize = ctag.contains("GridSize") ? ctag.getInt("GridSize") : gridSize;
                         int col = ctag.getInt("Col");
                         int row = ctag.getInt("Row");
-                        idx = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(false, gSize, col, row);
+                        idx = com.boran.signbuilder.block.entity.GridSignBlockEntity.makeKey(cellIsBack, gSize, col, row);
                     } else {
                         idx = ctag.getInt("Index");
                     }
@@ -1025,7 +1223,7 @@ public class SignBlueprintItem extends Item {
         for (int b = 0; b < numBlocks; b++) {
             BlockPos bPos = (isBannerMode && isVertical)
                     ? startPos.below(b)
-                    : offsetRight(startPos, rightX, rightZ, b);
+                    : offsetRight(startPos, stepX, stepZ, b);
             targetPositions.add(bPos);
 
             BlockState bState = level.getBlockState(bPos);
@@ -1039,7 +1237,7 @@ public class SignBlueprintItem extends Item {
 
             if (canPlace) {
                 validBlockIndices.add(b);
-            } else if (!clickedIsStampable) {
+            } else {
                 player.displayClientMessage(Component.translatable("tooltip.signbuilder.blueprint.obstructed").withStyle(ChatFormatting.RED), true);
                 return InteractionResult.FAIL;
             }
@@ -1062,7 +1260,10 @@ public class SignBlueprintItem extends Item {
                     backplatesNeeded++;
                 }
 
-                for (String charPath : blocksCells.get(b).values()) {
+                for (Map.Entry<Integer, String> cellEntry : blocksCells.get(b).entrySet()) {
+                    boolean cellIsBack = (cellEntry.getKey() >= 10000);
+                    if (wall && cellIsBack) continue;
+                    String charPath = cellEntry.getValue();
                     Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("signbuilder", charPath));
                     if (block != Blocks.AIR) {
                         lettersNeeded.merge(block.asItem(), 1, Integer::sum);
@@ -1070,16 +1271,24 @@ public class SignBlueprintItem extends Item {
                 }
             }
 
-            if (backplatesNeeded > 0 && countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get()) < backplatesNeeded) {
-                player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
-                return InteractionResult.FAIL;
+            Map<Item, Integer> missing = new LinkedHashMap<>();
+            if (backplatesNeeded > 0) {
+                int count = countItemInInventory(player, com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get());
+                if (count < backplatesNeeded) {
+                    missing.put(com.boran.signbuilder.block.ModBlocks.BACKPLATE_ITEM.get(), backplatesNeeded - count);
+                }
             }
 
             for (Map.Entry<Item, Integer> req : lettersNeeded.entrySet()) {
-                if (countItemInInventory(player, req.getKey()) < req.getValue()) {
-                    player.displayClientMessage(Component.translatable("message.signbuilder.blueprint.missing_materials").withStyle(ChatFormatting.RED), true);
-                    return InteractionResult.FAIL;
+                int count = countItemInInventory(player, req.getKey());
+                if (count < req.getValue()) {
+                    missing.put(req.getKey(), req.getValue() - count);
                 }
+            }
+
+            if (!missing.isEmpty()) {
+                sendMissingMaterialsMessage(player, missing);
+                return InteractionResult.FAIL;
             }
 
             if (backplatesNeeded > 0) {
@@ -1127,6 +1336,29 @@ public class SignBlueprintItem extends Item {
         return null;
     }
 
+    public static boolean isTurkish() {
+        try {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc != null && mc.getLanguageManager() != null) {
+                String selected = mc.getLanguageManager().getSelected();
+                if (selected != null && selected.toLowerCase().startsWith("tr")) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    public static int toUpperChar(int c) {
+        if (c == 'ß') return c;
+        if (isTurkish()) {
+            if (c == 'i') return 'İ';
+            if (c == 'ı') return 'I';
+        }
+        return Character.toUpperCase(c);
+    }
+
     public static String getBlockPathForChar(int c) {
         return switch (c) {
             case 'A', 'a' -> "letter_a";
@@ -1140,8 +1372,9 @@ public class SignBlueprintItem extends Item {
             case 'G', 'g' -> "letter_g";
             case 'Ğ', 'ğ' -> "letter_g_tr";
             case 'H', 'h' -> "letter_h";
-            case 'I', 'i', 'ı' -> "letter_i";
+            case 'I', 'ı' -> "letter_i";
             case 'İ' -> "letter_i_tr";
+            case 'i' -> isTurkish() ? "letter_i_tr" : "letter_i";
             case 'J', 'j' -> "letter_j";
             case 'K', 'k' -> "letter_k";
             case 'L', 'l' -> "letter_l";

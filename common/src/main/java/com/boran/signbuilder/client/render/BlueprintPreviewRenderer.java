@@ -30,12 +30,16 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class BlueprintPreviewRenderer {
 
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final RandomSource RANDOM = RandomSource.create();
+    private static final Map<BakedModel, List<BakedQuad>> GHOST_QUADS_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
     private static final BlockPos.MutableBlockPos SCRATCH_POS = new BlockPos.MutableBlockPos();
     private static final double[] OFFSET_ZERO = {0.0, 0.0};
     private static final double[] OFFSET_NEG_1_NEG_1 = {-1.0, -1.0};
@@ -79,6 +83,7 @@ public class BlueprintPreviewRenderer {
 
         if (!tag.contains("BlueprintText")) return;
         String text = tag.getString("BlueprintText");
+        String backText = tag.getString("BlueprintBackText");
         if (text.isEmpty()) return;
 
         int size = 1;
@@ -96,24 +101,44 @@ public class BlueprintPreviewRenderer {
 
         Direction playerFacing = player.getDirection();
         boolean wall = clickedFace.getAxis() != Direction.Axis.Y;
-        int rotation = wall
-                ? SignRotation.fromDirection(clickedFace)
-                : size > 1
-                    ? SignRotation.fromDirection(playerFacing.getCounterClockWise())
-                    : SignRotation.fromYaw(player.getYRot(), -2);
-        int rightX = SignRotation.horizontalStepX(rotation, wall);
-        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
-
-        int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
+        int placementDir = wall ? 0 : tag.getInt("PlacementDirection");
 
         boolean isFloor = (clickedFace.getAxis() == Direction.Axis.Y);
         AttachFace attachFace = isFloor
                 ? (clickedFace == Direction.UP ? AttachFace.FLOOR : AttachFace.CEILING)
                 : AttachFace.WALL;
 
-        Direction facing = isFloor
-                ? playerFacing.getCounterClockWise()
-                : clickedFace;
+        Direction facing;
+        int rotation;
+        if (wall) {
+            rotation = SignRotation.fromDirection(clickedFace);
+            facing = clickedFace;
+        } else if (placementDir == 1) {
+            facing = playerFacing.getOpposite();
+            rotation = size > 1
+                    ? SignRotation.fromDirection(facing)
+                    : SignRotation.fromYaw(player.getYRot(), 4);
+        } else {
+            facing = playerFacing.getCounterClockWise();
+            rotation = size > 1
+                    ? SignRotation.fromDirection(facing)
+                    : SignRotation.fromYaw(player.getYRot(), -2);
+        }
+
+        int rightX = SignRotation.horizontalStepX(rotation, wall);
+        int rightZ = SignRotation.horizontalStepZ(rotation, wall);
+        int stepX = rightX;
+        int stepZ = rightZ;
+        if (placementDir == 1 && size > 1) {
+            Direction forwardDir = player.getDirection();
+            stepX = forwardDir.getStepX();
+            stepZ = forwardDir.getStepZ();
+        } else if (placementDir == 2) {
+            stepX = -rightX;
+            stepZ = -rightZ;
+        }
+
+        int stepDirY = (clickedFace == Direction.UP) ? 1 : -1;
 
         Vec3 camPos = camera.getPosition();
         double camX = camPos.x;
@@ -123,13 +148,29 @@ public class BlueprintPreviewRenderer {
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
 
-        int effectiveIdx = 0;
-        int textLen = text.length();
+        java.util.List<Integer> frontCodePoints = new java.util.ArrayList<>();
+        for (int i = 0; i < text.length(); ) {
+            int cp = text.codePointAt(i);
+            i += Character.charCount(cp);
+            if (cp == 0xFE0F) continue;
+            frontCodePoints.add(cp);
+        }
 
-        for (int i = 0; i < textLen; ) {
-            int c = text.codePointAt(i);
-            i += Character.charCount(c);
-            if (c == 0xFE0F) continue;
+        java.util.List<Integer> backCodePoints = new java.util.ArrayList<>();
+        if (withBackplate && attachFace != AttachFace.WALL && !backText.isEmpty()) {
+            for (int i = 0; i < backText.length(); ) {
+                int cp = backText.codePointAt(i);
+                i += Character.charCount(cp);
+                if (cp == 0xFE0F) continue;
+                backCodePoints.add(cp);
+            }
+        }
+
+        int frontTotal = frontCodePoints.size();
+        int effectiveIdx = 0;
+
+        for (int p = 0; p < frontTotal; p++) {
+            int c = frontCodePoints.get(p);
             if (c == ' ') {
                 effectiveIdx++;
                 continue;
@@ -143,9 +184,8 @@ public class BlueprintPreviewRenderer {
 
             BlockPos basePos;
             if (!isVertical) {
-                basePos = offsetRight(startPos, rightX, rightZ, effectiveIdx * size);
+                basePos = offsetRight(startPos, stepX, stepZ, effectiveIdx * size);
             } else {
-                
                 int baseY = (stepDirY == 1)
                         ? startPos.getY() + (effectiveIdx * size)
                         : startPos.getY() - (size - 1) - (effectiveIdx * size);
@@ -227,9 +267,15 @@ public class BlueprintPreviewRenderer {
                     ModelCentering.centerPose(poseStack, bpModel, bpState, rotationDelta, size == 1, modelScale, offsetX, offsetZ, groupCenterX, groupCenterZ);
                     ModelCentering.widenDiagonalPose(poseStack, plateFacing, rotation);
                 }
-                renderGhostModel(poseStack, consumer, bpModel, bpState, r, g, b, a * 0.7F, 15728880);
+                float bpR = canPlace ? 0.85F : 1.0F;
+                float bpG = canPlace ? 0.85F : 0.2F;
+                float bpB = canPlace ? 0.85F : 0.2F;
+                renderGhostModel(poseStack, consumer, bpModel, bpState, bpR, bpG, bpB, 0.40F, 15728880);
                 poseStack.popPose();
+            }
 
+            poseStack.pushPose();
+            if (withBackplate) {
                 double plateClearance = (attachFace == AttachFace.WALL ? 1.0 : 2.0) * size / 16.0;
                 if (attachFace != AttachFace.WALL) {
                     double targetX = groupCenterX + normalX * plateClearance;
@@ -259,8 +305,50 @@ public class BlueprintPreviewRenderer {
                     ModelCentering.centerPose(poseStack, model, stateToPlace, rotationDelta, size == 1, modelScale, offsetX, offsetZ, targetX, targetZ);
                 }
             }
+            float frontR = canPlace ? 0.3F : 1.0F;
+            float frontG = canPlace ? 0.95F : 0.2F;
+            float frontB = canPlace ? 1.0F : 0.2F;
+            float frontA = 0.70F;
+            renderGhostModel(poseStack, consumer, model, stateToPlace, frontR, frontG, frontB, frontA, 15728880);
+            poseStack.popPose();
 
-            renderGhostModel(poseStack, consumer, model, stateToPlace, r, g, b, a, 15728880);
+            if (withBackplate && attachFace != AttachFace.WALL && !backCodePoints.isEmpty()) {
+                int backIdx = !isVertical ? ((frontTotal - 1) - p) : p;
+                if (backIdx >= 0 && backIdx < backCodePoints.size()) {
+                    int backC = backCodePoints.get(backIdx);
+                    if (backC != ' ') {
+                        Block backBlock = SignBlueprintItem.getBlockForChar(backC);
+                        if (backBlock != null) {
+                            BlockState backState = backBlock.defaultBlockState();
+                            if (backState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                                backState = backState.setValue(BlockStateProperties.ATTACH_FACE, attachFace);
+                            }
+                            if (backState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                                backState = backState.setValue(BlockStateProperties.HORIZONTAL_FACING, facing.getOpposite());
+                            }
+                            BakedModel backModel = mc.getBlockRenderer().getBlockModel(backState);
+                            poseStack.pushPose();
+                            double plateClearance = 2.0 * size / 16.0;
+                            double backTargetX = groupCenterX - normalX * plateClearance;
+                            double backTargetZ = groupCenterZ - normalZ * plateClearance;
+                            if (LetterBlock.isLateralDot(backState)) {
+                                ModelCentering.Center currentCenter = ModelCentering.transformedCenter(backModel, backState, rotationDelta,
+                                        size == 1, modelScale, offsetX, offsetZ);
+                                ModelCentering.Center targetCenter = ModelCentering.centerAlongNormal(currentCenter, backTargetX, backTargetZ, normalX, normalZ);
+                                backTargetX = targetCenter.x();
+                                backTargetZ = targetCenter.z();
+                            }
+                            ModelCentering.centerPose(poseStack, backModel, backState, rotationDelta, size == 1, modelScale, offsetX, offsetZ, backTargetX, backTargetZ);
+                            float backR = canPlace ? 1.0F : 1.0F;
+                            float backG = canPlace ? 0.75F : 0.2F;
+                            float backB = canPlace ? 0.25F : 0.2F;
+                            float backA = 0.75F;
+                            renderGhostModel(poseStack, consumer, backModel, backState, backR, backG, backB, backA, 15728880);
+                            poseStack.popPose();
+                        }
+                    }
+                }
+            }
 
             poseStack.popPose();
             effectiveIdx++;
@@ -323,20 +411,10 @@ public class BlueprintPreviewRenderer {
         int blue = (int) (b * 255.0F);
         int alpha = (int) (a * 255.0F);
 
-        for (int d = 0; d < 6; d++) {
-            RANDOM.setSeed(42L);
-            List<BakedQuad> quads = model.getQuads(state, DIRECTIONS[d], RANDOM);
-            int qSize = quads.size();
-            for (int i = 0; i < qSize; i++) {
-                renderGhostQuad(poseMatrix, normalMatrix, consumer, quads.get(i), red, green, blue, alpha, light);
-            }
-        }
-
-        RANDOM.setSeed(42L);
-        List<BakedQuad> unculledQuads = model.getQuads(state, null, RANDOM);
-        int unculledSize = unculledQuads.size();
-        for (int i = 0; i < unculledSize; i++) {
-            renderGhostQuad(poseMatrix, normalMatrix, consumer, unculledQuads.get(i), red, green, blue, alpha, light);
+        List<BakedQuad> allQuads = GHOST_QUADS_CACHE.computeIfAbsent(model, m -> LetterBlockEntityRenderer.getAllQuads(m, state));
+        int qSize = allQuads.size();
+        for (int i = 0; i < qSize; i++) {
+            renderGhostQuad(poseMatrix, normalMatrix, consumer, allQuads.get(i), red, green, blue, alpha, light);
         }
     }
 
@@ -439,6 +517,9 @@ public class BlueprintPreviewRenderer {
             startOffset = SignBlueprintItem.getHitSubCellCol(effectiveFace, hitLoc, gridSize);
         }
 
+        boolean withBackplate = tag.getBoolean("WithBackplate");
+        boolean wall = (clickedAttachFace == AttachFace.WALL);
+
         int numBlocks;
         java.util.List<java.util.Map<Integer, String>> blocksCells = new java.util.ArrayList<>();
 
@@ -450,6 +531,7 @@ public class BlueprintPreviewRenderer {
                 int rem = gridText.length() - firstBlockCap;
                 numBlocks = 1 + (rem + gridSize - 1) / gridSize;
             }
+
             for (int b = 0; b < numBlocks; b++) {
                 blocksCells.add(SignBlueprintItem.getBannerCellsForBlock(gridText, b, gridSize, isVertical, targetLine, startOffset));
             }
@@ -488,15 +570,22 @@ public class BlueprintPreviewRenderer {
             if (cells.isEmpty()) return;
             blocksCells.add(cells);
         }
-
-        boolean withBackplate = tag.getBoolean("WithBackplate");
-
-        boolean wall = (clickedAttachFace == AttachFace.WALL);
         int stepRotation = clickedIsStampable
                 ? clickedFacingRotation
                 : (wall ? SignRotation.fromDirection(effectiveFace) : SignRotation.fromDirection(player.getDirection().getCounterClockWise()));
         int rightX = SignRotation.horizontalStepX(stepRotation, wall);
         int rightZ = SignRotation.horizontalStepZ(stepRotation, wall);
+        int placementDir = wall ? 0 : tag.getInt("PlacementDirection");
+        int stepX = rightX;
+        int stepZ = rightZ;
+        if (placementDir == 1) {
+            Direction forwardDir = player.getDirection();
+            stepX = forwardDir.getStepX();
+            stepZ = forwardDir.getStepZ();
+        } else if (placementDir == 2) {
+            stepX = -rightX;
+            stepZ = -rightZ;
+        }
 
         BlockPos baseTargetPos = clickedIsStampable ? hitPos : hitPos.relative(hitFace);
 
@@ -509,7 +598,7 @@ public class BlueprintPreviewRenderer {
         for (int b = 0; b < numBlocks; b++) {
             BlockPos targetPos = (isBannerMode && isVertical)
                     ? baseTargetPos.below(b)
-                    : offsetRight(baseTargetPos, rightX, rightZ, b);
+                    : offsetRight(baseTargetPos, stepX, stepZ, b);
             BlockState targetState = level.getBlockState(targetPos);
             boolean stampExisting = SignBlueprintItem.isStampableTarget(level, targetPos, targetState);
 
@@ -581,11 +670,11 @@ public class BlueprintPreviewRenderer {
         for (int b = 0; b < numBlocks; b++) {
             BlockPos targetPos = (isBannerMode && isVertical)
                     ? baseTargetPos.below(b)
-                    : offsetRight(baseTargetPos, rightX, rightZ, b);
+                    : offsetRight(baseTargetPos, stepX, stepZ, b);
             BlockState targetState = level.getBlockState(targetPos);
 
             boolean stampExisting = SignBlueprintItem.isStampableTarget(level, targetPos, targetState);
-            boolean canPlace = clickedIsStampable ? canPlaceBlock[b] : (canPlaceBlock[b] && allCanPlace);
+            boolean canPlace = canPlaceBlock[b] && allCanPlace;
 
             AttachFace attachFace = clickedAttachFace;
             Direction facing = clickedFacing;
@@ -639,10 +728,6 @@ public class BlueprintPreviewRenderer {
                     }
                 }
             }
-            Direction effectiveFacing = isBack ? facing.getOpposite() : facing;
-            Direction cellFacing = (attachFace != AttachFace.WALL) ? effectiveFacing.getClockWise() : effectiveFacing;
-            AttachFace cellFace = (attachFace != AttachFace.WALL) ? attachFace : AttachFace.WALL;
-
             poseStack.pushPose();
             poseStack.translate(targetPos.getX() - camPos.x, targetPos.getY() - camPos.y, targetPos.getZ() - camPos.z);
 
@@ -664,18 +749,16 @@ public class BlueprintPreviewRenderer {
                 renderGhostModel(poseStack, consumer, plateModel, plateState, bpR, bpG, bpB, 0.4F, 15728880);
             }
 
-            org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, effectiveFacing, isBack);
-            poseStack.translate(baseTrans.x, baseTrans.y, baseTrans.z);
-
             boolean hasPlate = stampExisting || (clickedIsStampable || withBackplate);
 
-            float charR = canPlace ? 0.4F : 1.0F;
-            float charG = canPlace ? 0.9F : 0.2F;
-            float charB = canPlace ? 1.0F : 0.2F;
+
 
             java.util.Map<Integer, String> cellMap = blocksCells.get(b);
             for (java.util.Map.Entry<Integer, String> entry : cellMap.entrySet()) {
                 int index = entry.getKey();
+                boolean cellIsBack = isBack || (index >= 10000);
+                if (attachFace == AttachFace.WALL && cellIsBack) continue;
+
                 int cellGridSize = gridSize;
                 int col, row;
                 if (index >= 200) {
@@ -691,6 +774,10 @@ public class BlueprintPreviewRenderer {
                 Block letterBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("signbuilder", path));
                 if (letterBlock == null || letterBlock == net.minecraft.world.level.block.Blocks.AIR) continue;
 
+                Direction cellEffectiveFacing = cellIsBack ? facing.getOpposite() : facing;
+                Direction cellFacing = (attachFace != AttachFace.WALL) ? cellEffectiveFacing.getClockWise() : cellEffectiveFacing;
+                AttachFace cellFace = (attachFace != AttachFace.WALL) ? attachFace : AttachFace.WALL;
+
                 BlockState letterState = letterBlock.defaultBlockState();
                 if (letterState.hasProperty(LetterBlock.FACING)) letterState = letterState.setValue(LetterBlock.FACING, cellFacing);
                 if (letterState.hasProperty(LetterBlock.FACE)) letterState = letterState.setValue(LetterBlock.FACE, cellFace);
@@ -702,18 +789,23 @@ public class BlueprintPreviewRenderer {
                     colShift *= 1.4142135f;
                 }
 
-                org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, effectiveFacing, colShift, rowShift, scale);
-                org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, effectiveFacing, hasPlate);
-                org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, effectiveFacing);
+                org.joml.Vector3f baseTrans = com.boran.signbuilder.client.grid.GridOffsetHelper.getBaseTranslation(attachFace, cellEffectiveFacing, cellIsBack);
+                org.joml.Vector3f offsets = com.boran.signbuilder.client.grid.GridOffsetHelper.getOffset(attachFace, cellEffectiveFacing, colShift, rowShift, scale);
+                org.joml.Vector3f cl = com.boran.signbuilder.client.grid.GridOffsetHelper.getClearance(attachFace, cellEffectiveFacing, hasPlate);
+                org.joml.Vector3f c = com.boran.signbuilder.client.grid.GridOffsetHelper.getCenter(attachFace, cellEffectiveFacing);
 
                 poseStack.pushPose();
-                poseStack.translate(offsets.x + cl.x, offsets.y + cl.y, offsets.z + cl.z);
+                poseStack.translate(baseTrans.x + offsets.x + cl.x, baseTrans.y + offsets.y + cl.y, baseTrans.z + offsets.z + cl.z);
                 poseStack.translate(c.x, c.y, c.z);
                 poseStack.scale(scale, scale, scale);
                 poseStack.translate(-c.x, -c.y, -c.z);
 
                 BakedModel letterModel = mc.getBlockRenderer().getBlockModel(letterState);
-                renderGhostModel(poseStack, consumer, letterModel, letterState, charR, charG, charB, 0.65F, 15728880);
+                float charR = cellIsBack ? (canPlace ? 1.0F : 1.0F) : (canPlace ? 0.3F : 1.0F);
+                float charG = cellIsBack ? (canPlace ? 0.75F : 0.2F) : (canPlace ? 0.95F : 0.2F);
+                float charB = cellIsBack ? (canPlace ? 0.25F : 0.2F) : (canPlace ? 1.0F : 0.2F);
+                float charA = cellIsBack ? 0.75F : 0.70F;
+                renderGhostModel(poseStack, consumer, letterModel, letterState, charR, charG, charB, charA, 15728880);
 
                 poseStack.popPose();
             }

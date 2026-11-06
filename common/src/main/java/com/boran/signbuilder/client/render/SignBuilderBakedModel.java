@@ -171,6 +171,8 @@ public class SignBuilderBakedModel implements BakedModel {
         if (client == null) return;
         ModelManager modelManager = client.getModelManager();
         if (modelManager == null) return;
+        Map<ModelResourceLocation, BakedModel> reg = getBakedRegistry(modelManager);
+        if (reg == null || reg.isEmpty()) return;
         if (client.getItemRenderer() == null) return;
         ItemModelShaper shaper = client.getItemRenderer().getItemModelShaper();
         if (shaper == null) return;
@@ -268,7 +270,11 @@ public class SignBuilderBakedModel implements BakedModel {
             }
         }
         if (raw == null || raw == modelManager.getMissingModel()) {
-            raw = modelManager.getModel(mrl);
+            try {
+                raw = modelManager.getModel(mrl);
+            } catch (Exception ignored) {
+                raw = null;
+            }
         }
         if (raw == null || raw == modelManager.getMissingModel()) {
             return;
