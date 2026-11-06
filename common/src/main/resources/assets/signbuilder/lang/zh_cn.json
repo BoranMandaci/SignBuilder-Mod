@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 火山喷发",
   "gui.signbuilder.lcd.visual.59.tooltip": "喷涌的熔岩流、火山弹与滚滚浓烟",
   "gui.signbuilder.lcd.visual.60": "🐠 Aquarium",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish",
+  "gui.signbuilder.blueprint.side_front": "正面",
+  "gui.signbuilder.blueprint.side_back": "背面",
+  "gui.signbuilder.blueprint.copy_front": "复制正面",
+  "gui.signbuilder.blueprint.double_sided": "双面",
+  "gui.signbuilder.blueprint.single_sided": "单面",
+  "gui.signbuilder.blueprint.dir.left_to_right": "从左到右",
+  "gui.signbuilder.blueprint.dir.forward": "向前",
+  "gui.signbuilder.blueprint.dir.right_to_left": "从右到左",
+  "message.signbuilder.blueprint.direction_changed": "放置方向: %s"
 }

@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 Извержение Вулкана",
   "gui.signbuilder.lcd.visual.59.tooltip": "Потоки лавы, огненные бомбы и клубы пепла",
   "gui.signbuilder.lcd.visual.60": "🐠 Aquarium",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish",
+  "gui.signbuilder.blueprint.side_front": "Перед",
+  "gui.signbuilder.blueprint.side_back": "Зад",
+  "gui.signbuilder.blueprint.copy_front": "Копировать перед",
+  "gui.signbuilder.blueprint.double_sided": "Двусторонний",
+  "gui.signbuilder.blueprint.single_sided": "Односторонний",
+  "gui.signbuilder.blueprint.dir.left_to_right": "Слева направо",
+  "gui.signbuilder.blueprint.dir.forward": "Вперёд",
+  "gui.signbuilder.blueprint.dir.right_to_left": "Справа налево",
+  "message.signbuilder.blueprint.direction_changed": "Направление размещения: %s"
 }

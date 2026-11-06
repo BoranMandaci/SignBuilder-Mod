@@ -669,5 +669,14 @@
   "gui.signbuilder.lcd.visual.59": "🌋 Volcan en Éruption",
   "gui.signbuilder.lcd.visual.59.tooltip": "Coulées de lave, bombes volcaniques et panache de fumée",
   "gui.signbuilder.lcd.visual.60": "🐠 Aquarium",
-  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish"
+  "gui.signbuilder.lcd.visual.60.tooltip": "Tranquil pixel sea life with swaying kelp fronds, rising air bubbles and swimming fish",
+  "gui.signbuilder.blueprint.side_front": "Face avant",
+  "gui.signbuilder.blueprint.side_back": "Face arrière",
+  "gui.signbuilder.blueprint.copy_front": "Copier l'avant",
+  "gui.signbuilder.blueprint.double_sided": "Double face",
+  "gui.signbuilder.blueprint.single_sided": "Simple face",
+  "gui.signbuilder.blueprint.dir.left_to_right": "De gauche à droite",
+  "gui.signbuilder.blueprint.dir.forward": "Vers l'avant",
+  "gui.signbuilder.blueprint.dir.right_to_left": "De droite à gauche",
+  "message.signbuilder.blueprint.direction_changed": "Direction de placement: %s"
 }

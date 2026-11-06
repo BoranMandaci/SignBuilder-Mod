@@ -203,6 +203,7 @@ public class SignBuilderBakedModel implements BakedModel {
         }
 
         Map<ResourceLocation, BakedModel> registry = getBakedRegistry(modelManager);
+        if (registry == null || registry.isEmpty()) return;
         Int2ObjectMap<BakedModel> shapesCache = getShapesCache(shaper);
 
         wrapItem(bpItem, "backplate", true, shaper, modelManager, registry, shapesCache);

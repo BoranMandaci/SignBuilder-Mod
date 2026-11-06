@@ -1116,6 +1116,6 @@ public class LetterBlockEntity extends BlockEntity {
     }
 
     public AABB getRenderBoundingBox() {
-        return new AABB(this.worldPosition).inflate(this.size == 3 ? 12.0 : 8.0);
+        return new AABB(this.worldPosition).inflate(1000000.0);
     }
 }

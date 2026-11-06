@@ -32,6 +32,7 @@ public class SignBuilderForge {
             modEventBus.addListener(this::registerRenderers);
             modEventBus.addListener(this::onModifyBakingResult);
             MinecraftForge.EVENT_BUS.addListener(this::onRenderLevelStage);
+            MinecraftForge.EVENT_BUS.addListener(this::onMouseScroll);
         });
     }
 
@@ -53,6 +54,12 @@ public class SignBuilderForge {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             BlueprintPreviewRenderer.render(event.getPoseStack());
             GridPreviewRenderer.render(event.getPoseStack());
+        }
+    }
+
+    private void onMouseScroll(net.minecraftforge.client.event.InputEvent.MouseScrollingEvent event) {
+        if (com.boran.signbuilder.client.ClientModEvents.onMouseScrolled(0.0, event.getScrollDelta())) {
+            event.setCanceled(true);
         }
     }
 }

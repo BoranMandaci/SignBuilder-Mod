@@ -46,6 +46,13 @@ public class ClientModEvents {
         ClientTickEvent.CLIENT_POST.register(HeldButtonController::tick);
         ClientTickEvent.CLIENT_POST.register(com.boran.signbuilder.client.render.SignBuilderBakedModel::checkAndWrap);
 
+        dev.architectury.event.events.client.ClientRawInputEvent.MOUSE_SCROLLED.register((client, amount) -> {
+            if (onMouseScrolled(0.0, amount)) {
+                return dev.architectury.event.EventResult.interruptFalse();
+            }
+            return dev.architectury.event.EventResult.pass();
+        });
+
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             if (player.level().isClientSide()) {
                 Minecraft client = Minecraft.getInstance();
@@ -131,6 +138,9 @@ public class ClientModEvents {
                         GridRaytrace.GridHit gridHit = GridRaytrace.getGridHit(hit, gridSize);
                         if (gridHit != null) {
                             net.minecraft.core.BlockPos targetPos = gridHit.pos();
+                            if (client.level.getBlockState(targetPos).getBlock() instanceof LetterBlock) {
+                                return EventResult.interruptFalse();
+                            }
                             boolean isBack = com.boran.signbuilder.block.GridSignBlock.isBackIndex(gridHit.index(), gridSize);
                             int rawIndex = com.boran.signbuilder.block.GridSignBlock.getLocalIndex(gridHit.index(), gridSize);
                             int col = rawIndex % gridSize;
@@ -200,5 +210,41 @@ public class ClientModEvents {
             }
         }
         return blocks.toArray(new Block[0]);
+    }
+    public static boolean onMouseScrolled(double amountX, double amountY) {
+        net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
+        if (client.player == null || client.level == null) return false;
+        boolean shiftDown = net.minecraft.client.gui.screens.Screen.hasShiftDown()
+                || client.options.keyShift.isDown()
+                || client.player.isShiftKeyDown();
+        if (!shiftDown) return false;
+        double delta = (Math.abs(amountY) > 0.01) ? amountY : amountX;
+        if (Math.abs(delta) < 0.01) return false;
+
+        net.minecraft.world.item.ItemStack main = client.player.getMainHandItem();
+        net.minecraft.world.item.ItemStack off = client.player.getOffhandItem();
+        net.minecraft.world.item.ItemStack stack = (main.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) ? main
+                : ((off.getItem() instanceof com.boran.signbuilder.item.SignBlueprintItem) ? off : net.minecraft.world.item.ItemStack.EMPTY);
+        if (stack.isEmpty()) return false;
+
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        int currentDir = tag.getInt("PlacementDirection");
+        int nextDir = (delta > 0) ? ((currentDir + 1) % 3) : ((currentDir + 2) % 3);
+
+        tag.putInt("PlacementDirection", nextDir);
+        com.boran.signbuilder.network.ModMessages.sendToServer(new com.boran.signbuilder.network.BlueprintDirectionC2SPacket(nextDir));
+
+        client.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.2F));
+
+        net.minecraft.network.chat.Component dirComp = switch (nextDir) {
+            case 1 -> net.minecraft.network.chat.Component.translatable("gui.signbuilder.blueprint.dir.forward").withStyle(net.minecraft.ChatFormatting.AQUA);
+            case 2 -> net.minecraft.network.chat.Component.translatable("gui.signbuilder.blueprint.dir.right_to_left").withStyle(net.minecraft.ChatFormatting.YELLOW);
+            default -> net.minecraft.network.chat.Component.translatable("gui.signbuilder.blueprint.dir.left_to_right").withStyle(net.minecraft.ChatFormatting.GREEN);
+        };
+        client.player.displayClientMessage(
+                net.minecraft.network.chat.Component.translatable("message.signbuilder.blueprint.direction_changed", dirComp).withStyle(net.minecraft.ChatFormatting.GOLD),
+                true
+        );
+        return true;
     }
 }
