@@ -29,6 +29,7 @@ public class ModCreativeModeTabs {
                         safeAccept(output, ModBlocks.SIGN_PRESS_ITEM);
                         safeAccept(output, ModBlocks.BACKPLATE_ITEM);
                         safeAccept(output, ModBlocks.LCD_SCREEN_ITEM);
+                        safeAccept(output, ModItems.STORAGE_LINKER);
             
                         String[] letterOrder = {
                                 "letter_a", "letter_b", "letter_c", "letter_d", "letter_e", "letter_f",

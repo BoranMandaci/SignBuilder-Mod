@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    "ICI",
+    " I "
+  ],
+  "key": {
+    "T": "minecraft:redstone_torch",
+    "I": "minecraft:iron_ingot",
+    "C": "minecraft:comparator"
+  },
+  "result": {
+    "count": 1,
+    "id": "signbuilder:storage_linker"
+  },
+  "category": "misc"
+}

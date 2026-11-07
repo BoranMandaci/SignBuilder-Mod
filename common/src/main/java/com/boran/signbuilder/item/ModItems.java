@@ -20,6 +20,9 @@ public class ModItems {
     public static final RegistrySupplier<Item> WRENCH = ITEMS.register("wrench",
             () -> new WrenchItem(new Item.Properties().durability(256).setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(SignBuilder.MODID, "wrench")))));
 
+    public static final RegistrySupplier<Item> STORAGE_LINKER = ITEMS.register("storage_linker",
+            () -> new StorageLinkerItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(SignBuilder.MODID, "storage_linker")))));
+
     public static void register() {
         ITEMS.register();
     }

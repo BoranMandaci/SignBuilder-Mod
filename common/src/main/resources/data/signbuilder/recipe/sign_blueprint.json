@@ -7,19 +7,14 @@
   ],
   "key": {
     "L": [
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:blue_dye"
-      }
+      "minecraft:lapis_lazuli",
+      "minecraft:blue_dye"
     ],
-    "P": {
-      "item": "minecraft:paper"
-    }
+    "P": "minecraft:paper"
   },
   "result": {
     "count": 1,
     "id": "signbuilder:sign_blueprint"
-  }
+  },
+  "category": "misc"
 }

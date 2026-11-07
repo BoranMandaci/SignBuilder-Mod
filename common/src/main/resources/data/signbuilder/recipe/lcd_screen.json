@@ -7,30 +7,19 @@
   ],
   "key": {
     "G": [
-      {
-        "item": "minecraft:glass"
-      },
-      {
-        "item": "minecraft:glass_pane"
-      }
+      "minecraft:glass",
+      "minecraft:glass_pane"
     ],
-    "R": {
-      "item": "minecraft:redstone"
-    },
+    "R": "minecraft:redstone",
     "L": [
-      {
-        "item": "minecraft:glowstone_dust"
-      },
-      {
-        "item": "minecraft:glowstone"
-      }
+      "minecraft:glowstone_dust",
+      "minecraft:glowstone"
     ],
-    "I": {
-      "item": "minecraft:iron_ingot"
-    }
+    "I": "minecraft:iron_ingot"
   },
   "result": {
     "count": 4,
     "id": "signbuilder:lcd_screen"
-  }
+  },
+  "category": "misc"
 }

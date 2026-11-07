@@ -6,18 +6,13 @@
     "BRB"
   ],
   "key": {
-    "B": {
-      "item": "minecraft:iron_block"
-    },
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    }
+    "B": "minecraft:iron_block",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
   },
   "result": {
     "count": 1,
     "id": "signbuilder:sign_press"
-  }
+  },
+  "category": "misc"
 }

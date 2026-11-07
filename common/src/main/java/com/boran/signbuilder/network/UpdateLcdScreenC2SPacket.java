@@ -8,8 +8,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
     public static final Type<UpdateLcdScreenC2SPacket> TYPE = new Type<>(ModMessages.UPDATE_LCD_SCREEN);
@@ -33,11 +37,31 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
     private final int widgetBR;
     private final int fontStyle;
     private final int visualAnim;
+    private final int storageMonitorMode;
+    private final int storageStyle;
+    private final int storageFilterMode;
+    private final int storageFlowMode;
+    private final List<ItemStack> watchlistItems;
+    private final boolean loopEnabled;
+    private final boolean loopShuffle;
+    private final int loopTransition;
+    private final int[] loopAnims;
+    private final int[] loopDurations;
+    private final int[] loopColors;
+    private final String[] loopTexts1;
+    private final String[] loopTexts2;
+    private final int[] loopModes1;
+    private final int[] loopModes2;
+    private final int[] loopAligns;
 
     public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
                                     int color, boolean rainbow, boolean glow,
                                     int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
-                                    int fontStyle, int visualAnim) {
+                                    int fontStyle, int visualAnim, int storageMonitorMode, int storageStyle,
+                                    int storageFilterMode, int storageFlowMode, List<ItemStack> watchlistItems,
+                                    boolean loopEnabled, boolean loopShuffle, int loopTransition,
+                                    int[] loopAnims, int[] loopDurations, int[] loopColors,
+                                    String[] loopTexts1, String[] loopTexts2, int[] loopModes1, int[] loopModes2, int[] loopAligns) {
         this.pos = pos;
         this.text = text != null ? text : "";
         this.mode = mode;
@@ -55,13 +79,81 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
         this.widgetBR = widgetBR;
         this.fontStyle = fontStyle;
         this.visualAnim = visualAnim;
+        this.storageMonitorMode = storageMonitorMode;
+        this.storageStyle = storageStyle;
+        this.storageFilterMode = storageFilterMode;
+        this.storageFlowMode = storageFlowMode;
+        this.watchlistItems = new ArrayList<>();
+        if (watchlistItems != null) {
+            for (ItemStack st : watchlistItems) {
+                if (st != null && !st.isEmpty()) {
+                    this.watchlistItems.add(LcdScreenBlockEntity.cleanWatchlistCopy(st));
+                    if (this.watchlistItems.size() >= LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS) {
+                        break;
+                    }
+                }
+            }
+        }
+        this.loopEnabled = loopEnabled;
+        this.loopShuffle = loopShuffle;
+        this.loopTransition = Math.max(0, Math.min(9, loopTransition));
+        int lLen = loopAnims != null ? Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, loopAnims.length) : 0;
+        this.loopAnims = new int[lLen];
+        this.loopDurations = new int[lLen];
+        this.loopColors = new int[lLen];
+        this.loopTexts1 = new String[lLen];
+        this.loopTexts2 = new String[lLen];
+        this.loopModes1 = new int[lLen];
+        this.loopModes2 = new int[lLen];
+        this.loopAligns = new int[lLen];
+        for (int i = 0; i < lLen; i++) {
+            this.loopAnims[i] = Math.max(0, Math.min(60, loopAnims[i]));
+            this.loopDurations[i] = Math.max(1, Math.min(999, (loopDurations != null && i < loopDurations.length) ? loopDurations[i] : 6));
+            int c = (loopColors != null && i < loopColors.length) ? loopColors[i] : -1;
+            this.loopColors[i] = (c < 0) ? Math.max(-2, c) : (c & 0xFFFFFF);
+            this.loopTexts1[i] = (loopTexts1 != null && i < loopTexts1.length && loopTexts1[i] != null) ? loopTexts1[i] : "";
+            this.loopTexts2[i] = (loopTexts2 != null && i < loopTexts2.length && loopTexts2[i] != null) ? loopTexts2[i] : "";
+            this.loopModes1[i] = (loopModes1 != null && i < loopModes1.length && loopModes1[i] >= 0 && loopModes1[i] <= 9) ? loopModes1[i] : -1;
+            this.loopModes2[i] = (loopModes2 != null && i < loopModes2.length && loopModes2[i] >= 0 && loopModes2[i] <= 9) ? loopModes2[i] : -1;
+            this.loopAligns[i] = (loopAligns != null && i < loopAligns.length && loopAligns[i] >= 0 && loopAligns[i] <= 2) ? loopAligns[i] : -1;
+        }
     }
 
     public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
                                     int color, boolean rainbow, boolean glow,
                                     int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
-                                    int visualAnim) {
-        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR, 0, visualAnim);
+                                    int fontStyle, int visualAnim, int storageMonitorMode, int storageStyle,
+                                    int storageFilterMode, int storageFlowMode, List<ItemStack> watchlistItems,
+                                    boolean loopEnabled, boolean loopShuffle, int loopTransition,
+                                    int[] loopAnims, int[] loopDurations, int[] loopColors) {
+        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR,
+                fontStyle, visualAnim, storageMonitorMode, storageStyle, storageFilterMode, storageFlowMode, watchlistItems,
+                loopEnabled, loopShuffle, loopTransition, loopAnims, loopDurations, loopColors,
+                null, null, null, null, null);
+    }
+
+    public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
+                                    int color, boolean rainbow, boolean glow,
+                                    int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
+                                    int fontStyle, int visualAnim, int storageMonitorMode, int storageStyle,
+                                    int storageFilterMode, int storageFlowMode, List<ItemStack> watchlistItems) {
+        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR,
+                fontStyle, visualAnim, storageMonitorMode, storageStyle, storageFilterMode, storageFlowMode, watchlistItems,
+                false, false, 1, new int[0], new int[0], new int[0]);
+    }
+
+    public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
+                                    int color, boolean rainbow, boolean glow,
+                                    int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
+                                    int fontStyle, int visualAnim, int storageMonitorMode, int storageStyle) {
+        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR, fontStyle, visualAnim, storageMonitorMode, storageStyle, 0, 0, List.of());
+    }
+
+    public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
+                                    int color, boolean rainbow, boolean glow,
+                                    int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
+                                    int fontStyle, int visualAnim) {
+        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR, fontStyle, visualAnim, 0, 0, 0, 0, List.of());
     }
 
     public UpdateLcdScreenC2SPacket(RegistryFriendlyByteBuf buf) {
@@ -82,6 +174,48 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
         this.widgetBR = buf.readInt();
         this.fontStyle = buf.readInt();
         this.visualAnim = buf.readInt();
+        this.storageMonitorMode = buf.readInt();
+        this.storageStyle = buf.readInt();
+        this.storageFilterMode = buf.readInt();
+        this.storageFlowMode = buf.readInt();
+        int watchCount = Math.min(LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS, Math.max(0, buf.readVarInt()));
+        this.watchlistItems = new ArrayList<>(watchCount);
+        for (int i = 0; i < watchCount; i++) {
+            ItemStack st = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+            if (!st.isEmpty()) {
+                this.watchlistItems.add(st);
+            }
+        }
+        this.loopEnabled = buf.readBoolean();
+        this.loopShuffle = buf.readBoolean();
+        this.loopTransition = Math.max(0, Math.min(9, buf.readVarInt()));
+        int stepCount = Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, Math.max(0, buf.readVarInt()));
+        this.loopAnims = new int[stepCount];
+        this.loopDurations = new int[stepCount];
+        this.loopColors = new int[stepCount];
+        this.loopTexts1 = new String[stepCount];
+        this.loopTexts2 = new String[stepCount];
+        this.loopModes1 = new int[stepCount];
+        this.loopModes2 = new int[stepCount];
+        this.loopAligns = new int[stepCount];
+        for (int i = 0; i < stepCount; i++) {
+            this.loopAnims[i] = Math.max(0, Math.min(60, buf.readVarInt()));
+            this.loopDurations[i] = Math.max(1, Math.min(999, buf.readVarInt()));
+            this.loopColors[i] = buf.readInt();
+            if (this.loopAnims[i] == 0) {
+                this.loopTexts1[i] = buf.readUtf();
+                this.loopTexts2[i] = buf.readUtf();
+                this.loopModes1[i] = buf.readByte();
+                this.loopModes2[i] = buf.readByte();
+                this.loopAligns[i] = buf.readByte();
+            } else {
+                this.loopTexts1[i] = "";
+                this.loopTexts2[i] = "";
+                this.loopModes1[i] = -1;
+                this.loopModes2[i] = -1;
+                this.loopAligns[i] = -1;
+            }
+        }
     }
 
     public void toBytes(RegistryFriendlyByteBuf buf) {
@@ -102,6 +236,32 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
         buf.writeInt(this.widgetBR);
         buf.writeInt(this.fontStyle);
         buf.writeInt(this.visualAnim);
+        buf.writeInt(this.storageMonitorMode);
+        buf.writeInt(this.storageStyle);
+        buf.writeInt(this.storageFilterMode);
+        buf.writeInt(this.storageFlowMode);
+        int watchCount = Math.min(LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS, this.watchlistItems.size());
+        buf.writeVarInt(watchCount);
+        for (int i = 0; i < watchCount; i++) {
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.watchlistItems.get(i));
+        }
+        buf.writeBoolean(this.loopEnabled);
+        buf.writeBoolean(this.loopShuffle);
+        buf.writeVarInt(this.loopTransition);
+        int stepCount = this.loopAnims != null ? Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, this.loopAnims.length) : 0;
+        buf.writeVarInt(stepCount);
+        for (int i = 0; i < stepCount; i++) {
+            buf.writeVarInt(this.loopAnims[i]);
+            buf.writeVarInt(i < this.loopDurations.length ? this.loopDurations[i] : 6);
+            buf.writeInt(i < this.loopColors.length ? this.loopColors[i] : -1);
+            if (this.loopAnims[i] == 0) {
+                buf.writeUtf((this.loopTexts1 != null && i < this.loopTexts1.length && this.loopTexts1[i] != null) ? this.loopTexts1[i] : "");
+                buf.writeUtf((this.loopTexts2 != null && i < this.loopTexts2.length && this.loopTexts2[i] != null) ? this.loopTexts2[i] : "");
+                buf.writeByte((this.loopModes1 != null && i < this.loopModes1.length) ? this.loopModes1[i] : -1);
+                buf.writeByte((this.loopModes2 != null && i < this.loopModes2.length) ? this.loopModes2[i] : -1);
+                buf.writeByte((this.loopAligns != null && i < this.loopAligns.length) ? this.loopAligns[i] : -1);
+            }
+        }
     }
 
     @Override
@@ -152,6 +312,13 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
                 lcdBe.setWidgetBR(this.widgetBR);
                 lcdBe.setFontStyle(this.fontStyle);
                 lcdBe.setVisualAnim(this.visualAnim);
+                lcdBe.setStorageMonitorMode(this.storageMonitorMode);
+                lcdBe.setStorageStyle(this.storageStyle);
+                lcdBe.setStorageFilterMode(this.storageFilterMode);
+                lcdBe.setStorageFlowMode(this.storageFlowMode);
+                lcdBe.setWatchlistItems(this.watchlistItems);
+                lcdBe.setLoopConfig(this.loopEnabled, this.loopShuffle, this.loopTransition, this.loopAnims, this.loopDurations, this.loopColors,
+                        this.loopTexts1, this.loopTexts2, this.loopModes1, this.loopModes2, this.loopAligns);
 
                 BlockState st = level.getBlockState(cur);
                 if (st.hasProperty(LcdScreenBlock.LIT) && st.getValue(LcdScreenBlock.LIT) != this.glow) {
@@ -170,6 +337,10 @@ public class UpdateLcdScreenC2SPacket implements CustomPacketPayload {
                     }
                 }
             }
+        }
+
+        if (level.getBlockEntity(trueMaster) instanceof LcdScreenBlockEntity masterBe) {
+            masterBe.refreshStorageStats(level);
         }
     }
 }

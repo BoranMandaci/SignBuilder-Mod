@@ -6,6 +6,7 @@ import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
 import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
 import com.boran.signbuilder.client.render.LetterBlockEntityRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
+import com.boran.signbuilder.client.render.StorageHighlightRenderer;
 import dev.architectury.registry.client.rendering.BlockEntityRendererRegistry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -17,7 +18,7 @@ public class SignBuilderFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         com.boran.signbuilder.client.ClientModEvents.init();
         ModColorHandlers.register();
-        
+
         net.minecraft.client.gui.screens.MenuScreens.register(com.boran.signbuilder.menu.ModMenuTypes.SIGN_PRESS_MENU.get(), com.boran.signbuilder.client.screen.SignPressScreen::new);
 
         BlockEntityRendererRegistry.register(ModBlockEntities.LETTER_BLOCK_ENTITY.get(), LetterBlockEntityRenderer::new);
@@ -34,6 +35,7 @@ public class SignBuilderFabricClient implements ClientModInitializer {
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());
             com.boran.signbuilder.client.render.GridPreviewRenderer.render(context.matrixStack());
+            StorageHighlightRenderer.render(context.matrixStack());
         });
     }
 }

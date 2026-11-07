@@ -226,6 +226,33 @@ public class LcdScreenBlock extends Block implements EntityBlock {
 
     }
 
+    public static int[] getScreenDimensions(LevelReader level, BlockPos masterPos, Direction facing, AttachFace face) {
+        Direction rightDir = getScreenRightDir(facing, face);
+        Direction downDir = getScreenDownDir(facing, face);
+        int width = 1;
+        BlockPos checkRight = masterPos;
+        for (int i = 1; i < 32; i++) {
+            if (isConnectedNeighbor(level, checkRight, rightDir, facing, face)) {
+                width++;
+                checkRight = checkRight.relative(rightDir);
+            } else {
+                break;
+            }
+        }
+        int height = 1;
+        BlockPos checkDown = masterPos;
+        for (int i = 1; i < 32; i++) {
+            if (isConnectedNeighbor(level, checkDown, downDir, facing, face)) {
+                height++;
+                checkDown = checkDown.relative(downDir);
+            } else {
+                break;
+            }
+        }
+        return new int[]{width, height};
+    }
+
+
 
 
     @Override
@@ -498,11 +525,26 @@ public class LcdScreenBlock extends Block implements EntityBlock {
 
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        if (type == com.boran.signbuilder.block.entity.ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get()) {
+            return (l, p, s, entity) -> com.boran.signbuilder.block.entity.LcdScreenBlockEntity.serverTick(l, p, s, (com.boran.signbuilder.block.entity.LcdScreenBlockEntity) entity);
+        }
+        return null;
+    }
+
+
 
 
     @Override
 
     protected InteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+
+        if (held.getItem() instanceof com.boran.signbuilder.item.StorageLinkerItem) {
+            return InteractionResult.PASS;
+        }
 
         if (player.isShiftKeyDown() && !held.isEmpty()) {
 
@@ -555,6 +597,7 @@ public class LcdScreenBlock extends Block implements EntityBlock {
             BlockEntity be = level.getBlockEntity(masterPos);
 
             if (be instanceof LcdScreenBlockEntity lcdBe) {
+                int[] dims = getScreenDimensions(level, masterPos, state.getValue(FACING), state.getValue(FACE));
 
                 EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openLcdScreen(
 
@@ -589,9 +632,25 @@ public class LcdScreenBlock extends Block implements EntityBlock {
                         lcdBe.getWidgetBR(),
 
                         lcdBe.getFontStyle(),
-
-                        lcdBe.getVisualAnim()
-
+                        lcdBe.getVisualAnim(),
+                        dims[0],
+                        dims[1],
+                        lcdBe.getStorageMonitorMode(),
+                        lcdBe.getStorageStyle(),
+                        lcdBe.getStorageFilterMode(),
+                        lcdBe.getStorageFlowMode(),
+                        lcdBe.getWatchlistItems(),
+                        lcdBe.isLoopEnabled(),
+                        lcdBe.isLoopShuffle(),
+                        lcdBe.getLoopTransition(),
+                        lcdBe.getLoopAnims(),
+                        lcdBe.getLoopDurations(),
+                        lcdBe.getLoopColors(),
+                        lcdBe.getLoopTexts1(),
+                        lcdBe.getLoopTexts2(),
+                        lcdBe.getLoopModes1(),
+                        lcdBe.getLoopModes2(),
+                        lcdBe.getLoopAligns()
                 ));
 
             }

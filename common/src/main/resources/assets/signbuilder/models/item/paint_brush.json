@@ -1,6 +1,1 @@
-{
-  "parent": "item/handheld",
-  "textures": {
-    "layer0": "signbuilder:item/paint_brush"
-  }
-}
+{"parent":"item/handheld","textures":{"layer0":"signbuilder:item/paint_brush"}}

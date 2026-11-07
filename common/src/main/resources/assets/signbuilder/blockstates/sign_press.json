@@ -1,5 +1,1 @@
-{
-  "variants": {
-    "": { "model": "signbuilder:block/sign_press" }
-  }
-}
+{"variants":{"":{"model":"signbuilder:block/sign_press"}}}
