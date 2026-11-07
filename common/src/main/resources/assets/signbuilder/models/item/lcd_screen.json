@@ -1,3 +1,1 @@
-{
-  "parent": "signbuilder:block/lcd_screen_single"
-}
+{"parent":"signbuilder:block/lcd_screen_single"}

@@ -372,8 +372,7 @@ public class WrenchScreen extends Screen {
 
     @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Leave empty to prevent double rendering
-    }
+            }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {

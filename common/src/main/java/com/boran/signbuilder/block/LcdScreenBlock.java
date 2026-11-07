@@ -112,26 +112,53 @@ public class LcdScreenBlock extends Block implements EntityBlock {
         return cur;
     }
 
+    public static int[] getScreenDimensions(LevelReader level, BlockPos masterPos, Direction facing, AttachFace face) {
+        Direction rightDir = getScreenRightDir(facing, face);
+        Direction downDir = getScreenDownDir(facing, face);
+        int width = 1;
+        BlockPos checkRight = masterPos;
+        for (int i = 1; i < 32; i++) {
+            if (isConnectedNeighbor(level, checkRight, rightDir, facing, face)) {
+                width++;
+                checkRight = checkRight.relative(rightDir);
+            } else {
+                break;
+            }
+        }
+        int height = 1;
+        BlockPos checkDown = masterPos;
+        for (int i = 1; i < 32; i++) {
+            if (isConnectedNeighbor(level, checkDown, downDir, facing, face)) {
+                height++;
+                checkDown = checkDown.relative(downDir);
+            } else {
+                break;
+            }
+        }
+        return new int[]{width, height};
+    }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
         Direction clickedFace = context.getClickedFace();
+        Direction horizontalFacing = context.getHorizontalDirection().getOpposite();
 
+        AttachFace face;
         Direction facing;
-        AttachFace face = AttachFace.WALL;
 
-        if (clickedFace.getAxis() == Direction.Axis.Y) {
-            BlockPos neighborPos = pos.relative(clickedFace.getOpposite());
-            BlockState neighborState = level.getBlockState(neighborPos);
-            if (neighborState.getBlock() instanceof LcdScreenBlock && neighborState.getValue(FACE) == AttachFace.WALL) {
-                facing = neighborState.getValue(FACING);
-            } else {
-                return null;
-            }
+        if (clickedFace == Direction.UP) {
+            face = AttachFace.FLOOR;
+            facing = horizontalFacing;
+        } else if (clickedFace == Direction.DOWN) {
+            face = AttachFace.CEILING;
+            facing = horizontalFacing;
         } else {
+            face = AttachFace.WALL;
             facing = clickedFace;
         }
+
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
 
         return this.defaultBlockState()
                 .setValue(FACING, facing)
@@ -139,17 +166,14 @@ public class LcdScreenBlock extends Block implements EntityBlock {
                 .setValue(UP, isConnectedNeighbor(level, pos, getScreenUpDir(facing, face), facing, face))
                 .setValue(DOWN, isConnectedNeighbor(level, pos, getScreenDownDir(facing, face), facing, face))
                 .setValue(LEFT, isConnectedNeighbor(level, pos, getScreenLeftDir(facing, face), facing, face))
-                .setValue(RIGHT, isConnectedNeighbor(level, pos, getScreenRightDir(facing, face), facing, face))
-                .setValue(LIT, true);
+                .setValue(RIGHT, isConnectedNeighbor(level, pos, getScreenRightDir(facing, face), facing, face));
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        if (level.getBlockEntity(pos) instanceof LcdScreenBlockEntity lcd) {
-            lcd.invalidateGridCache();
-        }
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         Direction facing = state.getValue(FACING);
         AttachFace face = state.getValue(FACE);
+
         return state
                 .setValue(UP, isConnectedNeighbor(level, pos, getScreenUpDir(facing, face), facing, face))
                 .setValue(DOWN, isConnectedNeighbor(level, pos, getScreenDownDir(facing, face), facing, face))
@@ -164,21 +188,18 @@ public class LcdScreenBlock extends Block implements EntityBlock {
 
         Direction facing = state.getValue(FACING);
         AttachFace face = state.getValue(FACE);
-        Direction[] dirs = {
-                getScreenDownDir(facing, face),
-                getScreenRightDir(facing, face),
+
+        Direction[] neighborDirs = {
                 getScreenUpDir(facing, face),
-                getScreenLeftDir(facing, face)
+                getScreenLeftDir(facing, face),
+                getScreenDownDir(facing, face),
+                getScreenRightDir(facing, face)
         };
-        for (Direction d : dirs) {
+
+        for (Direction d : neighborDirs) {
             BlockPos nPos = pos.relative(d);
             if (isConnectedNeighbor(level, pos, d, facing, face)) {
-                BlockState nState = level.getBlockState(nPos);
-                BlockPos nMasterPos = getMasterPos(level, nPos, nState);
-                BlockEntity sourceBe = level.getBlockEntity(nMasterPos);
-                if (!(sourceBe instanceof LcdScreenBlockEntity sourceLcd) || (sourceLcd.getText().isEmpty() && sourceLcd.getTheme() == 0 && sourceLcd.getVisualAnim() == 0)) {
-                    sourceBe = level.getBlockEntity(nPos);
-                }
+                BlockEntity sourceBe = level.getBlockEntity(nPos);
                 BlockEntity myBe = level.getBlockEntity(pos);
                 if (sourceBe instanceof LcdScreenBlockEntity neighborLcd && myBe instanceof LcdScreenBlockEntity myLcd) {
                     myLcd.copyFrom(neighborLcd);
@@ -248,15 +269,30 @@ public class LcdScreenBlock extends Block implements EntityBlock {
         return new LcdScreenBlockEntity(pos, state);
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        if (type == com.boran.signbuilder.block.entity.ModBlockEntities.LCD_SCREEN_BLOCK_ENTITY.get()) {
+            return (l, p, s, entity) -> com.boran.signbuilder.block.entity.LcdScreenBlockEntity.serverTick(l, p, s, (com.boran.signbuilder.block.entity.LcdScreenBlockEntity) entity);
+        }
+        return null;
+    }
+
     @Override
     protected ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (held.getItem() instanceof com.boran.signbuilder.item.StorageLinkerItem) {
+            InteractionResult res = held.useOn(new net.minecraft.world.item.context.UseOnContext(player, hand, hit));
+            return res.consumesAction() ? ItemInteractionResult.sidedSuccess(level.isClientSide()) : ItemInteractionResult.FAIL;
+        }
+
         if (player.isShiftKeyDown() && !held.isEmpty()) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
 
         Direction facing = state.getValue(FACING);
         if (held.is(this.asItem()) && hit.getDirection() != facing) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
 
         return openLcdGui(level, pos, state, player);
@@ -276,6 +312,8 @@ public class LcdScreenBlock extends Block implements EntityBlock {
         if (level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(masterPos);
             if (be instanceof LcdScreenBlockEntity lcdBe) {
+                int[] dims = getScreenDimensions(level, masterPos, state.getValue(FACING), state.getValue(FACE));
+
                 EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.boran.signbuilder.client.ClientHooks.openLcdScreen(
                         masterPos,
                         lcdBe.getText(),
@@ -293,7 +331,25 @@ public class LcdScreenBlock extends Block implements EntityBlock {
                         lcdBe.getWidgetBL(),
                         lcdBe.getWidgetBR(),
                         lcdBe.getFontStyle(),
-                        lcdBe.getVisualAnim()
+                        lcdBe.getVisualAnim(),
+                        dims[0],
+                        dims[1],
+                        lcdBe.getStorageMonitorMode(),
+                        lcdBe.getStorageStyle(),
+                        lcdBe.getStorageFilterMode(),
+                        lcdBe.getStorageFlowMode(),
+                        lcdBe.getWatchlistItems(),
+                        lcdBe.isLoopEnabled(),
+                        lcdBe.isLoopShuffle(),
+                        lcdBe.getLoopTransition(),
+                        lcdBe.getLoopAnims(),
+                        lcdBe.getLoopDurations(),
+                        lcdBe.getLoopColors(),
+                        lcdBe.getLoopTexts1(),
+                        lcdBe.getLoopTexts2(),
+                        lcdBe.getLoopModes1(),
+                        lcdBe.getLoopModes2(),
+                        lcdBe.getLoopAligns()
                 ));
             }
         }

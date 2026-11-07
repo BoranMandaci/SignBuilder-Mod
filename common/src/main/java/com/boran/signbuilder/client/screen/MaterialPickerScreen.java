@@ -152,13 +152,11 @@ public class MaterialPickerScreen extends Screen {
 
     @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Leave empty to prevent double rendering
-    }
+            }
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.fill(0, 0, this.width, this.height, 0xAA000000);
+                graphics.fill(0, 0, this.width, this.height, 0xAA000000);
 
         int pad = 10;
         int panelLeft = startX - pad;

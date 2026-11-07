@@ -18,6 +18,9 @@ public class ModItems {
     public static final RegistrySupplier<Item> WRENCH = ITEMS.register("wrench",
             () -> new WrenchItem(new Item.Properties().durability(256)));
 
+    public static final RegistrySupplier<Item> STORAGE_LINKER = ITEMS.register("storage_linker",
+            () -> new StorageLinkerItem(new Item.Properties().stacksTo(1)));
+
     public static void register() {
         ITEMS.register();
     }
