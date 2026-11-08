@@ -7,6 +7,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import org.joml.Matrix4f;
 
+import java.awt.Color;
 
 public class LcdVisualAnimator {
 
@@ -64,6 +65,209 @@ public class LcdVisualAnimator {
     public static void render2D(GuiGraphics g, float minX, float maxX, float topY, float bottomY,
                                 int visualAnim, int speed, int baseColor, boolean rainbow, long timeMs) {
         renderInternal(null, null, 0, g, minX, maxX, topY, bottomY, visualAnim, speed, baseColor, rainbow, timeMs, false);
+    }
+
+    public static void renderTransition3D(VertexConsumer vc, Matrix4f mat, int light,
+                                          float minX, float maxX, float topY, float bottomY,
+                                          int transitionType, float intensity, boolean outgoing,
+                                          int accentColor, int theme, long timeMs) {
+        renderTransitionInternal(vc, mat, light, null, minX, maxX, topY, bottomY, transitionType, intensity, outgoing, accentColor, theme, timeMs);
+    }
+
+    public static void renderTransition2D(GuiGraphics g,
+                                          float minX, float maxX, float topY, float bottomY,
+                                          int transitionType, float intensity, boolean outgoing,
+                                          int accentColor, int theme, long timeMs) {
+        renderTransitionInternal(null, null, 0, g, minX, maxX, topY, bottomY, transitionType, intensity, outgoing, accentColor, theme, timeMs);
+    }
+
+    private static void renderTransitionInternal(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
+                                                 float minX, float maxX, float topY, float bottomY,
+                                                 int transitionType, float intensity, boolean outgoing,
+                                                 int accentColor, int theme, long timeMs) {
+        if (transitionType <= 0 || intensity <= 0.005f) return;
+        float w = maxX - minX;
+        float h = bottomY - topY;
+        if (w <= 1.0f || h <= 1.0f) return;
+
+        float u = Math.max(0.0f, Math.min(1.0f, intensity));
+        float smooth = u * u * (3.0f - 2.0f * u);
+        currentZ = 0.002f;
+        clipX1 = minX;
+        clipY1 = topY;
+        clipX2 = maxX;
+        clipY2 = bottomY;
+
+        int veilRgb = (theme == 12) ? 0xE8EBE6 : 0x060A10;
+        int accentRgb = accentColor & 0xFFFFFF;
+        int peakRgb = (theme == 12) ? 0x0F172A : 0xFFFFFF;
+
+        if (transitionType == 1) {
+            int baseAlpha = Math.round(smooth * 225.0f);
+            q(vc, mat, light, g, minX, topY, maxX, bottomY, veilRgb, baseAlpha);
+
+            int bands = Math.max(5, Math.min(14, Math.round(h / 3.2f)));
+            float bandH = h / bands;
+            long frameSeed = (timeMs / 28L) * 1103515245L + 12345L;
+            for (int i = 0; i < bands; i++) {
+                long hsh = (frameSeed ^ (i * 2654435761L)) & 0xFFFFFFFFL;
+                float r01 = (hsh & 0xFFL) / 255.0f;
+                if (r01 > (0.25f + 0.72f * smooth)) continue;
+
+                float by = topY + i * bandH;
+                float sliceW = w * (0.25f + 0.75f * (((hsh >> 8) & 0xFFL) / 255.0f));
+                float sliceX = minX + (w - sliceW) * (((hsh >> 16) & 0xFFL) / 255.0f);
+                int sel = (int) ((hsh >> 24) & 3L);
+                int col = switch (sel) {
+                    case 0 -> 0x00F0FF;
+                    case 1 -> 0xFF1478;
+                    case 2 -> accentRgb;
+                    default -> (theme == 12 ? 0x1E293B : 0xF0F8FF);
+                };
+                int alpha = Math.min(255, Math.round(110 + 145 * smooth));
+                q(vc, mat, light, g, sliceX, by, sliceX + sliceW, by + bandH * 0.88f, col, alpha);
+            }
+            if (u > 0.78f) {
+                int flashA = Math.min(245, Math.round(((u - 0.78f) / 0.22f) * 245.0f));
+                q(vc, mat, light, g, minX, topY + h * 0.42f, maxX, topY + h * 0.58f, peakRgb, flashA);
+            }
+        } else if (transitionType == 2) {
+            float halfH = h * 0.5f;
+            float closeH = halfH * smooth;
+            if (closeH > 0.2f) {
+                q(vc, mat, light, g, minX, topY, maxX, topY + closeH, veilRgb, 253);
+                q(vc, mat, light, g, minX, bottomY - closeH, maxX, bottomY, veilRgb, 253);
+            }
+            float seamTop = topY + closeH;
+            float seamBot = bottomY - closeH;
+            float beamThick = Math.max(0.8f, h * 0.045f);
+            int beamAlpha = Math.min(255, Math.round(140 + 115 * smooth));
+            q(vc, mat, light, g, minX, seamTop - beamThick * 0.5f, maxX, seamTop + beamThick * 0.5f, accentRgb, beamAlpha);
+            q(vc, mat, light, g, minX, seamBot - beamThick * 0.5f, maxX, seamBot + beamThick * 0.5f, accentRgb, beamAlpha);
+            if (u > 0.72f) {
+                float horizSqueeze = (u - 0.72f) / 0.28f;
+                float padX = (w * 0.36f) * horizSqueeze;
+                float midY = topY + halfH;
+                q(vc, mat, light, g, minX + padX, midY - beamThick * 0.65f, maxX - padX, midY + beamThick * 0.65f, peakRgb, 255);
+            }
+        } else if (transitionType == 3) {
+            int fadeAlpha = Math.min(255, Math.round(smooth * 255.0f));
+            q(vc, mat, light, g, minX, topY, maxX, bottomY, veilRgb, fadeAlpha);
+        } else if (transitionType == 4) {
+            float haloW = Math.max(2.5f, w * 0.065f);
+            float coreW = Math.max(1.0f, w * 0.018f);
+            if (outgoing) {
+                float beamX = minX + w * smooth;
+                if (beamX > minX + 0.1f) {
+                    q(vc, mat, light, g, minX, topY, beamX, bottomY, veilRgb, 254);
+                }
+                q(vc, mat, light, g, beamX - haloW, topY, beamX + haloW * 0.55f, bottomY, accentRgb, 120);
+                q(vc, mat, light, g, beamX - coreW, topY, beamX + coreW, bottomY, peakRgb, 255);
+            } else {
+                float reveal = 1.0f - smooth;
+                float beamX = minX + w * reveal;
+                if (beamX < maxX - 0.1f) {
+                    q(vc, mat, light, g, beamX, topY, maxX, bottomY, veilRgb, 254);
+                }
+                q(vc, mat, light, g, beamX - haloW * 0.55f, topY, beamX + haloW, bottomY, accentRgb, 120);
+                q(vc, mat, light, g, beamX - coreW, topY, beamX + coreW, bottomY, peakRgb, 255);
+            }
+        } else if (transitionType == 5) {
+            int cols = Math.max(8, Math.min(18, Math.round(w / 6.0f)));
+            int rows = Math.max(4, Math.min(11, Math.round(h / 6.0f)));
+            float cellW = w / cols;
+            float cellH = h / rows;
+            for (int r = 0; r < rows; r++) {
+                float cy1 = topY + r * cellH;
+                float cy2 = (r == rows - 1) ? bottomY : (cy1 + cellH + 0.15f);
+                for (int c = 0; c < cols; c++) {
+                    long hsh = ((c * 73856093L) ^ (r * 19349663L) ^ 0x9E3779B9L) & 0xFFL;
+                    float thresh = (hsh / 255.0f) * 0.74f;
+                    if (smooth <= thresh) continue;
+                    float cx1 = minX + c * cellW;
+                    float cx2 = (c == cols - 1) ? maxX : (cx1 + cellW + 0.15f);
+                    float local = Math.min(1.0f, (smooth - thresh) / 0.25f);
+                    if (local < 0.36f) {
+                        int flashA = Math.min(240, Math.round(130 + local * 280.0f));
+                        q(vc, mat, light, g, cx1, cy1, cx2, cy2, accentRgb, flashA);
+                    } else {
+                        q(vc, mat, light, g, cx1, cy1, cx2, cy2, veilRgb, 254);
+                    }
+                }
+            }
+        } else if (transitionType == 6) {
+            int cols = Math.max(10, Math.min(22, Math.round(w / 4.8f)));
+            float colW = w / cols;
+            int matrixCol = (theme == 12) ? 0x0F5132 : 0x00FF66;
+            int headCol = (theme == 12) ? 0x064E3B : 0xCCFFDD;
+            float dropH = Math.max(2.0f, h * 0.16f);
+            float headH = Math.max(1.0f, h * 0.045f);
+            for (int c = 0; c < cols; c++) {
+                float cx1 = minX + c * colW;
+                float cx2 = (c == cols - 1) ? maxX : (cx1 + colW + 0.12f);
+                float stagger = (((c * 2654435761L) >> 8) & 0xFFL) / 255.0f * 0.26f;
+                if (outgoing) {
+                    float prog = Math.max(0.0f, Math.min(1.0f, smooth * 1.26f - stagger));
+                    float frontY = topY + h * prog;
+                    if (frontY > topY + 0.1f) {
+                        q(vc, mat, light, g, cx1, topY, cx2, frontY, veilRgb, 254);
+                    }
+                    if (prog > 0.01f && prog < 0.995f) {
+                        q(vc, mat, light, g, cx1 + colW * 0.12f, Math.max(topY, frontY - dropH), cx2 - colW * 0.12f, frontY, matrixCol, 195);
+                        q(vc, mat, light, g, cx1 + colW * 0.08f, frontY - headH * 0.5f, cx2 - colW * 0.08f, frontY + headH, headCol, 255);
+                    }
+                } else {
+                    float reveal = 1.0f - smooth;
+                    float clearProg = Math.max(0.0f, Math.min(1.0f, reveal * 1.26f - stagger));
+                    float tailY = topY + h * clearProg;
+                    if (tailY < bottomY - 0.1f) {
+                        q(vc, mat, light, g, cx1, tailY, cx2, bottomY, veilRgb, 254);
+                    }
+                    if (clearProg > 0.01f && clearProg < 0.995f) {
+                        q(vc, mat, light, g, cx1 + colW * 0.12f, tailY, cx2 - colW * 0.12f, Math.min(bottomY, tailY + dropH), matrixCol, 195);
+                        q(vc, mat, light, g, cx1 + colW * 0.08f, tailY - headH, cx2 - colW * 0.08f, tailY + headH * 0.5f, headCol, 255);
+                    }
+                }
+            }
+        } else if (transitionType == 7) {
+            float closeX = (w * 0.5f) * smooth;
+            float closeY = (h * 0.5f) * smooth;
+            float ix1 = minX + closeX;
+            float ix2 = maxX - closeX;
+            float iy1 = topY + closeY;
+            float iy2 = bottomY - closeY;
+            if (iy1 > topY) {
+                q(vc, mat, light, g, minX, topY, maxX, iy1, veilRgb, 254);
+            }
+            if (iy2 < bottomY) {
+                q(vc, mat, light, g, minX, iy2, maxX, bottomY, veilRgb, 254);
+            }
+            if (ix1 > minX && iy2 > iy1) {
+                q(vc, mat, light, g, minX, iy1, ix1, iy2, veilRgb, 254);
+            }
+            if (ix2 < maxX && iy2 > iy1) {
+                q(vc, mat, light, g, ix2, iy1, maxX, iy2, veilRgb, 254);
+            }
+            float rim = Math.max(0.9f, Math.min(w, h) * 0.032f);
+            if (ix2 - ix1 > rim && iy2 - iy1 > rim) {
+                q(vc, mat, light, g, ix1 - rim, iy1 - rim, ix2 + rim, iy1 + rim * 0.5f, accentRgb, 235);
+                q(vc, mat, light, g, ix1 - rim, iy2 - rim * 0.5f, ix2 + rim, iy2 + rim, accentRgb, 235);
+                q(vc, mat, light, g, ix1 - rim, iy1, ix1 + rim * 0.5f, iy2, accentRgb, 235);
+                q(vc, mat, light, g, ix2 - rim * 0.5f, iy1, ix2 + rim, iy2, accentRgb, 235);
+            } else {
+                float cx = (minX + maxX) * 0.5f;
+                float cy = (topY + bottomY) * 0.5f;
+                q(vc, mat, light, g, cx - rim * 2.0f, cy - rim * 2.0f, cx + rim * 2.0f, cy + rim * 2.0f, peakRgb, 255);
+            }
+        } else {
+            int washAlpha = Math.min(240, Math.round(smooth * 225.0f));
+            q(vc, mat, light, g, minX, topY, maxX, bottomY, accentRgb, washAlpha);
+            int coreAlpha = Math.min(255, Math.round((float) Math.pow(u, 1.35) * 255.0f));
+            q(vc, mat, light, g, minX, topY, maxX, bottomY, peakRgb, coreAlpha);
+            float flareH = h * (0.08f + 0.35f * smooth);
+            float midY = (topY + bottomY) * 0.5f;
+            q(vc, mat, light, g, minX, midY - flareH * 0.5f, maxX, midY + flareH * 0.5f, peakRgb, Math.min(255, coreAlpha + 35));
+        }
     }
 
     private static void renderInternal(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
@@ -845,13 +1049,14 @@ public class LcdVisualAnimator {
 
     private static void drawColon(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
                                   float x, float y, float w, float h, int activeColor, int dimColor, boolean active) {
-        if (!active) return;
         float dotSize = Math.max(1.0f, w * 0.70f);
         float cx = x + (w - dotSize) * 0.5f;
         float dot1Y = y + h * 0.28f;
         float dot2Y = y + h * 0.65f;
-        q(vc, mat, light, g, cx, dot1Y, cx + dotSize, dot1Y + dotSize, activeColor, 255);
-        q(vc, mat, light, g, cx, dot2Y, cx + dotSize, dot2Y + dotSize, activeColor, 255);
+        int col = active ? activeColor : dimColor;
+        int alpha = active ? 255 : 35;
+        q(vc, mat, light, g, cx, dot1Y, cx + dotSize, dot1Y + dotSize, col, alpha);
+        q(vc, mat, light, g, cx, dot2Y, cx + dotSize, dot2Y + dotSize, col, alpha);
     }
 
     private static void draw7SegmentDigit(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
@@ -873,8 +1078,9 @@ public class LcdVisualAnimator {
 
     private static void renderSeg(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,
                                   float x1, float y1, float x2, float y2, boolean on, int activeColor, int dimColor) {
-        if (!on) return;
-        q(vc, mat, light, g, x1, y1, x2, y2, activeColor, 255);
+        if (!on && Math.max(x2 - x1, y2 - y1) < 2.2f) return;
+        int col = on ? activeColor : dimColor;
+        q(vc, mat, light, g, x1, y1, x2, y2, col, 255);
     }
 
     private static void renderStarfield(VertexConsumer vc, Matrix4f mat, int light, GuiGraphics g,

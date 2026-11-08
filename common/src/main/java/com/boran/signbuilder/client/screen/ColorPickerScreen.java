@@ -32,7 +32,7 @@ public class ColorPickerScreen extends Screen {
         this.brushStack = ItemStack.EMPTY;
         this.parentScreen = parentScreen;
         this.onColorSelected = onColorSelected;
-        this.selectedColorHex = initialColor;
+        this.selectedColorHex = initialColor & 0xFFFFFF;
         float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
         this.hue = hsb[0];
         this.saturation = hsb[1];
@@ -50,7 +50,7 @@ public class ColorPickerScreen extends Screen {
             if (tag.contains("SelectedColor")) {
                 int savedColor = tag.getInt("SelectedColor");
                 if (savedColor > 15) {
-                    this.selectedColorHex = savedColor;
+                    this.selectedColorHex = savedColor & 0xFFFFFF;
                     float[] hsb = com.boran.signbuilder.util.RainbowColorHelper.rgbToHsb((selectedColorHex >> 16) & 0xFF, (selectedColorHex >> 8) & 0xFF, selectedColorHex & 0xFF, null);
                     this.hue = hsb[0];
                     this.saturation = hsb[1];
@@ -114,6 +114,7 @@ public class ColorPickerScreen extends Screen {
         rInput.setMaxLength(3);
         rInput.setValue(String.valueOf(r));
         rInput.setBordered(false);
+        rInput.setTextColor(0xFFFFFFFF);
         rInput.setResponder(text -> onRgbInputChanged());
         this.addRenderableWidget(rInput);
 
@@ -121,6 +122,7 @@ public class ColorPickerScreen extends Screen {
         gInput.setMaxLength(3);
         gInput.setValue(String.valueOf(g));
         gInput.setBordered(false);
+        gInput.setTextColor(0xFFFFFFFF);
         gInput.setResponder(text -> onRgbInputChanged());
         this.addRenderableWidget(gInput);
 
@@ -128,6 +130,7 @@ public class ColorPickerScreen extends Screen {
         bInput.setMaxLength(3);
         bInput.setValue(String.valueOf(b));
         bInput.setBordered(false);
+        bInput.setTextColor(0xFFFFFFFF);
         bInput.setResponder(text -> onRgbInputChanged());
         this.addRenderableWidget(bInput);
 
@@ -135,6 +138,7 @@ public class ColorPickerScreen extends Screen {
         hexInput.setMaxLength(6);
         hexInput.setValue(String.format("%06X", (0xFFFFFF & selectedColorHex)));
         hexInput.setBordered(false);
+        hexInput.setTextColor(0xFFFFFFFF);
         hexInput.setResponder(this::onHexInputChanged);
         this.addRenderableWidget(hexInput);
     }
@@ -281,6 +285,7 @@ public class ColorPickerScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
+        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         int centerX = this.width / 2;
         int centerY = this.height / 2;
@@ -305,8 +310,8 @@ public class ColorPickerScreen extends Screen {
         int gradientStep = Math.max(1, scaled(2));
         for (int x = 0; x < boxWidth; x += gradientStep) {
             float s = x / (float) boxWidth;
-            int topColor = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 1.0f);
-            int middleColor = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 0.5f);
+            int topColor = 0xFF000000 | com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 1.0f);
+            int middleColor = 0xFF000000 | com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(hue, s, 0.5f);
             int columnEnd = Math.min(boxWidth, x + gradientStep);
             guiGraphics.fillGradient(boxX + x, boxY, boxX + columnEnd, boxY + halfBoxHeight, topColor, middleColor);
             guiGraphics.fillGradient(boxX + x, boxY + halfBoxHeight, boxX + columnEnd, boxY + boxHeight, middleColor, 0xFF000000);
@@ -323,7 +328,7 @@ public class ColorPickerScreen extends Screen {
         int hueWidth = scaled(15);
         for (int y = 0; y < boxHeight; y += gradientStep) {
             float h = 1.0f - (y / (float) boxHeight);
-            int color = com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(h, 1.0f, 1.0f);
+            int color = 0xFF000000 | com.boran.signbuilder.util.RainbowColorHelper.hsbToRgb(h, 1.0f, 1.0f);
             guiGraphics.fill(hueX, boxY + y, hueX + hueWidth, boxY + Math.min(boxHeight, y + gradientStep), color);
         }
         guiGraphics.renderOutline(hueX - 1, boxY - 1, hueWidth + 2, boxHeight + 2, 0xFF9AA7B5);

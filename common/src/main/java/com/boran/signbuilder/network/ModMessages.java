@@ -1,9 +1,12 @@
 package com.boran.signbuilder.network;
 
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 public class ModMessages {
     public static final ResourceLocation BRUSH_COLOR = new ResourceLocation("signbuilder", "brush_color");
@@ -18,6 +21,8 @@ public class ModMessages {
     public static final ResourceLocation APPLY_BACKPLATE_INK = new ResourceLocation("signbuilder", "apply_backplate_ink");
     public static final ResourceLocation UPDATE_LCD_SCREEN = new ResourceLocation("signbuilder", "update_lcd_screen");
     public static final ResourceLocation BLUEPRINT_DIRECTION = new ResourceLocation("signbuilder", "blueprint_direction");
+    public static final ResourceLocation LOCATE_STORAGE_ITEM = new ResourceLocation("signbuilder", "locate_storage_item");
+    public static final ResourceLocation HIGHLIGHT_CHESTS = new ResourceLocation("signbuilder", "highlight_chests");
 
     public static void register() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, BRUSH_COLOR, (buf, context) -> {
@@ -79,6 +84,17 @@ public class ModMessages {
             BlueprintDirectionC2SPacket packet = new BlueprintDirectionC2SPacket(buf);
             context.queue(() -> packet.handle(context));
         });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, LOCATE_STORAGE_ITEM, (buf, context) -> {
+            LocateStorageItemC2SPacket packet = new LocateStorageItemC2SPacket(buf);
+            context.queue(() -> packet.handle(context));
+        });
+
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
+                NetworkManager.registerReceiver(NetworkManager.Side.S2C, HIGHLIGHT_CHESTS, (buf, context) -> {
+                    HighlightChestsS2CPacket packet = new HighlightChestsS2CPacket(buf);
+                    context.queue(() -> packet.handle(context));
+                }));
     }
 
     public static <MSG> void sendToServer(MSG message) {
@@ -120,6 +136,17 @@ public class ModMessages {
         } else if (message instanceof BlueprintDirectionC2SPacket packet) {
             packet.toBytes(buf);
             NetworkManager.sendToServer(BLUEPRINT_DIRECTION, buf);
+        } else if (message instanceof LocateStorageItemC2SPacket packet) {
+            packet.toBytes(buf);
+            NetworkManager.sendToServer(LOCATE_STORAGE_ITEM, buf);
+        }
+    }
+
+    public static void sendToPlayer(ServerPlayer player, HighlightChestsS2CPacket packet) {
+        if (player != null && packet != null) {
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+            packet.toBytes(buf);
+            NetworkManager.sendToPlayer(player, HIGHLIGHT_CHESTS, buf);
         }
     }
 }

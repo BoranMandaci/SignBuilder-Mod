@@ -1,6 +1,1 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "signbuilder:item/wrench"
-  }
-}
+{"parent":"item/generated","textures":{"layer0":"signbuilder:item/wrench"}}

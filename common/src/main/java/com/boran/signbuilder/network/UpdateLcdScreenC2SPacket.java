@@ -4,17 +4,14 @@ import com.boran.signbuilder.block.LcdScreenBlock;
 import com.boran.signbuilder.block.entity.LcdScreenBlockEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UpdateLcdScreenC2SPacket {
     private final BlockPos pos;
@@ -34,11 +31,31 @@ public class UpdateLcdScreenC2SPacket {
     private final int widgetBR;
     private final int fontStyle;
     private final int visualAnim;
+    private final int storageMonitorMode;
+    private final int storageStyle;
+    private final int storageFilterMode;
+    private final int storageFlowMode;
+    private final List<ItemStack> watchlistItems;
+    private final boolean loopEnabled;
+    private final boolean loopShuffle;
+    private final int loopTransition;
+    private final int[] loopAnims;
+    private final int[] loopDurations;
+    private final int[] loopColors;
+    private final String[] loopTexts1;
+    private final String[] loopTexts2;
+    private final int[] loopModes1;
+    private final int[] loopModes2;
+    private final int[] loopAligns;
 
     public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
                                     int color, boolean rainbow, boolean glow,
                                     int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
-                                    int fontStyle, int visualAnim) {
+                                    int fontStyle, int visualAnim, int storageMonitorMode, int storageStyle,
+                                    int storageFilterMode, int storageFlowMode, List<ItemStack> watchlistItems,
+                                    boolean loopEnabled, boolean loopShuffle, int loopTransition,
+                                    int[] loopAnims, int[] loopDurations, int[] loopColors,
+                                    String[] loopTexts1, String[] loopTexts2, int[] loopModes1, int[] loopModes2, int[] loopAligns) {
         this.pos = pos;
         this.text = text != null ? text : "";
         this.mode = mode;
@@ -56,13 +73,43 @@ public class UpdateLcdScreenC2SPacket {
         this.widgetBR = widgetBR;
         this.fontStyle = fontStyle;
         this.visualAnim = visualAnim;
-    }
-
-    public UpdateLcdScreenC2SPacket(BlockPos pos, String text, int mode, int mode2, int align, int speed, int fontSize,
-                                    int color, boolean rainbow, boolean glow,
-                                    int theme, int widgetTL, int widgetTR, int widgetBL, int widgetBR,
-                                    int visualAnim) {
-        this(pos, text, mode, mode2, align, speed, fontSize, color, rainbow, glow, theme, widgetTL, widgetTR, widgetBL, widgetBR, 0, visualAnim);
+        this.storageMonitorMode = storageMonitorMode;
+        this.storageStyle = storageStyle;
+        this.storageFilterMode = storageFilterMode;
+        this.storageFlowMode = storageFlowMode;
+        this.watchlistItems = new ArrayList<>();
+        if (watchlistItems != null) {
+            for (ItemStack st : watchlistItems) {
+                if (st != null && !st.isEmpty()) {
+                    this.watchlistItems.add(LcdScreenBlockEntity.cleanWatchlistCopy(st));
+                    if (this.watchlistItems.size() >= LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS) {
+                        break;
+                    }
+                }
+            }
+        }
+        this.loopEnabled = loopEnabled;
+        this.loopShuffle = loopShuffle;
+        this.loopTransition = Math.max(0, Math.min(9, loopTransition));
+        int lLen = loopAnims != null ? Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, loopAnims.length) : 0;
+        this.loopAnims = new int[lLen];
+        this.loopDurations = new int[lLen];
+        this.loopColors = new int[lLen];
+        this.loopTexts1 = new String[lLen];
+        this.loopTexts2 = new String[lLen];
+        this.loopModes1 = new int[lLen];
+        this.loopModes2 = new int[lLen];
+        this.loopAligns = new int[lLen];
+        for (int i = 0; i < lLen; i++) {
+            this.loopAnims[i] = loopAnims[i];
+            this.loopDurations[i] = (loopDurations != null && i < loopDurations.length) ? loopDurations[i] : 6;
+            this.loopColors[i] = (loopColors != null && i < loopColors.length) ? loopColors[i] : -1;
+            this.loopTexts1[i] = (loopTexts1 != null && i < loopTexts1.length && loopTexts1[i] != null) ? loopTexts1[i] : "";
+            this.loopTexts2[i] = (loopTexts2 != null && i < loopTexts2.length && loopTexts2[i] != null) ? loopTexts2[i] : "";
+            this.loopModes1[i] = (loopModes1 != null && i < loopModes1.length) ? loopModes1[i] : -1;
+            this.loopModes2[i] = (loopModes2 != null && i < loopModes2.length) ? loopModes2[i] : -1;
+            this.loopAligns[i] = (loopAligns != null && i < loopAligns.length) ? loopAligns[i] : -1;
+        }
     }
 
     public UpdateLcdScreenC2SPacket(FriendlyByteBuf buf) {
@@ -83,6 +130,48 @@ public class UpdateLcdScreenC2SPacket {
         this.widgetBR = buf.readInt();
         this.fontStyle = buf.readInt();
         this.visualAnim = buf.readInt();
+        this.storageMonitorMode = buf.readVarInt();
+        this.storageStyle = buf.readVarInt();
+        this.storageFilterMode = buf.readVarInt();
+        this.storageFlowMode = buf.readVarInt();
+        int wSize = Math.max(0, Math.min(LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS, buf.readVarInt()));
+        this.watchlistItems = new ArrayList<>(wSize);
+        for (int i = 0; i < wSize; i++) {
+            ItemStack is = buf.readItem();
+            if (!is.isEmpty()) {
+                this.watchlistItems.add(LcdScreenBlockEntity.cleanWatchlistCopy(is));
+            }
+        }
+        this.loopEnabled = buf.readBoolean();
+        this.loopShuffle = buf.readBoolean();
+        this.loopTransition = Math.max(0, Math.min(9, buf.readVarInt()));
+        int stepCount = Math.max(0, Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, buf.readVarInt()));
+        this.loopAnims = new int[stepCount];
+        this.loopDurations = new int[stepCount];
+        this.loopColors = new int[stepCount];
+        this.loopTexts1 = new String[stepCount];
+        this.loopTexts2 = new String[stepCount];
+        this.loopModes1 = new int[stepCount];
+        this.loopModes2 = new int[stepCount];
+        this.loopAligns = new int[stepCount];
+        for (int i = 0; i < stepCount; i++) {
+            this.loopAnims[i] = buf.readVarInt();
+            this.loopDurations[i] = buf.readVarInt();
+            this.loopColors[i] = buf.readInt();
+            if (this.loopAnims[i] == 0) {
+                this.loopTexts1[i] = buf.readUtf();
+                this.loopTexts2[i] = buf.readUtf();
+                this.loopModes1[i] = buf.readByte();
+                this.loopModes2[i] = buf.readByte();
+                this.loopAligns[i] = buf.readByte();
+            } else {
+                this.loopTexts1[i] = "";
+                this.loopTexts2[i] = "";
+                this.loopModes1[i] = -1;
+                this.loopModes2[i] = -1;
+                this.loopAligns[i] = -1;
+            }
+        }
     }
 
     public void toBytes(FriendlyByteBuf buf) {
@@ -103,6 +192,32 @@ public class UpdateLcdScreenC2SPacket {
         buf.writeInt(this.widgetBR);
         buf.writeInt(this.fontStyle);
         buf.writeInt(this.visualAnim);
+        buf.writeVarInt(this.storageMonitorMode);
+        buf.writeVarInt(this.storageStyle);
+        buf.writeVarInt(this.storageFilterMode);
+        buf.writeVarInt(this.storageFlowMode);
+        int wSize = this.watchlistItems != null ? Math.min(LcdScreenBlockEntity.MAX_WATCHLIST_ITEMS, this.watchlistItems.size()) : 0;
+        buf.writeVarInt(wSize);
+        for (int i = 0; i < wSize; i++) {
+            buf.writeItem(this.watchlistItems.get(i));
+        }
+        buf.writeBoolean(this.loopEnabled);
+        buf.writeBoolean(this.loopShuffle);
+        buf.writeVarInt(this.loopTransition);
+        int stepCount = this.loopAnims != null ? Math.min(LcdScreenBlockEntity.MAX_LOOP_STEPS, this.loopAnims.length) : 0;
+        buf.writeVarInt(stepCount);
+        for (int i = 0; i < stepCount; i++) {
+            buf.writeVarInt(this.loopAnims[i]);
+            buf.writeVarInt(i < this.loopDurations.length ? this.loopDurations[i] : 6);
+            buf.writeInt(i < this.loopColors.length ? this.loopColors[i] : -1);
+            if (this.loopAnims[i] == 0) {
+                buf.writeUtf((this.loopTexts1 != null && i < this.loopTexts1.length && this.loopTexts1[i] != null) ? this.loopTexts1[i] : "");
+                buf.writeUtf((this.loopTexts2 != null && i < this.loopTexts2.length && this.loopTexts2[i] != null) ? this.loopTexts2[i] : "");
+                buf.writeByte((this.loopModes1 != null && i < this.loopModes1.length) ? this.loopModes1[i] : -1);
+                buf.writeByte((this.loopModes2 != null && i < this.loopModes2.length) ? this.loopModes2[i] : -1);
+                buf.writeByte((this.loopAligns != null && i < this.loopAligns.length) ? this.loopAligns[i] : -1);
+            }
+        }
     }
 
     public void handle(NetworkManager.PacketContext context) {
@@ -114,17 +229,17 @@ public class UpdateLcdScreenC2SPacket {
         BlockState masterState = level.getBlockState(this.pos);
         if (!(masterState.getBlock() instanceof LcdScreenBlock)) return;
 
-        Direction facing = masterState.getValue(LcdScreenBlock.FACING);
-        AttachFace face = masterState.getValue(LcdScreenBlock.FACE);
-        Direction[] dirs = {
+        net.minecraft.core.Direction facing = masterState.getValue(LcdScreenBlock.FACING);
+        net.minecraft.world.level.block.state.properties.AttachFace face = masterState.getValue(LcdScreenBlock.FACE);
+        net.minecraft.core.Direction[] dirs = {
                 LcdScreenBlock.getScreenUpDir(facing, face),
                 LcdScreenBlock.getScreenDownDir(facing, face),
                 LcdScreenBlock.getScreenLeftDir(facing, face),
                 LcdScreenBlock.getScreenRightDir(facing, face)
         };
 
-        Set<BlockPos> visited = new HashSet<>();
-        Queue<BlockPos> queue = new ArrayDeque<>();
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+        java.util.Queue<BlockPos> queue = new java.util.ArrayDeque<>();
         BlockPos trueMaster = LcdScreenBlock.getMasterPos(level, this.pos, masterState);
         queue.add(trueMaster);
         visited.add(trueMaster);
@@ -148,6 +263,13 @@ public class UpdateLcdScreenC2SPacket {
                 lcdBe.setWidgetBR(this.widgetBR);
                 lcdBe.setFontStyle(this.fontStyle);
                 lcdBe.setVisualAnim(this.visualAnim);
+                lcdBe.setStorageMonitorMode(this.storageMonitorMode);
+                lcdBe.setStorageStyle(this.storageStyle);
+                lcdBe.setStorageFilterMode(this.storageFilterMode);
+                lcdBe.setStorageFlowMode(this.storageFlowMode);
+                lcdBe.setWatchlistItems(this.watchlistItems);
+                lcdBe.setLoopConfig(this.loopEnabled, this.loopShuffle, this.loopTransition, this.loopAnims, this.loopDurations, this.loopColors,
+                        this.loopTexts1, this.loopTexts2, this.loopModes1, this.loopModes2, this.loopAligns);
 
                 BlockState st = level.getBlockState(cur);
                 if (st.hasProperty(LcdScreenBlock.LIT) && st.getValue(LcdScreenBlock.LIT) != this.glow) {
@@ -158,7 +280,7 @@ public class UpdateLcdScreenC2SPacket {
                 lcdBe.sync();
             }
 
-            for (Direction d : dirs) {
+            for (net.minecraft.core.Direction d : dirs) {
                 if (LcdScreenBlock.isConnectedNeighbor(level, cur, d, facing, face)) {
                     BlockPos next = cur.relative(d);
                     if (visited.add(next)) {
@@ -166,6 +288,10 @@ public class UpdateLcdScreenC2SPacket {
                     }
                 }
             }
+        }
+
+        if (level.getBlockEntity(trueMaster) instanceof LcdScreenBlockEntity masterBe) {
+            masterBe.refreshStorageStats(level);
         }
     }
 }

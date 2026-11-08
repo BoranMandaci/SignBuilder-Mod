@@ -68,9 +68,21 @@ public class LcdFontHelper {
         return sink -> StringDecomposer.iterateFormatted(text, 0, baseStyle, baseStyle, sink);
     }
 
+    private static final int CACHE_SIZE = 64;
+    private static final String[] CACHED_KEYS = new String[CACHE_SIZE];
+    private static final int[] CACHED_WIDTHS = new int[CACHE_SIZE];
+
     public static int getWidth(Font font, String text, int fontStyle) {
         if (text == null || text.isEmpty() || font == null) return 0;
-        return font.width(toFormatted(text, fontStyle));
+        int hash = (text.hashCode() * 31 + fontStyle) & (CACHE_SIZE - 1);
+        String cachedKey = CACHED_KEYS[hash];
+        if (cachedKey != null && cachedKey.length() == text.length() + 1 && cachedKey.startsWith(text) && cachedKey.charAt(text.length()) == (char) ('0' + fontStyle)) {
+            return CACHED_WIDTHS[hash];
+        }
+        int w = font.width(toFormatted(text, fontStyle));
+        CACHED_KEYS[hash] = text + (char) ('0' + fontStyle);
+        CACHED_WIDTHS[hash] = w;
+        return w;
     }
 
     public static Component getFontNameComponent(int fontStyle) {

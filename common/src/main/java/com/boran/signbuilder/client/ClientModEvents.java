@@ -55,6 +55,9 @@ public class ClientModEvents {
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             if (player.level().isClientSide()) {
+                if (!player.isShiftKeyDown()) {
+                    com.boran.signbuilder.client.render.StorageHighlightRenderer.onBlockInteracted(pos);
+                }
                 Minecraft client = Minecraft.getInstance();
                 HitResult rawHit = client.hitResult;
                 if (rawHit instanceof BlockHitResult hit && hit.getType() != HitResult.Type.MISS) {
