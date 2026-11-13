@@ -295,7 +295,6 @@ public class LetterRenderCache {
             letterWallTransZ = (float) (normalZ * plateClearance / modelScale);
         }
 
-        // Back Glyph
         ItemStack backGlyph = entity.getBackGlyph();
         boolean hasBackGlyph = false;
         BlockState backState = null;

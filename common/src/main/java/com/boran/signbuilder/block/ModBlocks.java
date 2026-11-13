@@ -53,7 +53,6 @@ public class ModBlocks {
 
         net.minecraft.world.item.component.BlockItemStateProperties stateProps = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
         if (stateProps != null && state.hasProperty(LetterBlock.MATERIAL)) {
-            // stateProps parsing is complex, we skip it and rely on BLOCK_ENTITY_DATA.
         }
         
         net.minecraft.world.item.component.CustomData beData = context.getItemInHand().get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);

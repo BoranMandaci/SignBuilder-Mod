@@ -167,12 +167,45 @@ public class SignBuilderBakedModel implements BakedModel {
     @Override public TextureAtlasSprite getParticleIcon() { return originalModel.getParticleIcon(); }
     @Override public ItemTransforms getTransforms() { return originalModel.getTransforms(); }
 
+    private static volatile Object lastWrappedRegistry = null;
+
+    public static boolean isOrWrapsSignBuilderModel(@Nullable BakedModel model) {
+        if (model == null) return false;
+        if (model instanceof SignBuilderBakedModel) return true;
+        BakedModel current = model;
+        Set<BakedModel> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (current != null && visited.add(current)) {
+            if (current instanceof SignBuilderBakedModel) return true;
+            BakedModel next = null;
+            Class<?> clazz = current.getClass();
+            while (clazz != null && clazz != Object.class) {
+                try {
+                    for (Field f : clazz.getDeclaredFields()) {
+                        if (BakedModel.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                            f.setAccessible(true);
+                            Object val = f.get(current);
+                            if (val instanceof BakedModel bm && !visited.contains(bm)) {
+                                next = bm;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                if (next != null) break;
+                clazz = clazz.getSuperclass();
+            }
+            current = next;
+        }
+        return false;
+    }
+
     public static void checkAndWrap(Minecraft client) {
         if (client == null) return;
         ModelManager modelManager = client.getModelManager();
         if (modelManager == null) return;
         Map<ModelResourceLocation, BakedModel> reg = getBakedRegistry(modelManager);
         if (reg == null || reg.isEmpty()) return;
+        if (reg == lastWrappedRegistry) return;
         if (client.getItemRenderer() == null) return;
         ItemModelShaper shaper = client.getItemRenderer().getItemModelShaper();
         if (shaper == null) return;
@@ -180,19 +213,39 @@ public class SignBuilderBakedModel implements BakedModel {
         Item backplateItem = ModBlocks.BACKPLATE_ITEM.get();
         if (backplateItem == null) return;
 
-        BakedModel currentBpModel = shaper.getItemModel(backplateItem);
-        boolean needWrap = !(currentBpModel instanceof SignBuilderBakedModel);
+        ResourceLocation bpId = ResourceLocation.fromNamespaceAndPath("signbuilder", "backplate");
+        ModelResourceLocation bpMrl = ModelResourceLocation.inventory(bpId);
+        BakedModel managerBpModel = null;
+        try {
+            managerBpModel = modelManager.getModel(bpMrl);
+        } catch (Throwable ignored) {}
+
+        if (isOrWrapsSignBuilderModel(managerBpModel)) {
+            lastWrappedRegistry = reg;
+            return;
+        }
+
+        BakedModel currentBpModel = null;
+        try {
+            currentBpModel = shaper.getItemModel(backplateItem);
+        } catch (Throwable ignored) {}
+
+        boolean needWrap = !isOrWrapsSignBuilderModel(currentBpModel);
 
         if (!needWrap && !ModBlocks.ALL_SIGN_BLOCKS.isEmpty()) {
             Block firstBlock = ModBlocks.ALL_SIGN_BLOCKS.get(0).get();
             if (firstBlock != null) {
-                BakedModel firstModel = shaper.getItemModel(firstBlock.asItem());
-                if (!(firstModel instanceof SignBuilderBakedModel)) {
+                BakedModel firstModel = null;
+                try {
+                    firstModel = shaper.getItemModel(firstBlock.asItem());
+                } catch (Throwable ignored) {}
+                if (!isOrWrapsSignBuilderModel(firstModel)) {
                     needWrap = true;
                 }
             }
         }
 
+        lastWrappedRegistry = reg;
         if (!needWrap) {
             return;
         }
@@ -209,7 +262,9 @@ public class SignBuilderBakedModel implements BakedModel {
             ModelResourceLocation mrl = ModelResourceLocation.inventory(id);
             BakedModel original = models.get(mrl);
             if (original != null && !(original instanceof SignBuilderBakedModel)) {
-                models.put(mrl, new SignBuilderBakedModel(original, true));
+                try {
+                    models.put(mrl, new SignBuilderBakedModel(original, true));
+                } catch (Throwable ignored) {}
             }
         }
 
@@ -220,7 +275,9 @@ public class SignBuilderBakedModel implements BakedModel {
                 ModelResourceLocation mrl = ModelResourceLocation.inventory(id);
                 BakedModel original = models.get(mrl);
                 if (original != null && !(original instanceof SignBuilderBakedModel)) {
-                    models.put(mrl, new SignBuilderBakedModel(original, false));
+                    try {
+                        models.put(mrl, new SignBuilderBakedModel(original, false));
+                    } catch (Throwable ignored) {}
                 }
             }
         }
@@ -254,19 +311,30 @@ public class SignBuilderBakedModel implements BakedModel {
 
         ModelResourceLocation mrl = null;
         if (shaper.shapes != null) {
-            mrl = shaper.shapes.get(Item.getId(item));
+            try {
+                mrl = shaper.shapes.get(Item.getId(item));
+            } catch (Throwable ignored) {}
         }
         if (mrl == null) {
             mrl = ModelResourceLocation.inventory(id);
         }
 
-        BakedModel raw = (shapesCache != null) ? shapesCache.get(Item.getId(item)) : null;
+        BakedModel raw = null;
+        if (shapesCache != null) {
+            try {
+                raw = shapesCache.get(Item.getId(item));
+            } catch (Throwable ignored) {}
+        }
         if (raw == null) {
-            raw = shaper.getItemModel(item);
+            try {
+                raw = shaper.getItemModel(item);
+            } catch (Throwable ignored) {}
         }
         if (raw == null || raw == modelManager.getMissingModel()) {
             if (registry != null) {
-                raw = registry.get(mrl);
+                try {
+                    raw = registry.get(mrl);
+                } catch (Throwable ignored) {}
             }
         }
         if (raw == null || raw == modelManager.getMissingModel()) {
@@ -289,13 +357,19 @@ public class SignBuilderBakedModel implements BakedModel {
 
         Map<Item, BakedModel> shaperModels = getShaperModelsMap(shaper);
         if (shaperModels != null) {
-            shaperModels.put(item, wrapped);
+            try {
+                shaperModels.put(item, wrapped);
+            } catch (Throwable ignored) {}
         }
         if (shapesCache != null) {
-            shapesCache.put(Item.getId(item), wrapped);
+            try {
+                shapesCache.put(Item.getId(item), wrapped);
+            } catch (Throwable ignored) {}
         }
         if (registry != null) {
-            registry.put(mrl, wrapped);
+            try {
+                registry.put(mrl, wrapped);
+            } catch (Throwable ignored) {}
         }
     }
 

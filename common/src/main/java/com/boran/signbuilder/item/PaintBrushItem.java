@@ -315,7 +315,6 @@ public class PaintBrushItem extends Item {
         }
         net.minecraft.world.item.component.BlockItemStateProperties stateProps = glyph.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
         if (stateProps != null) {
-            // Usually we can just trust the block entity tag in this mod context, but for parity we return default if no BE tag.
             return SignMaterial.DEFAULT;
         }
         return SignMaterial.DEFAULT;
