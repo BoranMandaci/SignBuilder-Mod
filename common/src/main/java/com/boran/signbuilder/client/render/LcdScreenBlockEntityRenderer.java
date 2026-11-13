@@ -161,9 +161,9 @@ public class LcdScreenBlockEntityRenderer implements BlockEntityRenderer<LcdScre
         double distSq = camDx * camDx + camDy * camDy + camDz * camDz;
         if (distSq > 96.0 * 96.0) return;
 
-        Direction normDir = (face == AttachFace.WALL) ? facing.getOpposite() : (face == AttachFace.FLOOR ? Direction.UP : Direction.DOWN);
+        Direction normDir = (face == AttachFace.WALL) ? facing : (face == AttachFace.FLOOR ? Direction.UP : Direction.DOWN);
         double dot = camDx * normDir.getStepX() + camDy * normDir.getStepY() + camDz * normDir.getStepZ();
-        if (dot <= 0.0) return;
+        if (dot < -0.15) return;
 
         long now = System.nanoTime();
         boolean newFrame = (gameTime != master.lastRenderGameTime)
