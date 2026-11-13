@@ -168,6 +168,38 @@ public class SignBuilderBakedModel implements BakedModel {
         return overrides;
     }
 
+    private static volatile Object lastWrappedRegistry = null;
+
+    public static boolean isOrWrapsSignBuilderModel(@Nullable BakedModel model) {
+        if (model == null) return false;
+        if (model instanceof SignBuilderBakedModel) return true;
+        BakedModel current = model;
+        Set<BakedModel> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (current != null && visited.add(current)) {
+            if (current instanceof SignBuilderBakedModel) return true;
+            BakedModel next = null;
+            Class<?> clazz = current.getClass();
+            while (clazz != null && clazz != Object.class) {
+                try {
+                    for (Field f : clazz.getDeclaredFields()) {
+                        if (BakedModel.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                            f.setAccessible(true);
+                            Object val = f.get(current);
+                            if (val instanceof BakedModel bm && !visited.contains(bm)) {
+                                next = bm;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                if (next != null) break;
+                clazz = clazz.getSuperclass();
+            }
+            current = next;
+        }
+        return false;
+    }
+
     public static void onModifyBakingResult(Map<?, ?> models) {
         if (models == null) return;
         wrapModelInMap(models, new ResourceLocation("signbuilder", "backplate"), true);
@@ -184,10 +216,12 @@ public class SignBuilderBakedModel implements BakedModel {
         if (existing == null) {
             existing = models.get(id);
         }
-        if (existing != null) {
+        if (existing != null && !isOrWrapsSignBuilderModel(existing)) {
             SignBuilderBakedModel wrapped = new SignBuilderBakedModel(existing, isBackplate);
-            models.put(mrl, wrapped);
-            models.put(id, wrapped);
+            try {
+                models.put(mrl, wrapped);
+                models.put(id, wrapped);
+            } catch (Throwable ignored) {}
         }
     }
 
@@ -197,13 +231,53 @@ public class SignBuilderBakedModel implements BakedModel {
         ModelManager modelManager = mc.getModelManager();
         if (shaper == null || modelManager == null) return;
 
+        Map<ResourceLocation, BakedModel> registry = getBakedRegistry(modelManager);
+        if (registry == null || registry.isEmpty()) return;
+        if (registry == lastWrappedRegistry) return;
+
         Item bpItem = ModBlocks.BACKPLATE_ITEM.get();
-        if (bpItem != null && shaper.getItemModel(bpItem) instanceof SignBuilderBakedModel) {
+        if (bpItem == null) return;
+
+        ResourceLocation bpId = new ResourceLocation("signbuilder", "backplate");
+        ModelResourceLocation bpMrl = new ModelResourceLocation(bpId, "inventory");
+        BakedModel managerBpModel = null;
+        try {
+            managerBpModel = registry.get(bpMrl);
+            if (managerBpModel == null) {
+                managerBpModel = registry.get(bpId);
+            }
+        } catch (Throwable ignored) {}
+
+        if (isOrWrapsSignBuilderModel(managerBpModel)) {
+            lastWrappedRegistry = registry;
             return;
         }
 
-        Map<ResourceLocation, BakedModel> registry = getBakedRegistry(modelManager);
-        if (registry == null || registry.isEmpty()) return;
+        BakedModel currentBpModel = null;
+        try {
+            currentBpModel = shaper.getItemModel(bpItem);
+        } catch (Throwable ignored) {}
+
+        boolean needWrap = !isOrWrapsSignBuilderModel(currentBpModel);
+
+        if (!needWrap && !ModBlocks.ALL_SIGN_BLOCKS.isEmpty()) {
+            Block firstBlock = ModBlocks.ALL_SIGN_BLOCKS.get(0).get();
+            if (firstBlock != null) {
+                BakedModel firstModel = null;
+                try {
+                    firstModel = shaper.getItemModel(firstBlock.asItem());
+                } catch (Throwable ignored) {}
+                if (!isOrWrapsSignBuilderModel(firstModel)) {
+                    needWrap = true;
+                }
+            }
+        }
+
+        lastWrappedRegistry = registry;
+        if (!needWrap) {
+            return;
+        }
+
         Int2ObjectMap<BakedModel> shapesCache = getShapesCache(shaper);
 
         wrapItem(bpItem, "backplate", true, shaper, modelManager, registry, shapesCache);
@@ -220,8 +294,12 @@ public class SignBuilderBakedModel implements BakedModel {
                                  Int2ObjectMap<BakedModel> shapesCache) {
         if (item == null || item == net.minecraft.world.item.Items.AIR) return;
 
-        BakedModel current = shaper.getItemModel(item);
-        if (current instanceof SignBuilderBakedModel) {
+        BakedModel current = null;
+        try {
+            current = shaper.getItemModel(item);
+        } catch (Throwable ignored) {}
+
+        if (isOrWrapsSignBuilderModel(current)) {
             return;
         }
 
@@ -229,13 +307,17 @@ public class SignBuilderBakedModel implements BakedModel {
         ModelResourceLocation mrl = new ModelResourceLocation(id, "inventory");
         BakedModel raw = null;
         if (registry != null) {
-            raw = registry.get(mrl);
-            if (raw == null) {
-                raw = registry.get(id);
-            }
+            try {
+                raw = registry.get(mrl);
+                if (raw == null) {
+                    raw = registry.get(id);
+                }
+            } catch (Throwable ignored) {}
         }
         if (raw == null && shapesCache != null) {
-            raw = shapesCache.get(Item.getId(item));
+            try {
+                raw = shapesCache.get(Item.getId(item));
+            } catch (Throwable ignored) {}
         }
         if (raw == null) {
             raw = current;
@@ -256,14 +338,18 @@ public class SignBuilderBakedModel implements BakedModel {
         if (shaperModels != null && !(shaperModels instanceof Int2ObjectMap)) {
             try {
                 shaperModels.put(item, wrapped);
-            } catch (Exception ignored) {}
+            } catch (Throwable ignored) {}
         }
         if (shapesCache != null) {
-            shapesCache.put(Item.getId(item), wrapped);
+            try {
+                shapesCache.put(Item.getId(item), wrapped);
+            } catch (Throwable ignored) {}
         }
         if (registry != null) {
-            registry.put(mrl, wrapped);
-            registry.put(id, wrapped);
+            try {
+                registry.put(mrl, wrapped);
+                registry.put(id, wrapped);
+            } catch (Throwable ignored) {}
         }
     }
 
