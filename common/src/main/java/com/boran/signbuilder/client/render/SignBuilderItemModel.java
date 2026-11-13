@@ -24,6 +24,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class SignBuilderItemModel implements ItemModel {
@@ -204,6 +205,38 @@ public class SignBuilderItemModel implements ItemModel {
         layer.setupBlockModel(finalModel, renderType);
     }
 
+    private static volatile Object lastWrappedMap = null;
+
+    public static boolean isOrWrapsSignBuilderItemModel(ItemModel model) {
+        if (model == null) return false;
+        if (model instanceof SignBuilderItemModel) return true;
+        ItemModel current = model;
+        Set<ItemModel> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (current != null && visited.add(current)) {
+            if (current instanceof SignBuilderItemModel) return true;
+            ItemModel next = null;
+            Class<?> clazz = current.getClass();
+            while (clazz != null && clazz != Object.class) {
+                try {
+                    for (Field f : clazz.getDeclaredFields()) {
+                        if (ItemModel.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                            f.setAccessible(true);
+                            Object val = f.get(current);
+                            if (val instanceof ItemModel im && !visited.contains(im)) {
+                                next = im;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                if (next != null) break;
+                clazz = clazz.getSuperclass();
+            }
+            current = next;
+        }
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     public static void checkAndWrap(Minecraft client) {
         if (client == null) return;
@@ -212,12 +245,19 @@ public class SignBuilderItemModel implements ItemModel {
 
         Map<ResourceLocation, ItemModel> map = getItemStackModels(modelManager);
         if (map == null || map.isEmpty()) return;
+        if (map == lastWrappedMap) return;
 
-        ItemModel backplateModel = map.get(ModBlocks.BACKPLATE_ITEM.getId());
-        if (backplateModel instanceof SignBuilderItemModel) {
+        ItemModel backplateModel = null;
+        try {
+            backplateModel = map.get(ModBlocks.BACKPLATE_ITEM.getId());
+        } catch (Throwable ignored) {}
+
+        if (isOrWrapsSignBuilderItemModel(backplateModel)) {
+            lastWrappedMap = map;
             return;
         }
 
+        lastWrappedMap = map;
         wrapAll(modelManager, map);
     }
 
@@ -262,24 +302,29 @@ public class SignBuilderItemModel implements ItemModel {
         Map<ResourceLocation, ItemModel> targetMap = map;
 
         for (ResourceLocation id : TARGET_IDS) {
-            ItemModel original = targetMap.get(id);
-            if (original != null && !(original instanceof SignBuilderItemModel)) {
+            ItemModel original = null;
+            try {
+                original = targetMap.get(id);
+            } catch (Throwable ignored) {}
+            if (original != null && !isOrWrapsSignBuilderItemModel(original)) {
                 boolean isBackplate = id.getPath().equals("backplate");
                 SignBuilderItemModel wrapped = new SignBuilderItemModel(original, id, isBackplate);
                 try {
                     targetMap.put(id, wrapped);
                 } catch (UnsupportedOperationException e) {
                     if (!mapModified) {
-                        targetMap = new HashMap<>(map);
                         try {
+                            targetMap = new HashMap<>(map);
                             if (itemStackModelsField != null) {
                                 itemStackModelsField.set(modelManager, targetMap);
                             }
-                        } catch (Exception ignored) {}
-                        mapModified = true;
+                            mapModified = true;
+                        } catch (Throwable ignored) {}
                     }
-                    targetMap.put(id, wrapped);
-                }
+                    try {
+                        targetMap.put(id, wrapped);
+                    } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {}
             }
         }
     }
