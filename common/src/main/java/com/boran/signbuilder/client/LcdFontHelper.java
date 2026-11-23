@@ -68,23 +68,23 @@ public class LcdFontHelper {
         return sink -> StringDecomposer.iterateFormatted(text, 0, baseStyle, baseStyle, sink);
     }
 
-    private static final int[][] ASCII_CHAR_WIDTHS = new int[FONT_COUNT][128];
+    private static final int CACHE_SIZE = 256;
+    private static final String[] CACHED_TEXTS = new String[CACHE_SIZE];
+    private static final int[] CACHED_STYLES = new int[CACHE_SIZE];
+    private static final int[] CACHED_WIDTHS = new int[CACHE_SIZE];
 
     public static int getWidth(Font font, String text, int fontStyle) {
         if (text == null || text.isEmpty() || font == null) return 0;
-        if (text.length() == 1) {
-            char c = text.charAt(0);
-            if (c < 128 && fontStyle >= 0 && fontStyle < FONT_COUNT) {
-                int cached = ASCII_CHAR_WIDTHS[fontStyle][c];
-                if (cached != 0) {
-                    return cached == -1 ? 0 : cached;
-                }
-                int w = font.width(toFormatted(text, fontStyle));
-                ASCII_CHAR_WIDTHS[fontStyle][c] = (w == 0) ? -1 : w;
-                return w;
-            }
+        int hash = (text.hashCode() * 31 + fontStyle) & (CACHE_SIZE - 1);
+        String cachedText = CACHED_TEXTS[hash];
+        if (cachedText != null && CACHED_STYLES[hash] == fontStyle && text.equals(cachedText)) {
+            return CACHED_WIDTHS[hash];
         }
-        return font.width(toFormatted(text, fontStyle));
+        int w = font.width(toFormatted(text, fontStyle));
+        CACHED_TEXTS[hash] = text;
+        CACHED_STYLES[hash] = fontStyle;
+        CACHED_WIDTHS[hash] = w;
+        return w;
     }
 
     public static Component getFontNameComponent(int fontStyle) {

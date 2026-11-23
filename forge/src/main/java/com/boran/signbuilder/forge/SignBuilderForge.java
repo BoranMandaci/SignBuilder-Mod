@@ -9,6 +9,7 @@ import com.boran.signbuilder.block.entity.ModBlockEntities;
 import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
 
 import com.boran.signbuilder.client.render.GridPreviewRenderer;
+import com.boran.signbuilder.client.render.StorageHighlightRenderer;
 
 import com.boran.signbuilder.client.render.GridSignBlockEntityRenderer;
 
@@ -105,6 +106,7 @@ public class SignBuilderForge {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             BlueprintPreviewRenderer.render(event.getPoseStack());
             GridPreviewRenderer.render(event.getPoseStack());
+            StorageHighlightRenderer.render(event.getPoseStack());
         }
     }
 

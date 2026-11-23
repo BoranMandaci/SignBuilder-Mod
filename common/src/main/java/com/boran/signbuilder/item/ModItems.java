@@ -18,6 +18,9 @@ public class ModItems {
     public static final RegistrySupplier<Item> WRENCH = ITEMS.register("wrench",
             () -> new WrenchItem(new Item.Properties().tab(ModCreativeModeTabs.LETTERS_TAB).defaultDurability(256)));
 
+    public static final RegistrySupplier<Item> STORAGE_LINKER = ITEMS.register("storage_linker",
+            () -> new StorageLinkerItem(new Item.Properties().tab(ModCreativeModeTabs.LETTERS_TAB).stacksTo(1)));
+
     public static void register() {
         ITEMS.register();
     }

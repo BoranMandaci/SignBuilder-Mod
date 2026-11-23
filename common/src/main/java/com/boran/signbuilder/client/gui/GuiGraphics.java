@@ -101,47 +101,59 @@ public class GuiGraphics extends GuiComponent {
     }
 
     public void renderItem(ItemStack stack, int x, int y) {
-        Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(stack, x, y);
+        PoseStack mv = RenderSystem.getModelViewStack();
+        mv.pushPose();
+        mv.last().pose().multiply(this.poseStack.last().pose());
+        RenderSystem.applyModelViewMatrix();
+        Minecraft.getInstance().getItemRenderer().renderAndDecorateFakeItem(stack, x, y);
+        mv.popPose();
+        RenderSystem.applyModelViewMatrix();
     }
 
+    public void renderFakeItem(ItemStack stack, int x, int y) {
+        renderItem(stack, x, y);
+    }
+
+
+
     public void renderTooltip(Font font, ItemStack stack, int mouseX, int mouseY) {
-        PoseStack pose = this.poseStack;
         deferredTooltip = () -> {
             Screen screen = Minecraft.getInstance().screen;
             if (screen != null) {
-                screen.renderTooltip(pose, screen.getTooltipFromItem(stack), stack.getTooltipImage(), mouseX, mouseY);
+                screen.renderTooltip(new PoseStack(), screen.getTooltipFromItem(stack), stack.getTooltipImage(), mouseX, mouseY);
             }
         };
     }
 
     public void renderTooltip(Font font, Component text, int mouseX, int mouseY) {
-        PoseStack pose = this.poseStack;
         deferredTooltip = () -> {
             Screen screen = Minecraft.getInstance().screen;
             if (screen != null) {
-                screen.renderTooltip(pose, text, mouseX, mouseY);
+                screen.renderTooltip(new PoseStack(), text, mouseX, mouseY);
             }
         };
     }
 
     public void renderComponentTooltip(Font font, List<Component> text, int mouseX, int mouseY) {
-        PoseStack pose = this.poseStack;
         deferredTooltip = () -> {
             Screen screen = Minecraft.getInstance().screen;
             if (screen != null) {
-                screen.renderComponentTooltip(pose, text, mouseX, mouseY);
+                screen.renderComponentTooltip(new PoseStack(), text, mouseX, mouseY);
             }
         };
     }
 
     public void renderTooltip(Font font, List<? extends FormattedCharSequence> text, int mouseX, int mouseY) {
-        PoseStack pose = this.poseStack;
         deferredTooltip = () -> {
             Screen screen = Minecraft.getInstance().screen;
             if (screen != null) {
-                screen.renderTooltip(pose, text, mouseX, mouseY);
+                screen.renderTooltip(new PoseStack(), text, mouseX, mouseY);
             }
         };
+    }
+
+    public static void clearTooltip() {
+        deferredTooltip = null;
     }
 
     public static void flushTooltip() {

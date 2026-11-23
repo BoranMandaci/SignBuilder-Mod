@@ -27,7 +27,8 @@ public class LcdTextFormatter {
     public static final int WIDGET_MOON = 8;
     public static final int WIDGET_FPS = 9;
     public static final int WIDGET_HEALTH = 10;
-    public static final int WIDGET_COUNT = 11;
+    public static final int WIDGET_STORAGE = 11;
+    public static final int WIDGET_COUNT = 12;
 
     public static final String[] WIDGET_KEYS = {
             "gui.signbuilder.lcd.widget.none",
@@ -40,21 +41,23 @@ public class LcdTextFormatter {
             "gui.signbuilder.lcd.widget.biome",
             "gui.signbuilder.lcd.widget.moon",
             "gui.signbuilder.lcd.widget.fps",
-            "gui.signbuilder.lcd.widget.health"
+            "gui.signbuilder.lcd.widget.health",
+            "gui.signbuilder.lcd.widget.storage"
     };
 
     public static String getWidgetText(int widgetType, @Nullable Level level, @Nullable BlockPos pos) {
         return switch (widgetType) {
-            case WIDGET_TIME -> getTimeString(level);
+            case WIDGET_TIME -> "⌚ " + getTimeString(level);
             case WIDGET_WEATHER -> getWeatherString(level);
             case WIDGET_PLAYER -> getPlayerString(level, pos);
             case WIDGET_DAY -> getDayString(level);
-            case WIDGET_ONLINE -> getOnlineCountString(level) + " Plr";
-            case WIDGET_COORDS -> (pos != null ? (pos.getX() + " " + pos.getY() + " " + pos.getZ()) : "0 0 0");
-            case WIDGET_BIOME -> getBiomeString(level, pos);
+            case WIDGET_ONLINE -> "♦ " + getOnlineCountString(level);
+            case WIDGET_COORDS -> "⚲ " + (pos != null ? (pos.getX() + " " + pos.getY() + " " + pos.getZ()) : "0 0 0");
+            case WIDGET_BIOME -> "♣ " + getBiomeString(level, pos);
             case WIDGET_MOON -> getMoonPhaseString(level);
             case WIDGET_FPS -> getFpsString() + " FPS";
             case WIDGET_HEALTH -> getHealthString(level, pos);
+            case WIDGET_STORAGE -> getStorageWidgetString(level, pos);
             default -> "";
         };
     }
@@ -117,20 +120,7 @@ public class LcdTextFormatter {
                 .replace(":tri_up:", "▲")
                 .replace(":tri_down:", "▼")
                 .replace(":dleft:", "«")
-                .replace(":dright:", "»")
-
-                .replace(":key:", "🗝")
-                .replace(":lock:", "🔒")
-                .replace(":trophy:", "🏆")
-                .replace(":cup:", "🏆")
-                .replace(":player:", "👤")
-                .replace(":user:", "👤")
-                .replace(":online:", "👥")
-                .replace(":users:", "👥")
-                .replace(":tree:", "🌲")
-                .replace(":biome:", "🌲")
-                .replace(":pin:", "⚲")
-                .replace(":moon:", "☽");
+                .replace(":dright:", "»");
     }
 
     public static String resolveVariables(String text, @Nullable Level level, @Nullable BlockPos pos) {
@@ -180,6 +170,30 @@ public class LcdTextFormatter {
         }
         if (text.contains("{hearts}")) {
             text = text.replace("{hearts}", getHeartsString(level, pos));
+        }
+        if (text.contains("{storage_percent}")) {
+            text = text.replace("{storage_percent}", getStoragePercentVar(level, pos));
+        }
+        if (text.contains("{storage_items}")) {
+            text = text.replace("{storage_items}", getStorageItemsVar(level, pos));
+        }
+        if (text.contains("{storage_used}")) {
+            text = text.replace("{storage_used}", getStorageUsedVar(level, pos));
+        }
+        if (text.contains("{storage_max}")) {
+            text = text.replace("{storage_max}", getStorageMaxVar(level, pos));
+        }
+        if (text.contains("{storage_free}")) {
+            text = text.replace("{storage_free}", getStorageFreeVar(level, pos));
+        }
+        if (text.contains("{storage_top}")) {
+            text = text.replace("{storage_top}", getStorageTopVar(level, pos));
+        }
+        if (text.contains("{storage_bar}")) {
+            text = text.replace("{storage_bar}", getStorageBarVar(level, pos));
+        }
+        if (text.contains("{storage_rate}")) {
+            text = text.replace("{storage_rate}", getStorageRateVar(level, pos));
         }
 
         return text;
@@ -233,7 +247,13 @@ public class LcdTextFormatter {
         long dayTime = (level.getDayTime() + 6000) % 24000;
         int hours = (int) (dayTime / 1000);
         int minutes = (int) ((dayTime % 1000) * 60 / 1000);
-        return String.format("%02d:%02d", hours, minutes);
+        char[] buf = new char[5];
+        buf[0] = (char) ('0' + (hours / 10));
+        buf[1] = (char) ('0' + (hours % 10));
+        buf[2] = ':';
+        buf[3] = (char) ('0' + (minutes / 10));
+        buf[4] = (char) ('0' + (minutes % 10));
+        return new String(buf);
     }
 
     public static String getWeatherString(@Nullable Level level) {
@@ -244,7 +264,7 @@ public class LcdTextFormatter {
     }
 
     public static String getPlayerString(@Nullable Level level, @Nullable BlockPos pos) {
-        return getPlayerNameOnly(level, pos);
+        return "☺ " + getPlayerNameOnly(level, pos);
     }
 
     public static String getPlayerNameOnly(@Nullable Level level, @Nullable BlockPos pos) {
@@ -300,7 +320,7 @@ public class LcdTextFormatter {
     }
 
     public static String getMoonPhaseString(@Nullable Level level) {
-        if (level == null) return "--";
+        if (level == null) return "○ --";
         int phase = level.getMoonPhase();
         return switch (phase) {
             case 0 -> Component.translatable("gui.signbuilder.lcd.moon.full").getString();
@@ -311,7 +331,7 @@ public class LcdTextFormatter {
             case 5 -> Component.translatable("gui.signbuilder.lcd.moon.waxing_crescent").getString();
             case 6 -> Component.translatable("gui.signbuilder.lcd.moon.first_quarter").getString();
             case 7 -> Component.translatable("gui.signbuilder.lcd.moon.waxing_gibbous").getString();
-            default -> "--";
+            default -> "○ --";
         };
     }
 
@@ -346,10 +366,10 @@ public class LcdTextFormatter {
             if (p != null) {
                 int hp = (int) Math.ceil(p.getHealth());
                 int maxHp = (int) Math.ceil(p.getMaxHealth());
-                return hp + "/" + maxHp + " HP";
+                return hp + "/" + maxHp + "❤";
             }
         }
-        return "-- HP";
+        return "--❤";
     }
 
     public static String getHpNumberString(@Nullable Level level, @Nullable BlockPos pos) {
@@ -472,5 +492,104 @@ public class LcdTextFormatter {
         }
 
         return sb.toString();
+    }
+
+    private static String getStorageWidgetString(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                String base = "▣ " + lcdBe.getStoragePercentString();
+                if (lcdBe.getStorageFlowMode() > 0) {
+                    String rateStr = LcdScreenBlockEntity.formatFlowRateText(
+                            lcdBe.getStorageNetRatePerHour(), lcdBe.getStorageFlowMode(), true, false);
+                    if (!rateStr.isEmpty()) {
+                        return base + " " + rateStr;
+                    }
+                }
+                return base;
+            }
+        }
+        return "▣ 0%";
+    }
+
+    private static String getStoragePercentVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return lcdBe.getStoragePercentString();
+            }
+        }
+        return "0%";
+    }
+
+    private static String getStorageItemsVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return String.valueOf(lcdBe.getStorageTotalItems());
+            }
+        }
+        return "0";
+    }
+
+    private static String getStorageUsedVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return lcdBe.getStorageFilledSlots() + "/" + lcdBe.getStorageTotalSlots();
+            }
+        }
+        return "0/0";
+    }
+
+    private static String getStorageMaxVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return String.valueOf(lcdBe.getStorageTotalSlots());
+            }
+        }
+        return "0";
+    }
+
+    private static String getStorageFreeVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return String.valueOf(Math.max(0, lcdBe.getStorageTotalSlots() - lcdBe.getStorageFilledSlots()));
+            }
+        }
+        return "0";
+    }
+
+    private static String getStorageTopVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return lcdBe.getStorageTopItemString();
+            }
+        }
+        return "";
+    }
+
+    private static String getStorageBarVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                return lcdBe.getStorageBarString(10);
+            }
+        }
+        return "[░░░░░░░░░░]";
+    }
+
+    private static String getStorageRateVar(@Nullable Level level, @Nullable BlockPos pos) {
+        if (level != null && pos != null) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LcdScreenBlockEntity lcdBe) {
+                int fm = lcdBe.getStorageFlowMode() > 0 ? lcdBe.getStorageFlowMode() : 1;
+                return LcdScreenBlockEntity.formatFlowRateText(lcdBe.getStorageNetRatePerHour(), fm, true, true);
+            }
+        }
+        return LcdScreenBlockEntity.formatFlowRateText(0, 1, true, true);
     }
 }

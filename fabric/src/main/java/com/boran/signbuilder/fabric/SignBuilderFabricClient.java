@@ -4,6 +4,7 @@ import com.boran.signbuilder.block.ModBlocks;
 import com.boran.signbuilder.client.render.BlueprintPreviewRenderer;
 import com.boran.signbuilder.client.render.GridPreviewRenderer;
 import com.boran.signbuilder.client.render.ModColorHandlers;
+import com.boran.signbuilder.client.render.StorageHighlightRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -24,6 +25,7 @@ public class SignBuilderFabricClient implements ClientModInitializer {
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             BlueprintPreviewRenderer.render(context.matrixStack());
             GridPreviewRenderer.render(context.matrixStack());
+            StorageHighlightRenderer.render(context.matrixStack());
         });
     }
 }
